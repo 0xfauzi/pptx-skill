@@ -1,0 +1,9 @@
+{"axis": {"min": 6.0, "max": 16.0, "format": "${:,.0f}", "ticks": [6, 8, 10, 12, 14, 16]},
+ "rows": [
+  {"label": "52-week trading range", "low": 8.2, "high": 12.4},
+  {"label": "Analyst price targets", "low": 9.0, "high": 13.5},
+  {"label": "Trading comps (P / TBV 0.9x to 1.3x)", "low": 7.6, "high": 11.0},
+  {"label": "Precedent transactions", "low": 9.4, "high": 13.8},
+  {"label": "DDM (8.5% to 10.0% CoE)", "low": 8.8, "high": 12.1}
+ ],
+ "marker": {"label": "Offer $11.40", "value": 11.4}}

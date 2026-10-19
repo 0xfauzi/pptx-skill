@@ -1,0 +1,11 @@
+{"axis": {"min": 20.0, "max": 60.0, "format": "${:,.0f}", "ticks": [20, 30, 40, 50, 60]},
+ "rows": [
+  {"label": "52-week range", "low": 24.0, "high": 41.0},
+  {"label": "Broker targets", "low": 30.0, "high": 52.0},
+  {"label": "EV / EBITDA comps", "low": 28.0, "high": 44.0},
+  {"label": "P / E comps", "low": 26.0, "high": 39.0},
+  {"label": "Precedents", "low": 35.0, "high": 55.0},
+  {"label": "DCF (perpetuity)", "low": 33.0, "high": 50.0},
+  {"label": "DCF (exit multiple)", "low": 31.0, "high": 47.0}
+ ],
+ "marker": {"label": "Current $38.50", "value": 38.5}}

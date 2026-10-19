@@ -247,6 +247,8 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
         first = False
         _paragraph_props(p, spec, guide, para)
         runs = para.get("runs") or [{"text": para.get("text", "")}]
+        if spec.get("case") == "upper":
+            runs = [{**r, "text": r["text"].upper()} for r in runs]  # the solver measured the cased text
         lines = para.get("lines")
         if lines:
             # measured wrap: literal breaks between lines, runs split at line boundaries

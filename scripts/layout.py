@@ -119,6 +119,9 @@ SCALE_LADDER = tuple(Fraction(n, 100) for n in range(99, 9, -1))
 MARGIN_ROLE = "space.margin"
 #: Whole-string mean advance for capacity, labelled in the output as such.
 REFERENCE_ALPHABET = "the quick brown fox jumps over the lazy dog 0123456789 ($%,.)"
+#: What PowerPoint draws when the attribute is absent: b/i off, spcBef/spcAft/spc
+#: zero, and single spacing = 1.2 x size (docs/measurements/E16-decision.md 1.2002 em
+#: on 7 families, E38-decision.md 1.2000 exact in cells; deckgen decided.py:91).
 _ABSENT_TYPE_VALUES = {
     "line_spacing": 1.2, "weight": 400, "italic": False, "space_before_pt": 0.0,
     "space_after_pt": 0.0, "tracking_pt": 0.0, "case": "as_typed",

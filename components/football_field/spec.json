@@ -1,0 +1,87 @@
+{
+ "kind": "football_field",
+ "description": "Valuation ranges per method on one shared horizontal axis, with a marker for the reference price. The axis is the slide's only coordinate system: every bar is a flex weight, so the component scales to any box without a number in EMU.",
+ "data_schema": {
+  "axis": {
+   "min": "number",
+   "max": "number",
+   "format": "python format string, e.g. ${:,.2f}",
+   "ticks": "list of numbers (optional)"
+  },
+  "rows": [
+   {
+    "label": "string",
+    "low": "number",
+    "high": "number",
+    "note": "string (optional)"
+   }
+  ],
+  "marker": {
+   "label": "string",
+   "value": "number"
+  },
+  "_id": "instance id prefix, set by the slide"
+ },
+ "size_domain_emu": {
+  "width": [
+   3200400,
+   9144000
+  ],
+  "height": [
+   1371600,
+   5486400
+  ],
+  "height_rule": "at least rows x (one label line pitch + space.xs + bar height) + marker line + axis + tick line; the compact variant uses the caption pitch and a space.xs bar"
+ },
+ "variants": {
+  "wide": "label column beside the bars",
+  "narrow": "label above each bar"
+ },
+ "roles_used": [
+  "type.body",
+  "type.caption",
+  "type.kicker",
+  "color.accent1",
+  "color.accent2",
+  "color.rule",
+  "color.ink_muted",
+  "space.xs",
+  "space.sm"
+ ],
+ "tests": {
+  "shown": [
+   {
+    "name": "half-page-wide",
+    "box": {
+     "width_emu": 4572000,
+     "height_emu": 2743200
+    },
+    "data": "data-shown.json"
+   },
+   {
+    "name": "full-width-band",
+    "box": {
+     "width_emu": 8229600,
+     "height_emu": 1828800
+    },
+    "data": "data-shown.json"
+   },
+   {
+    "name": "tall-rail",
+    "box": {
+     "width_emu": 3200400,
+     "height_emu": 4114800
+    },
+    "data": "data-shown.json"
+   }
+  ],
+  "held_out": {
+   "name": "narrow-seven-rows",
+   "box": {
+    "width_emu": 3657600,
+    "height_emu": 4114800
+   },
+   "data": "data-heldout.json"
+  }
+ }
+}

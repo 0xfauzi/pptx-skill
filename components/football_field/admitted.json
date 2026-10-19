@@ -1,0 +1,24 @@
+{
+ "kind": "football_field",
+ "checked_boxes": [
+  {
+   "width_emu": 4572000,
+   "height_emu": 2743200
+  },
+  {
+   "width_emu": 8229600,
+   "height_emu": 1828800
+  },
+  {
+   "width_emu": 3200400,
+   "height_emu": 4114800
+  },
+  {
+   "width_emu": 3657600,
+   "height_emu": 4114800
+  }
+ ],
+ "held_out_passed": true,
+ "sheet": "/tmp/claude-0/-home-user-deckgen/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/e2e/components/football_field.sheet.png",
+ "judge_total": 0.27
+}

@@ -81,6 +81,78 @@ def title_band_emu(guide: dict) -> int | None:
     return int(rule_top - top_margin)
 
 
+PRESENTATION_KEYS = ("fill_role", "line_role", "pad_role", "prst", "line_width_emu", "anchor", "ink_role", "dash", "_spacer")
+
+
+def normalise(node: dict, slide: dict) -> dict:
+    """Move presentation keys off tree nodes into the slide's styling tables (the solver
+    reads geometry and roles only), turn `rect` into a sized `image` carrying its fill, and
+    mark spacers so the emitter skips them."""
+    node = dict(node)
+    styling = slide.setdefault("styling", {})
+    if node.get("type") == "region":
+        st = {k: node.pop(k) for k in list(node) if k in PRESENTATION_KEYS}
+        if st:
+            styling.setdefault(node["id"], {}).update(st)
+        node["children"] = [normalise(c, slide) for c in node.get("children", [])]
+        return node
+    if node.get("type") == "component":
+        return node
+    st = {k: node.pop(k) for k in list(node) if k in PRESENTATION_KEYS}
+    if node.get("kind") == "rect":
+        node["kind"] = "image"
+        slide.setdefault("rects", {})[node["id"]] = {k: v for k, v in st.items() if k in ("fill_role", "line_role", "prst", "line_width_emu", "dash")}
+        st = {k: v for k, v in st.items() if k not in ("fill_role", "line_role", "prst", "line_width_emu", "dash")}
+    if st.get("_spacer"):
+        node["kind"] = "image"
+        slide.setdefault("spacers", set()).add(node["id"])
+        st.pop("_spacer")
+    if st:
+        styling.setdefault(node["id"], {}).update(st)
+    return node
+
+
+def load_component(kind: str):
+    import importlib.util
+    root = Path(__file__).resolve().parent.parent / "components" / kind
+    spec_file = root / "expand.py"
+    if not spec_file.exists():
+        raise SystemExit(f"component {kind!r}: no components/{kind}/expand.py")
+    module_spec = importlib.util.spec_from_file_location(f"component_{kind}", spec_file)
+    module = importlib.util.module_from_spec(module_spec)  # type: ignore[arg-type]
+    module_spec.loader.exec_module(module)  # type: ignore[union-attr]
+    return module.expand
+
+
+def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None) -> tuple[dict, bool]:
+    """Replace component nodes. With no boxes yet, each becomes a flexible placeholder so a
+    probe solve can learn its box; with boxes, each is expanded at its box."""
+    pending = False
+
+    def visit(node: dict) -> dict:
+        nonlocal pending
+        if node.get("type") == "region":
+            node = dict(node)
+            node["children"] = [visit(c) for c in node.get("children", [])]
+            return node
+        if node.get("type") == "component":
+            box = (boxes or {}).get(node["id"])
+            if box is None:
+                pending = True
+                return {"type": "element", "id": node["id"], "kind": "image", "weight": node.get("weight")}
+            data = dict(node.get("data", {}))
+            data["_id"] = node["id"]
+            sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide)
+            sub = normalise(sub, slide)
+            sub["weight"] = node.get("weight")
+            if sub.get("id") != node["id"]:
+                raise SystemExit(f"component {node['kind']}: expand must return a region whose id is the instance id {node['id']!r}")
+            return sub
+        return node
+
+    return visit(tree), pending
+
+
 def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
     """The solver's boxes and measured lines, joined with the slide's styling, charts,
     images and rules, into the emitter's flat element list."""
@@ -102,6 +174,8 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
                 visit(child)
             return
         nid = node["id"]
+        if nid in slide.get("spacers", set()):
+            return
         box = resolved["boxes"].get(nid)
         if box is None:
             raise SystemExit(f"{nid}: no box in the resolved layout")
@@ -153,6 +227,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     report = {"out": out, "ruler": ruler.name, "slides": []}
     for slide in deck["slides"]:
         spec_raw = json.loads(json.dumps(slide["spec"]))
+        spec_raw["root"] = normalise(spec_raw["root"], slide)
         page = spec_raw.setdefault("page", {})
         page.setdefault("width_emu", guide["reference"]["page"]["width_emu"])
         page.setdefault("height_emu", guide["reference"]["page"]["height_emu"])
@@ -167,6 +242,13 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             top_margin = (guide.get("spacing", {}).get("margins", {}).get("top") or {}).get("emu") or pad_top
             root_children[0]["size"] = {"width_emu": None, "height_emu": max(1, band - max(0, pad_top - top_margin))}
             root_children[0]["scale_class"] = "fixed"
+        # components: probe once with placeholders to learn their boxes, then expand at those boxes
+        tree, pending = expand_components(spec_raw["root"], slide, guide, None)
+        if pending:
+            probe_spec = L.parse_spec({**spec_raw, "root": tree})
+            probe_boxes = L.solve_tree(probe_spec, lg, 1.0)
+            tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()})
+        spec_raw["root"] = tree
         spec = L.parse_spec(spec_raw)
         ctx = L.Context(lg, ruler, index, spec)
         outcome = L.descend(ctx)
