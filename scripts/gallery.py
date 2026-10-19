@@ -5,7 +5,7 @@ text-free skeleton of each exemplar.
 
     gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json]
 
-Writes DIR/pages/slide-NN.png and fonts.json (render.py's output), then
+Writes DIR/pages/slide-NN.png + fonts.json (render.py's output), then
 DIR/crops/crop-NN.png, DIR/exemplars/ex-NN.png + ex-NN.skeleton.json,
 DIR/manifest.json and DIR/MANIFEST.md.
 
@@ -22,12 +22,12 @@ output looked nice: no crop is evidence that a component is well designed, only
 that it carries arrangement the numeric guide cannot state and is big enough to
 read.
 
---guide takes extract_style.py's guide JSON and uses two things from it: the
-mined gutter (the grouping threshold becomes min(ceiling, gutter // 2), which is
-what protects a deck laid out tighter than the corpus) and the per-shape
-evidence behind every mined token (when the crop cap binds, crops are chosen by
-greedy set cover over the tokens they show, so the cut loses no mined style).
-Without a guide the ceiling alone groups and the cut falls back to recurrence.
+--guide takes extract_style.py's guide JSON for two things: the mined gutter
+(the grouping threshold becomes min(ceiling, gutter // 2), protecting a deck
+laid out tighter than the corpus) and the per-shape evidence behind each mined
+token (when the crop cap binds, crops are chosen by greedy set cover over the
+tokens they show). Without a guide the ceiling groups and the cut falls back to
+recurrence.
 """
 
 from __future__ import annotations
@@ -59,24 +59,21 @@ Box = tuple[int, int, int, int]  # x, y, width, height in EMU
 
 COMPONENT_GAP_EMU = 114_300
 # 9 pt, a CEILING. Measured (S1B3 part 2): nearest-neighbour gaps between content
-# shapes on the corpus are bimodal and the 1 pt bins [8,9) and [9,10) are empty on
-# all three decks; component counts are identical at 8, 9 and 10 pt (96/74/46)
-# and 12 pt starts merging. Points, not a page fraction: gutters are set in
-# points. A deck laid out tighter than 9 pt has no band there (a 6 pt KPI grid
-# chains all its tiles), so the threshold is min(ceiling, mined gutter // 2).
+# shapes on the corpus are bimodal with the 1 pt bins [8,9) and [9,10) empty on
+# all three decks; counts are identical at 8, 9 and 10 pt (96/74/46), 12 pt
+# merges. Points, not a page fraction: gutters are set in points. A deck laid
+# out tighter has no band there (a 6 pt grid chains all its tiles), hence the
+# min(ceiling, mined gutter // 2) rule in component_gap_emu.
 COMPONENT_SIMILARITY_TAU = 0.95
-# Two components are the SAME crop at or above this. A judgement bounded by
+# Two components are the SAME crop at or above this: a judgement bounded by
 # measurement (S1B3 part 2): no valley in pairwise similarity, adjacent-threshold
-# agreement 100% at 0.95-1.00, and at 0.70 components of visibly different
-# proportion collapse into one crop. Up to 35% of one deck's crops change
-# across 0.70-1.00.
+# agreement 100% at 0.95-1.00, and at 0.70 visibly different proportions collapse.
 ARCHETYPE_IOU_THRESHOLD = 0.5  # slide families: the PASCAL VOC match criterion
 MOTIF_MIN_OCCURRENCES = 2  # definition, not measurement: the smallest count that is "recurring"
 MIN_CROP_AREA_PX = 200 * 200
-# AREA floor in raster pixels, from deckgen's engineering guidance ("models
-# hallucinate under ~200px images"). Area, not short side: the short-side
-# reading rejected the 1748x148 header banner that is each corpus deck's most
-# repeated component (S1B3 part 4; recurring candidates 0 -> 11 on jazz).
+# AREA floor in raster pixels (deckgen engineering guidance: models hallucinate
+# under ~200px images). Area, not short side: the short-side reading rejected the
+# 1748x148 header banner that is each corpus deck's most repeated component.
 CROP_PAD_MIN_RASTER_PX = 2  # rounding at either edge cannot clip a boundary pixel
 GALLERY_POOL_MAX = 24  # provisional in deckgen (config/provisional.py), binds only on jazz
 EXEMPLAR_POOL_MAX = 8  # provisional in deckgen, binds only on jazz (13 families)
@@ -90,6 +87,14 @@ A, P = ooxml.A, ooxml.P
 NV_WRAPPERS = ("nvSpPr", "nvPicPr", "nvGraphicFramePr", "nvGrpSpPr", "nvCxnSpPr")
 INWARD_EFFECTS = frozenset({"softEdge", "innerShdw"})
 LINE_FILLS = frozenset({"solidFill", "gradFill", "pattFill"})
+FIDELITY_NOTES = {
+    "faithful": "Every declared font rendered with itself: letterforms and layout are both evidence.",
+    "metric_substituted": "**Every image is flagged `metric_substituted`.** The renderer drew metric-compatible aliases "
+    "(Liberation, Carlito, Caladea) for the declared faces: layout is faithful, letterforms are not. A designer reading "
+    "these images must NOT copy letterforms from them; take the typeface from the guide.",
+    "unknown_substitution": "**Every image is flagged `unknown_substitution`.** At least one declared font was drawn with "
+    "an unrelated substitute, so text extents, wrapping AND letterforms are not evidence. Read arrangement and colour only.",
+}
 
 
 class GalleryRefused(Exception):
@@ -99,7 +104,6 @@ class GalleryRefused(Exception):
 
 
 # --- the shape join -----------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class Leaf:
@@ -143,7 +147,7 @@ def _cnv_id(element: etree._Element) -> str:
     for wrapper in NV_WRAPPERS:
         cnv = element.find(f"{{{P}}}{wrapper}/{{{P}}}cNvPr")
         if cnv is not None:
-            return cnv.get("id", "?")
+            return str(cnv.get("id", "?"))
     return "?"
 
 
@@ -161,13 +165,9 @@ def _leaf_elements(container: etree._Element, prefix: str) -> Iterator[tuple[str
 
 
 def _leaf_kind(tag: str, shape: ooxml.Shape) -> str:
-    if tag == "pic":
-        return "image"
-    if tag == "cxnSp":
-        return "connector"
     if tag == "graphicFrame":
         return shape.kind if shape.kind in ("table", "chart") else "graphic"
-    return "shape"
+    return {"pic": "image", "cxnSp": "connector"}.get(tag, "shape")
 
 
 def _ink_reach(element: etree._Element, shape: ooxml.Shape) -> tuple[int, bool]:
@@ -213,7 +213,7 @@ def join_deck(path: Path) -> Deck:
                 "shape_join", f"{print_.part}: {len(elements)} leaves in the XML against {len(print_.shapes)} from ooxml.py"
             )
         leaves: list[Leaf] = []
-        for (ref, element), shape in zip(elements, print_.shapes):
+        for (ref, element), shape in zip(elements, print_.shapes, strict=True):
             if ref.rsplit("id=", 1)[1].rstrip(")") != shape.ref.rsplit("id=", 1)[1].rstrip("]"):
                 raise GalleryRefused("shape_join", f"{print_.part}: {ref} paired with {shape.ref}")
             reach, lined = _ink_reach(element, shape)
@@ -241,11 +241,10 @@ def join_deck(path: Path) -> Deck:
 def content_leaves(slide: Slide) -> list[Leaf]:
     """Leaves with geometry, chrome dropped, sorted by ref: deckgen's shape join
     sorts its keys, and that order fixes which member names a component."""
-    return sorted((leaf for leaf in slide.leaves if leaf.bounds is not None and not leaf.chrome), key=lambda l: l.ref)
+    return sorted((leaf for leaf in slide.leaves if leaf.bounds is not None and not leaf.chrome), key=lambda leaf: leaf.ref)
 
 
 # --- geometry ------------------------------------------------------------------------------
-
 
 def visual_extent(bounds: Box, rotation: int) -> Box:
     """The axis-aligned box a rotated shape occupies: OOXML rotates about the
@@ -334,7 +333,6 @@ def structural_medoid(members: Sequence[int], groups: Sequence[Sequence[Box]], l
 
 # --- components and the two filters -------------------------------------------------------
 
-
 @dataclass(frozen=True)
 class Component:
     slide: Slide
@@ -358,6 +356,13 @@ class Component:
         return self.slide.index, self.members[0].ref
 
 
+def _find(parent: list[int], node: int) -> int:
+    while parent[node] != node:
+        parent[node] = parent[parent[node]]
+        node = parent[node]
+    return node
+
+
 def components(deck: Deck, slides: Sequence[Slide], gap_emu: int) -> list[Component]:
     """Single-linkage grouping of each slide's content leaves by occupied-box gap.
     A component with no area on the page is dropped: its crop would be a
@@ -367,22 +372,15 @@ def components(deck: Deck, slides: Sequence[Slide], gap_emu: int) -> list[Compon
         keys = content_leaves(slide)
         extents = [extent_of(leaf) for leaf in keys]
         parent = list(range(len(keys)))
-
-        def find(node: int) -> int:
-            while parent[node] != node:
-                parent[node] = parent[parent[node]]
-                node = parent[node]
-            return node
-
         for i in range(len(keys)):
             for j in range(i + 1, len(keys)):
                 if box_gap_emu(extents[i], extents[j]) <= gap_emu:
-                    root_i, root_j = find(i), find(j)
+                    root_i, root_j = _find(parent, i), _find(parent, j)
                     if root_i != root_j:
                         parent[max(root_i, root_j)] = min(root_i, root_j)
         grouped: dict[int, list[int]] = {}
         for index in range(len(keys)):
-            grouped.setdefault(find(index), []).append(index)
+            grouped.setdefault(_find(parent, index), []).append(index)
         for root in sorted(grouped):
             indices = sorted(grouped[root])
             boxes = [extents[i] for i in indices]
@@ -404,12 +402,9 @@ def is_substantive(component: Component) -> bool:
     return component.run_count > 1
 
 
-def crop_area_px(box: Box, emu_per_px: float) -> float:
-    return (box[2] / emu_per_px) * (box[3] / emu_per_px)
-
-
 def is_legible(box: Box, emu_per_px: float) -> bool:
-    return crop_area_px(box, emu_per_px) >= MIN_CROP_AREA_PX
+    """Judged on the crop that will actually be sent (padded, clamped), in pixels."""
+    return (box[2] / emu_per_px) * (box[3] / emu_per_px) >= MIN_CROP_AREA_PX
 
 
 def normalized_members(component: Component) -> list[Box]:
@@ -464,10 +459,10 @@ def select(
     """One crop per cluster with a showable member, the medoid of the showable
     ones. Clustering ran over ALL components so a cluster's size is the deck's
     true repetition count; only the representative must pass the filters. When
-    the cap binds: greedy set cover over the mined tokens the candidates are
-    evidence for (S1B3 part 4: recurrence ordering lost ten mined tokens on jazz,
-    coverage ordering lost none), ties by recurrence, part count, deck order.
-    With no evidence index every candidate covers nothing and the ties decide."""
+    the cap binds: greedy set cover over the mined tokens the candidates show
+    (S1B3 part 4: recurrence ordering lost ten mined tokens on jazz, coverage
+    lost none), ties by recurrence, part count, deck order; with no evidence
+    index every candidate covers nothing and the ties decide."""
     candidates: list[Candidate] = []
     for cluster_index, (_anchor, members) in enumerate(clusters):
         eligible = [index for index in members if keep(index)]
@@ -490,7 +485,6 @@ def select(
 
 
 # --- cropping --------------------------------------------------------------------------------
-
 
 def crop_box(component: Component, pad_floor_emu: int, deck: Deck) -> Box:
     """The component box grown by the pad and clamped to the page. Each member's
@@ -522,7 +516,6 @@ def cut(page_png: Path, box: Box, deck: Deck, target: Path) -> tuple[int, int]:
 
 
 # --- captions (deckgen's wording, byte for byte) ------------------------------------------
-
 
 def _plural(count: int, noun: str) -> str:
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
@@ -574,31 +567,17 @@ def caption(candidate: Candidate, box: Box) -> str:
     )
 
 
-def caption_facts(candidate: Candidate, box: Box) -> dict[str, object]:
-    """The same facts machine-readable, so a model-written caption cannot contradict them."""
-    component = candidate.component
-    return {
-        "name": crop_name(component, candidate.occurrences),
-        "slide_number": component.slide.index + 1,
-        "kind_mix": dict(sorted(Counter(component.kinds).items())),
-        "roles": sorted({role for role in component.roles if role != "none"}),
-        "part_count": len(component.members),
-        "run_count": component.run_count,
-        "categories": list(candidate.categories),
-        "occurrences": candidate.occurrences,
-        "width_in": round(box[2] / EMU_PER_INCH, 2),
-        "height_in": round(box[3] / EMU_PER_INCH, 2),
-    }
-
-
 # --- exemplars --------------------------------------------------------------------------------
+
+def _declared_boxes(slides: Sequence[Slide]) -> list[list[Box]]:
+    return [[leaf.bounds for leaf in content_leaves(slide) if leaf.bounds is not None] for slide in slides]
 
 
 def slide_families(slides: Sequence[Slide]) -> list[tuple[int, list[int]]]:
     """Leader clustering of slides on their DECLARED content boxes, unlabelled, at
     the archetype threshold. The declared rectangle, not the occupied one: this is
     layout as authored, and extract_style.py's archetypes are numbered the same way."""
-    return leader_clusters([[leaf.bounds for leaf in content_leaves(slide) if leaf.bounds is not None] for slide in slides])
+    return leader_clusters(_declared_boxes(slides))
 
 
 def skeleton(slide: Slide, deck: Deck) -> dict[str, object]:
@@ -612,7 +591,7 @@ def skeleton(slide: Slide, deck: Deck) -> dict[str, object]:
                 "ref": leaf.ref,
                 "kind": leaf.kind,
                 "role": leaf.role,
-                "box": dict(zip(("x_emu", "y_emu", "width_emu", "height_emu"), extent_of(leaf))),
+                "box": dict(zip(("x_emu", "y_emu", "width_emu", "height_emu"), extent_of(leaf), strict=True)),
                 "runs": leaf.runs,
                 "filled": leaf.filled,
                 "lined": leaf.lined,
@@ -625,17 +604,14 @@ def skeleton(slide: Slide, deck: Deck) -> dict[str, object]:
 
 def select_exemplars(slides: Sequence[Slide], budget: int) -> list[tuple[int, Slide, int]]:
     """(family index, representative slide, family size), biggest families first.
-    Numbering follows first appearance and the cap is applied after numbering, so
-    dropping a small family never renumbers the ones that stay. The representative
-    is the family's medoid, not its anchor: the anchor is only the earliest slide."""
-    boxes = [[leaf.bounds for leaf in content_leaves(slide) if leaf.bounds is not None] for slide in slides]
-    families = slide_families(slides)
-    ranked = sorted(enumerate(families), key=lambda entry: (-len(entry[1][1]), entry[1][0]))
+    Numbered by first appearance BEFORE the cap, so dropping a small family never
+    renumbers the rest; the representative is the medoid, not the earliest slide."""
+    boxes = _declared_boxes(slides)
+    ranked = sorted(enumerate(leader_clusters(boxes)), key=lambda entry: (-len(entry[1][1]), entry[1][0]))
     return [(index, slides[structural_medoid(members, boxes, None)], len(members)) for index, (_anchor, members) in ranked[:budget]]
 
 
 # --- the guide, when one is given -------------------------------------------------------------
-
 
 def read_guide(path: Path) -> tuple[int | None, EvidenceIndex]:
     """The mined gutter and an inverted evidence index: which mined tokens each
@@ -676,7 +652,6 @@ def component_gap_emu(gutter_emu: int | None) -> int:
 
 # --- rendering (render.py) --------------------------------------------------------------------
 
-
 def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], dict[str, dict[str, object]]]:
     out.mkdir(parents=True, exist_ok=True)
     fonts = render.font_report(render.declared_fonts(deck_path))
@@ -699,7 +674,6 @@ def render_fidelity(fonts: dict[str, dict[str, object]]) -> str:
 
 
 # --- the pipeline ------------------------------------------------------------------------------
-
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -726,7 +700,7 @@ def build(
     pages, fonts = render_pages(deck_path, out / "pages", width)
     if len(pages) != len(shown):
         raise GalleryRefused("page_count_mismatch", f"{len(pages)} rendered pages against {len(shown)} visible slides")
-    page_of = {slide.index: page for slide, page in zip(shown, pages)}
+    page_of = {slide.index: page for slide, page in zip(shown, pages, strict=True)}
     fidelity = render_fidelity(fonts)
     with Image.open(pages[0]) as first:
         raster_w, raster_h = first.size
@@ -753,11 +727,13 @@ def build(
         shutil.rmtree(out / generated, ignore_errors=True)
         (out / generated).mkdir(parents=True)
     crops: list[dict[str, object]] = []
+    crop_rows: list[str] = []
     for position, candidate in enumerate(chosen):
         component, box = candidate.component, boxes[candidate.index]
         gallery_id = f"crop-{position + 1:02d}"
         target = out / "crops" / f"{gallery_id}.png"
         size = cut(page_of[component.slide.index], box, deck, target)
+        text = caption(candidate, box)
         crops.append(
             {
                 "gallery_id": gallery_id,
@@ -766,17 +742,20 @@ def build(
                 "pixel_size": list(size),
                 "source_slide_index": component.slide.index,
                 "slide_render_file": f"pages/{page_of[component.slide.index].name}",
-                "crop_box_emu": dict(zip(("left", "top", "width", "height"), box)),
-                "caption": caption(candidate, box),
-                "caption_facts": caption_facts(candidate, box),
+                "crop_box_emu": dict(zip(("left", "top", "width", "height"), box, strict=True)),
+                "caption": text,
                 "categories": list(candidate.categories),
                 "cluster_id": f"comp-{candidate.cluster + 1}",
                 "occurrences": candidate.occurrences,
                 "members": [leaf.ref for leaf in component.members],
             }
         )
+        crop_rows.append(
+            f"| `{gallery_id}` | {component.slide.index + 1} | {', '.join(candidate.categories)} | {candidate.occurrences} | {text} |"
+        )
     exemplars: list[dict[str, object]] = []
-    for family_index, slide, size_ in select_exemplars(shown, exemplar_max):
+    exemplar_rows: list[str] = []
+    for family_index, slide, family_size in select_exemplars(shown, exemplar_max):
         exemplar_id = f"ex-{family_index + 1:02d}"
         png = out / "exemplars" / f"{exemplar_id}.png"
         shutil.copyfile(page_of[slide.index], png)
@@ -790,10 +769,21 @@ def build(
                 "render_sha256": _sha256(png),
                 "slide_family": f"family-{family_index + 1}",
                 "cluster_id": f"arch-{family_index + 1}",
-                "family_size": size_,
+                "family_size": family_size,
                 "source_slide_index": slide.index,
             }
         )
+        exemplar_rows.append(f"| `{exemplar_id}` | {slide.index + 1} | `family-{family_index + 1}` | {family_size} |")
+    totals = {
+        "slides": len(deck.slides),
+        "hidden_slides": len(deck.slides) - len(shown),
+        "components": len(found),
+        "candidates": sum(survives),
+        "clusters": len(clusters),
+        "crops": len(crops),
+        "families": len(slide_families(shown)),
+        "exemplars": len(exemplars),
+    }
     # No wall-clock timestamp: a rebuild that changed nothing is an empty diff.
     manifest: dict[str, object] = {
         "schema_version": 2,
@@ -814,46 +804,38 @@ def build(
             "guide": str(guide_path) if guide_path else None,
             "mined_gutter_emu": gutter,
         },
-        "totals": {
-            "slides": len(deck.slides),
-            "hidden_slides": len(deck.slides) - len(shown),
-            "components": len(found),
-            "candidates": sum(survives),
-            "clusters": len(clusters),
-            "crops": len(crops),
-            "families": len(slide_families(shown)),
-            "exemplars": len(exemplars),
-        },
+        "totals": totals,
         "component_gap_emu_used": gap_emu,
         "crops_per_slide": dict(sorted(Counter(c.component.slide.index + 1 for c in chosen).items())),
         "crops": crops,
         "exemplars": exemplars,
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
-    (out / "MANIFEST.md").write_text(manifest_markdown(manifest))
+    (out / "MANIFEST.md").write_text(manifest_markdown(manifest, totals, fonts, crop_rows, exemplar_rows))
     return manifest
 
 
-def manifest_markdown(m: dict[str, object]) -> str:
-    totals, fonts = m["totals"], m["fonts"]
-    assert isinstance(totals, dict) and isinstance(fonts, dict)
-    fidelity = m["render_fidelity"]
-    warning = {
-        "faithful": "Every declared font rendered with itself: letterforms and layout are both evidence.",
-        "metric_substituted": (
-            "**Every image is flagged `metric_substituted`.** The renderer drew metric-compatible "
-            "aliases (Liberation, Carlito, Caladea) in place of the declared faces, so layout is "
-            "faithful and letterforms are not. A designer reading these images must NOT copy "
-            "letterforms from them; take the typeface from the guide."
-        ),
-        "unknown_substitution": (
-            "**Every image is flagged `unknown_substitution`.** At least one declared font was drawn "
-            "with an unrelated substitute, so text extents, wrapping AND letterforms in these images "
-            "are not evidence. Read arrangement and colour only."
-        ),
-    }[str(fidelity)]
+def manifest_markdown(
+    manifest: dict[str, object],
+    totals: dict[str, int],
+    fonts: dict[str, dict[str, object]],
+    crop_rows: list[str],
+    exemplar_rows: list[str],
+) -> str:
+    """The gallery in words, so a reader can choose which images to look at."""
+    fidelity = str(manifest["render_fidelity"])
+    fields = (
+        ("reference sha256", f"`{manifest['reference_sha256']}`"),
+        ("render fidelity", f"`{fidelity}`"),
+        ("slides / hidden", f"{totals['slides']} / {totals['hidden_slides']}"),
+        ("components", str(totals["components"])),
+        ("candidates after the two filters", str(totals["candidates"])),
+        ("clusters / crops", f"{totals['clusters']} / {totals['crops']}"),
+        ("families / exemplars", f"{totals['families']} / {totals['exemplars']}"),
+        ("component gap used", f"{manifest['component_gap_emu_used']} EMU"),
+    )
     lines = [
-        f"# Gallery: {m['reference']}",
+        f"# Gallery: {manifest['reference']}",
         "",
         "Cropped renders of the deck's components and one whole-slide exemplar per",
         "composition family, selected by geometry alone. Nothing here is a design",
@@ -861,35 +843,29 @@ def manifest_markdown(m: dict[str, object]) -> str:
         "",
         "| Field | Value |",
         "|---|---|",
-        f"| reference sha256 | `{m['reference_sha256']}` |",
-        f"| render fidelity | `{fidelity}` |",
-        f"| slides / hidden | {totals['slides']} / {totals['hidden_slides']} |",
-        f"| components | {totals['components']} |",
-        f"| candidates after the two filters | {totals['candidates']} |",
-        f"| clusters / crops | {totals['clusters']} / {totals['crops']} |",
-        f"| families / exemplars | {totals['families']} / {totals['exemplars']} |",
-        f"| component gap used | {m['component_gap_emu_used']} EMU |",
+        *(f"| {label} | {value} |" for label, value in fields),
         "",
-        warning,
+        FIDELITY_NOTES[fidelity],
         "",
         "| declared font | rendered with | fidelity |",
         "|---|---|---|",
-    ]
-    lines += [f"| {face} | {entry['rendered_with']} | {entry['fidelity']} |" for face, entry in fonts.items()]
-    lines += ["", "## Crops", "", "| id | slide | labels | occurrences | caption |", "|---|---|---|---|---|"]
-    for crop in m["crops"]:  # type: ignore[union-attr]
-        lines.append(
-            f"| `{crop['gallery_id']}` | {crop['source_slide_index'] + 1} | {', '.join(crop['categories'])} "
-            f"| {crop['occurrences']} | {crop['caption']} |"
-        )
-    lines += ["", "## Exemplars", "", "| id | slide | family | slides in family |", "|---|---|---|---|"]
-    for ex in m["exemplars"]:  # type: ignore[union-attr]
-        lines.append(f"| `{ex['exemplar_id']}` | {ex['source_slide_index'] + 1} | `{ex['slide_family']}` | {ex['family_size']} |")
-    lines += [
+        *(f"| {face} | {entry['rendered_with']} | {entry['fidelity']} |" for face, entry in fonts.items()),
         "",
-        "Each exemplar is a whole-slide PNG plus a `.skeleton.json` of leaf boxes in EMU",
-        "with kind, role and run count. The skeleton carries NO document text. Each crop",
-        "row names the full-page render it was cut from (`slide_render_file`) in manifest.json.",
+        "## Crops",
+        "",
+        "| id | slide | labels | occurrences | caption |",
+        "|---|---|---|---|---|",
+        *crop_rows,
+        "",
+        "## Exemplars",
+        "",
+        "| id | slide | family | slides in family |",
+        "|---|---|---|---|",
+        *exemplar_rows,
+        "",
+        "Each exemplar is a whole-slide PNG plus a `.skeleton.json` of leaf boxes in EMU with kind,",
+        "role and run count and NO document text. Each crop row in manifest.json names the full-page",
+        "render it was cut from (`slide_render_file`).",
         "",
     ]
     return "\n".join(lines)
@@ -913,11 +889,7 @@ def main(argv: list[str]) -> int:
     except GalleryRefused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)
         return 2
-    print(
-        json.dumps(
-            {"out": str(out), "render_fidelity": manifest["render_fidelity"], "totals": manifest["totals"]}, indent=1
-        )
-    )
+    print(json.dumps({"out": str(out), "render_fidelity": manifest["render_fidelity"], "totals": manifest["totals"]}, indent=1))
     if manifest["render_fidelity"] != "faithful":
         print(f"WARNING: render fidelity is {manifest['render_fidelity']}; see MANIFEST.md before reading letterforms", file=sys.stderr)
     return 0

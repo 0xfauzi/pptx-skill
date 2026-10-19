@@ -333,6 +333,8 @@ class Run:
     words: int = 0
     bullet_glyph: str | None = None
     bullet_font: str | None = None
+    mar_l_emu: int | None = None  # paragraph left margin as resolved, bullets hang inside it
+    indent_emu: int | None = None
 
 
 @dataclass
@@ -719,6 +721,15 @@ class SlideWalker:
                 return None
             return g
 
+        def g_attr_int(attr: str):
+            def g(el: etree._Element) -> int | None:
+                v = el.get(attr)
+                try:
+                    return int(v) if v is not None else None
+                except ValueError:
+                    return None
+            return g
+
         def g_bufont(el: etree._Element) -> str | None:
             bf = el.find(_a("buFont"))
             return bf.get("typeface") if bf is not None else None
@@ -758,6 +769,8 @@ class SlideWalker:
             after = self._resolve_para(ppr, holders, level, g_spc("spcAft")) or 0.0
             bullet = self._resolve_para(ppr, holders, level, g_bullet) or "inherit"
             bufont = self._resolve_para(ppr, holders, level, g_bufont)
+            mar_l = self._resolve_para(ppr, holders, level, g_attr_int("marL"))
+            indent = self._resolve_para(ppr, holders, level, g_attr_int("indent"))
             ri = 0
             for r in para:
                 if _local(r) not in ("r", "fld"):
@@ -794,6 +807,7 @@ class SlideWalker:
                     row_class=row_class, text_sample=text.strip()[:40],
                     words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
                     bullet_font=(str(bufont) if bufont else None),
+                    mar_l_emu=mar_l if isinstance(mar_l, int) else None, indent_emu=indent if isinstance(indent, int) else None,
                 ))
                 ri += 1
         return total_chars

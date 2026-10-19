@@ -1150,14 +1150,21 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
             counts.append(len(lines))
         row_heights.append(required_row_height_emu(counts, hundredths(kind.entry.size_pt), hundredths(kind.entry.line_spacing * kind.entry.size_pt), padding, padding))
     total, budget = sum(row_heights), box.height + EMIT_SLACK_EMU
-    running, prefix = sum(row_heights[: table.header_rows]), 0
-    if running <= budget:
-        for height in row_heights[table.header_rows:]:
-            if running + height > budget:
-                break
-            running += height
-            prefix += 1
-    return TableFit(widths, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, prefix, box.width, table.header_rows, padding, header, cell)
+    return TableFit(widths, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, fitting_prefix(row_heights, table.header_rows, budget), box.width, table.header_rows, padding, header, cell)
+
+
+def fitting_prefix(row_heights: Sequence[int], header_rows: int, budget: int) -> int:
+    """The largest body-row prefix that fits `budget` under the header rows."""
+    running = sum(row_heights[:header_rows])
+    if running > budget:
+        return 0
+    prefix = 0
+    for height in row_heights[header_rows:]:
+        if running + height > budget:
+            break
+        running += height
+        prefix += 1
+    return prefix
 
 
 # --- the two-pass fixed point --------------------------------------------------------
@@ -1362,10 +1369,17 @@ def outcome_json(ctx: Context, outcome: Outcome) -> dict[str, Any]:
     if outcome.resolved is not None:
         out["resolved"] = resolved_json(ctx, outcome.resolved)
     if outcome.status == "unfittable":
+        resolved = outcome.resolved
+        # `fitting_row_prefix` is deckgen's: body rows that fit the PROBE box
+        # (the weight share) at the fitted widths. `rows_to_fit_slide` is the
+        # split cut: the prefix left once the slide's largest overshoot at
+        # scale_min is taken out of this table alone (other content unchanged).
+        overshoot = max((v.shortfall_emu or 0 for v in (resolved.violations if resolved else []) if v.code in ("containment", "exceeds_page")), default=0)
         out["unfittable"] = {
             "reason": outcome.reason, "scale_min": None if outcome.scale_min is None else str(outcome.scale_min),
+            "overshoot_emu": overshoot,
             "splittable_groups": [g.__dict__ for g in ctx.spec.groups],
-            "tables": {k: {"rows": len(f.row_heights) - f.header_rows, "fitting_row_prefix": f.fitting_row_prefix, "width_deficit_emu": f.width_deficit_emu} for k, f in (outcome.resolved.table_fits if outcome.resolved else {}).items()},
+            "tables": {k: {"rows": len(f.row_heights) - f.header_rows, "row_heights_emu": list(f.row_heights), "fitting_row_prefix": f.fitting_row_prefix, "rows_to_fit_slide": fitting_prefix(f.row_heights, f.header_rows, f.total_height_emu - overshoot + EMIT_SLACK_EMU), "width_deficit_emu": f.width_deficit_emu} for k, f in (resolved.table_fits if resolved else {}).items()},
         }
     return out
 
@@ -1388,7 +1402,10 @@ def _print_outcome(ctx: Context, outcome: Outcome) -> None:
     for v in resolved.violations:
         print(f"  violation {v.code} {v.node_id} {v.related_node_id or ''} shortfall={v.shortfall_emu} scale_fixable={v.scale_fixable}: {v.detail}")
     if outcome.status == "unfittable":
-        print(f"unfittable: {outcome.reason}; splittable groups: {[g.group_id for g in ctx.spec.groups]}")
+        report = outcome_json(ctx, outcome)["unfittable"]
+        print(f"unfittable: {outcome.reason}; overshoot {report['overshoot_emu']} EMU; splittable groups: {[g.group_id for g in ctx.spec.groups]}")
+        for node_id, info in report["tables"].items():
+            print(f"  table {node_id}: {info['rows']} body rows, fitting_row_prefix (probe box) {info['fitting_row_prefix']}, rows_to_fit_slide {info['rows_to_fit_slide']}")
 
 
 def build_context(spec_path: str, guide_path: str) -> Context:

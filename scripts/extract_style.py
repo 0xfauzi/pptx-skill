@@ -535,7 +535,10 @@ class Extractor:
             lvl_runs = [r for r in runs if r.level == lvl and r.bullet == "char"]
             if lvl_runs:
                 bullets[lvl] = {"glyph": modal([r.bullet_glyph for r in lvl_runs if r.bullet_glyph]),
-                                "font": modal([r.bullet_font for r in lvl_runs if r.bullet_font]), "runs": len(lvl_runs)}
+                                "font": modal([r.bullet_font for r in lvl_runs if r.bullet_font]), "runs": len(lvl_runs),
+                                "mar_l_emu": modal([r.mar_l_emu for r in lvl_runs if r.mar_l_emu is not None]),
+                                "hanging_emu": modal([-r.indent_emu for r in lvl_runs if r.indent_emu is not None])}
+        self._bullets = bullets
         # unresolved core roles
         for role in CORE_TYPE_ROLES:
             if role not in roles:
@@ -1196,6 +1199,15 @@ class Extractor:
         self.tables()
         self.charts()
         self.shapes_and_imagery()
+        # bullet indents bind to the nearest spacing step (the solver and emitter read roles, never EMU)
+        steps = self.guide.get("spacing", {}).get("steps", {})
+        for lvl, b in self._bullets.items():
+            for src, dst in (("mar_l_emu", "indent_role"), ("hanging_emu", "hanging_indent_role")):
+                v = b.get(src)
+                if v and steps:
+                    b[dst] = min(steps, key=lambda n: abs(steps[n]["emu"] - v))
+                elif b.get("mar_l_emu") and steps and dst == "hanging_indent_role":
+                    b[dst] = b.get("indent_role")
         # bind role inks and chrome colours to roles (after colour roles exist)
         for role, spec in self._roles.items():
             spec["ink_role"] = self.role_of(spec.get("ink")) if spec.get("ink") else None

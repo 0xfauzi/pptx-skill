@@ -1,0 +1,299 @@
+{
+ "slides": [
+  {
+   "id": "s1",
+   "layout": "Title and Content",
+   "notes": "Walk the board through the P/TBV comparison first.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "First Niagara is ~45% overvalued at the $11.40 offer"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "leftcol",
+         "weight": 1.0,
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "left",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "The deal only works with synergies above any precedent in the sector."
+            },
+            {
+             "role": "type.h2",
+             "text": "What the numbers say"
+            },
+            {
+             "role": "type.body",
+             "bullet_level": 0,
+             "text": "Implied P / TBV of 1.33x versus a 1.08x median for regional bank deals since 2012"
+            },
+            {
+             "role": "type.body",
+             "bullet_level": 0,
+             "text": "Cost synergies of 40% of non-interest expense are required to break even on EPS by FY26"
+            },
+            {
+             "role": "type.body",
+             "bullet_level": 0,
+             "text": "ROTCE of 9.0% trails KeyBank's 11.4% and the 10.5% peer median"
+            },
+            {
+             "role": "type.caption",
+             "text": "Peer set: 14 US regional banks with $10 to $50bn in assets"
+            }
+           ]
+          },
+          {
+           "type": "region",
+           "id": "takeaway-box",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "takeaway",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "text": "Recommendation: do not pursue at $11.40; re-engage below $9.00 or with a 20% synergy case that the board can underwrite"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "rightcol",
+         "weight": 1.0,
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "comps",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "deal",
+              "label": "Transaction",
+              "value_kind": "text"
+             },
+             {
+              "key": "ptbv",
+              "label": "P / TBV",
+              "value_kind": "number"
+             },
+             {
+              "key": "syn",
+              "label": "Synergies % NIE",
+              "value_kind": "percent"
+             },
+             {
+              "key": "prem",
+              "label": "Premium",
+              "value_kind": "percent"
+             }
+            ],
+            "rows": [
+             [
+              "KeyBank / First Niagara",
+              "1.33x",
+              "40%",
+              "26%"
+             ],
+             [
+              "BB&T / Susquehanna",
+              "1.58x",
+              "32%",
+              "39%"
+             ],
+             [
+              "M&T / Hudson City",
+              "0.86x",
+              "24%",
+              "12%"
+             ],
+             [
+              "Huntington / FirstMerit",
+              "1.72x",
+              "40%",
+              "31%"
+             ],
+             [
+              "Median (ex. deal)",
+              "1.58x",
+              "32%",
+              "31%"
+             ]
+            ],
+            "header_rows": 1
+           }
+          },
+          {
+           "type": "element",
+           "id": "chart",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company filings, FactSet as of 30 September 2015, Goldman Stanley analysis. Pro forma EPS assumes 75% of synergies phased by FY17."
+        }
+       ]
+      }
+     ]
+    },
+    "splittable_groups": [
+     {
+      "group_id": "comps-rows",
+      "kind": "table_row_range",
+      "node_ids": [
+       "comps"
+      ],
+      "row_range": {
+       "start": 0,
+       "end": 5
+      }
+     }
+    ]
+   },
+   "styling": {
+    "left": {
+     "paragraphs": {
+      "3": {
+       "runs": [
+        {
+         "text": "Cost synergies of "
+        },
+        {
+         "text": "40% of non-interest expense",
+         "emphasis": true
+        },
+        {
+         "text": " are required to break even on EPS by FY26"
+        }
+       ]
+      }
+     }
+    },
+    "comps": {
+     "totals_last_row": true
+    },
+    "takeaway-box": {
+     "fill_role": "color.accent1"
+    },
+    "takeaway": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    }
+   },
+   "charts": {
+    "chart": {
+     "chart_kind": "column",
+     "categories": [
+      "FY15",
+      "FY16",
+      "FY17",
+      "FY18"
+     ],
+     "series": [
+      {
+       "name": "Standalone EPS",
+       "values": [
+        1.05,
+        1.12,
+        1.21,
+        1.3
+       ]
+      },
+      {
+       "name": "Pro forma EPS",
+       "values": [
+        1.01,
+        1.09,
+        1.24,
+        1.36
+       ]
+      }
+     ],
+     "number_format": "$0.00",
+     "data_labels": true,
+     "legend": "b"
+    }
+   }
+  }
+ ]
+}
