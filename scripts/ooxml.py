@@ -332,6 +332,7 @@ class Run:
     text_sample: str = ""  # first characters, case evidence only
     words: int = 0
     bullet_glyph: str | None = None
+    bullet_font: str | None = None
 
 
 @dataclass
@@ -718,6 +719,10 @@ class SlideWalker:
                 return None
             return g
 
+        def g_bufont(el: etree._Element) -> str | None:
+            bf = el.find(_a("buFont"))
+            return bf.get("typeface") if bf is not None else None
+
         def g_bullet(el: etree._Element) -> str | None:
             for child in el:
                 name = _local(child)
@@ -752,6 +757,7 @@ class SlideWalker:
             before = self._resolve_para(ppr, holders, level, g_spc("spcBef")) or 0.0
             after = self._resolve_para(ppr, holders, level, g_spc("spcAft")) or 0.0
             bullet = self._resolve_para(ppr, holders, level, g_bullet) or "inherit"
+            bufont = self._resolve_para(ppr, holders, level, g_bufont)
             ri = 0
             for r in para:
                 if _local(r) not in ("r", "fld"):
@@ -787,6 +793,7 @@ class SlideWalker:
                     bullet=("char" if str(bullet).startswith("char:") else str(bullet)),
                     row_class=row_class, text_sample=text.strip()[:40],
                     words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
+                    bullet_font=(str(bufont) if bufont else None),
                 ))
                 ri += 1
         return total_chars

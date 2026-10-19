@@ -534,7 +534,8 @@ class Extractor:
         for lvl in range(0, 5):
             lvl_runs = [r for r in runs if r.level == lvl and r.bullet == "char"]
             if lvl_runs:
-                bullets[lvl] = {"glyph": modal([r.bullet_glyph for r in lvl_runs if r.bullet_glyph]), "runs": len(lvl_runs)}
+                bullets[lvl] = {"glyph": modal([r.bullet_glyph for r in lvl_runs if r.bullet_glyph]),
+                                "font": modal([r.bullet_font for r in lvl_runs if r.bullet_font]), "runs": len(lvl_runs)}
         # unresolved core roles
         for role in CORE_TYPE_ROLES:
             if role not in roles:
