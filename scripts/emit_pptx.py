@@ -116,6 +116,19 @@ class Guide:
         return int(entry["emu"])
 
 
+def _lum(hex_color: str) -> float:
+    def ch(v: int) -> float:
+        c = v / 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+
+
+def _contrast(a: str, b: str) -> float:
+    la, lb = _lum(a), _lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
 # --- xml helpers ----------------------------------------------------------------------------------
 
 
@@ -511,6 +524,25 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if el.get("number_format"):
                 dl.number_format = el["number_format"]
                 dl.number_format_is_linked = False
+            if kind.startswith("stacked"):
+                # a label inside a dark bar takes the inverse ink: WCAG 3:1 against its own fill
+                from pptx.enum.chart import XL_LABEL_POSITION
+                dl.position = XL_LABEL_POSITION.CENTER
+                inverse = guide.colors.get("color.ink_inverse", {}).get("hex") or "FFFFFF"
+                for si, series in enumerate(plot.series):
+                    fill_hex = palette[si % len(palette)]
+                    sdl = series.data_labels
+                    sdl.font.size = axis_size
+                    sdl.font.name = face
+                    sdl.show_value = True
+                    sdl.position = XL_LABEL_POSITION.CENTER
+                    if el.get("number_format"):
+                        sdl.number_format = el["number_format"]
+                        sdl.number_format_is_linked = False
+                    label_ink = axis_ink or "000000"
+                    if _contrast(label_ink, fill_hex) < 3.0:
+                        label_ink = inverse if _contrast(inverse, fill_hex) >= _contrast(label_ink, fill_hex) else label_ink
+                    sdl.font.color.rgb = RGBColor.from_string(label_ink.upper())
         if kind in ("column", "bar", "stacked_column", "stacked_bar"):
             plot.gap_width = int(el.get("gap_width", 60))
             if kind.startswith("stacked"):
@@ -578,11 +610,69 @@ def _copy_chrome_placeholders(slide, layout, wanted: set[str]) -> None:
                 cnv.set("id", str(max(int(c.get("id", "0")) for c in slide.shapes._spTree.iter(qn("p:cNvPr"))) + 1))
 
 
+def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int) -> None:
+    """For a reference without a master (a PDF): the guide's own chrome, drawn from the
+    observed hexes and positions. These are observed values of the reference, which is why
+    literal hexes are allowed here and nowhere else."""
+    n = max(1, guide_data.get("reference", {}).get("slides", 1))
+    for ch in guide_data.get("chrome", []):
+        if ch.get("slides_present", 0) < 0.5 * n:
+            continue
+        x, y, w, h = (int(v * 914400) for v in ch["box_in"])
+        kind = ch["kind"]
+        if kind == "rule":
+            width_emu = int(round((ch.get("line_width_pt") or 0.75) * EMU_PER_PT))
+            line = slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2))
+            line.name = ch["chrome_id"]
+            _set_line(line._element.spPr, ch.get("line_hex") or ch.get("fill_hex") or guide.colors.get("color.rule", {}).get("hex", "000000"), width_emu)
+        elif kind == "band" and ch.get("fill_hex"):
+            shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
+            shape.name = ch["chrome_id"]
+            style = shape._element.find(qn("p:style"))
+            if style is not None:
+                shape._element.remove(style)
+            _solid_fill(shape._element.spPr, ch["fill_hex"])
+            _set_line(shape._element.spPr, None, None)
+        elif kind in ("label", "page_number", "footer", "date") and (ch.get("text") or kind == "page_number"):
+            box_w = max(w, 457200)
+            if ch.get("anchor") == "slide_right" or x + w > 0.8 * page_w:
+                x = x + w - box_w  # keep the observed right edge: a wider box grows leftwards
+            tb = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(box_w), Emu(max(h, 152400)))
+            tb.name = ch["chrome_id"]
+            tf = tb.text_frame
+            _body_props(tf._txBody, "t")
+            p = tf.paragraphs[0]
+            style = ch.get("text_style") or {}
+            text = (ch.get("text") or "").replace("<page number>", "").strip()
+            if text:
+                run = p.add_run()
+                run.text = text
+                run.font.name = style.get("family") or guide.families.get("minor") or "Arial"
+                run.font.size = Pt(float(style.get("size_pt") or guide.roles.get("type.caption", {}).get("size_pt") or 9))
+                run.font.bold = bool(style.get("bold"))
+                if style.get("ink_hex"):
+                    run.font.color.rgb = RGBColor.from_string(style["ink_hex"].upper())
+            if kind == "page_number" or "<page number>" in (ch.get("text") or ""):
+                fld = etree.SubElement(p._p, qn("a:fld"))
+                fld.set("id", "{B6F15528-21DE-4FAA-801E-634DDDAF5B2F}")
+                fld.set("type", "slidenum")
+                rpr = etree.SubElement(fld, qn("a:rPr"))
+                rpr.set("sz", str(int(float(style.get("size_pt") or 9) * 100)))
+                if style.get("ink_hex"):
+                    sf = etree.SubElement(rpr, qn("a:solidFill"))
+                    etree.SubElement(sf, qn("a:srgbClr")).set("val", style["ink_hex"].upper())
+                etree.SubElement(rpr, qn("a:latin")).set("typeface", style.get("family") or guide.families.get("minor") or "Arial")
+                etree.SubElement(fld, qn("a:t")).text = "1"
+            if ch.get("anchor") == "slide_right" or x + box_w > 0.8 * page_w:
+                p.alignment = PP_ALIGN.RIGHT
+
+
 def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> dict:
     guide = Guide(guide_data)
     prs = Presentation(template)
     if len(prs.slides):
         raise SpecError("template still has slides; make it with pptx_tools.py template")
+    surface = guide.colors.get("color.surface", {}).get("hex")
     wanted_chrome: set[str] = set()
     if chrome == "auto":
         n = max(1, guide_data.get("reference", {}).get("slides", 1))
@@ -638,6 +728,19 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
                 raise SpecError(f"{el.get('id')}: unknown element kind {kind!r}")
         if wanted_chrome:
             _copy_chrome_placeholders(slide, layout, wanted_chrome)
+        if chrome == "draw":
+            if surface and surface.upper() != "FFFFFF":
+                slide.background.fill.solid()
+                slide.background.fill.fore_color.rgb = RGBColor.from_string(surface.upper())
+            draw_chrome(slide, guide, guide_data, int(prs.slide_width), int(prs.slide_height))
+            # drawn chrome goes to the back of the z-order so content sits on top
+            tree = slide.shapes._spTree
+            chrome_ids = {ch["chrome_id"] for ch in guide_data.get("chrome", [])}
+            for el in list(tree):
+                cnv = el.find(".//" + qn("p:cNvPr"))
+                if cnv is not None and cnv.get("name") in chrome_ids:
+                    tree.remove(el)
+                    tree.insert(2, el)
         if sd.get("notes"):
             slide.notes_slide.notes_text_frame.text = sd["notes"]
         report["slides"].append({"slide": si, "layout": layout.name, "elements": len(sd.get("elements", []))})
@@ -651,7 +754,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--template", required=True)
     ap.add_argument("--guide", required=True)
     ap.add_argument("-o", "--out", required=True)
-    ap.add_argument("--chrome", default="auto", choices=["auto", "none"])
+    ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="draw: paint the guide's chrome and surface on every slide (PDF references, blank templates)")
     args = ap.parse_args(argv)
     spec = json.loads(Path(args.spec).read_text())
     guide = json.loads(Path(args.guide).read_text())

@@ -222,7 +222,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
     return out
 
 
-def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool) -> dict:
+def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto") -> dict:
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
     index = L.default_index()
@@ -236,6 +236,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         page.setdefault("height_emu", guide["reference"]["page"]["height_emu"])
         if "reserved_zones" not in page:
             page["reserved_zones"] = chrome_zones(guide)
+        if "bullet_indent_roles" not in spec_raw and not guide.get("typography", {}).get("bullets"):
+            # a reference with no bullets (a PDF, a deck of prose) gets the indent progression
+            # of the spacing scale: sm, md, lg (deckgen 4b row 1: continue the indent progression)
+            spec_raw["bullet_indent_roles"] = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
         band = title_band_emu(guide)
         root_children = spec_raw.get("root", {}).get("children", [])
         if band and root_children and root_children[0].get("kind") == "text" and root_children[0].get("paragraphs", [{}])[0].get("role") == "type.title" and "size" not in root_children[0]:
@@ -274,7 +278,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": flatten(slide, resolved, spec_raw)})
         report["slides"].append(entry)
-    emit_report = emit_slides(emit_spec, template, guide, out, "auto")
+    emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
     from pptx_tools import validate
     report["validation"] = validate(out, render=False)
@@ -311,10 +315,11 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--others", nargs="*", default=[])
     ap.add_argument("--renders", default=None)
     ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"])
     args = ap.parse_args(argv)
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
-    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render)
+    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome)
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: v for k, v in s.items() if k in ("id", "status", "scale", "violations", "text_lines", "tables", "reason")} for s in report["slides"]],
              "validation_ok": report.get("validation", {}).get("ok"), "problems": report.get("validation", {}).get("problems"),

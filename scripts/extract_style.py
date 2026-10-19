@@ -60,9 +60,10 @@ ALIGNMENT_EDGE_MIN_MEMBERS = 3
 ALIGNMENT_EDGE_CAP = 53
 EVIDENCE_CAP = 8
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
-# Product safety floors: the smallest size a LibreOffice render of the specimen stays legible at,
-# measured in deckgen docs/measurements/E45-decision.md (Arial 400/700 6.0pt; Calibri 400 6.5pt, 700 7.0pt).
-PRODUCT_SAFETY_FLOOR_PT = {"body": 6.0, "annotation": 6.0, "display": 6.0, "chart": 6.0}
+# Product safety floor: the smallest size the specimen stays legible at on both render media,
+# measured in deckgen docs/measurements/E45-decision.md (recorded 7.0 pt for display, body,
+# annotation and chart, Calibri 700 being the binding face). Never generate below it.
+PRODUCT_SAFETY_FLOOR_PT = {"body": 7.0, "annotation": 7.0, "display": 7.0, "chart": 7.0}
 CORE_TYPE_ROLES = ("type.title", "type.kicker", "type.h1", "type.h2", "type.body", "type.emphasis", "type.caption",
                    "type.footnote", "type.source_line", "type.table_header", "type.table_cell", "type.axis_label", "type.data_label")
 CORE_COLOR_ROLES = ("color.surface", "color.surface_alt", "color.ink", "color.ink_muted", "color.accent1", "color.accent2",
@@ -1229,7 +1230,7 @@ class Extractor:
                            "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam],
                            "provenance": observed([], len(vals), False, 1.0)}
         self.guide["floors"] = floors
-        self.guide["floors_note"] = "absolute_floor_pt: product safety floor measured in deckgen E45 on LibreOffice renders (Arial 6.0pt); never generate below max(floor_pt, absolute_floor_pt)"
+        self.guide["floors_note"] = "absolute_floor_pt: product safety floor measured in deckgen E45 (7.0pt, both render media); never generate below max(floor_pt, absolute_floor_pt)"
 
     # ---- assembly ----
     def run(self) -> dict:

@@ -1,0 +1,378 @@
+{
+ "slides": [
+  {
+   "id": "s1-exec",
+   "layout": "Blank",
+   "notes": "Open on the recommendation; the rest of the section is evidence.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Decline the $11.40 offer"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "left",
+         "kind": "text",
+         "weight": 1.0,
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Valuation"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "The $11.40 offer implies 1.33x P / TBV against a 1.08x regional median; every method on the football field tops out below $12.50 except the most generous precedent set"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Standalone DDM midpoint of $10.40 at a 9.25% cost of equity; the offer needs 40% cost synergies to be accretive by FY17"
+          },
+          {
+           "role": "type.h2",
+           "text": "Strategic fit"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "First Niagara is a pure-play commercial lender: 80% of revenue is net interest income versus 55% for KeyBank, which has spent a decade diversifying"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Geographic overlap is limited to western New York and Pennsylvania; no funding-cost or IP benefit"
+          },
+          {
+           "role": "type.h2",
+           "text": "Returns and capital"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "ROTCE of 9.0% and CET1 of 9.4% both trail KeyBank; the combined entity dilutes tangible book value per share by 11% at close with a 4.5-year earn-back"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "rightcol",
+         "weight": 0.9,
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kpis",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "Metric",
+              "value_kind": "text"
+             },
+             {
+              "key": "fnfg",
+              "label": "First Niagara",
+              "value_kind": "number"
+             },
+             {
+              "key": "key",
+              "label": "KeyBank",
+              "value_kind": "number"
+             },
+             {
+              "key": "peer",
+              "label": "Peer median",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "P / TBV at offer",
+              "1.33x",
+              "1.21x",
+              "1.08x"
+             ],
+             [
+              "ROTCE (LTM)",
+              "9.0%",
+              "11.4%",
+              "10.5%"
+             ],
+             [
+              "CET1 ratio",
+              "9.4%",
+              "10.6%",
+              "10.9%"
+             ],
+             [
+              "NII % revenue",
+              "80%",
+              "55%",
+              "68%"
+             ],
+             [
+              "Efficiency ratio",
+              "66%",
+              "64%",
+              "61%"
+             ],
+             [
+              "Cost synergies needed",
+              "40%",
+              "n.a.",
+              "25% to 32%"
+             ]
+            ],
+            "header_rows": 1
+           }
+          },
+          {
+           "type": "region",
+           "id": "takeaway-box",
+           "fill_role": "color.accent1",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "takeaway",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "ink_role": "color.ink_inverse",
+               "text": "Recommendation: decline; re-engage below $9.00 or with a synergy case the board can underwrite"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company filings, FactSet as of 30 September 2015, Goldman Stanley analysis."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "takeaway": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "kpis": {}
+   }
+  },
+  {
+   "id": "s3-football",
+   "layout": "Blank",
+   "notes": "The valuation page: every method on one axis against the offer.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Every method prices below the offer"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "component",
+         "id": "ff",
+         "kind": "football_field",
+         "weight": 1.3,
+         "data": {
+          "axis": {
+           "min": 6.0,
+           "max": 16.0,
+           "format": "${:,.0f}",
+           "ticks": [
+            6,
+            8,
+            10,
+            12,
+            14,
+            16
+           ]
+          },
+          "rows": [
+           {
+            "label": "52-week trading range",
+            "low": 8.2,
+            "high": 12.4
+           },
+           {
+            "label": "Analyst price targets",
+            "low": 9.0,
+            "high": 13.5
+           },
+           {
+            "label": "Trading comps (P / TBV 0.9x to 1.3x)",
+            "low": 7.6,
+            "high": 11.0
+           },
+           {
+            "label": "Trading comps (P / E 13x to 17x)",
+            "low": 8.1,
+            "high": 10.6
+           },
+           {
+            "label": "Precedent transactions",
+            "low": 9.4,
+            "high": 13.8
+           },
+           {
+            "label": "DDM (8.5% to 10.0% cost of equity)",
+            "low": 8.8,
+            "high": 12.1
+           },
+           {
+            "label": "DDM with 25% synergies",
+            "low": 10.2,
+            "high": 13.9
+           }
+          ],
+          "marker": {
+           "label": "Offer $11.40",
+           "value": 11.4
+          }
+         }
+        },
+        {
+         "type": "element",
+         "id": "commentary",
+         "kind": "text",
+         "weight": 0.7,
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "What the field says"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Standalone methods centre on $10.00 to $10.50; the offer is only inside the ranges that already assume synergies or the top of the precedent set"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "The 52-week high of $12.40 was set on takeover speculation in August and is not a fundamental anchor"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "A 20% synergy case supports $10.20 to $11.00, which is where re-engagement makes sense"
+          },
+          {
+           "role": "type.caption",
+           "text": "Ranges exclude the control premium; DDM uses a 1.5% terminal growth rate."
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: FactSet, Bloomberg consensus as of 30 September 2015, Goldman Stanley analysis."
+        }
+       ]
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -33,6 +33,7 @@ from pptx import Presentation
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.packuri import PackURI
 from pptx.oxml.ns import qn
+from pptx.util import Emu
 
 EMU_PER_INCH = 914400
 
@@ -384,9 +385,21 @@ def validate(path: str, render: bool) -> dict:
     return info
 
 
+def blank(out: str, width_emu: int, height_emu: int) -> dict:
+    """A slide-free package at the given page size with python-pptx's stock master, for a
+    reference that has no master to reuse (a PDF). The guide then supplies everything the
+    master would have: background, chrome, fonts; emit_pptx.py --chrome draw paints them."""
+    prs = Presentation()
+    prs.slide_width = Emu(width_emu)
+    prs.slide_height = Emu(height_emu)
+    prs.save(out)
+    return {"out": out, "width_emu": width_emu, "height_emu": height_emu, "layouts": [lay.name for lay in prs.slide_layouts]}
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("blank"); s.add_argument("-o", "--out", required=True); s.add_argument("--width-emu", type=int, required=True); s.add_argument("--height-emu", type=int, required=True)
     s = sub.add_parser("text"); s.add_argument("deck"); s.add_argument("--json", action="store_true")
     s = sub.add_parser("layouts"); s.add_argument("deck")
     s = sub.add_parser("template"); s.add_argument("deck"); s.add_argument("-o", "--out", required=True); s.add_argument("--keep", default="")
@@ -395,6 +408,8 @@ def main(argv: list[str]) -> int:
     s = sub.add_parser("clean"); s.add_argument("deck"); s.add_argument("-o", "--out", required=True)
     s = sub.add_parser("validate"); s.add_argument("deck"); s.add_argument("--render", action="store_true")
     args = ap.parse_args(argv)
+    if args.cmd == "blank":
+        print(json.dumps(blank(args.out, args.width_emu, args.height_emu))); return 0
     if args.cmd == "text":
         entries = slide_text(args.deck)
         print(json.dumps(entries, indent=1)) if args.json else print_text(entries)
