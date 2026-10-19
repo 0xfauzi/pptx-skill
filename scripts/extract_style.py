@@ -452,7 +452,10 @@ class Extractor:
                 continue
             lm = level_members[i]
             share = sum(1 for m in lm if m.caps or m.bold or m.text_sample.isupper()) / len(lm) if lm else 0.0
-            if share >= CASE_CONVENTION_SHARE and levels[i].count >= MIN_LEVEL_OBSERVATIONS:
+            cap_size = roles.get("type.caption", {}).get("size_pt", 0.0)
+            body_size = roles["type.body"]["size_pt"]
+            # a kicker sits between caption and body size: a tiny all-caps level is a footnote or a superscript
+            if share >= CASE_CONVENTION_SHARE and levels[i].count >= MIN_LEVEL_OBSERVATIONS and cap_size <= levels[i].representative <= body_size * 1.5:
                 bind("type.kicker", i, "inferred")
         # ladder interpolation (deckgen tokens.py:1872): an interior gap between two extracted
         # neighbours takes geometric steps; the size is the only derived member.
