@@ -330,6 +330,8 @@ class Run:
     bullet: str = "inherit"  # none | char | auto | inherit
     row_class: str | None = None  # header | data | totals for table runs
     text_sample: str = ""  # first characters, case evidence only
+    words: int = 0
+    bullet_glyph: str | None = None
 
 
 @dataclass
@@ -349,6 +351,7 @@ class Shape:
     text_chars: int = 0
     dash: str | None = None
     in_group: bool = False
+    text_inset_emu: tuple[int, int, int, int] | None = None  # lIns, tIns, rIns, bIns as declared, else None
 
 
 @dataclass
@@ -367,6 +370,7 @@ class TableObs:
     edges: dict[str, list[tuple[str | None, int]]] = field(default_factory=dict)  # class -> [(color, width_emu) | None-colour means no line]
     cell_margins_emu: list[tuple[int, int, int, int]] = field(default_factory=list)
     col_aligns: list[str] = field(default_factory=list)
+    col_numeric: list[float] = field(default_factory=list)  # share of data cells that parse as a figure
 
 
 @dataclass
@@ -720,7 +724,7 @@ class SlideWalker:
                 if name == "buNone":
                     return "none"
                 if name == "buChar":
-                    return "char"
+                    return "char:" + (child.get("char") or "")
                 if name == "buAutoNum":
                     return "auto"
                 if name == "buBlip":
@@ -779,8 +783,10 @@ class SlideWalker:
                     italic=bool(italic), caps=bool(caps),
                     size_layer=("autofit" if scaled else size_layer), face_layer=face_layer, color_layer=color_layer,
                     line_spacing=lnspc if isinstance(lnspc, float) else None,
-                    space_before_pt=float(before), space_after_pt=float(after), bullet=str(bullet),
+                    space_before_pt=float(before), space_after_pt=float(after),
+                    bullet=("char" if str(bullet).startswith("char:") else str(bullet)),
                     row_class=row_class, text_sample=text.strip()[:40],
+                    words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
                 ))
                 ri += 1
         return total_chars
@@ -994,6 +1000,7 @@ class SlideWalker:
         n = len(rows)
         edges: dict[str, list] = {k: [] for k in ("table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "column_interior", "table_right")}
         col_align: list[Counter] = [Counter() for _ in cols]
+        col_num: list[list[bool]] = [[] for _ in cols]
         grid: list[list[etree._Element | None]] = []
         for ri, tr in enumerate(rows):
             tcs = [tc for tc in tr if _local(tc) == "tc"]
@@ -1034,6 +1041,9 @@ class SlideWalker:
                     self._walk_text(txb, [(self.chain.default_text_style, "presentation")], "table", None, self.print.runs,
                                     surface, f"{ref}/tr[{ri}]/tc[{ci}]", "slide", row_class)
                     style_text = style.find(f"{_a('firstRow' if row_class == 'header' else 'wholeTbl')}/{_a('tcTxStyle')}") if style is not None else None
+                    cell_text = "".join(r.text_sample for r in self.print.runs[runs_before:]).strip()
+                    if row_class == "data" and cell_text:
+                        col_num[ci].append(bool(re.fullmatch(r"[\(\-\$\u20ac\u00a3]?\s*[\d,\.]+\s*[%x\)]?[A-Za-z]{0,2}", cell_text)))
                     for run in self.print.runs[runs_before:]:
                         col_align[ci][run.align] += run.chars
                         if style_text is not None:
@@ -1077,6 +1087,7 @@ class SlideWalker:
                 edges[klass].append(rule if rule is not None else (None, 0))
         obs.edges = edges
         obs.col_aligns = [c.most_common(1)[0][0] if c else "l" for c in col_align]
+        obs.col_numeric = [(sum(v) / len(v)) if v else 0.0 for v in col_num]
         self.print.tables.append(obs)
 
     # charts ----------------------------------------------------------------------------
@@ -1213,6 +1224,12 @@ class SlideWalker:
             cls = ph_class(ph[0]) if ph else "none"
             tx = sp.find(_p("txBody"))
             if tx is not None:
+                bpr = tx.find(_a("bodyPr"))
+                if bpr is not None and any(bpr.get(k) for k in ("lIns", "tIns", "rIns", "bIns")):
+                    try:
+                        shape.text_inset_emu = tuple(int(bpr.get(k, d)) for k, d in (("lIns", "91440"), ("tIns", "45720"), ("rIns", "91440"), ("bIns", "45720")))  # type: ignore[assignment]
+                    except ValueError:
+                        shape.text_inset_emu = None
                 run_sink = self.print.runs if with_text else self.print.chrome_runs
                 shape.text_chars = self._walk_text(tx, self._level_holders(sp, layer, ph), cls if with_text else "chrome",
                                                    ph[0] if ph else None, run_sink, surface, ref, layer)
