@@ -80,21 +80,22 @@ def expand(data: dict, box: dict, guide: dict) -> dict:
                    "layout": {"kind": "flex", "direction": "row", "gap_role": "space.xs", "pad_role": None, "align": "center", "justify": "start"},
                    "children": [label, track, value]}
         children.append(row)
-    # the axis and its ticks span exactly the bars' track, so they mirror a row's structure
-    ticks = axis.get("ticks") or [lo, hi]
+    # the axis and its ticks span exactly the bars' track, so they mirror a row's structure.
+    # Tick k labels the start of interval k (left-aligned); the last interval is split in
+    # two so the final tick can sit right-aligned at the track's end.
+    ticks = [float(t) for t in (axis.get("ticks") or [lo, hi])]
     tick_cells = []
-    prev = lo
-    for k, t in enumerate(ticks):
-        t = float(t)
-        if k:
-            tick_cells.append(_spacer(f"{pid}-tsp{k}", max(0.0001, t - prev)))
-        tick_cells.append({"type": "element", "id": f"{pid}-tk{k}", "kind": "text", "weight": 0.0001,
-                           "size": {"width_emu": None, "height_emu": None},
-                           "paragraphs": [{"role": "type.caption", "text": fmt.format(t), "align": "center"}]})
-        prev = t
+    for k in range(len(ticks) - 1):
+        span = max(0.0001, ticks[k + 1] - ticks[k])
+        last = k == len(ticks) - 2
+        tick_cells.append({"type": "element", "id": f"{pid}-tk{k}", "kind": "text", "weight": span / 2 if last else span,
+                           "paragraphs": [{"role": "type.caption", "text": fmt.format(ticks[k]), "align": "left"}]})
+        if last:
+            tick_cells.append({"type": "element", "id": f"{pid}-tk{k + 1}", "kind": "text", "weight": span / 2,
+                               "paragraphs": [{"role": "type.caption", "text": fmt.format(ticks[k + 1]), "align": "right"}]})
     tick_track = {"type": "region", "id": f"{pid}-ticktrack", "weight": 1.0,
                   "layout": {"kind": "flex", "direction": "row", "gap_role": "space.xs", "pad_role": None, "align": "start", "justify": "start"},
-                  "children": [c for c in tick_cells if c]}
+                  "children": tick_cells}
     axis_track = {"type": "element", "id": f"{pid}-axis", "kind": "rule", "line_role": "color.rule", "weight": 1.0, "size": {"width_emu": None, "height_emu": 1}}
 
     def tracked(track: dict, rid: str) -> dict:

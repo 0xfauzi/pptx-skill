@@ -217,6 +217,7 @@ class Guide:
     cell_padding_role: str | None
     cell_padding_emu: int | None
     bullet_indent_roles: dict[int, str]
+    substitutes: dict[str, str] = field(default_factory=dict)
 
 def _unwrap(value: Any) -> Any:
     if isinstance(value, dict) and "value" in value and "provenance" in value:
@@ -277,6 +278,7 @@ def load_guide(raw: Mapping[str, Any]) -> Guide:
             bullet_roles[int(spec["level"] if level is None else level)] = spec["indent_role"]
     return Guide(
         major=str(major), minor=str(minor), weight_faces=dict(families.get("weight_faces") or {}),
+        substitutes=dict(families.get("substitutes") or {}),
         steps=steps, baseline_emu=baseline, roles=roles, floor_by_role=floor_by_role,
         cell_padding_role=tables.get("cell_padding_role"),
         cell_padding_emu=None if tables.get("cell_padding_emu") is None else int(tables["cell_padding_emu"]),
@@ -509,11 +511,15 @@ def type_role(guide: Guide, role: str) -> TypeRole:
 
 def face_for_weight(guide: Guide, spec: TypeRole) -> tuple[str, bool]:
     """400 and 700 map to the OOXML bold toggle; any other weight needs a named
-    face in weight_faces, else a refusal (never collapsed to bold or regular)."""
+    face in weight_faces, else a refusal (never collapsed to bold or regular).
+    A face the sandbox lacks measures as the stand-in the guide names under
+    typography.families.substitutes (the completer's recorded choice), never as
+    a silent fallback."""
+    family = guide.substitutes.get(spec.family, spec.family)
     if spec.weight == 400:
-        return spec.family, False
+        return family, False
     if spec.weight == 700:
-        return spec.family, True
+        return family, True
     face = guide.weight_faces.get(f"{spec.family_token}:{spec.weight}") if spec.family_token else None
     if face is None:
         raise LayoutContractError(f"weight {spec.weight} has no named face in the guide and the bold toggle cannot express it")

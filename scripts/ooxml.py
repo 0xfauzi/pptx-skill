@@ -355,6 +355,7 @@ class Shape:
     dash: str | None = None
     in_group: bool = False
     text_inset_emu: tuple[int, int, int, int] | None = None  # lIns, tIns, rIns, bIns as declared, else None
+    text: str | None = None  # PDF text lines only: the line's text, for chrome detection (footers, page numbers)
 
 
 @dataclass
@@ -1345,6 +1346,10 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 break
             w, h = float(page.width), float(page.height)
             scale = 12700.0  # pt -> EMU so margins and areas share the pptx arithmetic
+            try:
+                page = page.dedupe_chars(tolerance=1)  # overprinted glyphs (fake bold) otherwise read twice
+            except Exception:  # noqa: BLE001 - older pdfplumber
+                pass
             sp = SlidePrint(name, i, int(w * scale), int(h * scale), None, source="pdf")
             # runs: consecutive chars sharing font, size and colour on one line
             key = None
@@ -1390,10 +1395,31 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 words = page.extract_words()
             except Exception:  # noqa: BLE001 - a malformed page still has rects
                 words = []
+            # words grouped into lines (same top within 2pt) carry their text, so a footer or a
+            # page number repeated at one position on most pages can be recognised as chrome
+            lines_by_top: dict[int, list[dict]] = {}
             for wd in words:
-                box = (int(float(wd["x0"]) * scale), int(float(wd["top"]) * scale),
-                       int((float(wd["x1"]) - float(wd["x0"])) * scale), int((float(wd["bottom"]) - float(wd["top"])) * scale))
-                sp.shapes.append(Shape("text_box", box, None, None, None, None, False, None, "slide"))
+                lines_by_top.setdefault(int(round(float(wd["top"]) / 2.0)), []).append(wd)
+            for _, line_words in sorted(lines_by_top.items()):
+                line_words.sort(key=lambda d: float(d["x0"]))
+                # a gap wider than three average character advances is a column break: a source
+                # line and a footer on one baseline are two lines, not one
+                segments: list[list[dict]] = [[line_words[0]]]
+                for prev, wd in zip(line_words, line_words[1:]):
+                    chars = max(1, len(str(prev["text"])))
+                    avg = (float(prev["x1"]) - float(prev["x0"])) / chars
+                    if float(wd["x0"]) - float(prev["x1"]) > 3.0 * max(avg, 2.0):
+                        segments.append([wd])
+                    else:
+                        segments[-1].append(wd)
+                for seg in segments:
+                    x0 = min(float(d["x0"]) for d in seg)
+                    x1 = max(float(d["x1"]) for d in seg)
+                    top = min(float(d["top"]) for d in seg)
+                    bottom = max(float(d["bottom"]) for d in seg)
+                    text = " ".join(str(d["text"]) for d in seg)
+                    box = (int(x0 * scale), int(top * scale), int((x1 - x0) * scale), int((bottom - top) * scale))
+                    sp.shapes.append(Shape("text_box", box, None, None, None, None, False, None, "slide", text_chars=len(text), text=text[:80]))
             out.append(sp)
     return out
 

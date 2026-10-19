@@ -365,19 +365,40 @@ class Extractor:
             seen = set()
             for sh in s.shapes:
                 # Only furniture can be chrome: rules, bands, pictures and the date/footer/number
-                # placeholders. A title repeated at one position is composition, not chrome.
-                if sh.box and (sh.ph_type in CHROME_TYPES or (sh.text_chars == 0 and sh.kind in ("line", "shape", "picture"))):
-                    k = (sh.kind, quant(sh.box))
+                # placeholders. A title repeated at one position is composition, not chrome. A PDF
+                # has no placeholders, so a short text line repeated at one position (a footer
+                # label, a page number) counts there.
+                furniture = sh.ph_type in CHROME_TYPES or (sh.text_chars == 0 and sh.kind in ("line", "shape", "picture"))
+                pdf_label = self.is_pdf and sh.text is not None and len(sh.text) <= 48 and sh.box[1] > 0.8 * self.h  # type: ignore[index]
+                if sh.box and (furniture or pdf_label):
+                    if pdf_label:
+                        # a footer line often carries the page number: key on the words and the
+                        # line's left edge and row, not on its width
+                        label = re.sub(r"\s*\d+\s*$", "", sh.text or "").strip()
+                        k = (sh.kind, (quant(sh.box)[0], quant(sh.box)[1]), label or "<page number>")
+                    else:
+                        k = (sh.kind, quant(sh.box), None)
                     if k not in seen:
                         seen.add(k)
                         counts[k] += 1
-        self.recurring_slide_chrome = {k for k, n in counts.items() if n >= max(2, MOTIF_RECURRENCE_FLOOR * len(self.slides))}
+        self.recurring_slide_chrome = {(k[0], k[1]) for k, n in counts.items() if n >= max(2, MOTIF_RECURRENCE_FLOOR * len(self.slides))}
+        self.pdf_label_keys = {k[1]: k[2] for k, n in counts.items() if k[2] is not None and n >= max(2, MOTIF_RECURRENCE_FLOOR * len(self.slides))}
         self.chrome_keys |= self.recurring_slide_chrome
         self.color_roles: dict[str, str] = {}  # hex -> role
 
     # ---- content boxes ----
+    def is_chrome(self, sh: Shape) -> bool:
+        if not sh.box:
+            return False
+        if (sh.kind, quant(sh.box)) in self.chrome_keys:
+            return True
+        if self.is_pdf and sh.text is not None:
+            q = quant(sh.box)
+            return (q[0], q[1]) in getattr(self, "pdf_label_keys", {})
+        return False
+
     def content_boxes(self, s: SlidePrint) -> list[Shape]:
-        return [sh for sh in s.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and (sh.kind, quant(sh.box)) not in self.chrome_keys]
+        return [sh for sh in s.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and not self.is_chrome(sh)]
 
     def open(self, path: str, reason: str, constraints: dict | None = None, candidates: list | None = None) -> None:
         self.unresolved.append({"path": path, "reason": reason, "constraints": constraints or {}, "candidates": candidates or []})
@@ -976,12 +997,23 @@ class Extractor:
                     samples.setdefault(k, c)
                     presence[k] += 1
             for sh in s.shapes:
-                if sh.box and (sh.kind, quant(sh.box)) in self.recurring_slide_chrome:
-                    k = (sh.kind, quant(sh.box), "slide")
+                if not sh.box or not self.is_chrome(sh):
+                    continue
+                if self.is_pdf and sh.text is not None:
+                    q = quant(sh.box)
+                    label = getattr(self, "pdf_label_keys", {}).get((q[0], q[1]))
+                    k = (sh.kind, (q[0], q[1], 0, 0), "slide")
                     samples.setdefault(k, sh)
                     presence[k] += 1
-                    if sh.text_chars and k not in text_of:
-                        text_of[k] = " ".join(r.text_sample for r in s.runs if r.ref.startswith(sh.ref + "/"))[:60]
+                    if k not in text_of:
+                        has_number = bool(re.search(r"\d+\s*$", sh.text or ""))
+                        text_of[k] = (label if label != "<page number>" else "") + (" <page number>" if has_number or label == "<page number>" else "")
+                    continue
+                k = (sh.kind, quant(sh.box), "slide")
+                samples.setdefault(k, sh)
+                presence[k] += 1
+                if sh.text_chars and k not in text_of:
+                    text_of[k] = " ".join(r.text_sample for r in s.runs if r.ref.startswith(sh.ref + "/"))[:60]
             for r in s.chrome_runs:
                 pass
         chrome_text: dict[str, str] = {}
@@ -1010,6 +1042,10 @@ class Extractor:
                 kind = "date"
             elif sh.kind == "picture":
                 kind = "logo"
+            elif sh.text is not None and (text_of.get(k, "") or "").strip() in ("<page number>", ""):
+                kind = "page_number"
+            elif sh.text_chars and sh.text is not None:
+                kind = "label"
             elif sh.kind == "line" or (h * MOTIF_RULE_ASPECT <= w) or (w * MOTIF_RULE_ASPECT <= h):
                 kind = "rule"
             elif sh.text_chars:
@@ -1036,6 +1072,12 @@ class Extractor:
                 "slides_present": present, "of_slides": len(self.slides),
                 "exclusion_zone_in": [round(v / EMU_PER_INCH, 3) for v in (x, y, w, h)],
             }
+            if self.is_pdf and sh.text is not None:
+                y0, y1 = sh.box[1], sh.box[1] + sh.box[3]  # type: ignore[index]
+                runs = [r for sl in self.slides[:3] for r in sl.runs if r.text_sample and sh.text.startswith(r.text_sample[:8])]
+                if runs:
+                    entry["text_style"] = {"family": modal([r.family for r in runs]), "size_pt": modal([r.size_pt for r in runs]),
+                                           "ink_hex": modal([r.color for r in runs]), "bold": modal([r.bold for r in runs])}
             if sh.layer != "slide" and sh.text_chars:
                 runs = [r for s in self.slides[:1] for r in s.chrome_runs if r.ref.startswith(sh.ref)]
                 if runs:
@@ -1217,10 +1259,19 @@ class Extractor:
                              ("/gallery", "cropped renders of interesting components, with captions (gallery.py)"),
                              ("/exemplars", "one whole-slide render per composition family (gallery.py)")):
             self.open(path, reason)
+        text_layer = {"status": "typographic"}
+        if self.is_pdf:
+            sizes = [r.size_pt for r in self._runs]
+            tiny = sum(1 for v in sizes if v < 4.0) / len(sizes) if sizes else 1.0
+            body = self._roles.get("type.body", {}).get("size_pt")
+            if tiny > 0.3 or (body is not None and body < 5.0) or not sizes:
+                text_layer = {"status": "suspect", "reason": f"{tiny:.0%} of characters are under 4pt and the body role reads {body}pt: a scanned or OCR text layer. Sizes, families and inks from this file are not evidence; use the renders and complete the guide from them, or find the native deck.",
+                              "tiny_share": round(tiny, 3)}
+                self.notes.append(text_layer["reason"])
         self.guide = {
             "schema": "pptx-skill style guide draft v1",
             "reference": {"file": str(self.path), "sha256": hashlib.sha256(Path(self.path).read_bytes()).hexdigest(), "slides": len(self.slides),
-                          "format": "pdf" if self.is_pdf else "pptx",
+                          "format": "pdf" if self.is_pdf else "pptx", "text_layer": text_layer,
                           "page": {"width_emu": self.w, "height_emu": self.h, "width_in": round(self.w / EMU_PER_INCH, 3), "height_in": round(self.h / EMU_PER_INCH, 3),
                                    "orientation": "landscape" if self.w >= self.h else "portrait"},
                           "layouts_used": Counter(s.layout_name for s in self.slides).most_common() if not self.is_pdf else None},

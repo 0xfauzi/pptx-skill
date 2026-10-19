@@ -104,7 +104,10 @@ def normalise(node: dict, slide: dict) -> dict:
         slide.setdefault("rects", {})[node["id"]] = {k: v for k, v in st.items() if k in ("fill_role", "line_role", "prst", "line_width_emu", "dash")}
         st = {k: v for k, v in st.items() if k not in ("fill_role", "line_role", "prst", "line_width_emu", "dash")}
     if st.get("_spacer"):
+        # a spacer is a width device: one EMU tall, so the row it sits in takes its height
+        # from the real children instead of turning flexible
         node["kind"] = "image"
+        node.setdefault("size", {"width_emu": None, "height_emu": 1})
         slide.setdefault("spacers", set()).add(node["id"])
         st.pop("_spacer")
     if st:
