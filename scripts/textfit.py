@@ -1,25 +1,20 @@
 """Measured text fit for layout.py: face resolution, two rulers, one wrap rule.
 
-Ported from deckgen `packages/server/src/deckgen_server/measure/{text,faces,
-decided,tolerance}.py`. Nothing here estimates a width: every candidate line is
-measured as ONE string by a ruler, and the two rulers are the two instruments
-deckgen scored against PowerPoint's own PDF export (600 boxes, E16):
+Ported from deckgen packages/server/src/deckgen_server/measure/{text,faces,decided,
+tolerance}.py. Nothing here estimates a width: every candidate line is measured as
+ONE string by a ruler, and the two rulers are the two instruments deckgen scored
+against PowerPoint's own PDF export (600 boxes, docs/measurements/E16-decision.md):
+HarfBuzz (uharfbuzz, optional; 541/600 exact breaks, 588/600 same line count) and
+Pillow at x128 scale, BASIC layout, getlength (539/600, 585/600), the fallback a
+stock sandbox always has. Each carries the width shrink that made it one-sided
+against PowerPoint (zero optimistic boxes): 20,234 EMU HarfBuzz, 5,933 EMU Pillow.
+Line pitch is never read from font tables (wrong by up to 20 percent, E16).
 
-- HarfBuzz (`uharfbuzz`, optional): shapes in font design units, 541/600 exact
-  breaks, 588/600 same line count. Preferred when importable.
-- Pillow at x128 scale, BASIC layout, `getlength`: 539/600 exact, 585/600 same
-  line count; the fallback a stock sandbox always has.
-
-Each ruler carries the width shrink that made it one-sided against PowerPoint
-(zero optimistic boxes): 20,234 EMU for HarfBuzz, 5,933 EMU for Pillow x128.
-Line pitch is NOT read from font tables (wrong by up to 20 percent per family,
-E16); layout.py derives it as round(line_spacing * size_pt * 12700).
-
-Face resolution: exact family from the file's own name table, then fontconfig's
-metric-alias classes (Arial -> Liberation Sans, Calibri -> Carlito, Cambria ->
-Caladea, Times New Roman -> Liberation Serif, Courier New -> Liberation Mono).
-An unknown family is REFUSED, and bold is never synthesised from a regular face
-(measured cost of a wrong face: 52/120 break agreement, lines off by three).
+Faces: exact family from the file's own name table, then fontconfig's metric-alias
+classes (Arial -> Liberation Sans, Calibri -> Carlito, Cambria -> Caladea, Times New
+Roman -> Liberation Serif, Courier New -> Liberation Mono). An unknown family is
+REFUSED and bold is never synthesised (measured cost of a wrong face: 52/120 break
+agreement, lines off by three).
 """
 
 from __future__ import annotations
@@ -82,27 +77,21 @@ _STYLE_SPELLINGS: dict[tuple[bool, bool], tuple[str, ...]] = {
 
 _SUBSET_PREFIX = re.compile(r"^[A-Z]{6}\+")
 
-
 class UnknownFamilyError(LookupError):
     """No indexed face and no metric-vouched clone for the requested family."""
-
 
 class UnknownStyleError(LookupError):
     """The family is indexed but not in the requested weight or slope."""
 
-
 class UnmeasurableTextError(ValueError):
     """The text carries nothing a line could be made of."""
-
 
 class WrappedTooManyLinesError(ValueError):
     """The text wraps into more lines than any slide element could hold."""
 
-
 def normalize_family(name: str) -> str:
     base = _SUBSET_PREFIX.sub("", name).split("-")[0]
     return "".join(ch for ch in base.lower() if ch.isalnum())
-
 
 @dataclass(frozen=True)
 class Face:
@@ -111,7 +100,6 @@ class Face:
     style: str
     path: str
     provenance: str  # "exact" | "metric_alias"
-
 
 class FaceIndex:
     """Every measurable face under the roots, keyed by the file's own names."""
@@ -146,7 +134,6 @@ class FaceIndex:
             "measuring another typeface under this name is unbounded error"
         )
 
-
 def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
     if roots is None:
         override = os.environ.get("LAYOUT_FONT_ROOTS")
@@ -169,27 +156,22 @@ def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
             faces.setdefault(key, Face(family, family, style or "Regular", str(path), "exact"))
     return FaceIndex(faces)
 
-
 @lru_cache(maxsize=1)
 def default_index() -> FaceIndex:
     return build_index()
 
-
 # --- the decided wrap rule (docs/measurements/E16-decision.md) ------------------
-
 
 class Advance(Protocol):
     """Whole-run advance of one string, in the ruler's own units."""
 
     def __call__(self, text: str) -> float: ...
 
-
 @dataclass(frozen=True)
 class WrappedLine:
     text: str
     start: int
     advance_units: float
-
 
 def break_opportunities(text: str) -> tuple[int, ...]:
     """Offsets one past each character a line may end on: every space or hyphen
@@ -198,7 +180,6 @@ def break_opportunities(text: str) -> tuple[int, ...]:
     if not stops or stops[-1] != len(text):
         stops.append(len(text))
     return tuple(stops)
-
 
 def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[WrappedLine, ...]:
     """Greedy wrap under E16's rules: break after space or hyphen, trailing
@@ -273,16 +254,13 @@ def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[Wrapped
             position += 1
     return tuple(lines)
 
-
 # --- the two rulers ----------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class MeasuredLine:
     text: str
     start: int
     width_emu: int
-
 
 class Ruler(Protocol):
     name: str
@@ -291,7 +269,6 @@ class Ruler(Protocol):
     def advance(self, path: str, size_pt: float) -> Advance: ...
     def budget_units(self, path: str, size_pt: float, width_emu: int) -> float: ...
     def to_emu(self, path: str, size_pt: float, units: float) -> int: ...
-
 
 class HarfBuzzRuler:
     """Whole-run advance in font design units; one rounding at the EMU conversion."""
@@ -340,7 +317,6 @@ class HarfBuzzRuler:
     def to_emu(self, path: str, size_pt: float, units: float) -> int:
         return round(units / self._font(path)[1] * size_pt * EMU_PER_POINT)
 
-
 class PillowRuler:
     """E16's decided Pillow configuration: x128 scale, BASIC layout, getlength.
 
@@ -376,10 +352,8 @@ class PillowRuler:
     def to_emu(self, path: str, size_pt: float, units: float) -> int:
         return round(units / PILLOW_SCALE * EMU_PER_POINT)
 
-
 def default_ruler() -> Ruler:
     return HarfBuzzRuler() if hb is not None else PillowRuler()
-
 
 def measure_text(
     ruler: Ruler, text: str, width_emu: int, path: str, size_pt: float
@@ -398,7 +372,6 @@ def measure_text(
         MeasuredLine(line.text, line.start, ruler.to_emu(path, size_pt, line.advance_units))
         for line in wrap_text(text, budget, advance)
     )
-
 
 def advance_emu(ruler: Ruler, text: str, path: str, size_pt: float) -> int:
     """The whole-run advance of ONE string in EMU. One string by signature: a

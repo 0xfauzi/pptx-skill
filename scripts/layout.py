@@ -4,93 +4,68 @@
     layout.py solve spec.json --guide guide.json [--scale 1.0] [-o resolved.json]
     layout.py capacity spec.json --guide guide.json [--scale 1.0]
 
-A port of deckgen's layout machinery (`packages/server/src/deckgen_server/layout/
-{spacing,solver,typestyles,validation,measure_bridge,table_fitter,table_text}.py`
-and `content/design_scale.py`) into one standalone script. The ruler lives in
-`textfit.py` beside it. No deckgen import at runtime; stdlib + Pillow, with
-uharfbuzz used when importable.
+A port of deckgen's layout machinery (packages/server/src/deckgen_server/layout/
+{spacing,solver,typestyles,validation,measure_bridge,table_fitter,table_text}.py and
+content/design_scale.py) into one standalone script; the ruler is textfit.py beside
+it. Stdlib + Pillow, uharfbuzz when importable, no deckgen import at runtime.
 
-THE LOOP (one candidate scale s):
-  1. resolve every in-use type role at s: size snapped to the 0.5 pt grid,
-     paragraph spacing and tracking to hundredth-points; refuse below the floor;
-  2. probe solve: boxes from weights and grid tracks (widths are what matters);
-  3. measure every text paragraph at width - indent - FIT_EPSILON, one string
-     per candidate line, through the ruler; fit every table (columns, rows);
-  4. region heights bottom-up (column flex = sum + gaps + 2 pad; non-stretch
-     row = max + 2 pad; grid, stretch row and root = flexible);
-  5. final solve with the measured intrinsics, re-measure, REFUSE the
-     candidate if any line text changed (the fixed point is checked, never
-     assumed);
-  6. validate: containment, overlap, exceeds_page, overcommit, zero_dimension,
-     reserved_zone - each with scale_fixable;
-  7. descend: admitted scale candidates (0.01 ladder, scales where two adjacent
-     hierarchy sizes snap together excluded, truncated at the legibility
-     floor), bisection (fit is monotone in s, E21: 2,982 measurements, 0
-     inversions), else Unfittable with the splittable groups and each table's
-     fitting row prefix.
-THE SOLVER NEVER CLAMPS: a measured child larger than its region overflows and
-validation refuses the candidate. Content is never dropped.
+THE LOOP at one scale s: resolve every in-use type role (size snapped to the 0.5 pt
+grid, spacing and tracking to hundredth-points); probe solve for widths; measure
+every paragraph at width - indent - FIT_EPSILON as whole strings; fit every table;
+region heights bottom-up (column flex = sum + gaps + 2 pad, non-stretch row = max +
+2 pad, grid / stretch row / root = flexible); final solve with the measured
+intrinsics; re-measure and REFUSE the candidate if any line text moved; validate
+(containment, overlap, exceeds_page, overcommit, zero_dimension, reserved_zone,
+each with scale_fixable). THE DESCENT: 1.00, then the 0.01 ladder with scales where
+two adjacent hierarchy sizes snap together excluded, truncated at the legibility
+floor, searched by bisection (fit is monotone in s: docs/measurements/
+E21-decision.md, 2,982 measurements, 0 inversions); else Unfittable with the
+splittable groups and each table's fitting row prefix. THE SOLVER NEVER CLAMPS: an
+oversize measured child overflows and validation refuses. Content is never dropped.
 
-SLIDE SPEC JSON (one full example):
-{
-  "page": {"width_emu": 12192000, "height_emu": 6858000,
-           "reserved_zones": [{"left": 11049000, "top": 6324600, "width": 762000,
-                               "height": 219456, "source": "page-number"}]},
-  "bullet_indent_roles": {"0": "space.md", "1": "space.lg"},
-  "root": {"type": "region", "id": "root",
-    "layout": {"kind": "flex", "direction": "column", "gap_role": "space.md",
-               "pad_role": "space.margin", "align": "stretch", "justify": "start"},
-    "children": [
-      {"type": "element", "id": "title", "kind": "text",
-       "paragraphs": [{"role": "type.title", "text": "Margins expand on mix"}]},
-      {"type": "region", "id": "body", "weight": 4.0,
-       "layout": {"kind": "flex", "direction": "row", "gap_role": "space.gutter",
-                  "pad_role": null, "align": "start", "justify": "start"},
-       "children": [
-         {"type": "element", "id": "left", "kind": "text", "weight": 1.0,
-          "paragraphs": [{"role": "type.body", "text": "Aftermarket mix rose",
-                          "bullet_level": 0}]},
-         {"type": "region", "id": "right", "weight": 1.0,
-          "layout": {"kind": "grid", "rows": 2, "cols": 1, "gutter_role": "space.sm",
-                     "pad_role": null,
-                     "areas": [{"child_id": "comps", "row": 0, "col": 0,
-                                "row_span": 1, "col_span": 1},
-                               {"child_id": "chart", "row": 1, "col": 0,
-                                "row_span": 1, "col_span": 1}]},
-          "children": [
-            {"type": "element", "id": "comps", "kind": "table",
-             "table": {"columns": [{"key": "co", "label": "Company", "value_kind": "text"},
-                                   {"key": "ev", "label": "EV ($m)", "value_kind": "number"}],
-                       "rows": [["Alpha plc", "1,234"], ["Beta Inc", "987"]],
-                       "header_rows": 1, "header_role": "type.table_header",
-                       "cell_role": "type.table_cell"}},
-            {"type": "element", "id": "chart", "kind": "chart"}]}]},
-      {"type": "element", "id": "logo", "kind": "image", "scale_class": "fixed",
-       "size": {"width_emu": 914400, "height_emu": 457200}},
-      {"type": "element", "id": "foot", "kind": "text",
-       "paragraphs": [{"role": "type.footnote", "text": "Source: company filings"}]}]},
-  "splittable_groups": [{"group_id": "comps-rows", "kind": "table_row_range",
-                         "node_ids": ["comps"], "row_range": {"start": 0, "end": 2}}]
-}
-Element kinds: `text` (paragraphs: role, text, bullet_level|null), `table`
-(columns[{key,label,value_kind}], rows, header_rows, header_role, cell_role,
-cell_padding_role|null), `image` | `chart` | `rule` (optional `size`
-{width_emu|null, height_emu|null}: a measured extent on that axis; null =
-flexible, weight share on the main axis, stretch on the cross axis). Every
-element may carry `weight` (flex share, default equal) and `scale_class`
-("scaling" default | "fixed": type resolves at s = 1). Grid tracks are uniform.
+SLIDE SPEC JSON, one full example:
+{"page": {"width_emu": 12192000, "height_emu": 6858000,
+          "reserved_zones": [{"left": 11049000, "top": 6324600, "width": 762000, "height": 219456, "source": "page-number"}]},
+ "bullet_indent_roles": {"0": "space.md", "1": "space.lg"},
+ "root": {"type": "region", "id": "root",
+   "layout": {"kind": "flex", "direction": "column", "gap_role": "space.md", "pad_role": "space.margin", "align": "stretch", "justify": "start"},
+   "children": [
+     {"type": "element", "id": "title", "kind": "text", "paragraphs": [{"role": "type.title", "text": "Margins expand on mix"}]},
+     {"type": "region", "id": "body", "weight": 4.0,
+      "layout": {"kind": "flex", "direction": "row", "gap_role": "space.gutter", "pad_role": null, "align": "start", "justify": "start"},
+      "children": [
+        {"type": "element", "id": "left", "kind": "text", "weight": 1.0,
+         "paragraphs": [{"role": "type.body", "text": "Aftermarket mix rose", "bullet_level": 0}]},
+        {"type": "region", "id": "right", "weight": 1.0,
+         "layout": {"kind": "grid", "rows": 2, "cols": 1, "gutter_role": "space.sm", "pad_role": null,
+                    "areas": [{"child_id": "comps", "row": 0, "col": 0, "row_span": 1, "col_span": 1},
+                              {"child_id": "chart", "row": 1, "col": 0, "row_span": 1, "col_span": 1}]},
+         "children": [
+           {"type": "element", "id": "comps", "kind": "table",
+            "table": {"columns": [{"key": "co", "label": "Company", "value_kind": "text"}, {"key": "ev", "label": "EV ($m)", "value_kind": "number"}],
+                      "rows": [["Alpha plc", "1,234"], ["Beta Inc", "987"]], "header_rows": 1,
+                      "header_role": "type.table_header", "cell_role": "type.table_cell"}},
+           {"type": "element", "id": "chart", "kind": "chart"}]}]},
+     {"type": "element", "id": "logo", "kind": "image", "scale_class": "fixed", "size": {"width_emu": 914400, "height_emu": 457200}},
+     {"type": "element", "id": "foot", "kind": "text", "paragraphs": [{"role": "type.footnote", "text": "Source: company filings"}]}]},
+ "splittable_groups": [{"group_id": "comps-rows", "kind": "table_row_range", "node_ids": ["comps"], "row_range": {"start": 0, "end": 2}}]}
+Element kinds: text (paragraphs: role, text, bullet_level|null); table (columns
+[{key,label,value_kind}], rows, header_rows, header_role, cell_role,
+cell_padding_role|null); image | chart | rule (optional size {width_emu|null,
+height_emu|null}: a measured extent, null = flexible). Every element may carry
+weight (flex share, default equal) and scale_class ("scaling" | "fixed": type
+resolves at s = 1). Grid tracks are uniform. Node ids are unique and carry no '#'.
 
-GUIDE JSON SUBSET read (the shape extract_style.py writes; deckgen's
-`{"value":..., "provenance":...}` wrappers are also accepted):
-  typography.families {major, minor, weight_faces?}
-  typography.roles[role] {size_pt, line_spacing|null (1.2), space_before_pt,
-      space_after_pt, tracking_pt, family ("major"|"minor"|face name), weight,
-      italic, case}; a null field takes OOXML's absence value (b/i off,
-      spacing 0, tracking 0, as_typed, single spacing = 1.2 x size)
-  typography.bullets  (level -> indent_role, when the guide carries one)
-  spacing.steps[role] {"emu": int} | {"value": int} | int; spacing.baseline_emu
-  floors[family] {floor_pt|null, absolute_floor_pt, roles}  (or deckgen's list)
-  tables.cell_padding_role | tables.cell_padding_emu (else OOXML's 45720 default)
+GUIDE JSON SUBSET read (extract_style.py's shape; deckgen's {"value", "provenance"}
+wrappers also accepted): typography.families {major, minor, weight_faces?};
+typography.roles[role] {size_pt, line_spacing|null, space_before_pt,
+space_after_pt, tracking_pt, family ("major" | "minor" | face name), weight,
+italic, case}, where a null field takes OOXML's absence value (b/i off, spacing 0,
+tracking 0, as_typed, single spacing = 1.2 x size); typography.bullets (level ->
+indent_role when present); spacing.steps[role] {"emu": int} | {"value": int} |
+int; spacing.baseline_emu|null; floors[family] {floor_pt|null, absolute_floor_pt,
+roles} (or deckgen's list); tables.cell_padding_role | tables.cell_padding_emu
+(else OOXML's 45720 EMU default inset).
 """
 
 from __future__ import annotations
@@ -149,47 +124,37 @@ _ABSENT_TYPE_VALUES = {
     "space_after_pt": 0.0, "tracking_pt": 0.0, "case": "as_typed",
 }
 
-
 class LayoutContractError(ValueError):
     """The spec or guide contradicts itself; a typed refusal, never geometry."""
 
-
 class UnknownTokenRoleError(LayoutContractError):
     """A role the guide does not define. Never a default value."""
-
 
 class CandidateRefused(ValueError):
     """One scale candidate cannot be honestly measured (tracked overrun, lines
     that moved under the final solve, a table width that moved)."""
 
-
 # --- spacing: every token-times-s snap, in one place (deckgen spacing.py) ----------
-
 
 def decimal_fraction(value: float | int) -> Fraction:
     """The one float door: recover the DECIMAL the JSON carried."""
     return Fraction(str(value))
 
-
 def quantize_emu(value: Fraction | int) -> int:
     return round(value)  # round-half-even, unbiased (port audit rows C1-C2)
-
 
 def hundredths(points: float) -> int:
     return round(points * 100)
 
-
 def paragraph_spacing_emu(space_before_pt: float, space_after_pt: float) -> int:
     """Written a:spcBef + a:spcAft, in the emitter's units (hundredths x 127)."""
     return (hundredths(space_before_pt) + hundredths(space_after_pt)) * EMU_PER_HUNDREDTH_POINT
-
 
 def checked_scale(scale: float | Fraction) -> Fraction:
     exact = scale if isinstance(scale, Fraction) else decimal_fraction(scale)
     if not 0 < exact <= 10:
         raise LayoutContractError(f"scale {scale} is outside (0, 10]")
     return exact
-
 
 def snap_pt(value_pt: float | Fraction, scale: float | Fraction) -> Fraction:
     """value x s onto the 0.5 pt grid, half-even, floored at one quantum."""
@@ -199,21 +164,17 @@ def snap_pt(value_pt: float | Fraction, scale: float | Fraction) -> Fraction:
         multiple = max(1, multiple)
     return multiple * FONT_QUANTUM_PT
 
-
 def snap_sz(value_pt: float | Fraction, scale: float | Fraction) -> int:
     return int(snap_pt(value_pt, scale) * 100)
-
 
 def snap_hundredths(value_pt: float | Fraction, scale: float | Fraction) -> int:
     value = value_pt if isinstance(value_pt, Fraction) else decimal_fraction(value_pt)
     return round(value * checked_scale(scale) * 100)
 
-
 def snap_baseline(scaled_emu: Fraction, baseline_emu: int) -> int:
     if scaled_emu <= 0:
         raise ValueError("snap_baseline requires a positive value")
     return max(1, round(scaled_emu / baseline_emu)) * baseline_emu
-
 
 def space_emu(guide: Guide, role: str, scale: float | Fraction, axis: str) -> int:
     """One spacing role at `scale`: vertical values snap to the (unscaled)
@@ -226,9 +187,7 @@ def space_emu(guide: Guide, role: str, scale: float | Fraction, axis: str) -> in
         return snap_baseline(scaled, guide.baseline_emu)
     return quantize_emu(scaled)
 
-
 # --- the guide subset ----------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class TypeRole:
@@ -243,7 +202,6 @@ class TypeRole:
     italic: bool
     case: str
 
-
 @dataclass(frozen=True)
 class Guide:
     major: str
@@ -257,19 +215,16 @@ class Guide:
     cell_padding_emu: int | None
     bullet_indent_roles: dict[int, str]
 
-
 def _unwrap(value: Any) -> Any:
     if isinstance(value, dict) and "value" in value and "provenance" in value:
         return value["value"]
     return value
-
 
 def _step_emu(value: Any) -> int | None:
     value = _unwrap(value)
     if isinstance(value, dict):
         value = value.get("emu", value.get("value"))
     return None if value is None else int(value)
-
 
 def load_guide(raw: Mapping[str, Any]) -> Guide:
     typography = raw.get("typography") or {}
@@ -325,9 +280,7 @@ def load_guide(raw: Mapping[str, Any]) -> Guide:
         bullet_indent_roles=bullet_roles,
     )
 
-
 # --- the slide spec --------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class Box:
@@ -347,7 +300,6 @@ class Box:
     def as_dict(self) -> dict[str, int]:
         return {"left": self.left, "top": self.top, "width": self.width, "height": self.height}
 
-
 @dataclass(frozen=True)
 class Flex:
     direction: str
@@ -355,7 +307,6 @@ class Flex:
     pad_role: str | None
     align: str
     justify: str
-
 
 @dataclass(frozen=True)
 class GridArea:
@@ -365,7 +316,6 @@ class GridArea:
     row_span: int
     col_span: int
 
-
 @dataclass(frozen=True)
 class Grid:
     rows: int
@@ -374,20 +324,17 @@ class Grid:
     gutter_role: str
     pad_role: str | None
 
-
 @dataclass(frozen=True)
 class Paragraph:
     role: str
     text: str
     bullet_level: int | None
 
-
 @dataclass(frozen=True)
 class Column:
     key: str
     label: str
     value_kind: str
-
 
 @dataclass(frozen=True)
 class Table:
@@ -397,7 +344,6 @@ class Table:
     header_role: str
     cell_role: str
     cell_padding_role: str | None
-
 
 @dataclass(frozen=True)
 class Element:
@@ -410,7 +356,6 @@ class Element:
     width_emu: int | None
     height_emu: int | None
 
-
 @dataclass(frozen=True)
 class Region:
     id: str
@@ -418,14 +363,12 @@ class Region:
     children: tuple[Region | Element, ...]
     weight: float | None
 
-
 @dataclass(frozen=True)
 class SplittableGroup:
     group_id: str
     kind: str
     node_ids: tuple[str, ...]
     row_range: dict[str, int] | None
-
 
 @dataclass(frozen=True)
 class Spec:
@@ -436,13 +379,11 @@ class Spec:
     zones: tuple[tuple[Box, str], ...]
     bullet_indent_roles: dict[int, str]
 
-
 def walk(node: Region | Element, depth: int = 0) -> Iterator[tuple[Region | Element, int]]:
     yield node, depth
     if isinstance(node, Region):
         for child in node.children:
             yield from walk(child, depth + 1)
-
 
 def _weight(raw: Mapping[str, Any]) -> float | None:
     weight = raw.get("weight")
@@ -451,7 +392,6 @@ def _weight(raw: Mapping[str, Any]) -> float | None:
     if not isinstance(weight, int | float) or isinstance(weight, bool) or weight <= 0:
         raise LayoutContractError(f"node {raw.get('id')!r}: weight must be a positive number")
     return float(weight)
-
 
 def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
     kind = raw.get("kind", raw.get("layout_type"))
@@ -470,7 +410,6 @@ def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
                 raise LayoutContractError(f"region {region_id!r}: area for {a.child_id!r} spans past the grid")
         return Grid(rows, cols, areas, raw["gutter_role"], raw.get("pad_role"))
     raise LayoutContractError(f"region {region_id!r}: layout kind must be flex or grid")
-
 
 def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     node_id = raw.get("id")
@@ -514,7 +453,6 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         raise LayoutContractError(f"element {node_id!r}: scale_class must be scaling or fixed")
     return Element(node_id, kind, _weight(raw), scale_class, paragraphs, table, size.get("width_emu"), size.get("height_emu"))
 
-
 def parse_spec(raw: Mapping[str, Any]) -> Spec:
     page = raw["page"]
     root = _parse_node(raw["root"])
@@ -534,9 +472,7 @@ def parse_spec(raw: Mapping[str, Any]) -> Spec:
     zones = tuple((Box(int(z["left"]), int(z["top"]), int(z["width"]), int(z["height"])), str(z.get("source", "zone"))) for z in page.get("reserved_zones", []))
     return Spec(int(page["width_emu"]), int(page["height_emu"]), root, groups, zones, {int(k): v for k, v in (raw.get("bullet_indent_roles") or {}).items()})
 
-
 # --- type resolution and scale admission (deckgen typestyles.py, design_scale.py) ---
-
 
 @dataclass(frozen=True)
 class TypeEntry:
@@ -562,13 +498,11 @@ class TypeEntry:
     def spacing_emu(self) -> int:
         return paragraph_spacing_emu(self.space_before_pt, self.space_after_pt)
 
-
 def type_role(guide: Guide, role: str) -> TypeRole:
     spec = guide.roles.get(role)
     if spec is None:
         raise UnknownTokenRoleError(f"type role {role!r} is not in the guide's typography roles")
     return spec
-
 
 def face_for_weight(guide: Guide, spec: TypeRole) -> tuple[str, bool]:
     """400 and 700 map to the OOXML bold toggle; any other weight needs a named
@@ -581,7 +515,6 @@ def face_for_weight(guide: Guide, spec: TypeRole) -> tuple[str, bool]:
     if face is None:
         raise LayoutContractError(f"weight {spec.weight} has no named face in the guide and the bold toggle cannot express it")
     return face, False
-
 
 def resolve_type_entry(guide: Guide, role: str, scale: Fraction) -> TypeEntry:
     spec = type_role(guide, role)
@@ -598,7 +531,6 @@ def resolve_type_entry(guide: Guide, role: str, scale: Fraction) -> TypeEntry:
         case=spec.case, weight=spec.weight,
     )
 
-
 def element_roles(element: Element) -> tuple[str, ...]:
     if element.kind == "text":
         return tuple(dict.fromkeys(p.role for p in element.paragraphs))
@@ -606,18 +538,15 @@ def element_roles(element: Element) -> tuple[str, ...]:
         return (element.table.header_role, element.table.cell_role) if element.table.header_rows else (element.table.cell_role,)
     return ()
 
-
 def roles_in_use(spec: Spec) -> frozenset[str]:
     """Every role a SCALING element sets text in: the set the floor must clear."""
     return frozenset(r for n, _ in walk(spec.root) if isinstance(n, Element) and n.scale_class != "fixed" for r in element_roles(n))
-
 
 def hierarchy_levels(guide: Guide) -> tuple[tuple[Fraction, tuple[str, ...]], ...]:
     by_size: dict[Fraction, list[str]] = {}
     for role, spec in guide.roles.items():
         by_size.setdefault(decimal_fraction(spec.size_pt), []).append(role)
     return tuple((size, tuple(sorted(by_size[size]))) for size in sorted(by_size, reverse=True))
-
 
 def admit_scale_candidates(guide: Guide, candidates: Sequence[Fraction]) -> tuple[tuple[Fraction, ...], tuple[dict[str, Any], ...]]:
     """Exclude every scale where two ADJACENT hierarchy levels snap to one size;
@@ -634,14 +563,12 @@ def admit_scale_candidates(guide: Guide, candidates: Sequence[Fraction]) -> tupl
         (excluded if collision else admitted).append(collision or scale)
     return tuple(admitted), tuple(excluded)
 
-
 def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction) -> bool:
     for role in roles:
         floor = guide.floor_by_role.get(role)
         if floor is not None and snap_sz(type_role(guide, role).size_pt, scale) / 100 < floor:
             return False
     return True
-
 
 def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
     """1.00 then the admitted ladder, truncated at the first scale that undercuts
@@ -655,9 +582,7 @@ def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
         allowed.append(candidate)
     return tuple(allowed)
 
-
 # --- the geometry core (deckgen solver.py) -----------------------------------------
-
 
 @dataclass(frozen=True)
 class IntrinsicSize:
@@ -666,13 +591,11 @@ class IntrinsicSize:
     width_emu: int | None = None
     height_emu: int | None = None
 
-
 def content_box(box: Box, layout: Flex | Grid, guide: Guide, scale: Fraction) -> Box:
     if layout.pad_role is None:
         return box
     pad_x, pad_y = space_emu(guide, layout.pad_role, scale, "x"), space_emu(guide, layout.pad_role, scale, "y")
     return Box(min(box.left + pad_x, box.right), min(box.top + pad_y, box.bottom), max(0, box.width - 2 * pad_x), max(0, box.height - 2 * pad_y))
-
 
 def solve_tree(spec: Spec, guide: Guide, scale: float | Fraction, intrinsics: Mapping[str, IntrinsicSize] | None = None) -> dict[str, Box]:
     """Every node's box at `scale`, from weights, tracks and measured extents.
@@ -685,7 +608,6 @@ def solve_tree(spec: Spec, guide: Guide, scale: float | Fraction, intrinsics: Ma
     boxes: dict[str, Box] = {}
     _solve_node(spec.root, Box(0, 0, spec.page_width, spec.page_height), spec, guide, s, intr, boxes, True)
     return boxes
-
 
 def _solve_node(node: Region | Element, box: Box, spec: Spec, guide: Guide, s: Fraction, intr: Mapping[str, IntrinsicSize], boxes: dict[str, Box], is_root: bool) -> None:
     boxes[node.id] = box
@@ -702,7 +624,6 @@ def _solve_node(node: Region | Element, box: Box, spec: Spec, guide: Guide, s: F
         child_boxes = _grid_child_boxes(node, node.layout, content, guide, s)
     for child, child_box in zip(node.children, child_boxes):
         _solve_node(child, child_box, spec, guide, s, intr, boxes, False)
-
 
 def _reserve_edge_zones(content: Box, spec: Spec, guide: Guide) -> Box:
     """Every reserved zone that reaches the page's margin band (space.margin at
@@ -726,7 +647,6 @@ def _reserve_edge_zones(content: Box, spec: Spec, guide: Guide) -> Box:
         remaining = Box(remaining.left, new_top, remaining.width, new_bottom - new_top)
     return remaining
 
-
 def _justify_offsets(justify: str, free: Fraction, n: int) -> tuple[Fraction, Fraction]:
     if free <= 0 or n == 0:
         return Fraction(0), Fraction(0)
@@ -739,7 +659,6 @@ def _justify_offsets(justify: str, free: Fraction, n: int) -> tuple[Fraction, Fr
     if justify == "space_around":
         return free / n / 2, free / n
     return Fraction(0), Fraction(0)
-
 
 def _flex_child_boxes(region: Region, layout: Flex, content: Box, guide: Guide, s: Fraction, intr: Mapping[str, IntrinsicSize]) -> list[Box]:
     """Intrinsic main sizes are taken EXACTLY; weight shares split the rest as
@@ -779,7 +698,6 @@ def _flex_child_boxes(region: Region, layout: Flex, content: Box, guide: Guide, 
             out.append(Box(content.left + cross_off, content.top + start, cross_size, end - start))
     return out
 
-
 def _grid_child_boxes(region: Region, layout: Grid, content: Box, guide: Guide, s: Fraction) -> list[Box]:
     """Uniform tracks, gutters between, spans across cumulative boundaries."""
     gutter_x, gutter_y = space_emu(guide, layout.gutter_role, s, "x"), space_emu(guide, layout.gutter_role, s, "y")
@@ -797,9 +715,7 @@ def _grid_child_boxes(region: Region, layout: Grid, content: Box, guide: Guide, 
         out.append(Box(content.left + x1, content.top + y1, x2 - x1, y2 - y1))
     return out
 
-
 # --- validation (deckgen validation.py) ------------------------------------------
-
 
 @dataclass(frozen=True)
 class Violation:
@@ -813,14 +729,11 @@ class Violation:
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()
 
-
 def _overlaps(a: Box, b: Box) -> bool:
     return min(a.right, b.right) > max(a.left, b.left) and min(a.bottom, b.bottom) > max(a.top, b.top)
 
-
 def _depth(a: Box, b: Box) -> int:
     return min(min(a.right, b.right) - max(a.left, b.left), min(a.bottom, b.bottom) - max(a.top, b.top))
-
 
 def validate(spec: Spec, guide: Guide, scale: Fraction, boxes: Mapping[str, Box], table_fits: Mapping[str, TableFit]) -> list[Violation]:
     nodes = [n for n, _ in walk(spec.root)]
@@ -864,9 +777,7 @@ def validate(spec: Spec, guide: Guide, scale: Fraction, boxes: Mapping[str, Box]
             out.append(Violation("containment", el_id, None, f"columns at their minimum widths need {fit.width_deficit_emu} EMU more than the table box", fit.width_deficit_emu, True))
     return out
 
-
 # --- text measurement bridge (deckgen measure_bridge.py) ------------------------
-
 
 def apply_case(text: str, case: str) -> str:
     """The guide's case convention over one whole paragraph (deckgen lineage/text.py:77)."""
@@ -884,12 +795,10 @@ def apply_case(text: str, case: str) -> str:
         return text[:1].upper() + text[1:]
     return text
 
-
 def tracked_width_emu(width_emu: int, text: str, tracking_pt: float) -> int:
     """What a measured line DRAWS once OOXML spc adds tracking per character:
     one rounding over the whole run (deckgen measure/text.py:385)."""
     return width_emu + round(tracking_pt * len(text) * EMU_PER_POINT)
-
 
 @dataclass(frozen=True)
 class ParagraphMeasurement:
@@ -905,7 +814,6 @@ class ParagraphMeasurement:
     def stack_emu(self) -> int:
         return len(self.lines) * self.entry.pitch_emu
 
-
 @dataclass
 class Context:
     """One solve's instruments: the guide, the ruler and the face index."""
@@ -920,7 +828,6 @@ class Context:
 
     def face(self, entry: TypeEntry) -> Face:
         return self.index.resolve(entry.family, bold=entry.bold, italic=entry.italic)
-
 
 def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -> list[ParagraphMeasurement]:
     """Wrapped at allowance - FIT_EPSILON, charged at the full allowance."""
@@ -947,21 +854,17 @@ def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -
         out.append(ParagraphMeasurement(index, entry, text, face, indent, allowance, lines))
     return out
 
-
 def element_height_emu(measurements: Sequence[ParagraphMeasurement]) -> int:
     """Every line plus EVERY paragraph's written spcBef and spcAft, trailing one
     included: exactly what the emit gate charges."""
     return sum(m.stack_emu + m.entry.spacing_emu for m in measurements)
 
-
 # --- the dense-table fitter (deckgen table_fitter.py, table_text.py) ----------------
-
 
 @dataclass(frozen=True)
 class DrawnRole:
     entry: TypeEntry
     path: str
-
 
 @dataclass(frozen=True)
 class TableFit:
@@ -978,10 +881,8 @@ class TableFit:
     header: DrawnRole | None
     cell: DrawnRole
 
-
 def _cell_lines(ctx: Context, text: str, budget: int, kind: DrawnRole) -> tuple[MeasuredLine, ...]:
     return measure_text(ctx.ruler, text, budget, kind.path, kind.entry.size_pt)
-
 
 def one_line_width(ctx: Context, text: str, kind: DrawnRole) -> int:
     """The narrowest width this string DRAWS on one line, confirmed with the
@@ -995,7 +896,6 @@ def one_line_width(ctx: Context, text: str, kind: DrawnRole) -> int:
         width += 1
     raise LayoutContractError(f"the ruler still wraps {text!r} four EMU above its own reported advance {reported}")
 
-
 def min_content_width(ctx: Context, text: str, kind: DrawnRole) -> int:
     """The widest unbreakable segment, cut at the ruler's own break opportunities."""
     widest, start = 0, 0
@@ -1006,13 +906,11 @@ def min_content_width(ctx: Context, text: str, kind: DrawnRole) -> int:
             widest = max(widest, one_line_width(ctx, segment, kind))
     return widest
 
-
 def _drawn_width(ctx: Context, text: str, kind: DrawnRole) -> int:
     stripped = text.rstrip(" ")
     if not stripped:
         return 0
     return tracked_width_emu(_cell_lines(ctx, stripped, 10**8, kind)[0].width_emu, stripped, kind.entry.tracking_pt)
-
 
 def wrapped_lines(ctx: Context, text: str, budget: int, kind: DrawnRole) -> tuple[str, ...]:
     """One cell's lines. Untracked: the ruler's wrap IS the answer. Tracked: the
@@ -1047,7 +945,6 @@ def wrapped_lines(ctx: Context, text: str, budget: int, kind: DrawnRole) -> tupl
         lines.append(line.rstrip(" "))
     return tuple(lines)
 
-
 def required_line_box_emu(size_hundredths: int, requested_spacing_hundredths: int | None) -> int:
     """PowerPoint's line box in a cell: exact at 1.2 x size with no a:lnSpc, an
     upper bound (never exceeded on 200 E38 cases) with an explicit a:spcPts."""
@@ -1055,12 +952,10 @@ def required_line_box_emu(size_hundredths: int, requested_spacing_hundredths: in
     requested = 0.0 if requested_spacing_hundredths is None else requested_spacing_hundredths * EMU_PER_HUNDREDTH_POINT + REQUESTED_SPACING_SLACK_EMU
     return round(max(natural, requested))
 
-
 def required_row_height_emu(line_counts: Sequence[int], size_hundredths: int, requested_spacing_hundredths: int | None, inset_top: int, inset_bottom: int) -> int:
     """a:tr/@h is a MINIMUM: PowerPoint realises lines x line_box + marT + marB
     (E38, 114 graded cases), so this is what the row is declared at."""
     return max(line_counts, default=0) * required_line_box_emu(size_hundredths, requested_spacing_hundredths) + inset_top + inset_bottom
-
 
 def _spread_surplus(keys: list[str], natural: dict[str, int], surplus: int) -> dict[str, int]:
     widths, total, handed = dict(natural), sum(natural.values()), 0
@@ -1072,7 +967,6 @@ def _spread_surplus(keys: list[str], natural: dict[str, int], surplus: int) -> d
         handed += share
     widths[keys[-1]] += surplus - handed
     return widths
-
 
 def _level_down(keys: list[str], natural: dict[str, int], minimum: dict[str, int], target: int) -> tuple[dict[str, int], int]:
     """Water level: width(k) = max(min_k, min(nat_k, level)), the highest level
@@ -1098,7 +992,6 @@ def _level_down(keys: list[str], natural: dict[str, int], minimum: dict[str, int
     for i in range(target - sum(widths.values())):
         widths[at_level[i % len(at_level)]] += 1
     return widths, 0
-
 
 def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> TableFit:
     """Columns then rows, jointly, at this candidate's sizes; never a size change,
@@ -1152,7 +1045,6 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     total, budget = sum(row_heights), box.height + EMIT_SLACK_EMU
     return TableFit(widths, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, fitting_prefix(row_heights, table.header_rows, budget), box.width, table.header_rows, padding, header, cell)
 
-
 def fitting_prefix(row_heights: Sequence[int], header_rows: int, budget: int) -> int:
     """The largest body-row prefix that fits `budget` under the header rows."""
     running = sum(row_heights[:header_rows])
@@ -1166,9 +1058,7 @@ def fitting_prefix(row_heights: Sequence[int], header_rows: int, budget: int) ->
         prefix += 1
     return prefix
 
-
 # --- the two-pass fixed point --------------------------------------------------------
-
 
 def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heights: dict[str, int], root: bool) -> int | None:
     """Content-driven heights bottom-up; a grid, a stretch row, the root and any
@@ -1189,7 +1079,6 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
     heights[node.id] = total
     return total
 
-
 @dataclass
 class Resolved:
     scale: Fraction
@@ -1204,14 +1093,11 @@ class Resolved:
     def fits(self) -> bool:
         return not self.violations
 
-
 def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
-    """ONE honest candidate: probe, measure, final solve, re-measure, validate."""
+    """ONE honest candidate: probe, measure, final solve, re-measure, validate.
+    Floors are candidate ADMISSION (descend, the CLI), not checked here."""
     spec, guide = ctx.spec, ctx.guide
     s = checked_scale(scale)
-    roles = roles_in_use(spec)
-    if not scale_clears_floors(guide, roles, s):
-        raise CandidateRefused(f"scale {s} undercuts the legibility floor of an in-use role")
     elements = [n for n, _ in walk(spec.root) if isinstance(n, Element)]
     intrinsics = {e.id: IntrinsicSize(e.width_emu, e.height_emu) for e in elements if e.width_emu is not None or e.height_emu is not None}
     probe = solve_tree(spec, guide, s, intrinsics)
@@ -1243,9 +1129,7 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
             raise CandidateRefused(f"table {element.id!r} was fitted at {fits[element.id].box_width} EMU wide and solved to {solved[element.id].width}")
     return Resolved(s, solved, final, fits, validate(spec, guide, s, solved, fits), ctx.ruler.name, ctx.ruler.fit_epsilon_emu)
 
-
 # --- scale descent (deckgen content/design_scale.py, docs/measurements/E21-decision.md)
-
 
 @dataclass
 class Attempt:
@@ -1262,7 +1146,6 @@ class Attempt:
             return {"scale": str(self.scale), "result": "refused", "reason": self.refusal}
         return {"scale": str(self.scale), "result": "fit" if self.fits else f"{len(self.resolved.violations)} violation(s)"}
 
-
 @dataclass
 class Outcome:
     status: str  # "fit" | "unfittable"
@@ -1271,13 +1154,11 @@ class Outcome:
     reason: str = ""
     scale_min: Fraction | None = None
 
-
 def _attempt(ctx: Context, scale: Fraction) -> Attempt:
     try:
         return Attempt(scale, solve_measured(ctx, scale), None)
     except (CandidateRefused, UnmeasurableTextError) as error:
         return Attempt(scale, None, str(error))
-
 
 def descend(ctx: Context) -> Outcome:
     """Solve at 1.00; when every violation is scale-fixable, bisect the admitted
@@ -1308,9 +1189,7 @@ def descend(ctx: Context) -> Outcome:
             lo = mid
     return Outcome("fit", last.resolved, attempts)
 
-
 # --- capacity (deckgen capacity.py) --------------------------------------------------
-
 
 def capacity(ctx: Context, scale: Fraction, boxes: Mapping[str, Box], roles: Sequence[str]) -> list[dict[str, Any]]:
     """Per region content box x role: chars per line from the ruler's mean
@@ -1339,14 +1218,11 @@ def capacity(ctx: Context, scale: Fraction, boxes: Mapping[str, Box], roles: Seq
             out.append({"region_id": node.id, "role": role, "size_pt": entry.size_pt, "box": box.as_dict(), "lines": lines, "chars_per_line": chars, "chars_total": lines * chars, "mean_advance_source": f"{ctx.ruler.name} over REFERENCE_ALPHABET ({len(REFERENCE_ALPHABET)} chars), not the reference deck's own text"})
     return out
 
-
 # --- output ------------------------------------------------------------------------------
-
 
 def _entry_hints(entry: TypeEntry) -> dict[str, Any]:
     """What a pptx writer sets so the file draws what was measured."""
     return {"role": entry.role, "latin": entry.family, "sz": hundredths(entry.size_pt), "b": entry.bold, "i": entry.italic, "lnSpc_spcPts": hundredths(entry.line_spacing * entry.size_pt), "spcBef": hundredths(entry.space_before_pt), "spcAft": hundredths(entry.space_after_pt), "spc": hundredths(entry.tracking_pt)}
-
 
 def resolved_json(ctx: Context, resolved: Resolved) -> dict[str, Any]:
     elements: dict[str, Any] = {}
@@ -1362,7 +1238,6 @@ def resolved_json(ctx: Context, resolved: Resolved) -> dict[str, Any]:
         else:
             elements[node.id] = {"kind": node.kind}
     return {"scale": str(resolved.scale), "scale_float": float(resolved.scale), "ruler": resolved.ruler, "fit_epsilon_emu": resolved.fit_epsilon_emu, "boxes": {k: v.as_dict() for k, v in resolved.boxes.items()}, "elements": elements, "violations": [v.as_dict() for v in resolved.violations]}
-
 
 def outcome_json(ctx: Context, outcome: Outcome) -> dict[str, Any]:
     out: dict[str, Any] = {"status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
@@ -1382,7 +1257,6 @@ def outcome_json(ctx: Context, outcome: Outcome) -> dict[str, Any]:
             "tables": {k: {"rows": len(f.row_heights) - f.header_rows, "row_heights_emu": list(f.row_heights), "fitting_row_prefix": f.fitting_row_prefix, "rows_to_fit_slide": fitting_prefix(f.row_heights, f.header_rows, f.total_height_emu - overshoot + EMIT_SLACK_EMU), "width_deficit_emu": f.width_deficit_emu} for k, f in (resolved.table_fits if resolved else {}).items()},
         }
     return out
-
 
 def _print_outcome(ctx: Context, outcome: Outcome) -> None:
     for attempt in outcome.attempts:
@@ -1407,12 +1281,10 @@ def _print_outcome(ctx: Context, outcome: Outcome) -> None:
         for node_id, info in report["tables"].items():
             print(f"  table {node_id}: {info['rows']} body rows, fitting_row_prefix (probe box) {info['fitting_row_prefix']}, rows_to_fit_slide {info['rows_to_fit_slide']}")
 
-
 def build_context(spec_path: str, guide_path: str) -> Context:
     spec = parse_spec(json.loads(Path(spec_path).read_text(encoding="utf-8")))
     guide = load_guide(json.loads(Path(guide_path).read_text(encoding="utf-8")))
     return Context(guide, default_ruler(), default_index(), spec)
-
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Solve a slide spec to EMU boxes with measured text fit.")
@@ -1429,7 +1301,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.scale is None:
             outcome = descend(ctx)
         else:
-            attempt = _attempt(ctx, checked_scale(args.scale))
+            scale = checked_scale(args.scale)
+            if not scale_clears_floors(ctx.guide, roles_in_use(ctx.spec), scale):
+                print(f"refused: scale {scale} undercuts the legibility floor of an in-use role")
+                return 2
+            attempt = _attempt(ctx, scale)
             outcome = Outcome("fit" if attempt.fits else "unfittable", attempt.resolved, [attempt], attempt.refusal or "violations at the requested scale", attempt.scale)
         _print_outcome(ctx, outcome)
         payload = outcome_json(ctx, outcome)
@@ -1444,7 +1320,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")
         print(f"wrote {args.out}")
     return 0 if payload.get("status", "fit") == "fit" else 1
-
 
 if __name__ == "__main__":
     sys.exit(main())
