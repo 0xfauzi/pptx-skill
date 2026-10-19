@@ -340,7 +340,9 @@ def _table_edge(guide: Guide, klass: str) -> tuple[str | None, int]:
     rule = (guide.tables.get("edge_rules") or {}).get(klass)
     if not rule or rule.get("none"):
         return None, 0
-    return rule.get("color_hex"), int(rule.get("width_emu") or 12700)
+    hex_color = rule.get("color_hex") or (guide.hex(rule.get("color_role"), where=f"table edge {klass}") if rule.get("color_role") else None)
+    width = rule.get("width_emu") or (int(round(float(rule["width_pt"]) * EMU_PER_PT)) if rule.get("width_pt") else 12700)
+    return hex_color, int(width)
 
 
 def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_emu: int) -> None:
@@ -386,10 +388,10 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         col.width = Emu(int(widths[i]))
     heights = el.get("row_heights_emu")
     pad = int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
-    header_fill = guide.tables.get("header_fill_hex")
+    header_fill = guide.tables.get("header_fill_hex") or (guide.hex(guide.tables.get("header_fill_role"), where="table header") if guide.tables.get("header_fill_role") else None)
     header_ink_role = guide.tables.get("header_ink_role")
     header_ink = guide.hex(header_ink_role, where="table header") if header_ink_role else None
-    band_hex = guide.tables.get("banding_hex")
+    band_hex = guide.tables.get("banding_hex") or (guide.hex(guide.tables.get("banding_role"), where="table banding") if guide.tables.get("banding_role") else None)
     data_hex = guide.tables.get("data_fill_hex")
     header_spec = guide.type_spec("type.table_header" if "type.table_header" in guide.roles else "type.body", where="table")
     cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where="table")
