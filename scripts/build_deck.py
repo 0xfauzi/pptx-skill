@@ -319,12 +319,19 @@ def chrome_layers(guide: dict, mode: str) -> list[dict]:
     under whatever lands on them) and text lines (a run to score), each with its EMU page
     box. Drawn chrome lies under every content element."""
     eg = EmitGuide(guide)
+    page_w, page_h = guide["reference"]["page"]["width_emu"], guide["reference"]["page"]["height_emu"]
     out = []
     for ch in chrome_on_page(guide, mode):
         box = list(chrome_box_emu(ch))
-        if ch["kind"] == "band" and chrome_hex(ch, eg, "fill"):
-            out.append({"kind": "band", "id": ch["chrome_id"], "box": box, "fill_hex": chrome_hex(ch, eg, "fill")})
+        if not _intersects(box, [0, 0, page_w, page_h]):
+            continue  # off the slide (netflix's master keeps its colour swatches there): nothing a reader sees
+        fill = chrome_hex(ch, eg, "fill")
+        if ch["kind"] == "band" and fill:
+            out.append({"kind": "band", "id": ch["chrome_id"], "box": box, "fill_hex": fill})
         elif chrome_text(ch) is not None:
+            if fill:
+                # a text shape with its own fill draws its words on that fill
+                out.append({"kind": "band", "id": ch["chrome_id"], "box": box, "fill_hex": fill})
             out.append({"kind": "text", "id": ch["chrome_id"], "box": box, "text": chrome_text(ch) or "<page number>", "style": ch.get("text_style") or {}})
     return out
 
@@ -440,7 +447,7 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
             out["unbound"].append({**where, "why": "the chrome entry carries no text_style.ink_hex; the drawn run inherits the master's text colour"})
             continue
         names: dict[str, str] = {}
-        lower, _ = _lower_backings([*chrome[:ci], line], ci, eg, names)
+        lower, _ = _lower_backings([line], 0, eg, names, chrome[:ci])
         line_pt = float(style.get("size_pt") or eg.roles.get("type.caption", {}).get("size_pt") or 9)  # the size draw_chrome writes
         file({**where, "ink": f"observed ink {style['ink_hex']} of {line['id']}", **_score(style["ink_hex"], lower, line_pt, bool(style.get("bold")), names)})
     for i, el in enumerate(elements):
