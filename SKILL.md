@@ -58,6 +58,9 @@ render. A face marked `substituted` makes the render useless as evidence of fit.
   and covered area per page). A page below the band is sparse for this house; above it
   is denser than the house ever goes. Aim at the upper half for a pitch book.
 - The composition families list which pages share an arrangement. Vary across them.
+- Hidden slides are walked as evidence (a hidden page still shows how the house sets
+  type). The digest's notes list them; when one is an off-style leftover, delete it
+  from a copy with `pptx_tools.py delete` and extract again.
 
 ### 2.2 PDF references
 
@@ -244,7 +247,12 @@ content types, slide ids, shapes inside the page, charts parse). Then:
    `references/design/deliberate_composition.md`: card grids, equal tiles, KPI tiles,
    rounded everything, centred text, three of everything, uniform spacing. Fix, rebuild.
 3. Read `judge` in the build report. A deck nearer another house than its reference is
-   not done; the component list says where.
+   not done; the component list says where. Real case: the McKinsey PDF pages scored
+   0.360 against 0.378 for the nearest other house, with `size_hist` 0.718 and `fills`
+   0.977 carrying the distance. The reference writes at 11, 16 and 18pt while the
+   pages sat on the 12pt body role, and it paints navy bands the specs never asked
+   for. The fix is in the specs (use the levels the histogram shows, add the band),
+   not in the guide.
 4. Compare pages with each other, not only each with itself: same title position, same
    chart text, same source line treatment.
 

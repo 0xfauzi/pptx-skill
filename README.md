@@ -105,7 +105,7 @@ build report names which one ran).
 
 - No arrangement search: when a page does not fit, the solver reports the splittable
   groups and the row prefix that fits, and the agent decides.
-- Hidden slides are read as evidence unless the agent excludes them.
+- Hidden slides are read as evidence (deckgen's rule); the digest lists them and the agent excludes them by deleting them from a copy.
 - PDF references with no usable text layer (scans) are flagged and need an OCR step this
   skill does not provide.
 - The judge was calibrated on 19 public decks from 8 houses; a house unlike all of them

@@ -1234,6 +1234,9 @@ class Extractor:
 
     # ---- assembly ----
     def run(self) -> dict:
+        hidden = [s.index + 1 for s in self.slides if getattr(s, "hidden", False)]
+        if hidden:
+            self.notes.append(f"hidden slides counted as evidence (delete them from a copy with pptx_tools.py delete to exclude): {hidden}")
         self.typography()
         self.color()
         self.spacing()

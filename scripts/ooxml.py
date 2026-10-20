@@ -414,6 +414,7 @@ class SlidePrint:
     chrome_runs: list[Run] = field(default_factory=list)
     tables: list[TableObs] = field(default_factory=list)
     charts: list[ChartObs] = field(default_factory=list)
+    hidden: bool = False  # p:sld show="0"; walked as evidence (deckgen rule), flagged so the agent can exclude it
 
 
 class Chain:
@@ -581,6 +582,7 @@ class SlideWalker:
         if self.chain.layout:
             csld = pkg.root(self.chain.layout).find(_p("cSld"))
             self.print.layout_name = csld.get("name", "") if csld is not None else ""
+        self.print.hidden = pkg.root(slide_part).get("show") == "0"
         self._table_styles: dict[str, etree._Element] | None = None
 
     # text chain ------------------------------------------------------------------
