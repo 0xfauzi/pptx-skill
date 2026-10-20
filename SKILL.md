@@ -260,6 +260,14 @@ example is the docstring of `scripts/layout.py`; a complete four-page deck spec 
 `examples/keybank-section.deck.json`, and two bridge pages written from the chart
 recipes are `examples/keybank-bridge.deck.json`.
 
+Tree limits, each refused with its own message: node ids unique on the page; at most
+400 nodes; at most 5 levels below the root (root = 0, so `root > body > col > panel >
+head > text` is the deepest chain). The depth cap is deckgen's runaway bound (observed
+shape nesting of 3 in its references plus 2), not a measurement of layout trees. When a
+chain runs out, remove a region that only wraps one child, or merge a column into its
+parent column; a filled box without padding needs no region, since a text element
+takes `fill_role` and `anchor` itself.
+
 Before writing text, ask the solver what fits:
 
 ```bash
@@ -332,7 +340,13 @@ measure and refuse.
   Colours are roles only; a literal hex is refused, and so is an unknown key. There is
   no waterfall kind and no football-field kind: they, the mekko, a bridge that crosses
   zero and labelled bars without a value axis are recipes over the spec in
-  `references/design/chart_recipes.md`, as worked JSON to adapt. The one value written
+  `references/design/chart_recipes.md`, as worked JSON to adapt. A line at a decision
+  value (an offer price across a football field, a threshold across columns) is
+  `reference_lines` (`axis`, `at`, `line_role`, `line_width_pt`, `dash`); it needs
+  `plot_area` (the inner plot as x, y, w, h fractions of the chart frame, written as a
+  manual layout) and that axis's `min` and `max`, so its position is computed, not
+  guessed. An enumerated value written in another spelling (`nextTo`, `insideEnd`) is
+  refused with this spec's spelling named. The one value written
   unasked is `c:varyColors val=0` (file safety: the renderers read its absence
   oppositely), so a pie whose slices differ names a fill per point.
 - **Inks** are yours. Nothing picks an ink for a fill: a white label on a light bar is
@@ -343,6 +357,14 @@ measure and refuse.
   still measures every cell, and reports a share below a column's widest word as a
   width deficit. `emphasis_rows` need `emphasis_fill_role` (a role, or `"none"` for bold
   on the row's own ground) and may take `emphasis_ink_role`; there is no default fill.
+  The guide's table look is the default, and each table may override it as roles:
+  `header_fill_role`, `header_ink_role`, `banding_role`, `data_fill_role` (each a colour
+  role or `"none"`), `header_bold`, `header_align`, and `align` (left, center, right) on
+  a column. These drawing keys and `totals_last_row` may sit on the table element, inside
+  its `table` spec or under `styling.<id>`; a key written twice with different values,
+  or any key none of them knows, is refused by name. `header_role` and `cell_role` are
+  the roles the solver measures and the file is written in, with nothing substituted;
+  a bold header (`header_bold`, yours or the guide's) is measured bold.
 
 Motifs the digest lists (a band, a rule, a block with a preset, roles and an anchor)
 are applied by you: draw one as a `rule` or `rect` element with the motif's line or
@@ -584,6 +606,10 @@ again without learning from your pages; `--include-generated` overrides.
   size of the deck is the size of the paper it was printed to, not the letter page around
   the image.
 - An interrupted `soffice` leaves a lock in its profile; every render uses a fresh profile.
+- LibreOffice 24.2 draws nothing for the first XY scatter series when a later series has
+  more points (10 before 12, and 2 before 12, measured); the emitter writes every
+  scatter and bubble series with the group's largest point count, the extra points
+  blank, and all series draw.
 
 ## 13. Files
 

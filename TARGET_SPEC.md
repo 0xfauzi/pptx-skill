@@ -1261,8 +1261,9 @@ Native charts written from a complete spec the model writes:
   An optional `bridge` declaration on a chart (deltas and totals) is tied out by the build:
   each total against the running sum and each drawn span against its step.
 - Known renderer and writer hazards (measured): an XY scatter series that does not set
-  `smooth` crashed one chart writer; LibreOffice drew nothing for the first XY scatter
-  series in one case until series order changed (cause not found); LibreOffice wraps
+  `smooth` crashed one chart writer; LibreOffice 24.2 draws nothing for the first XY
+  scatter series when a later series declares a larger ptCount (writing every series with
+  the group's largest ptCount, extra points blank, draws all; measured); LibreOffice wraps
   category labels and in-bar data labels mid-word in narrow slots. The build must measure
   category and data labels against their slot (upper bound of the category width; bar
   thickness for centred labels) and refuse a label that will break mid-word, naming it.

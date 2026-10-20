@@ -122,6 +122,14 @@ def check_slide_numbers(path: str, numbers: list[int]) -> None:
         raise SystemExit(f"{path}: slide numbers {bad} are outside 1..{n}")
 
 
+def _soft_breaks_as_spaces(text: str) -> str:
+    """python-pptx returns an a:br as a vertical tab. The emitter writes the measured
+    wrap as a:br in place of the space it broke at, or after the hyphen it broke at
+    (textfit.break_opportunities). A word too wide for its line is broken between
+    letters with no mark in the file, and reads here as two words."""
+    return re.sub(r"(?<=-)\v", "", text).replace("\v", " ")
+
+
 def slide_text(path: str) -> list[dict]:
     prs = Presentation(path)
     out = []
@@ -129,13 +137,13 @@ def slide_text(path: str) -> list[dict]:
         entry: dict = {"slide": i, "layout": slide.slide_layout.name, "origin": slide_origin(slide), "title": None, "blocks": [], "tables": [], "notes": None}
         for shape in _leaf_shapes(slide.shapes):
             if shape.has_text_frame and shape.text_frame.text.strip():
-                text = "\n".join(p.text for p in shape.text_frame.paragraphs)
+                text = "\n".join(_soft_breaks_as_spaces(p.text) for p in shape.text_frame.paragraphs)
                 if shape.is_placeholder and shape.placeholder_format.type is not None and "TITLE" in str(shape.placeholder_format.type) and entry["title"] is None:
                     entry["title"] = text
                 else:
                     entry["blocks"].append({"name": shape.name, "text": text})
             if shape.has_table:
-                rows = [[cell.text for cell in row.cells] for row in shape.table.rows]
+                rows = [[_soft_breaks_as_spaces(cell.text) for cell in row.cells] for row in shape.table.rows]
                 entry["tables"].append({"name": shape.name, "rows": rows})
         if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None:
             notes = slide.notes_slide.notes_text_frame.text.strip()

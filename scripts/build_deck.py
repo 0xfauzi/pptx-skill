@@ -57,7 +57,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
-from emit_pptx import HEX_RE, Guide as EmitGuide, chart_label_inks, emit as emit_slides, table_row_styles  # noqa: E402
+from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
 
 EMU_PER_INCH = 914400
@@ -120,12 +120,43 @@ FIT_KEYS = ("sz", "b", "lnSpc_spcPts", "spcBef", "spcAft", "spc")
 PRESENTATION_KEYS = ("fill_role", "line_role", "pad_role", "prst", "line_width_emu", "anchor", "ink_role", "dash", "_spacer")
 
 
-def mark_measured_weights(node: dict, slide: dict) -> None:
-    """The emitter bolds emphasis runs and totals rows; the solver must measure them bold."""
+# What the solver reads on a table node and in its table spec; every other key there
+# is refused by name, so a misplaced key cannot be dropped in silence.
+TABLE_NODE_KEYS = {"type", "node_type", "id", "kind", "table", "weight", "scale_class", "size"}
+TABLE_SPEC_KEYS = {"columns", "rows", "header_rows", "header_role", "cell_role", "cell_padding_role"}
+
+
+def lift_table_style(node: dict, styling: dict) -> None:
+    """Gather a table's drawing keys (emit_pptx.TABLE_STYLE_KEYS) into slide.styling.<id>,
+    the one place the emitter and the contrast gate read them. They may be written on the
+    table element, inside its `table` spec, or under styling; a key given in two of those
+    places with different values is refused, and so is any key none of them knows."""
+    nid = node["id"]
+    st = styling.setdefault(nid, {})
+    origin = {k: "slide.styling" for k in st}
+    table = dict(node.get("table") or {})
+    for source, label in ((node, "the table element"), (table, "its table spec")):
+        for key in [k for k in source if k in TABLE_STYLE_KEYS]:
+            value = source.pop(key)
+            if key in st and st[key] != value:
+                raise SystemExit(f"table {nid!r}: {key} is {st[key]!r} under {origin[key]} and {value!r} on {label}; write it once")
+            st[key], origin[key] = value, label
+    node["table"] = table
+    for keys, allowed, label in ((set(node), TABLE_NODE_KEYS, "table element"), (set(table), TABLE_SPEC_KEYS, "table spec"),
+                                 (set(st), TABLE_STYLE_KEYS | set(PRESENTATION_KEYS), f"slide.styling.{nid}")):
+        unknown = sorted(keys - allowed)
+        if unknown:
+            raise SystemExit(f"table {nid!r}: unknown keys {unknown} on the {label}. The {label} takes {sorted(allowed)}; "
+                             f"drawing keys {sorted(TABLE_STYLE_KEYS)} may sit on the element, in its table spec or under slide.styling.{nid}")
+
+
+def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
+    """The emitter bolds emphasis runs, totals and emphasis rows and a bold header; the
+    solver must measure them bold, so the table spec it parses gets what the emitter reads."""
     styling = slide.get("styling", {})
     if node.get("type") == "region":
         for c in node.get("children", []):
-            mark_measured_weights(c, slide)
+            mark_measured_weights(c, slide, guide)
         return
     st = styling.get(node.get("id"), {})
     if node.get("kind") == "text":
@@ -134,10 +165,10 @@ def mark_measured_weights(node: dict, slide: dict) -> None:
             if any(r.get("emphasis") for r in ps.get("runs") or []):
                 p["emphasis"] = True
     elif node.get("kind") == "table":
-        if st.get("totals_last_row") or node.get("totals_last_row"):
-            node.setdefault("table", {})["totals_last_row"] = True
-        if st.get("emphasis_rows"):
-            node.setdefault("table", {})["emphasis_rows"] = list(st["emphasis_rows"])
+        table = node.setdefault("table", {})
+        table["totals_last_row"] = bool(st.get("totals_last_row"))
+        table["emphasis_rows"] = list(st.get("emphasis_rows") or [])
+        table["header_bold"] = table_header_bold(st, EmitGuide(guide))
 
 
 def normalise(node: dict, slide: dict) -> dict:
@@ -168,6 +199,8 @@ def normalise(node: dict, slide: dict) -> dict:
         st.pop("_spacer")
     if st:
         styling.setdefault(node["id"], {}).update(st)
+    if node.get("kind") == "table":
+        lift_table_style(node, styling)
     return node
 
 
@@ -372,7 +405,7 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict) -> dict:
         # a table: every row class as emit_pptx.table_row_styles writes it
         header_sz = (measured.get("header") or {}).get("sz")
         cell_sz = (measured.get("cell") or {}).get("sz")
-        cell_spec = eg.type_spec("type.table_cell" if "type.table_cell" in eg.roles else "type.body", where="table")
+        _, cell_spec = table_roles(el, eg)
         classes: dict[tuple, dict] = {}
         for st in table_row_styles(el, eg):
             if st["fill_hex"]:
@@ -882,8 +915,11 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
         elif kind == "table":
             t = node["table"]
             r = resolved["elements"][nid]
+            # the roles the solver measured, from its own resolution, so the file sets the
+            # cells in the type the fit was decided on
+            roles = {"header_role": (r["header"] or r["cell"])["role"], "cell_role": r["cell"]["role"]}
             out.append({"id": nid, "kind": "table", "box": b, "columns": t["columns"], "rows": t["rows"], "header_rows": t.get("header_rows", 1),
-                        "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"],
+                        "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"], **roles,
                         "fit_header": {k: r["header"][k] for k in FIT_KEYS} if r.get("header") else None, "fit_cell": {k: r["cell"][k] for k in FIT_KEYS},
                         "fit_padding_emu": r["cell_margins_emu"]["marL"], **extra})
         elif kind == "chart":
@@ -909,6 +945,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
 
 
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto") -> dict:
+    Path(out).parent.mkdir(parents=True, exist_ok=True)  # before the solve: a missing -o directory otherwise fails only at the save
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
     index = L.default_index()
@@ -920,7 +957,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     for number, slide in enumerate(deck["slides"], 1):
         spec_raw = json.loads(json.dumps(slide["spec"]))
         spec_raw["root"] = normalise(spec_raw["root"], slide)
-        mark_measured_weights(spec_raw["root"], slide)
+        mark_measured_weights(spec_raw["root"], slide, guide)
         prepare_page(spec_raw, guide)
         # components: probe once with placeholders to learn their boxes, then expand at those boxes
         tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
@@ -932,6 +969,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
             tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
         spec_raw["root"] = tree
+        mark_measured_weights(tree, slide, guide)  # a component's tables too
         spec = L.parse_spec(spec_raw)
         ctx = L.Context(lg, ruler, index, spec)
         outcome = L.descend(ctx)
