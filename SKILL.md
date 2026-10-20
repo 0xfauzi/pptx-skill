@@ -144,6 +144,9 @@ file names the real face for PowerPoint, measurement uses the stand-in, and the 
 shows the same stand-in. A stand-in other than fc-match's answer is refused, because the
 solver would then fit text in one face while the render draws another (Verdana measured
 as DejaVu Sans and drawn as Inter put a table row on one line that the build had wrapped).
+The build reports the refusal and still writes `build.json`: every page that sets such a
+face reads `status: unfittable`, `reason: font refused`, with fc-match's face named in its
+`problems`.
 
 `render.py` and the solver read metric aliases from one table (`textfit.py`, fontconfig's
 17 binding="same" classes). Helvetica is not an alias of Liberation Sans: without Nimbus
@@ -212,7 +215,11 @@ Rules the finalizer enforces, and the ones only you can keep:
   extend to roles the reference never showed). These are what you read back while
   designing; write them for yourself.
 - Floors: `floor_pt` is the smallest size the reference uses per family and the solver
-  never descends below it. For a reference whose body floor equals its body size (it
+  never descends below it. A size the reference sets on two or more pages counts even
+  when the Tukey fence would trim it as an outlier (mckinsey's 8pt source lines are 10 of
+  44 annotation runs: the floor is 8.0, not the fence's 9.0); a size on one page under
+  the fence is trimmed, and text turned off the horizontal (a copyright line up the page
+  edge) is never a sample. For a reference whose body floor equals its body size (it
   never wrote smaller body text) there is no headroom: density then comes from
   arrangement and content, not from shrinking. You may lower a floor deliberately in the
   completion (`/floors/body/floor_pt`) when the reference's own captions show a smaller
@@ -249,8 +256,15 @@ How chrome is drawn, and what you can change in the guide's `chrome` entries:
   bold, read from the reference's glyphs). An entry with `rotation_deg` is turned about the
   centre of `box_in`, which is the pre-rotation box as OOXML keeps it (a copyright line up
   the page edge reads as one line, bottom to top). Chrome text is scored by the contrast
-  gate like any run (section 7); an entry with no `text_style.ink_hex` is listed under
-  `contrast.unbound`.
+  gate like any run (section 7), over its own fill when the entry has one and else over
+  the chrome bands painted before it and the surface; an entry wholly off the slide (a
+  master's colour swatches) is not scored. An entry with no `text_style.ink_hex` is
+  listed under `contrast.unbound`.
+- Zones: an entry's zone is the area it covers on the page (a turned label's zone is the
+  narrow strip it draws in, not its pre-rotation box). A label in the margin needs a
+  margin to sit in: `space.margin` is the content's inset from the page edges, and a band,
+  picture or rule that runs to an edge bleeds and is not a vote for it (bcg reads 0.69 in,
+  not the 0 its full-page grounds and half-page photos would give).
 - Logo: with `image_path`, the picture; else a placeholder painted only in what the
   entry names (`fill_hex`/`fill_role`, `line_hex`/`line_role` with `line_width_pt`). An
   entry naming neither is not drawn, and the build report's `chrome.notes` says so.
@@ -577,7 +591,7 @@ Use it in a page as `{"type": "component", "id": "ff", "kind": "football_field",
 
 The build already ran `pptx_tools.py validate` (package integrity, relationship targets,
 one layout per slide and one master per layout, content types, slide ids, shapes inside
-the page, charts parse). `validate --render` also reads the rendered page back with
+the page by the area they cover, so a turned label is checked where it draws, charts parse). `validate --render` also reads the rendered page back with
 pdftotext and names every paragraph that did not draw: a schema-invalid spacing value
 once blanked sixteen bullets on a page that validated and judged clean. Then:
 

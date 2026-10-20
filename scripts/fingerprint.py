@@ -666,6 +666,19 @@ def fit_weights(houses: dict[str, list[str]], max_pages: int | None, by_deck: bo
 # --- the judge -------------------------------------------------------------------------------
 
 PANEL_PAGES = 25
+RENDITION_WORD_OVERLAP = 0.9
+"""Two files whose words (3+ letters, first PANEL_PAGES pages) overlap at least this much
+(Jaccard) are one deck in two formats: the jazz book as PDF and as pptx share 0.992 of
+their words, while every other pair of panel decks shares under 0.2 (2026-10-20)."""
+
+
+def deck_words(slides: list[SlidePrint]) -> set[str]:
+    import re
+    return {w for s in slides for r in s.runs for w in re.findall(r"[a-z0-9]{3,}", (r.text or r.text_sample or "").lower())}
+
+
+def _overlap(a: set[str], b: set[str]) -> float:
+    return len(a & b) / len(a | b) if a and b else 0.0
 """Pages read per panel deck: PDF references run to hundreds of pages and the panel is a
 dozen decks; the reference and the candidate are read whole."""
 
@@ -702,9 +715,16 @@ def judge(candidate: str, reference: str, others: list[str] | None = None, ref_s
     out["overflow_where"] = [f for s in cand for f in text_overflows(s)[0]]
     spread = house_spread(ref_slides)
     out["house_spread"] = spread
-    rivals, kin, skipped = {}, {}, []
+    rivals, kin, skipped, renditions = {}, {}, [], {}
+    ref_words = deck_words(ref_slides[:PANEL_PAGES])
+    words: dict[str, set[str]] = {}
     for o in panel(others or [], reference):
-        hf = house_features(fingerprint_deck(o, PANEL_PAGES))
+        o_slides = fingerprint_deck(o, PANEL_PAGES)
+        words[o] = deck_words(o_slides)
+        if _overlap(words[o], ref_words) >= RENDITION_WORD_OVERLAP:
+            renditions[o] = "the reference in another format"  # panel() drops a byte-identical copy; this is the same deck printed
+            continue
+        hf = house_features(o_slides)
         if not scorable(hf):
             skipped.append(o)
             continue
@@ -712,6 +732,16 @@ def judge(candidate: str, reference: str, others: list[str] | None = None, ref_s
             kin[o] = round(total(distance(cf, hf)), 3)
             continue
         rivals[o] = round(total(distance(cf, hf)), 3)
+    # a rival that is a kin deck in another format (a PDF print of a sister pptx) is that
+    # deck: a print reads farther from the reference than its source (PDF blocks hug their
+    # glyphs where a pptx box keeps its insets), so its house is the source's
+    for o in list(rivals):
+        twin = next((k for k in kin if _overlap(words[o], words[k]) >= RENDITION_WORD_OVERLAP), None)
+        if twin is not None:
+            kin[o] = rivals.pop(o)
+            renditions[o] = f"{twin} in another format"
+    if renditions:
+        out["renditions"] = renditions
     out["others"] = rivals
     if skipped:
         out["panel_skipped"] = {"reason": "no type evidence (a scan, a browser print or an empty deck)", "files": skipped}
