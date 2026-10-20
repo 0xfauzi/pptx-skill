@@ -827,7 +827,10 @@
    },
    "styling": {
     "walk": {
-     "totals_last_row": true
+     "emphasis_rows": [
+      4,
+      5
+     ]
     }
    },
    "charts": {

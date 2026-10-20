@@ -243,6 +243,15 @@ Conventions the build enforces:
 - Bullet indents come from the reference's own bullets; a reference without bullets gets
   the spacing scale's progression (sm, md, lg).
 
+A bridge is a native chart: `"chart_kind": "waterfall"` with `categories`,
+`deltas` (signed steps) and `totals` (the indices that draw from zero; each must equal
+the running sum of the steps before it, or the build refuses). Steps take
+`color.positive` and `color.negative` when the guide has them, else accent1, and the
+value axis is hidden because every bar carries its label. A step that would reach below
+zero is refused: build that bridge from rects. A slide-layer logo, rule or label the
+reference pastes on every page is drawn on every generated page in the default
+`--chrome auto`; chrome the layout already carries is inherited, never redrawn.
+
 Motifs the digest lists (a band, a rule, a block with a preset, roles and an anchor)
 are applied by you: draw one as a `rule` or `rect` element with the motif's line or
 fill role at the place the reference uses it (`slide_top` and `slide_bottom` marks
@@ -298,6 +307,12 @@ houses. Read `work/out/deck.build.json`:
   6.7 in on the next reads as two different pages.
 - `component_notes`: a component admitted against another reference; run
   `component.py check` with this guide before trusting its fit.
+- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
+- `contrast` per page: every text run and every table row class scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else `color.surface`). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that); `unbound` lists runs with no ink role, which inherit the master's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank. The table cells' inverse-ink swap the emitter makes is scored as drawn, so a table set in a filled region with unfilled cells is caught here, not by the emitter.
+- `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`. Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
+- `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.
+- `tieouts` per page: for every table with `totals_last_row`, each number, currency or percent column's body sum against its totals cell at the cell's own decimals ($ , % x stripped, parentheses negative). A row headed median, average or mean is skipped as a statistic; a column with an n.a. cell is skipped and names the cell. A mismatch is a warning under `problems`: a subtotal inside the body or a non-total row styled as the totals row reads as a mismatch, so either compute the figure or take `totals_last_row` off that row.
+- A page with a table or a chart and no paragraph in `type.source_line` or `type.footnote` is refused with reason `no source line`.
 
 Density is a loop, not a setting. Add content to a page, build again, read the report.
 When a page fits with room at the reference's upper density band, add the next item.
@@ -328,6 +343,10 @@ figures. Re-run `check` with every new guide; the build says so when the guide d
 that must never wrap; the check fails a box where one of them did ("$1" over "4" is a
 defect the solver's fit verdict does not see).
 
+`check` first runs each test's `expand` twice in separate interpreters under PYTHONHASHSEED=0 and PYTHONHASHSEED=1 and compares the trees with keys sorted: a dict whose key order moved is not a difference, a list whose order moved is. Any difference fails the check and names the first differing path (`$.children[0].paragraphs[0].text: ...`); a set iterated into children is the usual cause. The check also fails a box with a contrast violation; the harness page's missing source line is not the component's fault. `kind` may be a path to a component directory under development, so a draft can be checked before it enters `components/`.
+
+Never estimate a text width in a component (`0.6 em per character` wrapped "$8.2 to $12.4" onto two lines). `expand` receives the guide with `guide["_api"]`, the solver's own instruments: `api["text_width_emu"](guide, role, text)` is the width the whole string draws in that role at scale 1.00 (cased, tracked, bold when the role is), `api["line_pitch_emu"](guide, role)` the baseline advance, `api["paragraph_spacing_emu"]` the role's spcBef plus spcAft, `api["fit_epsilon_emu"]` the ruler's wrap margin. A text element sized to `text_width_emu + fit_epsilon_emu` stays on one line; add your own padding. `python3 scripts/component_api.py guide.json type.caption '$12.4 to $13.9'` prints the figures by hand. The functions raise on a role the guide lacks, as the solver would; do not catch and guess.
+
 Look at the contact sheet before admitting. A component is admitted only when all four
 boxes solve with no violation; the held-out case is what stops one tuned to its examples.
 Use it in a page as `{"type": "component", "id": "ff", "kind": "football_field", "data": {...}}`.
@@ -339,6 +358,17 @@ one layout per slide and one master per layout, content types, slide ids, shapes
 the page, charts parse). `validate --render` also reads the rendered page back with
 pdftotext and names every paragraph that did not draw: a schema-invalid spacing value
 once blanked sixteen bullets on a page that validated and judged clean. Then:
+
+`validate --emit --guide guide.json` reads the saved package for what PowerPoint and
+LibreOffice draw differently (deckgen E38, measured): a shared table edge declared
+differently on its two cells (PowerPoint keeps the first-declared side and writes it
+back, LibreOffice draws the heavier one, so a rule you saw in the render is gone in the
+banker's copy), a stroke under 0.5pt that the guide does not itself declare (0.48px in
+PowerPoint, 1.27px in LibreOffice), any gradient, a chart plot without `c:varyColors`
+(the default paints one series in five theme colours in PowerPoint only), a run below
+its role's floor, a typed page number where the layout carries the number field. The
+emitter writes none of these; the check is for a deck you edited by hand or got from
+elsewhere. Run it before handing a deck over.
 
 1. Look at every render at full size. The defects to look for, in order: text cut at a
    box edge; two elements sharing area; a source line touching the footer rule; uneven
@@ -382,6 +412,11 @@ Slides the deck already had are not re-solved or restyled: they are the referenc
 pages are built on the template that keeps them and appended. To replace one page,
 delete it, build the new one, and splice with `duplicate`/`delete` order kept: structure
 first, content second.
+
+Every generated slide carries an origin tag (a `p:tags` part with `pptx-skill` =
+`generated`, which deckgen measured surviving a PowerPoint save). The extractor and the
+gallery skip tagged slides, so a deck you added pages to can serve as its own reference
+again without learning from your pages; `--include-generated` overrides.
 
 ## 11. Hard rules
 
