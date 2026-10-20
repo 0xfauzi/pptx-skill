@@ -140,7 +140,10 @@ Rules the finalizer enforces, and the ones only you can keep:
   never wrote smaller body text) there is no headroom: density then comes from
   arrangement and content, not from shrinking. You may lower a floor deliberately in the
   completion (`/floors/body/floor_pt`) when the reference's own captions show a smaller
-  size in use; never below `absolute_floor_pt` (7.0pt, measured).
+  size in use; never below `absolute_floor_pt` (7.0pt, measured on two screen media by
+  one rater for Arial and Calibri at regular and bold; print was excluded from that
+  measurement, so for a deck that will be printed never go below the reference's own
+  `floor_pt` either).
 
 Example completion: `examples/keybank.completion.json` (a pptx reference with no tables
 or charts) and `examples/mckinsey-pdf.completion.json` (a PDF reference).
@@ -176,7 +179,7 @@ python3 scripts/build_deck.py work/ref/rt3.deck.json --guide work/ref/guide.json
 The distance must sit inside the house's own spread (the leave-one-out distance of
 each reference slide to the rest; `fingerprint.py calibrate` prints it, keybank's is
 0.08 to 0.13). Then LOOK at the render next to the reference slide: on keybank the
-judge said 0.083 while the labels were still black and left-aligned, because the
+judge said 0.083 (0.056 at HEAD) while the labels were still black and left-aligned, because the
 reader had missed the shape-style text colour on both sides. The render caught it; the
 number did not. The imported spec is also your seed: a page that starts from the
 exemplar of its composition family begins inside the house's bands and columns.
@@ -239,6 +242,12 @@ Conventions the build enforces:
   at the paragraph's regular weight; keep them short or give the box slack.
 - Bullet indents come from the reference's own bullets; a reference without bullets gets
   the spacing scale's progression (sm, md, lg).
+
+Motifs the digest lists (a band, a rule, a block with a preset, roles and an anchor)
+are applied by you: draw one as a `rule` or `rect` element with the motif's line or
+fill role at the place the reference uses it (`slide_top` and `slide_bottom` marks
+are chrome and already on the layout; `region_edge` and `element_adjacent` marks are
+yours to place). There is no motif field in the page grammar.
 
 ## 7. Build, read, add, build again
 
