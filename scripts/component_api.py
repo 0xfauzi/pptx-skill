@@ -62,7 +62,7 @@ def make_api(guide_raw: dict, lg: L.Guide | None = None, ruler: L.Ruler | None =
 
     def text_width_emu(guide: dict, role: str, text: str, emphasis: bool = False) -> int:
         entry = L.resolve_type_entry(lg, role, Fraction(1))
-        face = index.resolve(entry.family, bold=entry.bold or bool(emphasis), italic=entry.italic)
+        face = ctx.face(entry, bold=entry.bold or bool(emphasis))
         cased = L.apply_case(text, entry.case)
         if not cased.strip(" "):
             return 0

@@ -12,11 +12,13 @@ it. Stdlib + Pillow, uharfbuzz when importable, no deckgen import at runtime.
 THE LOOP at one scale s: resolve every in-use type role (size snapped to the 0.5 pt
 grid, spacing and tracking to hundredth-points); probe solve for widths; measure
 every paragraph at width - indent - FIT_EPSILON as whole strings; fit every table;
-region heights bottom-up (column flex = sum + gaps + 2 pad, non-stretch row = max +
-2 pad, grid / stretch row / root = flexible); final solve with the measured
-intrinsics; re-measure and REFUSE the candidate if any line text moved; validate
-(containment, overlap, exceeds_page, overcommit, zero_dimension, reserved_zone,
-each with scale_fixable). THE DESCENT: 1.00, then the 0.01 ladder with scales where
+region heights bottom-up (column = sum + gaps + 2 pad, row = max + 2 pad; flexible:
+the root, a grid, an ancestor of a flexible child, a region with a weight inside a
+column, each floored at its content height; a row's align never makes it flexible);
+final solve with the measured intrinsics; re-measure and REFUSE the candidate if any
+line text moved; validate (containment, overlap, exceeds_page, overcommit,
+zero_dimension, reserved_zone, and per measured element against its own box:
+overflow and word_split, each with scale_fixable). THE DESCENT: 1.00, then the 0.01 ladder with scales where
 two adjacent hierarchy sizes snap together excluded, truncated at the legibility
 floor, searched by bisection (fit is monotone in s: docs/measurements/
 E21-decision.md, 2,982 measurements, 0 inversions); else Unfittable with the
@@ -87,6 +89,7 @@ from textfit import (  # noqa: E402
     FaceIndex,
     MeasuredLine,
     Ruler,
+    SubstituteMismatchError,
     UnknownFamilyError,
     UnknownStyleError,
     UnmeasurableTextError,
@@ -95,6 +98,7 @@ from textfit import (  # noqa: E402
     default_index,
     default_ruler,
     measure_text,
+    resolve_measured,
 )
 
 EMU_PER_POINT = 12_700
@@ -529,11 +533,9 @@ def type_role(guide: Guide, role: str) -> TypeRole:
 
 def face_for_weight(guide: Guide, spec: TypeRole) -> tuple[str, bool]:
     """400 and 700 map to the OOXML bold toggle; any other weight needs a named
-    face in weight_faces, else a refusal (never collapsed to bold or regular).
-    A face the sandbox lacks measures as the stand-in the guide names under
-    typography.families.substitutes (the completer's recorded choice), never as
-    a silent fallback."""
-    family = guide.substitutes.get(spec.family, spec.family)
+    face in weight_faces, else a refusal (never collapsed to bold or regular). The
+    family returned is the one the file names; Context.face picks what measures it."""
+    family = spec.family
     if spec.weight == 400:
         return family, False
     if spec.weight == 700:
@@ -613,10 +615,12 @@ def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
 
 @dataclass(frozen=True)
 class IntrinsicSize:
-    """A MEASURED extent; None on an axis = flexible on that axis."""
+    """A MEASURED extent; None on an axis = flexible on that axis. A flexible height
+    still has a floor, its measured content, which a column never cuts below."""
 
     width_emu: int | None = None
     height_emu: int | None = None
+    min_height_emu: int = 0
 
 def content_box(box: Box, layout: Flex | Grid, guide: Guide, scale: Fraction) -> Box:
     if layout.pad_role is None:
@@ -687,31 +691,58 @@ def _justify_offsets(justify: str, free: Fraction, n: int) -> tuple[Fraction, Fr
         return free / n / 2, free / n
     return Fraction(0), Fraction(0)
 
+def _weighted_sizes(children: Sequence[Region | Element], mains: list[int | None], floors: list[int], remaining: int) -> list[int]:
+    """Flexible children split `remaining` by weight, none below its floor: a child whose
+    share falls under its floor is frozen at the floor and the rest re-split (CSS flex's
+    freeze loop). Integer EMU by largest remainder, so the shares sum exactly to what was
+    split and a measured sibling keeps its exact size (cumulative rounding once solved a
+    1 EMU rule to 0 or 2)."""
+    sizes = [m if m is not None else 0 for m in mains]
+    open_ = [i for i, m in enumerate(mains) if m is None]
+    pool = remaining
+    while open_:
+        weights = {i: decimal_fraction(children[i].weight if children[i].weight is not None else 1.0) for i in open_}
+        total = sum(weights.values(), Fraction(0))
+        share = {i: Fraction(max(pool, 0)) * weights[i] / total for i in open_}
+        under = [i for i in open_ if share[i] < floors[i]]
+        if not under:
+            whole = {i: int(share[i]) for i in open_}
+            left = max(pool, 0) - sum(whole.values())
+            for i in sorted(open_, key=lambda k: (-(share[k] - whole[k]), k))[:left]:
+                whole[i] += 1
+            for i in open_:
+                sizes[i] = whole[i]
+            break
+        for i in under:
+            sizes[i] = floors[i]
+            pool -= floors[i]
+            open_.remove(i)
+    return sizes
+
 def _flex_child_boxes(region: Region, layout: Flex, content: Box, guide: Guide, s: Fraction, intr: Mapping[str, IntrinsicSize]) -> list[Box]:
-    """Intrinsic main sizes are taken EXACTLY; weight shares split the rest as
-    exact Fractions quantized once per edge, so sibling sizes sum exactly to
-    the distributable extent. Offset and size boundary quantize separately
-    (half-even is not translation-invariant)."""
+    """Intrinsic main sizes are taken EXACTLY; weight shares split the rest (never below
+    a flexible child's measured floor), so sibling sizes sum exactly to the distributable
+    extent. Offset and size boundary quantize separately (half-even is not
+    translation-invariant)."""
     is_row = layout.direction == "row"
     extent, cross_extent = (content.width, content.height) if is_row else (content.height, content.width)
     gap = gap_emu(guide, layout.gap_role, s, "x" if is_row else "y")
     n = len(region.children)
     distributable = max(extent - gap * (n - 1), 0)
     mains = [(h.width_emu if is_row else h.height_emu) if (h := intr.get(c.id)) else None for c in region.children]
+    floors = [0 if is_row or (h := intr.get(c.id)) is None else h.min_height_emu for c in region.children]
     fixed_total = sum(m for m in mains if m is not None)
-    weight_total = sum((decimal_fraction(c.weight if c.weight is not None else 1.0) for c, m in zip(region.children, mains) if m is None), Fraction(0))
+    flexible = any(m is None for m in mains)
     remaining = max(distributable - fixed_total, 0)
-    free = Fraction(remaining) if weight_total == 0 else Fraction(0)
+    sizes = _weighted_sizes(region.children, mains, floors, remaining)
+    free = Fraction(0) if flexible else Fraction(remaining)
     lead, extra = _justify_offsets(layout.justify, free, n)
     out: list[Box] = []
-    cumulative, q_prev = Fraction(0), 0
-    for index, (child, main) in enumerate(zip(region.children, mains)):
-        size = Fraction(main) if main is not None else Fraction(remaining) * decimal_fraction(child.weight if child.weight is not None else 1.0) / weight_total
+    cumulative = 0
+    for index, (child, size) in enumerate(zip(region.children, sizes)):
         offset = quantize_emu(lead + (gap + extra) * index)
+        start, end = offset + cumulative, offset + cumulative + size
         cumulative += size
-        q_cum = quantize_emu(cumulative)
-        start, end = offset + q_prev, offset + q_cum
-        q_prev = q_cum
         cross_size, cross_off = cross_extent, 0
         hint = intr.get(child.id)
         cross_hint = (hint.height_emu if is_row else hint.width_emu) if hint else None
@@ -856,15 +887,21 @@ class Context:
     def entry(self, element: Element, role: str, scale: Fraction) -> TypeEntry:
         return resolve_type_entry(self.guide, role, Fraction(1) if element.scale_class == "fixed" else scale)
 
-    def face(self, entry: TypeEntry) -> Face:
-        return self.index.resolve(entry.family, bold=entry.bold, italic=entry.italic)
+    def face(self, entry: TypeEntry, *, bold: bool | None = None) -> Face:
+        """The face `entry` is measured with: its family, a metric alias, or the guide's
+        stand-in, which must be the face the renderer draws (textfit.resolve_measured)."""
+        try:
+            return resolve_measured(self.index, entry.family, bold=entry.bold if bold is None else bold, italic=entry.italic,
+                                    substitute=self.guide.substitutes.get(entry.family))
+        except SubstituteMismatchError as error:
+            raise LayoutContractError(str(error)) from None
 
 def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -> list[ParagraphMeasurement]:
     """Wrapped at allowance - FIT_EPSILON, charged at the full allowance."""
     out: list[ParagraphMeasurement] = []
     for index, paragraph in enumerate(element.paragraphs):
         entry = ctx.entry(element, paragraph.role, scale)
-        face = ctx.index.resolve(entry.family, bold=True, italic=entry.italic) if paragraph.emphasis else ctx.face(entry)
+        face = ctx.face(entry, bold=True) if paragraph.emphasis else ctx.face(entry)
         text = apply_case(paragraph.text, entry.case)
         indent = 0
         if paragraph.bullet_level is not None:
@@ -888,6 +925,44 @@ def element_height_emu(measurements: Sequence[ParagraphMeasurement]) -> int:
     """Every line plus EVERY paragraph's written spcBef and spcAft, trailing one
     included: exactly what the emit gate charges."""
     return sum(m.stack_emu + m.entry.spacing_emu for m in measurements)
+
+def split_words(m: ParagraphMeasurement) -> list[str]:
+    """Words the wrap cut between characters: a line that starts where the text offers
+    no break (wrap_text breaks a token wider than the line, as PowerPoint does)."""
+    stops = set(break_opportunities(m.text))
+    out: list[str] = []
+    for line in m.lines[1:]:
+        q = line.start
+        while q not in stops and q > 0 and m.text[q - 1] == " ":
+            q -= 1
+        if q in stops:
+            continue
+        left = max((s for s in stops if s <= q), default=0)
+        right = min((s for s in stops if s > q), default=len(m.text))
+        out.append(m.text[left:right].strip(" "))
+    return out
+
+def measured_violations(ctx: Context, boxes: Mapping[str, Box], measurements: Mapping[str, Sequence[ParagraphMeasurement]], fits: Mapping[str, TableFit]) -> list[Violation]:
+    """Every measured element against its OWN solved box: the stack of lines (or the
+    table's rows) must fit the box's height, whatever region placed it, and no word may
+    be cut between characters. Containment compares boxes only, so a box a stretch row
+    or a grid track sized below its text passed it."""
+    out: list[Violation] = []
+    for el_id, rows in measurements.items():
+        box = boxes[el_id]
+        need = element_height_emu(rows)
+        if need > box.height:
+            out.append(Violation("overflow", el_id, None, f"the measured text needs {need} EMU and its box is {box.height} EMU tall", need - box.height, True))
+        for m in rows:
+            for word in split_words(m):
+                width = advance_emu(ctx.ruler, word, m.face.path, m.entry.size_pt)
+                out.append(Violation("word_split", el_id, None, f"paragraph {m.index}: {word!r} at {m.entry.size_pt}pt measures {width} EMU, wider than the {m.allowance_emu - ctx.ruler.fit_epsilon_emu} EMU line, so it breaks between characters",
+                                     width - (m.allowance_emu - ctx.ruler.fit_epsilon_emu), True))
+    for el_id, fit in fits.items():
+        box = boxes[el_id]
+        if fit.total_height_emu > box.height + EMIT_SLACK_EMU:
+            out.append(Violation("overflow", el_id, None, f"the fitted rows need {fit.total_height_emu} EMU and the table's box is {box.height} EMU tall", fit.total_height_emu - box.height, True))
+    return out
 
 # --- the dense-table fitter (deckgen table_fitter.py, table_text.py) ----------------
 
@@ -1037,7 +1112,7 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
         padding = guide.cell_padding_emu if guide.cell_padding_emu is not None else DEFAULT_CELL_INSET_EMU
     cell = DrawnRole(e := ctx.entry(element, table.cell_role, scale), ctx.face(e).path)
     # a totals row is written bold: measured bold too, or a cell that fits by a hair breaks a word
-    cell_bold = DrawnRole(e, ctx.index.resolve(e.family, bold=True, italic=e.italic).path)
+    cell_bold = DrawnRole(e, ctx.face(e, bold=True).path)
     header = None
     if table.header_rows:
         header = DrawnRole(h := ctx.entry(element, table.header_role, scale), ctx.face(h).path)
@@ -1114,24 +1189,29 @@ def fitting_prefix(row_heights: Sequence[int], header_rows: int, budget: int) ->
 
 # --- the two-pass fixed point --------------------------------------------------------
 
-def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heights: dict[str, int], root: bool) -> int | None:
-    """Content-driven heights bottom-up; a grid, a stretch row, the root and any
-    ancestor of a flexible child keep their weight share."""
+def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heights: dict[str, int], floors: dict[str, int], root: bool, in_column: bool = False) -> tuple[int | None, int]:
+    """(height, floor) bottom-up. A region is as tall as its content (column: the sum and
+    gaps, row: the tallest child, plus padding) unless it is flexible: the root, a grid,
+    an ancestor of a flexible child, or a region with a weight inside a column, which
+    asks for its share. A flexible region keeps its content as a floor, so a share never
+    cuts measured text or a table short. A row's align is cross-axis placement only."""
     if isinstance(node, Element):
-        return heights.get(node.id)
-    child_heights = [_region_heights(c, guide, scale, heights, False) for c in node.children]
-    if root or not node.children or any(h is None for h in child_heights) or isinstance(node.layout, Grid):
-        return None
-    known = [h for h in child_heights if h is not None]
+        height = heights.get(node.id)
+        return height, height or 0
+    is_column = isinstance(node.layout, Flex) and node.layout.direction == "column"
+    child = [_region_heights(c, guide, scale, heights, floors, False, is_column) for c in node.children]
+    if isinstance(node.layout, Grid) or not node.children:
+        return None, 0
     pad = 2 * space_emu(guide, node.layout.pad_role, scale, "y") if node.layout.pad_role else 0
-    if node.layout.direction == "column":
-        total = sum(known) + gap_emu(guide, node.layout.gap_role, scale, "y") * (len(known) - 1) + pad
-    elif node.layout.align == "stretch":
-        return None
+    if is_column:
+        floor = sum(f for _, f in child) + gap_emu(guide, node.layout.gap_role, scale, "y") * (len(child) - 1) + pad
     else:
-        total = max(known) + pad
-    heights[node.id] = total
-    return total
+        floor = max(f for _, f in child) + pad
+    if root or any(h is None for h, _ in child) or (in_column and node.weight is not None):
+        floors[node.id] = floor
+        return None, floor
+    heights[node.id] = floor
+    return floor, floor
 
 @dataclass
 class Resolved:
@@ -1167,9 +1247,12 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
             heights[element.id] = fits[element.id].total_height_emu
         elif element.height_emu is not None:
             heights[element.id] = element.height_emu
-    _region_heights(spec.root, guide, s, heights, True)
+    floors: dict[str, int] = {}
+    _region_heights(spec.root, guide, s, heights, floors, True)
     for node_id, height in heights.items():
         intrinsics[node_id] = IntrinsicSize(intrinsics.get(node_id, IntrinsicSize()).width_emu, height)
+    for node_id, floor in floors.items():
+        intrinsics[node_id] = IntrinsicSize(intrinsics.get(node_id, IntrinsicSize()).width_emu, None, floor)
     solved = solve_tree(spec, guide, s, intrinsics)
     final: dict[str, list[ParagraphMeasurement]] = {}
     for element in elements:
@@ -1181,7 +1264,7 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
                 raise CandidateRefused(f"element {element.id!r} measured {len(before)} line(s) at the probe width and {len(after)} at the solved width")
         elif element.id in fits and solved[element.id].width != fits[element.id].box_width:
             raise CandidateRefused(f"table {element.id!r} was fitted at {fits[element.id].box_width} EMU wide and solved to {solved[element.id].width}")
-    return Resolved(s, solved, final, fits, validate(spec, guide, s, solved, fits), ctx.ruler.name, ctx.ruler.fit_epsilon_emu)
+    return Resolved(s, solved, final, fits, validate(spec, guide, s, solved, fits) + measured_violations(ctx, solved, final, fits), ctx.ruler.name, ctx.ruler.fit_epsilon_emu)
 
 # --- scale descent (deckgen content/design_scale.py, docs/measurements/E21-decision.md)
 

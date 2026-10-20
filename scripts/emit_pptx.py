@@ -42,6 +42,11 @@ Spec shape (one slide shown):
 Text bodies are written with zero insets, square wrap and explicit noAutofit, paragraph
 spacing and line pitch as absolute points, and, when the solver measured the wrap, the
 measured lines as literal breaks: the file carries the wrap the fit decision was made on.
+Sizes come from the same place: a paragraph's `fit` (the solver's resolved entry, sz,
+lnSpc_spcPts, spcBef, spcAft, spc in hundredths) and a table's `fit_header`, `fit_cell`
+and `fit_padding_emu` are what the file is written at, so a page fitted at scale 0.89
+is written at 0.89. Measured lines without `fit`, or fitted row heights without
+`fit_cell`, are refused: lines measured at one size and written at another overflow.
 
 A chart is the spec the model wrote: `type` is any XL_CHART_TYPE member python-pptx
 writes, every colour a role or "none", every label, axis, legend and spacing choice
@@ -203,10 +208,13 @@ def _set_line(sp_pr: etree._Element, hex_color: str | None, width_emu: int | Non
 ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT, "justify": PP_ALIGN.JUSTIFY}
 
 
-def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | None) -> None:
+def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | None, fit: dict | None = None) -> None:
+    """`fit` is the solver's resolved entry for the paragraph (layout.resolved_json's
+    hints): the size and tracking it measured at, which at a scale below 1.00 are not
+    the guide's. The file carries those, never the guide's scale-1 values."""
     font = run.font
     font.name = guide.face(spec)
-    font.size = Pt(float(spec["size_pt"]))
+    font.size = Pt(fit["sz"] / 100) if fit else Pt(float(spec["size_pt"]))
     font.bold = bool(spec.get("weight", 400) >= 700 or emphasis)
     font.italic = bool(spec.get("italic", False))
     if ink_hex:
@@ -214,7 +222,7 @@ def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | 
     if spec.get("case") == "upper":
         run.text = run.text.upper()
     rpr = run._r.get_or_add_rPr()
-    tracking = spec.get("tracking_pt") or 0.0
+    tracking = (fit["spc"] / 100 if fit else spec.get("tracking_pt")) or 0.0
     if tracking:
         rpr.set("spc", str(int(round(tracking * 100))))
 
@@ -224,15 +232,16 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
     for tag in ("a:lnSpc", "a:spcBef", "a:spcAft", "a:buNone", "a:buChar", "a:buAutoNum", "a:buFont"):
         for el in p_pr.findall(qn(tag)):
             p_pr.remove(el)
-    size = float(spec["size_pt"])
+    fit = para.get("fit")
+    size = fit["sz"] / 100 if fit else float(spec["size_pt"])
     ls = spec.get("line_spacing") or 1.2  # measured default pitch (deckgen E16: 1.2002 x size, font independent)
     ln = etree.SubElement(p_pr, qn("a:lnSpc"))
-    etree.SubElement(ln, qn("a:spcPts")).set("val", str(int(round(ls * size * 100))))
+    etree.SubElement(ln, qn("a:spcPts")).set("val", str(fit["lnSpc_spcPts"] if fit else int(round(ls * size * 100))))
     bef = etree.SubElement(p_pr, qn("a:spcBef"))
     # the schema minimum is 0: a negative value blanks the paragraph in LibreOffice
-    etree.SubElement(bef, qn("a:spcPts")).set("val", str(max(0, int(round((para.get("space_before_pt", spec.get("space_before_pt")) or 0.0) * 100)))))
+    etree.SubElement(bef, qn("a:spcPts")).set("val", str(max(0, fit["spcBef"] if fit else int(round((para.get("space_before_pt", spec.get("space_before_pt")) or 0.0) * 100)))))
     aft = etree.SubElement(p_pr, qn("a:spcAft"))
-    etree.SubElement(aft, qn("a:spcPts")).set("val", str(max(0, int(round((para.get("space_after_pt", spec.get("space_after_pt")) or 0.0) * 100)))))
+    etree.SubElement(aft, qn("a:spcPts")).set("val", str(max(0, fit["spcAft"] if fit else int(round((para.get("space_after_pt", spec.get("space_after_pt")) or 0.0) * 100)))))
     level = para.get("bullet_level")
     align = para.get("align") or spec.get("alignment") or "left"
     p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
@@ -253,7 +262,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
         hanging = guide.space(hanging_role, indent) if hanging_role else indent
         # the glyph needs its own width plus a word space: a 5pt step on a 12pt body would
         # leave 0.8pt between the square and the text (reviewed on a dark PDF reference)
-        hanging = max(hanging, int(float(spec["size_pt"]) * 12700 * 0.9))
+        hanging = max(hanging, int(size * 12700 * 0.9))
         p_pr.set("lvl", str(int(level)))
         p_pr.set("marL", str(int(indent)))
         p_pr.set("indent", str(-int(min(indent, hanging))))
@@ -318,6 +327,9 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
         if spec.get("case") == "upper":
             runs = [{**r, "text": r["text"].upper()} for r in runs]  # the solver measured the cased text
         lines = para.get("lines")
+        fit = para.get("fit")
+        if lines and not fit:
+            raise SpecError(f"{el.get('id')}: measured lines without the solver's sizes (paragraph 'fit'); lines measured at one size and written at another overflow")
         if lines:
             # measured wrap: literal breaks between lines, runs split at line boundaries
             full = "".join(r["text"] for r in runs)
@@ -339,7 +351,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
                     if a < b:
                         pr = p.add_run()
                         pr.text = full[a:b]
-                        _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex)
+                        _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex, fit=fit)
                 if li < len(lines) - 1:
                     p._p.append(etree.Element(qn("a:br")))
                 pos = end
@@ -347,7 +359,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
             for r in runs:
                 pr = p.add_run()
                 pr.text = r["text"]
-                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex)
+                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex, fit=fit)
 
 
 def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
@@ -553,7 +565,10 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     for i, col in enumerate(table.columns):
         col.width = Emu(int(widths[i]))
     heights = el.get("row_heights_emu")
-    pad = int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
+    if heights and not el.get("fit_cell"):
+        raise SpecError(f"{el.get('id', 'table')}: fitted row heights without the solver's cell sizes ('fit_cell'); rows fitted at one size and written at another overflow")
+    # the inset the fitter charged at the page's scale; the guide's scale-1 inset otherwise
+    pad = int(el["fit_padding_emu"]) if el.get("fit_padding_emu") is not None else int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
     header_spec = guide.type_spec("type.table_header" if "type.table_header" in guide.roles else "type.body", where="table")
     cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where="table")
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
@@ -583,7 +598,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
             fill_hex = st["fill_hex"]
             # the ink is declared on the run so a dark reference does not inherit black
-            _style_run(run, spec, guide, emphasis=st["bold"], ink_hex=st["ink_hex"])
+            _style_run(run, spec, guide, emphasis=st["bold"], ink_hex=st["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"))
             ln = p._p.get_or_add_pPr()
             for tag in ("a:lnSpc", "a:spcBef", "a:spcAft"):
                 for old in ln.findall(qn(tag)):
@@ -1418,7 +1433,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
                 filled.add(title_ph.placeholder_format.idx)
             else:
                 box = tuple(int(v) for v in title["box"])
-                write_text(slide, {"id": "title", "kind": "text", "paragraphs": [{"role": title.get("role", "type.title"), "runs": [{"text": title["text"]}], "lines": title.get("lines")}]}, guide, box)
+                write_text(slide, {"id": "title", "kind": "text", "paragraphs": [{"role": title.get("role", "type.title"), "runs": [{"text": title["text"]}], "lines": title.get("lines"), "fit": title.get("fit")}]}, guide, box)
         # a text element whose first paragraph is the title takes the layout's title
         # placeholder when the layout has one
         title_el = next((el for el in sd.get("elements", []) if el.get("kind") == "text" and el.get("paragraphs") and el["paragraphs"][0].get("role") == "type.title"), None)

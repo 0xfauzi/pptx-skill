@@ -37,7 +37,7 @@ from lxml import etree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ooxml  # noqa: E402
-from textfit import metric_alias  # noqa: E402
+from textfit import fc_match, metric_alias  # noqa: E402
 
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 UNCOVERED_SAMPLE_MAX = 10
@@ -133,13 +133,7 @@ def font_report(faces: set[str], deck: Path | None = None) -> dict[str, dict[str
     used = codepoints_by_face(deck) if deck is not None else {}
     out: dict[str, dict[str, object]] = {}
     for face in sorted(faces | set(used)):
-        try:
-            match = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{index}", face], capture_output=True, text=True, timeout=20).stdout
-        except (OSError, subprocess.TimeoutExpired):
-            match = ""
-        family, _, rest = match.partition("\t")
-        file, _, index = rest.partition("\t")
-        chosen = family.split(",")[0].strip()
+        chosen, file, face_index = fc_match(face)  # the one fc-match reader: the solver measures a stand-in with it too
         same = chosen.lower() == face.lower()
         entry: dict[str, object] = {
             "rendered_with": chosen,
@@ -148,7 +142,7 @@ def font_report(faces: set[str], deck: Path | None = None) -> dict[str, dict[str
         }
         if deck is not None:
             points = used.get(face, set())
-            missing = uncovered(points, charset_of(file, int(index) if index.isdigit() else 0) if file else [])
+            missing = uncovered(points, charset_of(file, face_index) if file else [])
             entry["codepoints_checked"] = len(points)
             entry["uncovered_count"] = len(missing)
             entry["uncovered_sample"] = [f"U+{p:04X}" for p in missing[:UNCOVERED_SAMPLE_MAX]]

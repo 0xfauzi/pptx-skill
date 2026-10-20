@@ -92,15 +92,15 @@ build's; "filed" is the judge's `filed_under_reference`.
 | 01 | unfittable | 0.99 | (no title band) | no | el-section-title and grp-content-0-body cross the reference's top-rule zone by 1,828 EMU |
 | 02 | fit | 0.98 | 1 | no (nearest house is not keybank) | nothing; render reads cleanly |
 | 03 | unfittable | 0.98 | 2 | no | band-history runs past the page |
-| 04 | unfittable | 0.99 | 1 | no | el-segment-table leaves band-exhibit by 404,607 EMU |
+| 04 | unfittable | 0.99 | 1 | no | el-segment-table's columns need 404,607 EMU more than its box; the source line crosses the footer rule zone by 44,127 EMU |
 | 05 | unfittable | 0.98 | 2 | no | el-trend-table runs past the page |
 | 06 | unfittable | 0.98 | 2 | no | only the two-line title, crossing the top-rule zone; the body fits |
 | 07 | fit | 1.00 | 1 | yes | solver fit, but the waterfall is left 266,789 EMU tall (read from the emitted pptx): the two text columns and the 7-row table take the page, so the chart is a sliver. Not a usable page on keybank. |
 | 08 | unfittable | 0.98 | 2 | no | 17-row table measures 9,854,046 EMU tall (company names wrap to 3 lines in keybank's 12pt cells); 3 rows fit; even the declared split at row 9 does not |
 | 09 | unfittable | 1.00 | 2 | no | text, 7-row table and note leave the football field a box of height 0; band-body over by 495,645 EMU |
 | 10 | unfittable | 0.98 | 2 | no | band-shortlist runs past the page |
-| 11 | unfittable | 1.00 | 2 | no | the eight cards overflow their rows (el-cred-0 by 1,456,729 EMU); the rule between card rows gets zero height |
-| 12 | unfittable | 0.98 | 2 | no | only the two-line title, crossing the top-rule zone; the body fits |
+| 11 | unfittable | 0.98 | 2 | no | each card row is as tall as its tallest card, which pushes band-reading 2,189,204 EMU past the page (before the 2026-10-20 fit-truth change the rows were cut to a share and the cards overflowed them unreported, with the rule between card rows rounded to zero height) |
+| 12 | unfittable | 0.98 | 2 | no | the two-line title, crossing the top-rule zone, and el-league: its fitted rows need 2,727,460 EMU in a 1,436,322 EMU box (unreported before the 2026-10-20 fit-truth change) |
 | 13 | unfittable | 0.98 | 2 | no | band-workstreams runs past the page |
 | 14 | unfittable | 0.99 | 2 | no | band-asks runs past the page |
 
