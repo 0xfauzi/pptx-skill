@@ -10,10 +10,25 @@
     pptx_tools.py delete deck.pptx --slides 2,5 -o out.pptx
     pptx_tools.py clean deck.pptx -o out.pptx         # drop parts nothing references
     pptx_tools.py validate deck.pptx [--render]       # package checks, then a LibreOffice round trip with --render
+    pptx_tools.py validate deck.pptx --emit [--guide guide.json]   # plus the emitter read-back (below)
 
 Original code; python-pptx for the package graph, lxml for the XML. Nothing here changes
 a slide's content: content edits go through the layout solver and the emitter, or through
 python-pptx in a script the model writes.
+
+`validate --emit` walks the saved package for what the two renderers draw differently
+(deckgen E38) and reports each as a problem: a table whose shared interior edge differs
+between its two declaring cells (class 4: PowerPoint keeps the first-declared side and
+writes it back, LibreOffice draws the heavier one); a stroke with w below 6350 EMU, 0.5pt
+(class 5: at 0.25pt PowerPoint inks 0.48px, LibreOffice 1.27px), unless the guide's own
+rule width says so, which is reported and not failed; a gradient fill on a slide or in
+its charts (classes 6-7); a chart plot group without c:varyColors (class 10); a run whose
+size is below the legibility floor (the guide's floors, max(floor_pt, absolute_floor_pt)
+per family, resolved by where the run sits: table cells to the table roles' family, chart
+parts to the chart family, everything else to the lowest family floor because the file
+does not carry the role; without a guide, 7.0pt, deckgen E45); a slide-number placeholder
+whose text is digits instead of a slidenum field. It also counts the slides carrying the
+emitter's origin tag (p:tag name="pptx-skill"), which `text` prints per slide.
 """
 
 from __future__ import annotations
@@ -36,9 +51,37 @@ from pptx.oxml.ns import qn
 from pptx.util import Emu
 
 EMU_PER_INCH = 914400
+EMU_PER_PT = 12700
+ORIGIN_TAG_NAME = "pptx-skill"  # the emitter's origin tag; deckgen 2E-1 measured it surviving a PowerPoint save
+# 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
+RULE_WEIGHT_FLOOR_EMU = 6350
+# The product safety floor: 7.0pt on both render media (deckgen E45), the floor with no guide.
+PRODUCT_SAFETY_FLOOR_PT = 7.0
+# Every DrawingML stroke: a:ln on shapes and charts, the six table cell borders.
+LINE_TAGS = ("a:ln", "a:lnL", "a:lnR", "a:lnT", "a:lnB", "a:lnTlToBr", "a:lnBlToTr")
+# Plot groups whose schema carries c:varyColors (ECMA-376 21.2.2).
+VARY_COLORS_GROUPS = {"barChart", "bar3DChart", "lineChart", "line3DChart", "pieChart", "pie3DChart", "ofPieChart", "doughnutChart",
+                      "areaChart", "area3DChart", "scatterChart", "radarChart", "bubbleChart"}
+P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
 
 
 # --- text ---------------------------------------------------------------------------------------
+
+
+def slide_origin(slide) -> str | None:
+    """The emitter's origin tag read back from the slide's tags parts: the name of the
+    tag whose value says what made the slide, or None for a slide the deck already had."""
+    for rel in slide.part.rels.values():
+        if rel.reltype != RT.TAGS or rel.is_external:
+            continue
+        try:
+            root = etree.fromstring(rel.target_part.blob, parser=etree.XMLParser(resolve_entities=False))
+        except etree.XMLSyntaxError:
+            continue
+        for tag in root.iter(qn("p:tag")):
+            if tag.get("name") == ORIGIN_TAG_NAME:
+                return tag.get("val")
+    return None
 
 
 def _leaf_shapes(shapes):
@@ -82,7 +125,7 @@ def slide_text(path: str) -> list[dict]:
     prs = Presentation(path)
     out = []
     for i, slide in enumerate(prs.slides, 1):
-        entry: dict = {"slide": i, "layout": slide.slide_layout.name, "title": None, "blocks": [], "tables": [], "notes": None}
+        entry: dict = {"slide": i, "layout": slide.slide_layout.name, "origin": slide_origin(slide), "title": None, "blocks": [], "tables": [], "notes": None}
         for shape in _leaf_shapes(slide.shapes):
             if shape.has_text_frame and shape.text_frame.text.strip():
                 text = "\n".join(p.text for p in shape.text_frame.paragraphs)
@@ -102,7 +145,8 @@ def slide_text(path: str) -> list[dict]:
 
 def print_text(entries: list[dict]) -> None:
     for e in entries:
-        print(f"--- slide {e['slide']} ({e['layout']}) ---")
+        origin = f" [{ORIGIN_TAG_NAME}: {e['origin']}]" if e.get("origin") else ""
+        print(f"--- slide {e['slide']} ({e['layout']}){origin} ---")
         if e["title"]:
             print(f"# {e['title']}")
         for b in e["blocks"]:
@@ -219,8 +263,10 @@ def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
             rid_map[rel.rId] = new.part.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref)
             continue
         target = rel.target_part
-        if rel.reltype == RT.CHART:
-            # a chart part must be copied, or both slides edit one chart
+        if rel.reltype in (RT.CHART, RT.TAGS):
+            # a chart part must be copied, or both slides edit one chart; a tags part is
+            # one slide's own record (deckgen 2E-1: a tags part merely related from a
+            # slide marked it as generated)
             new_part = _copy_part(prs, target)
             rid_map[rel.rId] = new.part.relate_to(new_part, rel.reltype)
         else:
@@ -327,7 +373,189 @@ def undrawn_paragraphs(path: str, pdf: Path) -> list[str]:
     return out
 
 
-def validate(path: str, render: bool) -> dict:
+def _safe_xml(data: bytes) -> etree._Element:
+    return etree.fromstring(data, parser=etree.XMLParser(resolve_entities=False, huge_tree=False))
+
+
+def _edge_bytes(tc: etree._Element, side: str) -> bytes:
+    """One cell border, canonicalised with its name erased: the two sides of an edge are
+    lnB and lnT (or lnR and lnL) by construction, and everything else must match."""
+    tc_pr = tc.find(qn("a:tcPr"))
+    el = tc_pr.find(qn(side)) if tc_pr is not None else None
+    if el is None:
+        return b""
+    edge = copy.deepcopy(el)
+    edge.tag = qn("a:edge")
+    return etree.tostring(edge, method="c14n")
+
+
+def _draws(line: etree._Element) -> bool:
+    """a:noFill is how a stroke says draw nothing; the emitter pairs it with w=0 on every
+    table edge the guide leaves blank."""
+    return line.find(qn("a:noFill")) is None
+
+
+def _guide_floors(guide: dict | None) -> dict:
+    """Legibility floors by where a run sits. A run's role is not in the file, so the
+    floor for a slide run is the lowest family floor (a run below it is below every
+    role's floor); table cells resolve to the table roles' family and chart parts to
+    the chart family, whose roles the location fixes."""
+    floors = (guide or {}).get("floors") or {}
+    by_family: dict[str, float] = {}
+    by_role: dict[str, float] = {}
+    absolute = PRODUCT_SAFETY_FLOOR_PT
+    for fam, f in floors.items():
+        if not isinstance(f, dict):
+            continue
+        absolute = max(absolute, float(f.get("absolute_floor_pt") or 0.0))
+        floor = max(float(f.get("floor_pt") or 0.0), float(f.get("absolute_floor_pt") or 0.0))
+        if floor <= 0:
+            continue
+        by_family[fam] = floor
+        for role in f.get("roles") or []:
+            by_role[role] = floor
+    any_floor = min(by_family.values()) if by_family else absolute
+    table = min([by_role[r] for r in ("type.table_cell", "type.table_header") if r in by_role] or [any_floor])
+    chart = min([by_role[r] for r in ("type.axis_label", "type.data_label") if r in by_role] or [by_family.get("chart", any_floor)])
+    return {"slide": any_floor, "table": table, "chart": chart, "source": "guide floors" if by_family else f"no guide: {absolute}pt product safety floor (deckgen E45)"}
+
+
+def _guide_rule_widths_emu(guide: dict | None) -> set[int]:
+    """Every stroke width the guide itself declares: a rule below the floor that the
+    guide asks for is the house's choice, reported and not failed."""
+    widths: set[int] = set()
+    if not guide:
+        return widths
+
+    def take(pt, emu) -> None:
+        if emu:
+            widths.add(int(emu))
+        elif pt:
+            widths.add(int(round(float(pt) * EMU_PER_PT)))
+
+    tables = guide.get("tables") or {}
+    for rule in (tables.get("edge_rules") or {}).values():
+        if isinstance(rule, dict):
+            take(rule.get("width_pt"), rule.get("width_emu"))
+    if isinstance(tables.get("totals_rule"), dict):
+        take(tables["totals_rule"].get("width_pt"), tables["totals_rule"].get("width_emu"))
+    for item in list(guide.get("motifs") or []) + list(guide.get("chrome") or []):
+        if isinstance(item, dict):
+            take(item.get("line_width_pt"), item.get("line_width_emu"))
+    for spec in (guide.get("charts") or {}).get("per_kind", {}).values():
+        if isinstance(spec, dict):
+            take(spec.get("gridline_width_pt"), None)
+            take(spec.get("axis_line_width_pt"), None)
+    return widths
+
+
+def _check_strokes(part: str, root: etree._Element, guide_widths: set[int], problems: list[str], info: dict) -> None:
+    for tag in LINE_TAGS:
+        for line in root.iter(qn(tag)):
+            info["strokes_checked"] += 1
+            if not _draws(line):
+                continue
+            w = line.get("w")
+            if w is None or int(w) >= RULE_WEIGHT_FLOOR_EMU:
+                continue
+            if int(w) in guide_widths:
+                info["guide_rule_widths_below_floor"].append({"part": part, "tag": tag, "w_emu": int(w), "w_pt": round(int(w) / EMU_PER_PT, 2)})
+                continue
+            problems.append(f"{part}: {tag} w={w} EMU ({int(w) / EMU_PER_PT:.2f}pt) is below the 6350 EMU (0.5pt) floor: at 0.25pt PowerPoint inks 0.48px where LibreOffice inks 1.27px (E38 class 5)")
+
+
+def _check_sizes(part: str, nodes, floor_pt: float, where: str, problems: list[str], info: dict) -> None:
+    for node in nodes:
+        sz = node.get("sz")
+        if sz is None:
+            continue
+        info["runs_checked"] += 1
+        if int(sz) < int(round(floor_pt * 100)):
+            problems.append(f"{part}: run sz={sz} ({int(sz) / 100:g}pt) is below the {where} floor {floor_pt:g}pt")
+
+
+def emit_checks(z: zipfile.ZipFile, names: set[str], slide_parts: list[str], guide: dict | None) -> tuple[list[str], dict]:
+    """The emitter read-back (module docstring): what the saved bytes carry that the two
+    renderers draw differently, read off the package alone."""
+    problems: list[str] = []
+    info: dict = {"tables": 0, "shared_edges_checked": 0, "strokes_checked": 0, "chart_parts": 0, "runs_checked": 0,
+                  "generated_slides": 0, "guide_rule_widths_below_floor": [], "floors": _guide_floors(guide)}
+    guide_widths = _guide_rule_widths_emu(guide)
+    floors = info["floors"]
+    for sp in slide_parts:
+        if sp not in names:
+            continue
+        root = _safe_xml(z.read(sp))
+        rels_name = sp.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels"
+        rels = _safe_xml(z.read(rels_name)) if rels_name in names else None
+        chart_parts: list[str] = []
+        if rels is not None:
+            for rel in rels:
+                kind = (rel.get("Type") or "").rsplit("/", 1)[-1]
+                target = "ppt/" + (rel.get("Target") or "").replace("../", "")
+                if kind == "chart" and target in names:
+                    chart_parts.append(target)
+                if kind == "tags" and target in names:
+                    tag_root = _safe_xml(z.read(target))
+                    if any(t.get("name") == ORIGIN_TAG_NAME for t in tag_root.iter(qn("p:tag"))):
+                        info["generated_slides"] += 1
+        # shared table edges, byte for byte on both declaring cells (E38 class 4)
+        for tbl in root.iter(qn("a:tbl")):
+            info["tables"] += 1
+            frame = next(tbl.iterancestors(qn("p:graphicFrame")), None)
+            cnv = frame.find(".//" + qn("p:cNvPr")) if frame is not None else None
+            name = cnv.get("name") if cnv is not None else f"table#{info['tables']}"
+            grid = [row.findall(qn("a:tc")) for row in tbl.findall(qn("a:tr"))]
+            mismatches: list[str] = []
+            for ri, row in enumerate(grid):
+                for ci, cell in enumerate(row):
+                    if ri + 1 < len(grid) and ci < len(grid[ri + 1]):
+                        info["shared_edges_checked"] += 1
+                        if _edge_bytes(cell, "a:lnB") != _edge_bytes(grid[ri + 1][ci], "a:lnT"):
+                            mismatches.append(f"row {ri} lnB vs row {ri + 1} lnT at column {ci}")
+                    if ci + 1 < len(row):
+                        info["shared_edges_checked"] += 1
+                        if _edge_bytes(cell, "a:lnR") != _edge_bytes(row[ci + 1], "a:lnL"):
+                            mismatches.append(f"column {ci} lnR vs column {ci + 1} lnL at row {ri}")
+            if mismatches:
+                problems.append(f"{sp}: table {name!r} declares {len(mismatches)} shared edge(s) differently on its two cells ({mismatches[0]}{'; ...' if len(mismatches) > 1 else ''}): "
+                                "PowerPoint keeps the first-declared side and writes it back on save, LibreOffice draws the heavier one (E38 class 4)")
+        _check_strokes(sp, root, guide_widths, problems, info)
+        for grad in root.iter(qn("a:gradFill")):
+            problems.append(f"{sp}: a:gradFill: the two renderers put a gradient's midpoint 20 points apart and a radial's dark area a factor of 2.7 apart (E38 classes 6-7)")
+            break
+        # run sizes against the floor of where the run sits
+        # membership by ancestry: lxml recreates element proxies, so identity sets drop runs
+        runs = list(root.iter(qn("a:rPr")))
+        in_table = [r for r in runs if any(a.tag == qn("a:tbl") for a in r.iterancestors())]
+        _check_sizes(sp, in_table, floors["table"], "table family", problems, info)
+        _check_sizes(sp, [r for r in runs if not any(a.tag == qn("a:tbl") for a in r.iterancestors())], floors["slide"], "lowest family", problems, info)
+        # a literal number in the slide-number placeholder instead of the field
+        for sp_el in root.iter(qn("p:sp")):
+            ph = sp_el.find(f"{qn('p:nvSpPr')}/{qn('p:nvPr')}/{qn('p:ph')}")
+            if ph is None or ph.get("type") != "sldNum":
+                continue
+            for run in sp_el.iter(qn("a:r")):
+                text = "".join(t.text or "" for t in run.iter(qn("a:t")))
+                if re.fullmatch(r"\s*\d+\s*", text):
+                    problems.append(f"{sp}: slide-number placeholder carries the literal {text.strip()!r} instead of a slidenum field: the number is wrong after any reorder")
+        for cp in chart_parts:
+            croot = _safe_xml(z.read(cp))
+            info["chart_parts"] += 1
+            area = croot.find(".//" + qn("c:plotArea"))
+            groups = [g for g in area if etree.QName(g).localname in VARY_COLORS_GROUPS] if area is not None else []
+            for g in groups:
+                if g.find(qn("c:varyColors")) is None:
+                    problems.append(f"{cp}: c:{etree.QName(g).localname} writes no c:varyColors: the element defaults to true and PowerPoint paints one series in five theme colours where LibreOffice paints one (E38 class 10)")
+            _check_strokes(cp, croot, guide_widths, problems, info)
+            for grad in croot.iter(qn("a:gradFill")):
+                problems.append(f"{cp}: a:gradFill in a chart part (E38 classes 6-7)")
+                break
+            _check_sizes(cp, croot.iter(), floors["chart"], "chart family", problems, info)
+    return problems, info
+
+
+def validate(path: str, render: bool, emit: bool = False, guide: dict | None = None) -> dict:
     problems: list[str] = []
     info: dict = {"file": path}
     with zipfile.ZipFile(path) as z:
@@ -438,6 +666,9 @@ def validate(path: str, render: bool) -> dict:
                         problems.append(f"{n}: no plotArea")
                 except etree.XMLSyntaxError as exc:
                     problems.append(f"{n}: {exc}")
+        if emit:
+            emit_problems, info["emit"] = emit_checks(z, names, slide_parts, guide)
+            problems.extend(emit_problems)
     try:
         Presentation(path)
     except Exception as exc:  # noqa: BLE001
@@ -490,7 +721,11 @@ def main(argv: list[str]) -> int:
     s = sub.add_parser("delete"); s.add_argument("deck"); s.add_argument("--slides", required=True); s.add_argument("-o", "--out", required=True)
     s = sub.add_parser("clean"); s.add_argument("deck"); s.add_argument("-o", "--out", required=True)
     s = sub.add_parser("validate"); s.add_argument("deck"); s.add_argument("--render", action="store_true")
+    s.add_argument("--emit", action="store_true", help="the emitter read-back: shared table edges, stroke floor, gradients, varyColors, size floors, literal page numbers")
+    s.add_argument("--guide", default=None, help="style guide for the floors and the rule widths the house itself declares (with --emit)")
     args = ap.parse_args(argv)
+    if args.cmd == "validate" and args.guide and not args.emit:
+        ap.error("--guide needs --emit")
     if args.cmd == "blank":
         print(json.dumps(blank(args.out, args.width_emu, args.height_emu))); return 0
     if args.cmd in ("text", "layouts", "template", "duplicate", "delete", "clean", "validate"):
@@ -517,7 +752,8 @@ def main(argv: list[str]) -> int:
     if args.cmd == "clean":
         print(json.dumps(clean(args.deck, args.out))); return 0
     if args.cmd == "validate":
-        result = validate(args.deck, args.render)
+        guide = json.loads(Path(args.guide).read_text()) if args.guide else None
+        result = validate(args.deck, args.render, emit=args.emit, guide=guide)
         print(json.dumps(result, indent=1))
         return 0 if result["ok"] else 1
     return 1
