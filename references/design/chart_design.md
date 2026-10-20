@@ -66,7 +66,8 @@ decrements color.negative; connectors are color.rule hairlines. Each step
 shows its signed delta in type.data_label. Only the start, the end, and the
 one step the slide argues about get type.emphasis; that step alone shifts to
 color.accent1 with a type.caption note anchored to it. The value axis is
-suppressed: the labelled values carry the scale.
+suppressed: the labelled values carry the scale. How to write this, and the football
+field, mekko and labelled-bar exhibits, in the chart spec: `chart_recipes.md`.
 
 ## Checklist
 

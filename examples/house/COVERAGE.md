@@ -22,8 +22,8 @@ sizes; on another reference they are a starting arrangement, not a page that fit
 | `03-company-profile.deck.json` | Company profile page; headerless table; emphasis run | title, el-kicker, el-facts (table 6x2, no header), el-story (h2 + body), el-numbers (h2 + body with emphasis runs), el-segments (table 3x3), el-numbers-rule, el-numbers-note (footnote), el-history (table 7x5), source |
 | `04-headline-metrics.deck.json` | KPI figure band; column chart | title, el-kicker, five KPI groups grp-kpi-N (figure: the lead in type.title, the rest h1; label caption; closing rule), el-segment-chart (column), el-exhibit-note (h2 + body), el-segment-table (table 3x5), source |
 | `05-margin-trend.deck.json` | Text-plus-chart composite; line chart | title, el-kicker, el-argument (body) + rule, el-trend-table (table 7x5), el-argument-note (caption), el-margin-chart (line, two series), source |
-| `06-revenue-mix.deck.json` | Mekko (composite of natives) | title, el-kicker, three named columns el-mekko-name-N (h2) / el-mekko-size-N (caption) over el-mekko-N (stacked_column_100, one category, three region series), colour key el-key-* (emphasis) + el-key-note, el-mekko-reading (emphasis), source |
-| `07-ebitda-bridge.deck.json` | Waterfall | title, el-kicker, grp-adds / grp-takes (h2 + rule + body), el-bridge (waterfall: categories, deltas, totals [0, 6]), el-bridge-drivers (table 7x4), source |
+| `06-revenue-mix.deck.json` | Mekko (composite of natives) | title, el-kicker, three named columns el-mekko-name-N (h2) / el-mekko-size-N (caption) over el-mekko-N (`COLUMN_STACKED_100`, one category, three region series), colour key el-key-* (emphasis) + el-key-note, el-mekko-reading (emphasis), source |
+| `07-ebitda-bridge.deck.json` | Waterfall | title, el-kicker, grp-adds / grp-takes (h2 + rule + body), el-bridge (`COLUMN_STACKED`: invisible base, step series with per-point fills, a zero series carrying the signed labels), el-bridge-drivers (table 7x4), source |
 | `08-trading-comparables.deck.json` | Comps table; totals row; emphasis row; splittable group; takeaway band | title, el-kicker, el-comps (table 17x10; peer-median row 8 as emphasis_rows, row 16 as totals_last_row), el-comps-basis (footnote), el-takeaway (emphasis, in a filled band), source; splittable group grp-comps-blocks |
 | `09-football-field.deck.json` | Football field (as the `football_field` component); takeaway band | title, el-kicker, grp-overlap (h1 + rule + body), el-range-chart (component football_field, six methods from cig-football-field, axis $30 to $55), el-method-table (table 6x4), el-range-note (emphasis, in a filled band), source |
 | `10-buyer-screen.deck.json` | Framework matrix; takeaway band | title, el-kicker, el-screen (table 6x8, graded dot ratings as text), five criterion notes grp-criterion-N (emphasis + rule + caption), three shortlist groups (h2 + rule + body), el-takeaway (filled band), source |
@@ -50,18 +50,28 @@ are absent here too; `coverage.json` in deckgen records why for each.
   core role, and a reference without it would refuse the page.
 - **Decor** (`el-divider-rule`, `el-spine`, ...) becomes a `rule` with a one-EMU extent
   across its parent's main axis.
-- **Charts** are real charts from `datasets.json`: column (04, 12), line (05),
-  stacked_column_100 per segment for the Mekko's three natives (06; this emitter has no
-  Mekko, so column widths are equal rather than proportional to segment revenue),
-  waterfall (07: anchors FY25A 331 and FY26E 374 as totals, steps +34, +21, -9, -11,
-  +8, which sum to 374). The football field (09) is the `football_field` component with
+- **Charts** are real charts from `datasets.json`, written in the full chart spec
+  (`references/design/chart_recipes.md`) with every choice explicit: column (04, 12:
+  labelled bars, value axis hidden, `color.accent1` with `color.ink` labels outside the
+  bars), line (05: two `LINE` series in `color.accent1` and `color.accent2` at 1.75pt,
+  value axis shown without gridlines, legend at the bottom), the mekko (06: one
+  `COLUMN_STACKED_100` per segment, gap 0, both axes hidden, no legend since the page
+  carries its own key; the three charts sit at flex weights 4.8, 3.2 and 2.0, the
+  segments' shares of revenue, so the column widths are proportional), and the bridge (07: the waterfall recipe, anchors FY25A 331
+  and FY26E 374 in `color.accent2`, increases `color.accent1`, decreases
+  `color.accent3`, signed labels above the bars). The specimen's own colour roles
+  (`color.positive` / `color.negative` on the bridge) are not core roles and a guide
+  without them would refuse the page, so the bridge uses accents; on a guide that has
+  them, write them in. The football field (09) is the `football_field` component with
   the six methods' lows and highs; the specimen draws no price marker, so none is
-  added. Series colour roles from the specimen (color.positive / color.negative on the
-  bridge) are not carried: the emitter takes series colours from the guide.
+  added. Every ink on a fill is chosen for keybank's roles (`color.ink_inverse` on
+  `color.accent2`, `color.ink` on `color.accent1` and `color.accent3`); on another
+  guide the build's contrast gate names any pair that no longer reads.
 - **Ink and emphasis.** Element ink slots other than color.ink become paragraph
   `ink_role` in `styling`; emphasis runs become `styling.<id>.paragraphs.<n>.runs`.
 - **Tables.** A totals index on the last row becomes `totals_last_row`; any other totals
-  index (the comps peer median, row 8) becomes `emphasis_rows`. deckgen's column
+  index (the comps peer median, row 8) becomes `emphasis_rows` with
+  `emphasis_fill_role: color.surface_alt` written out (the emitter has no default fill). deckgen's column
   alignment and rule overrides are not carried (this emitter reads neither).
 - **Source line.** deckgen computes it from the citations behind each page
   (`lineage.source_line.build_source_line`, the one producer); its output is written as

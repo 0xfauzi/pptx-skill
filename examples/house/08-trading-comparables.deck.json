@@ -398,7 +398,8 @@
      "totals_last_row": true,
      "emphasis_rows": [
       8
-     ]
+     ],
+     "emphasis_fill_role": "color.surface_alt"
     },
     "el-comps-basis": {
      "paragraphs": {

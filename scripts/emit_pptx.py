@@ -24,10 +24,14 @@ Spec shape (one slide shown):
     {"id": "comps", "kind": "table", "box": [...], "header_rows": 1,
      "columns": [{"key": "name", "label": "Company", "value_kind": "label"}, {"key": "ev", "label": "EV ($m)", "value_kind": "number"}],
      "rows": [["Acme", "1,234"]], "column_widths_emu": [...], "row_heights_emu": [...], "totals_last_row": false},
-    {"id": "chart", "kind": "chart", "box": [...], "chart_kind": "column", "categories": ["2023", "2024"],
-     "series": [{"name": "Revenue", "values": [1.0, 2.0]}], "number_format": "0.0", "data_labels": true, "legend": null},
-    {"id": "bridge", "kind": "chart", "box": [...], "chart_kind": "waterfall", "categories": ["FY16", "Volume", "Price", "FX", "FY17"],
-     "deltas": [1000, 120, 50, -30, 1140], "totals": [0, 4], "number_format": "#,##0"},
+    {"id": "chart", "kind": "chart", "box": [...], "type": "COLUMN_STACKED", "categories": ["2023", "2024"],
+     "series": [{"name": "Revenue", "values": [1.0, 2.0], "fill_role": "color.accent2", "line_role": "none",
+                 "labels": {"show": true, "position": "center", "number_format": "0.0", "role": "type.data_label", "ink_role": "color.ink_inverse"},
+                 "points": [{"index": 1, "fill_role": "color.accent1", "label": {"ink_role": "color.ink"}}]}],
+     "axes": {"category": {"visible": true, "line_role": "color.rule", "line_width_pt": 0.75, "tick_marks": "none", "reverse": false,
+                           "gridlines": "none", "labels": {"show": true, "role": "type.axis_label", "ink_role": "color.ink_muted"}},
+              "value": {"visible": false}},
+     "gap_width": 50, "overlap": 100, "legend": "none", "text": {...}, "plot_fill_role": "none", "title": "none"},
     {"id": "rule", "kind": "rule", "box": [...], "line_role": "color.rule"},
     {"id": "band", "kind": "rect", "box": [...], "fill_role": "color.accent1", "prst": "rect"},
     {"id": "logo", "kind": "image", "box": [...], "path": "logo.png"}
@@ -39,16 +43,18 @@ Text bodies are written with zero insets, square wrap and explicit noAutofit, pa
 spacing and line pitch as absolute points, and, when the solver measured the wrap, the
 measured lines as literal breaks: the file carries the wrap the fit decision was made on.
 
-A waterfall is a native stacked column whose first series is an invisible spacer (the
-running base; a step below the running total sits on min(running, running + delta)) and
-whose second series carries the step heights; indices in `totals` draw from zero and
-must equal the running sum of the steps before them. A step reaching below zero is
-refused: a native stack cannot draw it.
+A chart is the spec the model wrote: `type` is any XL_CHART_TYPE member python-pptx
+writes, every colour a role or "none", every label, axis, legend and spacing choice
+explicit. A choice the spec omits is written as the neutral value in CHART_DEFAULTS and
+named in the slide note's `defaults_taken`. Waterfalls, football fields and mekkos are
+recipes over this spec (references/design/chart_recipes.md), not code paths. No ink is
+chosen here for any fill: tables and charts write the ink the spec or guide names, and
+the build's contrast gate refuses a pair below 3:1.
 
 What the file carries so that PowerPoint and LibreOffice draw the same page (deckgen
 E38): both cells of every shared table edge declare the edge identically, every chart
-plot group writes c:varyColors, no rule is written below 0.5pt unless the guide's own
-rule width says so. Every generated slide carries a tags part (p:custDataLst/p:tags,
+plot group writes c:varyColors val=0 (the one chart value written unasked), no rule
+is written below 0.5pt unless the guide's own rule width says so. Every generated slide carries a tags part (p:custDataLst/p:tags,
 one p:tag name="pptx-skill" val="generated"), which deckgen 2E-1 measured surviving a
 PowerPoint save: `pptx_tools.py text` reads it back as the slide's origin.
 """
@@ -64,9 +70,17 @@ from pathlib import Path
 
 from lxml import etree
 from pptx import Presentation
-from pptx.chart.data import CategoryChartData
+from pptx.chart.data import BubbleChartData, CategoryChartData, XyChartData
+from pptx.chart.datalabel import DataLabels
 from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION
+from pptx.enum.chart import (
+    XL_CHART_TYPE,
+    XL_LABEL_POSITION,
+    XL_LEGEND_POSITION,
+    XL_MARKER_STYLE,
+    XL_TICK_LABEL_POSITION,
+    XL_TICK_MARK,
+)
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import CONTENT_TYPE as CT
@@ -147,19 +161,6 @@ class Guide:
         if entry is None:
             raise SpecError(f"unknown spacing role {role!r}; guide steps: {sorted(self.spacing)}")
         return int(entry["emu"])
-
-
-def _lum(hex_color: str) -> float:
-    def ch(v: int) -> float:
-        c = v / 255.0
-        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-    r, g, b = (int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
-    return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
-
-
-def _contrast(a: str, b: str) -> float:
-    la, lb = _lum(a), _lum(b)
-    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 
 
 # --- xml helpers ----------------------------------------------------------------------------------
@@ -480,12 +481,64 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
     tc_pr.insert(insert_at, ln)
 
 
+def table_row_styles(el: dict, guide: Guide) -> list[dict]:
+    """The fill, ink and weight of every row of a table, from the guide's table section
+    and the spec: the header fill and ink, banding parity, the guide's data fill, and the
+    emphasis rows' fill and ink, which the spec names (`emphasis_fill_role`, a colour role
+    or "none"; `emphasis_ink_role`, else the cell ink). Nothing here picks an ink for a
+    fill: a pair that reads below 3:1 is the build's contrast gate's to refuse. The
+    emitter and that gate both read rows through this one function."""
+    where = el.get("id", "table")
+    t = guide.tables
+    header_rows = int(el.get("header_rows", 1))
+    n_rows = header_rows + len(el["rows"])
+    emphasis_rows = {int(i) for i in (el.get("emphasis_rows") or [])}
+    if emphasis_rows and "emphasis_fill_role" not in el:
+        raise SpecError(f"{where}: emphasis_rows {sorted(emphasis_rows)} need emphasis_fill_role, a colour role from the guide or \"none\" (bold on the row's own ground)")
+
+    def role_hex(role: str | None, literal: str | None, label: str) -> tuple[str | None, str | None]:
+        if literal:
+            return literal, label
+        if role and role != "none":
+            return guide.hex(role, where=f"{where} {label}"), role
+        return None, None
+
+    header_fill = role_hex(t.get("header_fill_role"), t.get("header_fill_hex"), "header fill")
+    header_ink = role_hex(t.get("header_ink_role"), None, "header ink")
+    band = role_hex(t.get("banding_role"), t.get("banding_hex"), "banding")
+    data = role_hex(None, t.get("data_fill_hex"), "data fill")
+    emphasis_fill = role_hex(el.get("emphasis_fill_role"), None, "emphasis fill")
+    cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where=where)
+    cell_ink_role = cell_spec.get("ink_role")
+    cell_ink = (guide.hex(cell_ink_role, where=f"{where} cell ink"), cell_ink_role) if cell_ink_role else \
+        ((cell_spec["ink"], "type.table_cell observed ink") if HEX_RE.match(cell_spec.get("ink") or "") else (None, None))
+    emphasis_ink = role_hex(el.get("emphasis_ink_role"), None, "emphasis ink") if el.get("emphasis_ink_role") else cell_ink
+    totals = bool(el.get("totals_last_row"))
+    rows = []
+    for ri in range(n_rows):
+        is_header = ri < header_rows
+        data_index = ri - header_rows
+        is_totals = totals and ri == n_rows - 1
+        is_emphasis = not is_header and data_index in emphasis_rows
+        if is_header:
+            fill, ink, klass, bold = header_fill, header_ink, "header", bool(t.get("header_bold"))
+        elif is_emphasis:
+            fill, ink, klass, bold = emphasis_fill, emphasis_ink, "emphasis", True
+        else:
+            fill = band if (band[0] and data_index % 2 == 0) else data
+            ink, bold = cell_ink, is_totals or cell_spec.get("weight", 400) >= 700
+            klass = "totals" if is_totals else ("body even" if data_index % 2 == 0 else "body odd")
+        rows.append({"row": ri, "class": klass, "header": is_header, "fill_hex": fill[0], "fill_name": fill[1], "ink_hex": ink[0], "ink_name": ink[1], "bold": bold})
+    return rows
+
+
 def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     x, y, w, h = box
     cols = el["columns"]
     rows = el["rows"]
     header_rows = int(el.get("header_rows", 1))
     n_rows = header_rows + len(rows)
+    styles = table_row_styles(el, guide)
     shape = slide.shapes.add_table(n_rows, len(cols), Emu(x), Emu(y), Emu(w), Emu(h))
     shape.name = el.get("id", "table")
     table = shape.table
@@ -501,28 +554,17 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         col.width = Emu(int(widths[i]))
     heights = el.get("row_heights_emu")
     pad = int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
-    header_fill = guide.tables.get("header_fill_hex") or (guide.hex(guide.tables.get("header_fill_role"), where="table header") if guide.tables.get("header_fill_role") else None)
-    header_ink_role = guide.tables.get("header_ink_role")
-    header_ink = guide.hex(header_ink_role, where="table header") if header_ink_role else None
-    band_hex = guide.tables.get("banding_hex") or (guide.hex(guide.tables.get("banding_role"), where="table banding") if guide.tables.get("banding_role") else None)
-    data_hex = guide.tables.get("data_fill_hex")
     header_spec = guide.type_spec("type.table_header" if "type.table_header" in guide.roles else "type.body", where="table")
     cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where="table")
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
     totals = bool(el.get("totals_last_row"))
-    emphasis_rows = {int(i) for i in (el.get("emphasis_rows") or [])}  # data-row indices drawn as type.emphasis with the accent fill
-    emphasis_fill = guide.hex(el.get("emphasis_fill_role") or "color.surface_alt", where="table emphasis") if (el.get("emphasis_fill_role") or "color.surface_alt" in guide.colors) else None
-    cell_ink_role = cell_spec.get("ink_role")
-    cell_ink = guide.hex(cell_ink_role, where="table cell") if cell_ink_role else (cell_spec.get("ink") if HEX_RE.match(cell_spec.get("ink") or "") else None)
-    inverse_ink = guide.colors.get("color.ink_inverse", {}).get("hex")
     for ri in range(n_rows):
         row = table.rows[ri]
         if heights and ri < len(heights):
             row.height = Emu(int(heights[ri]))
-        is_header = ri < header_rows
-        is_totals = totals and ri == n_rows - 1
+        st = styles[ri]
+        is_header = st["header"]
         data_index = ri - header_rows
-        is_emphasis = (not is_header) and data_index in emphasis_rows
         for ci, col in enumerate(cols):
             cell = table.cell(ri, ci)
             text = col["label"] if is_header else str(rows[data_index][ci])
@@ -539,14 +581,9 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if is_header and el.get("header_align"):
                 align = el["header_align"]
             p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
-            fill_hex = header_fill if is_header else (emphasis_fill if (is_emphasis and emphasis_fill) else (band_hex if (band_hex and data_index % 2 == 0) else data_hex))
-            # the cell ink is the role's ink, declared on the run so a dark reference does not
-            # inherit black; against a dark fill the inverse ink wins by WCAG 3:1
-            ink = header_ink if is_header else cell_ink
-            ground = fill_hex or guide.colors.get("color.surface", {}).get("hex") or "FFFFFF"
-            if ink and _contrast(ink, ground) < 3.0 and inverse_ink and _contrast(inverse_ink, ground) > _contrast(ink, ground):
-                ink = inverse_ink
-            _style_run(run, spec, guide, emphasis=(bool(guide.tables.get("header_bold")) if is_header else (is_totals or is_emphasis)), ink_hex=ink)
+            fill_hex = st["fill_hex"]
+            # the ink is declared on the run so a dark reference does not inherit black
+            _style_run(run, spec, guide, emphasis=st["bold"], ink_hex=st["ink_hex"])
             ln = p._p.get_or_add_pPr()
             for tag in ("a:lnSpc", "a:spcBef", "a:spcAft"):
                 for old in ln.findall(qn(tag)):
@@ -563,20 +600,330 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     _write_table_edges(table, guide, n_rows, len(cols), header_rows, n_rows - 1 if totals else None)
 
 
-CHART_TYPES = {
-    "column": XL_CHART_TYPE.COLUMN_CLUSTERED, "stacked_column": XL_CHART_TYPE.COLUMN_STACKED, "stacked_column_100": XL_CHART_TYPE.COLUMN_STACKED_100,
-    "bar": XL_CHART_TYPE.BAR_CLUSTERED, "stacked_bar": XL_CHART_TYPE.BAR_STACKED, "line": XL_CHART_TYPE.LINE, "line_markers": XL_CHART_TYPE.LINE_MARKERS,
-    "pie": XL_CHART_TYPE.PIE, "doughnut": XL_CHART_TYPE.DOUGHNUT, "area": XL_CHART_TYPE.AREA, "stacked_area": XL_CHART_TYPE.AREA_STACKED,
-    "scatter": XL_CHART_TYPE.XY_SCATTER, "waterfall": XL_CHART_TYPE.COLUMN_STACKED,
+# --- charts: the spec the model writes, written as given -------------------------------------------
+#
+# Every design choice in a chart (type, fills, strokes, labels, axes, legend, gap and
+# overlap) comes from the spec. A choice the spec leaves out is written as the neutral
+# value named in CHART_DEFAULTS and listed in the note's `defaults_taken`, so the model
+# reads back what it did not decide. c:varyColors val=0 is the one value written without
+# being asked for: it is file safety, not design (E38 class 10, below).
+
+CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title", "foreign",
+              "bridge"}  # bridge: a declaration the build's tie-out reads; nothing here draws from it
+SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth"}
+LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
+POINT_KEYS = {"index", "fill_role", "line_role", "label"}
+POINT_LABEL_KEYS = LABEL_KEYS | {"text"}
+AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels"}
+AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role"}
+TICK_LABEL_POSITIONS = {"next_to": XL_TICK_LABEL_POSITION.NEXT_TO_AXIS, "low": XL_TICK_LABEL_POSITION.LOW, "high": XL_TICK_LABEL_POSITION.HIGH}
+GRIDLINE_KEYS = {"line_role", "line_width_pt"}
+LEGEND_KEYS = {"position", "hide_entries", "role", "ink_role"}
+TEXT_KEYS = {"role", "ink_role"}
+MARKER_KEYS = {"style", "size", "fill_role", "line_role"}
+TITLE_KEYS = {"text", "role", "ink_role"}
+NONE = "none"
+LABEL_POSITIONS = {"center": XL_LABEL_POSITION.CENTER, "inside_end": XL_LABEL_POSITION.INSIDE_END, "inside_base": XL_LABEL_POSITION.INSIDE_BASE,
+                   "outside_end": XL_LABEL_POSITION.OUTSIDE_END, "above": XL_LABEL_POSITION.ABOVE, "below": XL_LABEL_POSITION.BELOW,
+                   "left": XL_LABEL_POSITION.LEFT, "right": XL_LABEL_POSITION.RIGHT, "best_fit": XL_LABEL_POSITION.BEST_FIT}
+LEGEND_POSITIONS = {"b": XL_LEGEND_POSITION.BOTTOM, "t": XL_LEGEND_POSITION.TOP, "r": XL_LEGEND_POSITION.RIGHT, "l": XL_LEGEND_POSITION.LEFT, "tr": XL_LEGEND_POSITION.CORNER}
+TICK_MARKS = {"none": XL_TICK_MARK.NONE, "out": XL_TICK_MARK.OUTSIDE, "in": XL_TICK_MARK.INSIDE, "cross": XL_TICK_MARK.CROSS}
+MARKER_STYLES = {m.name.lower(): m for m in XL_MARKER_STYLE if m.name not in ("PICTURE", "AUTOMATIC")}
+# Label positions PowerPoint's label menu offers per family. A dLblPos outside the menu
+# is a schema-valid file PowerPoint does not draw as written, so it is refused here
+# rather than emitted; area, doughnut and radar labels take no position at all.
+FAMILY_POSITIONS = {
+    "bar": ("center", "inside_end", "inside_base", "outside_end"),
+    "bar_stacked": ("center", "inside_end", "inside_base"),
+    "line": ("center", "left", "right", "above", "below"),
+    "xy": ("center", "left", "right", "above", "below"),
+    "bubble": ("center", "left", "right", "above", "below"),
+    "pie": ("center", "inside_end", "outside_end", "best_fit"),
+    "doughnut": (), "area": (), "radar": (),
 }
-LABELLED_BAR_KINDS = ("column", "bar", "stacked_column", "stacked_bar", "waterfall")
+# Where a label at each position sits: on the mark's own fill, or on the plot behind it.
+ON_FILL = {"bar": {"center", "inside_end", "inside_base"}, "bar_stacked": {"center", "inside_end", "inside_base"},
+           "pie": {"center", "inside_end"}, "bubble": {"center"}, "area": set(), "doughnut": set()}
+# The value each omitted choice is written as. "python-pptx" entries are read back from
+# the chart part after it is written and reported with the value found.
+CHART_DEFAULTS = {
+    "series.fill_role": "no fill written: the renderer's automatic colour by series index",
+    "series.line_role": "no stroke written: the renderer's automatic stroke",
+    "series.line_width_pt": "no width written: the renderer's default stroke width",
+    "series.labels": "no data labels",
+    "labels.position": "no dLblPos: each renderer's own default position for the type",
+    "labels.number_format": "linked to the source data",
+    "labels.role": "the chart text (text.role, else the theme)",
+    "labels.ink_role": "the chart text ink (text.ink_role, else the theme)",
+    "series.marker": "the renderer's automatic marker",
+    "series.smooth": "python-pptx's chart part",
+    "axis.visible": "shown",
+    "axis.line_role": "no stroke written: each renderer reads the theme's line style, and they differ (E38 class 5)",
+    "axis.gridlines": "none (OOXML absence)",
+    "axis.number_format": "linked to the source data",
+    "axis.reverse": "minMax: from the origin outward (a horizontal bar lists its categories bottom-up)",
+    "axis.scale": "automatic minimum, maximum and major unit",
+    "axis.tick_marks": "python-pptx's chart part",
+    "axis.labels": "tick labels next to the axis in the chart text",
+    "gap_width": "python-pptx's chart part",
+    "overlap": "python-pptx's chart part",
+    "legend": "none (OOXML absence)",
+    "text": "chart text inherits the theme's face, size and colour",
+    "plot_fill_role": "no plot fill: the slide shows through",
+    "title": "none",
+}
+
+
+def chart_family(type_name: str) -> str:
+    n = type_name
+    if n.startswith(("COLUMN_", "BAR_")) and n != "BAR_OF_PIE":
+        return "bar_stacked" if "STACKED" in n else "bar"
+    if n.startswith("PIE"):
+        return "pie"
+    if n.startswith("DOUGHNUT"):
+        return "doughnut"
+    if n.startswith("LINE"):
+        return "line"
+    if n.startswith("AREA"):
+        return "area"
+    if n.startswith("XY_SCATTER"):
+        return "xy"
+    if n.startswith("BUBBLE"):
+        return "bubble"
+    if n.startswith("RADAR"):
+        return "radar"
+    return "other"
+
+
+def _keys(where: str, obj, allowed: set[str]) -> dict:
+    if not isinstance(obj, dict):
+        raise SpecError(f"{where}: expected an object, got {obj!r}")
+    extra = sorted(set(obj) - allowed)
+    if extra:
+        hint = " (the chart spec changed: see references/design/chart_recipes.md)" if {"chart_kind", "deltas", "totals", "data_labels", "hide_value_axis"} & set(extra) else ""
+        raise SpecError(f"{where}: unknown keys {extra}; allowed {sorted(allowed)}{hint}")
+    return obj
+
+
+def _colour(guide: Guide, role, where: str):
+    """A colour role, or NONE for an explicit no-fill / no-stroke. A literal is refused."""
+    if role == NONE:
+        return NONE
+    if not isinstance(role, str):
+        raise SpecError(f"{where}: colour must be a role name or \"none\", got {role!r}")
+    if HEX_RE.match(role.lstrip("#")):
+        raise SpecError(f"{where}: literal colour {role!r}; a chart takes colour roles from the guide only")
+    return guide.hex(role, where=where)
+
+
+def _text_style(guide: Guide, style: dict | None, where: str) -> tuple[dict | None, str | None]:
+    """A text part's (type spec, ink hex) from its role and ink_role; None where omitted."""
+    style = style or {}
+    spec = guide.type_spec(style["role"], where=where) if style.get("role") else None
+    ink = _colour(guide, style["ink_role"], where) if style.get("ink_role") else None
+    if ink == NONE:
+        raise SpecError(f"{where}: ink_role cannot be \"none\"")
+    return spec, ink
+
+
+def _font(font, guide: Guide, spec: dict | None, ink: str | None) -> None:
+    if spec is not None:
+        font.name = guide.face(spec)
+        font.size = Pt(float(spec["size_pt"]))
+        font.bold = bool(spec.get("weight", 400) >= 700)
+        font.italic = bool(spec.get("italic", False))
+    if ink:
+        font.color.rgb = RGBColor.from_string(ink.upper())
+
+
+def _fill(fmt, hex_or_none) -> None:
+    if hex_or_none == NONE:
+        fmt.fill.background()
+    else:
+        fmt.fill.solid()
+        fmt.fill.fore_color.rgb = RGBColor.from_string(hex_or_none.upper())
+
+
+def _stroke(fmt, hex_or_none, width_pt) -> None:
+    if hex_or_none == NONE:
+        fmt.line.fill.background()
+        return
+    fmt.line.color.rgb = RGBColor.from_string(hex_or_none.upper())
+    if width_pt is not None:
+        fmt.line.width = Pt(float(width_pt))
+
+
+def _check_position(family: str, position, where: str) -> None:
+    if position is None:
+        return
+    allowed = FAMILY_POSITIONS.get(family, ())
+    if position not in LABEL_POSITIONS or position not in allowed:
+        raise SpecError(f"{where}: label position {position!r} is not offered for this chart type; offered: {list(allowed) or 'none (omit position)'}")
+
+
+def chart_parse(el: dict, guide: Guide) -> dict:
+    """Validate a chart spec against the guide and list every omitted choice. Returns
+    {"type": XL_CHART_TYPE member, "family", "defaults": [(path, written)]}. Both the
+    emitter and the build's contrast gate read the spec through this one parse."""
+    where = el.get("id", "chart")
+    _keys(where, el, CHART_KEYS)
+    type_name = el.get("type")
+    if not isinstance(type_name, str) or type_name not in XL_CHART_TYPE.__members__:
+        raise SpecError(f"{where}: type {type_name!r} is not an XL_CHART_TYPE member name (e.g. COLUMN_CLUSTERED, BAR_STACKED, LINE_MARKERS, PIE, XY_SCATTER)")
+    family = chart_family(type_name)
+    defaults: list[tuple[str, str]] = []
+
+    def took(path: str, key: str) -> None:
+        defaults.append((path, CHART_DEFAULTS[key]))
+
+    series = el.get("series")
+    if not isinstance(series, list) or not series:
+        raise SpecError(f"{where}: series must be a non-empty list")
+    cats = el.get("categories")
+    if family in ("xy", "bubble"):
+        if cats is not None:
+            raise SpecError(f"{where}: {type_name} plots [x, y{', size' if family == 'bubble' else ''}] values; categories do not apply")
+    elif not isinstance(cats, list) or not cats:
+        raise SpecError(f"{where}: categories must be a non-empty list")
+    width = 3 if family == "bubble" else 2
+    stroked = family in ("line", "xy", "radar")
+    for si, s in enumerate(series):
+        sw = f"{where} series[{si}]"
+        _keys(sw, s, SERIES_KEYS)
+        values = s.get("values")
+        if family in ("xy", "bubble"):
+            if not isinstance(values, list) or any(not isinstance(v, list) or len(v) != width for v in values):
+                raise SpecError(f"{sw}: values must be [[x, y{', size' if width == 3 else ''}], ...]")
+        elif not isinstance(values, list) or len(values) != len(cats):
+            raise SpecError(f"{sw}: {len(values) if isinstance(values, list) else 'no'} values for {len(cats)} categories")
+        if "fill_role" in s:
+            if stroked:
+                raise SpecError(f"{sw}: a {type_name} series draws its line_role; fill_role does not apply (marker.fill_role colours markers)")
+            _colour(guide, s["fill_role"], sw)
+        elif not stroked and not (family in ("pie", "doughnut") and len(s.get("points") or []) == len(values) and all("fill_role" in p for p in s.get("points") or [])):
+            took(f"series[{si}].fill_role", "series.fill_role")
+        if "line_role" in s:
+            if _colour(guide, s["line_role"], sw) != NONE and "line_width_pt" not in s:
+                took(f"series[{si}].line_width_pt", "series.line_width_pt")
+        else:
+            took(f"series[{si}].line_role", "series.line_role")
+        if stroked and "smooth" not in s and family != "radar":
+            took(f"series[{si}].smooth", "series.smooth")
+        if "marker" in s:
+            m = _keys(f"{sw} marker", s["marker"], MARKER_KEYS)
+            if m.get("style") is not None and m["style"] not in MARKER_STYLES:
+                raise SpecError(f"{sw}: marker style {m['style']!r} not in {sorted(MARKER_STYLES)}")
+            for k in ("fill_role", "line_role"):
+                if k in m:
+                    _colour(guide, m[k], f"{sw} marker")
+        elif stroked and ("MARKERS" in type_name or type_name in ("XY_SCATTER", "XY_SCATTER_LINES", "XY_SCATTER_SMOOTH")):
+            took(f"series[{si}].marker", "series.marker")
+        labels = s.get("labels")
+        if labels is None:
+            took(f"series[{si}].labels", "series.labels")
+        else:
+            _keys(f"{sw} labels", labels, LABEL_KEYS)
+            _text_style(guide, labels, f"{sw} labels")
+            if labels.get("show", True):
+                _check_position(family, labels.get("position"), f"{sw} labels")
+                for k, d in (("position", "labels.position"), ("number_format", "labels.number_format"), ("role", "labels.role"), ("ink_role", "labels.ink_role")):
+                    if k not in labels and not (k == "position" and not FAMILY_POSITIONS.get(family)):
+                        took(f"series[{si}].labels.{k}", d)
+        for pi, p in enumerate(s.get("points") or []):
+            pw = f"{sw} points[{pi}]"
+            _keys(pw, p, POINT_KEYS)
+            idx = p.get("index")
+            if not isinstance(idx, int) or not 0 <= idx < len(values):
+                raise SpecError(f"{pw}: index {idx!r} outside 0..{len(values) - 1}")
+            for k in ("fill_role", "line_role"):
+                if k in p:
+                    _colour(guide, p[k], pw)
+            if "label" in p:
+                _keys(f"{pw} label", p["label"], POINT_LABEL_KEYS)
+                _text_style(guide, p["label"], f"{pw} label")
+                _check_position(family, p["label"].get("position"), f"{pw} label")
+    if family not in ("pie", "doughnut"):
+        axes = _keys(f"{where} axes", el.get("axes") or {}, {"category", "value"})
+        for name in ("category", "value"):
+            ax = axes.get(name)
+            aw = f"{where} axes.{name}"
+            if ax is None:
+                took(f"axes.{name}", "axis.visible")
+                ax = {}
+            _keys(aw, ax, AXIS_KEYS)
+            if ax.get("visible") is False:
+                continue
+            if "visible" not in ax and name in axes:
+                took(f"axes.{name}.visible", "axis.visible")
+            if "line_role" in ax:
+                _colour(guide, ax["line_role"], aw)
+            else:
+                took(f"axes.{name}.line_role", "axis.line_role")
+            if "gridlines" in ax:
+                if ax["gridlines"] != NONE:
+                    g = _keys(f"{aw} gridlines", ax["gridlines"], GRIDLINE_KEYS)
+                    _colour(guide, g.get("line_role"), f"{aw} gridlines")
+            else:
+                took(f"axes.{name}.gridlines", "axis.gridlines")
+            if "labels" in ax:
+                _keys(f"{aw} labels", ax["labels"], AXIS_LABEL_KEYS)
+                _text_style(guide, ax["labels"], f"{aw} labels")
+                if ax["labels"].get("position") is not None and ax["labels"]["position"] not in TICK_LABEL_POSITIONS:
+                    raise SpecError(f"{aw} labels: position {ax['labels']['position']!r} not in {sorted(TICK_LABEL_POSITIONS)}")
+            else:
+                took(f"axes.{name}.labels", "axis.labels")
+            if ax.get("tick_marks") is not None and ax["tick_marks"] not in TICK_MARKS:
+                raise SpecError(f"{aw}: tick_marks {ax['tick_marks']!r} not in {sorted(TICK_MARKS)}")
+            for k, d in (("tick_marks", "axis.tick_marks"), ("reverse", "axis.reverse")):
+                if k not in ax:
+                    took(f"axes.{name}.{k}", d)
+            numeric = name == "value" or family in ("xy", "bubble")
+            if numeric:
+                if "number_format" not in ax:
+                    took(f"axes.{name}.number_format", "axis.number_format")
+                if not {"min", "max"} & set(ax):
+                    took(f"axes.{name}.min/max", "axis.scale")
+            elif {"min", "max", "major_unit", "number_format"} & set(ax):
+                raise SpecError(f"{aw}: a category axis has no scale or number format")
+    elif el.get("axes"):
+        raise SpecError(f"{where}: a {type_name} has no axes")
+    if family in ("bar", "bar_stacked"):
+        for k in ("gap_width", "overlap"):
+            if k not in el:
+                took(k, k)
+    elif "gap_width" in el or "overlap" in el:
+        raise SpecError(f"{where}: gap_width and overlap apply to bar and column types only")
+    legend = el.get("legend")
+    if legend is None:
+        took("legend", "legend")
+    elif legend != NONE:
+        _keys(f"{where} legend", legend, LEGEND_KEYS)
+        if legend.get("position") not in LEGEND_POSITIONS:
+            raise SpecError(f"{where} legend: position {legend.get('position')!r} not in {sorted(LEGEND_POSITIONS)}")
+        _text_style(guide, legend, f"{where} legend")
+    if "text" in el:
+        _keys(f"{where} text", el["text"], TEXT_KEYS)
+        _text_style(guide, el["text"], f"{where} text")
+    else:
+        took("text", "text")
+    if "plot_fill_role" in el:
+        _colour(guide, el["plot_fill_role"], f"{where} plot_fill_role")
+    else:
+        took("plot_fill_role", "plot_fill_role")
+    title = el.get("title")
+    if title is None:
+        took("title", "title")
+    elif title != NONE:
+        _keys(f"{where} title", title, TITLE_KEYS)
+        _text_style(guide, title, f"{where} title")
+    return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults}
 
 
 def _write_vary_colors(chart_space: etree._Element) -> None:
     """c:varyColors val=0 on every plot group that can carry it. python-pptx 1.0.2 writes
     none for a bar chart; absent, PowerPoint paints one series in five theme colours and
-    LibreOffice in one (E38 class 10). Series and point fills are written explicitly, so 0
-    is the value under which both renderers draw the guide's colours."""
+    LibreOffice in one (E38 class 10). With 0 both renderers draw the fills the spec
+    wrote: a pie whose slices should differ names a fill per point."""
     area = chart_space.find(".//" + qn("c:plotArea"))
     if area is None:
         return
@@ -594,262 +941,260 @@ def _write_vary_colors(chart_space: etree._Element) -> None:
         vc.set("val", "0")
 
 
-def _label_ink(ink: str, fill_hex: str, inverse: str) -> str:
-    """A label inside a dark bar takes the inverse ink: WCAG 3:1 against its own fill."""
-    if _contrast(ink, fill_hex) < 3.0 and _contrast(inverse, fill_hex) >= _contrast(ink, fill_hex):
-        return inverse
-    return ink
+def _write_labels(dl, guide: Guide, spec: dict, family: str, where: str) -> None:
+    """One series' dLbls (python-pptx DataLabels) from a labels spec."""
+    tspec, ink = _text_style(guide, spec, where)
+    _font(dl.font, guide, tspec, ink)
+    dl.show_value = True
+    if spec.get("position") is not None:
+        dl.position = LABEL_POSITIONS[spec["position"]]
+    if spec.get("number_format"):
+        dl.number_format = spec["number_format"]
+        dl.number_format_is_linked = False
 
 
-def _waterfall_steps(el: dict) -> tuple[list[float], list[float], list[str], float]:
-    """Spacer bases and visible heights for a native waterfall (deckgen chart_plan.py: the
-    spacer is the stack's bottom by OOXML series order). A step at running total r with
-    delta d draws from min(r, r + d) with height |d|; a total draws from zero and must
-    equal the running sum before it. A base below zero has no native stack: refused."""
-    where = el.get("id", "chart")
-    cats = el["categories"]
-    deltas = [float(v) for v in el["deltas"]]
-    if len(deltas) != len(cats):
-        raise SpecError(f"{where}: {len(deltas)} deltas for {len(cats)} categories")
-    totals = {int(i) for i in (el.get("totals") or [])}
-    bad = sorted(i for i in totals if not 0 <= i < len(deltas))
-    if bad:
-        raise SpecError(f"{where}: totals {bad} outside 0..{len(deltas) - 1}")
-    running = 0.0
-    bases: list[float] = []
-    heights: list[float] = []
-    kinds: list[str] = []
-    for i, d in enumerate(deltas):
-        if i in totals:
-            if i > 0 and abs(d - running) > 0.005 * max(abs(d), abs(running), 1e-9):
-                raise SpecError(f"{where}: total {cats[i]!r} is {d:g} but the steps before it sum to {running:g}")
-            base, height, step = 0.0, d, "total"
-            running = d
-        else:
-            base, height, step = min(running, running + d), abs(d), ("positive" if d >= 0 else "negative")
-            running += d
-        if base < 0 or height < 0:
-            raise SpecError(f"{where}: {cats[i]!r} reaches below zero ({min(base, height):g}); a native stacked column cannot draw it, build the bridge from rects")
-        bases.append(base)
-        heights.append(height)
-        kinds.append(step)
-    return bases, heights, kinds, running
-
-
-def _point_label(series, idx: int, ink_hex: str, size, face: str, number_format: str | None) -> None:
-    """One point's label with its own ink. A c:dLbl replaces the series' dLbls for that
-    point, so the number format and position are written on it too."""
+def _write_point_label(series, idx: int, guide: Guide, merged: dict, where: str) -> None:
+    """A c:dLbl replaces the series' dLbls for its point, so it carries the merged
+    series and point label spec in full: format, position, font, ink, text."""
+    if merged.get("show") is False:
+        dlbls = series._element.get_or_add_dLbls()
+        d_lbl = etree.Element(qn("c:dLbl"))
+        etree.SubElement(d_lbl, qn("c:idx")).set("val", str(idx))
+        etree.SubElement(d_lbl, qn("c:delete")).set("val", "1")
+        dlbls.insert(0, d_lbl)
+        return
     dl = series.points[idx].data_label
-    dl.font.size = size
-    dl.font.name = face
-    dl.font.color.rgb = RGBColor.from_string(ink_hex.upper())
-    dl.position = XL_LABEL_POSITION.CENTER
+    tspec, ink = _text_style(guide, merged, where)
+    if merged.get("text") is not None:
+        dl.text_frame.text = str(merged["text"])
+        for run in dl.text_frame.paragraphs[0].runs:
+            _font(run.font, guide, tspec, ink)
+    _font(dl.font, guide, tspec, ink)
+    if merged.get("position") is not None:
+        dl.position = LABEL_POSITIONS[merged["position"]]
     d_lbl = dl._dLbl
-    if number_format and d_lbl is not None:
+    if merged.get("number_format") and d_lbl is not None and merged.get("text") is None:
         fmt = etree.Element(qn("c:numFmt"))
-        fmt.set("formatCode", number_format)
+        fmt.set("formatCode", merged["number_format"])
         fmt.set("sourceLinked", "0")
         d_lbl.find(qn("c:idx")).addnext(fmt)
 
 
 def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> dict:
     x, y, w, h = box
-    kind = el.get("chart_kind", "column")
-    if kind not in CHART_TYPES:
-        raise SpecError(f"{el.get('id')}: chart kind {kind!r} not in {sorted(CHART_TYPES)}; build other families from rects and rules")
-    data = CategoryChartData()
-    data.categories = el["categories"]
-    note: dict = {"id": el.get("id", "chart"), "chart_kind": kind}
-    waterfall: dict | None = None
-    if kind == "waterfall":
-        bases, heights, steps, running_end = _waterfall_steps(el)
-        waterfall = {"steps": steps}
-        note["waterfall"] = {"steps": steps, "end": running_end}
-        data.add_series("spacer", bases, number_format=el.get("number_format"))
-        data.add_series(el.get("series_name") or "Value", heights, number_format=el.get("number_format"))
-        series_specs = [{"name": "spacer"}, {"name": el.get("series_name") or "Value"}]
+    parsed = chart_parse(el, guide)
+    family = parsed["family"]
+    where = el.get("id", "chart")
+    if family in ("xy", "bubble"):
+        data = XyChartData(number_format=el.get("number_format")) if family == "xy" else BubbleChartData(number_format=el.get("number_format"))
+        for s in el["series"]:
+            ser = data.add_series(s["name"], number_format=s.get("number_format"))
+            for v in s["values"]:
+                ser.add_data_point(*v)
     else:
-        series_specs = el["series"]
-        for s in series_specs:
-            data.add_series(s["name"], s["values"], number_format=el.get("number_format"))
-    gf = slide.shapes.add_chart(CHART_TYPES[kind], Emu(x), Emu(y), Emu(w), Emu(h), data)
-    gf.name = el.get("id", "chart")
+        data = CategoryChartData(number_format=el.get("number_format") or "General")
+        data.categories = el["categories"]
+        for s in el["series"]:
+            data.add_series(s["name"], s["values"], number_format=s.get("number_format"))
+    try:
+        gf = slide.shapes.add_chart(parsed["type"], Emu(x), Emu(y), Emu(w), Emu(h), data)
+    except NotImplementedError as error:
+        raise SpecError(f"{where}: python-pptx cannot write {parsed['type_name']} ({error}); choose a type it writes") from None
+    gf.name = where
     chart = gf.chart
-    palette = list(guide.charts.get("series_color_hex") or []) or [guide.colors[r]["hex"] for r in ("color.accent1", "color.accent2", "color.accent3") if r in guide.colors]
-    if not palette:
-        raise SpecError("the guide has no series colours and no accents; complete color.accent1 first")
-    positive_hex = guide.colors.get("color.positive", {}).get("hex")
-    negative_hex = guide.colors.get("color.negative", {}).get("hex")
-    if waterfall is not None:
-        # steps take the guide's positive and negative roles when it has them, else accent1
-        # for every bar; totals always take accent1 (the first palette entry)
-        step_hex = {"total": palette[0], "positive": positive_hex or palette[0], "negative": negative_hex or palette[0]}
-        note["waterfall"]["colours"] = step_hex
-        if not (positive_hex and negative_hex):
-            note["waterfall"]["note"] = "no color.positive/color.negative in the guide: every step is accent1 and only the label tells the direction"
-    chart.has_title = bool(el.get("title"))
-    if el.get("title"):
-        chart.chart_title.text_frame.text = el["title"]
-    per_kind_all = guide.charts.get("per_kind") or {}
-    per_kind = per_kind_all.get(kind.split("_")[-1]) or per_kind_all.get(kind) or (per_kind_all.get("column") if kind == "waterfall" else None) or {}
+    if el.get("text"):
+        tspec, ink = _text_style(guide, el["text"], f"{where} text")
+        _font(chart.font, guide, tspec, ink)
+    title = el.get("title")
+    chart.has_title = bool(title and title != NONE)
+    if chart.has_title:
+        chart.chart_title.text_frame.text = title.get("text", "")
+        tspec, ink = _text_style(guide, title, f"{where} title")
+        for run in chart.chart_title.text_frame.paragraphs[0].runs:
+            _font(run.font, guide, tspec, ink)
     legend = el.get("legend")
-    if legend is None and waterfall is None:
-        legend = per_kind.get("legend_position") if len(series_specs) > 1 else None
-    axis_spec = guide.roles.get("type.axis_label") or guide.roles.get("type.caption") or guide.roles.get("type.body")
-    axis_ink = (axis_spec or {}).get("ink") or guide.colors.get("color.ink_muted", guide.colors.get("color.ink", {})).get("hex")
-    axis_size = Pt(float((axis_spec or {"size_pt": 10})["size_pt"]))
-    face = guide.face(axis_spec or {})
-    inverse = guide.colors.get("color.ink_inverse", {}).get("hex") or "FFFFFF"
-    chart.has_legend = bool(legend)
-    if legend:
-        chart.legend.position = {"b": XL_LEGEND_POSITION.BOTTOM, "t": XL_LEGEND_POSITION.TOP, "r": XL_LEGEND_POSITION.RIGHT, "l": XL_LEGEND_POSITION.LEFT}.get(legend, XL_LEGEND_POSITION.BOTTOM)
+    chart.has_legend = bool(legend and legend != NONE)
+    if chart.has_legend:
+        chart.legend.position = LEGEND_POSITIONS[legend["position"]]
         chart.legend.include_in_layout = False
-        chart.legend.font.size = axis_size
-        chart.legend.font.name = face
-        if axis_ink:
-            chart.legend.font.color.rgb = RGBColor.from_string(axis_ink.upper())
-        if waterfall is not None:
-            # the spacer has no legend entry: its values are stacking offsets, not a series
-            legend_el = chart._chartSpace.find(".//" + qn("c:legend"))
+        tspec, ink = _text_style(guide, legend, f"{where} legend")
+        _font(chart.legend.font, guide, tspec, ink)
+        legend_el = chart._chartSpace.find(".//" + qn("c:legend"))
+        pos = legend_el.find(qn("c:legendPos"))
+        for idx in sorted((int(i) for i in legend.get("hide_entries") or []), reverse=True):
             entry = etree.Element(qn("c:legendEntry"))
-            etree.SubElement(entry, qn("c:idx")).set("val", "0")
+            etree.SubElement(entry, qn("c:idx")).set("val", str(idx))
             etree.SubElement(entry, qn("c:delete")).set("val", "1")
-            pos = legend_el.find(qn("c:legendPos"))
-            if pos is not None:
-                pos.addnext(entry)
-            else:
-                legend_el.insert(0, entry)
-    labels_wanted = bool(el.get("data_labels", per_kind.get("data_labels", 0) >= 0.5))
-    for plot in chart.plots:
-        for si, series in enumerate(plot.series):
-            fill = series.format.fill
-            if waterfall is not None and si == 0:
-                fill.background()  # the spacer: no ink and no stroke
-                series.format.line.fill.background()
-                continue
-            fill.solid()
-            if waterfall is not None:
-                si = 0  # the spacer holds index 0; the visible series takes the first accent
-            fill.fore_color.rgb = RGBColor.from_string(palette[si % len(palette)].upper())
-            if kind.startswith("line"):
-                series.format.line.color.rgb = RGBColor.from_string(palette[si % len(palette)].upper())
-                series.format.line.width = Pt(1.75)
-                series.smooth = False
-            if kind in ("pie", "doughnut"):
-                # one slice per palette entry, written on the points: varyColors is 0 on
-                # every chart, so a pie coloured by the renderer would be one colour
-                for pi in range(len(el["categories"])):
-                    pf = series.points[pi].format.fill
-                    pf.solid()
-                    pf.fore_color.rgb = RGBColor.from_string(palette[pi % len(palette)].upper())
-            if waterfall is not None:
-                for pi, step in enumerate(waterfall["steps"]):
-                    if step_hex[step] != palette[0]:
-                        pf = series.points[pi].format.fill
-                        pf.solid()
-                        pf.fore_color.rgb = RGBColor.from_string(step_hex[step].upper())
-        label_spec = guide.roles.get("type.data_label") or axis_spec
-        label_size = Pt(float(label_spec.get("size_pt") or axis_spec.get("size_pt") or 10))
-        label_ink_role = label_spec.get("ink_role")
-        label_ink_hex = guide.hex(label_ink_role, where="chart data label") if label_ink_role else axis_ink
-        if waterfall is not None:
-            plot.has_data_labels = False  # a plot-level label set would number the spacer
-            if labels_wanted:
-                visible = plot.series[1]
-                sdl = visible.data_labels
-                sdl.font.size = label_size
-                sdl.font.name = face
-                sdl.show_value = True
-                sdl.position = XL_LABEL_POSITION.CENTER
-                if el.get("number_format"):
-                    sdl.number_format = el["number_format"]
-                    sdl.number_format_is_linked = False
-                series_ink = _label_ink(label_ink_hex or "000000", palette[0], inverse)
-                sdl.font.color.rgb = RGBColor.from_string(series_ink.upper())
-                for pi, step in enumerate(waterfall["steps"]):
-                    ink = _label_ink(label_ink_hex or "000000", step_hex[step], inverse)
-                    if ink != series_ink:
-                        _point_label(visible, pi, ink, label_size, face, el.get("number_format"))
+            pos.addnext(entry)
+    if el.get("plot_fill_role") is not None:
+        plot_fmt = chart.plots[0]._element.getparent()  # c:plotArea
+        sp_pr = plot_fmt.find(qn("c:spPr"))
+        if sp_pr is None:
+            sp_pr = etree.SubElement(plot_fmt, qn("c:spPr"))
+        fill = _colour(guide, el["plot_fill_role"], f"{where} plot_fill_role")
+        if fill == NONE:
+            etree.SubElement(sp_pr, qn("a:noFill"))
         else:
-            plot.has_data_labels = labels_wanted
-        if plot.has_data_labels:
-            dl = plot.data_labels
-            dl.font.size = label_size
-            dl.font.name = face
-            if label_ink_hex:
-                dl.font.color.rgb = RGBColor.from_string(label_ink_hex.upper())
-            if el.get("number_format"):
-                dl.number_format = el["number_format"]
-                dl.number_format_is_linked = False
-            if kind.startswith("stacked"):
-                dl.position = XL_LABEL_POSITION.CENTER
-                for si, series in enumerate(plot.series):
-                    fill_hex = palette[si % len(palette)]
-                    sdl = series.data_labels
-                    sdl.font.size = axis_size
-                    sdl.font.name = face
-                    sdl.show_value = True
-                    sdl.position = XL_LABEL_POSITION.CENTER
-                    if el.get("number_format"):
-                        sdl.number_format = el["number_format"]
-                        sdl.number_format_is_linked = False
-                    sdl.font.color.rgb = RGBColor.from_string(_label_ink(axis_ink or "000000", fill_hex, inverse).upper())
-        if kind in LABELLED_BAR_KINDS:
-            plot.gap_width = int(el.get("gap_width", 60))
-            if kind.startswith("stacked") or kind == "waterfall":
-                plot.overlap = 100
-    if kind not in ("pie", "doughnut"):
-        # the axis stroke carries an explicit width: with none, each renderer substitutes
-        # its own reading of the theme's first line style (E38 class 5). The keybank
-        # template's theme1.xml declares 9525 EMU there, so 0.75pt changes nothing on it
-        axis_width = Pt(float(per_kind.get("axis_line_width_pt") or 0.75))
-        for axis in (chart.category_axis, chart.value_axis):
-            axis.tick_labels.font.size = axis_size
-            axis.tick_labels.font.name = face
-            if axis_ink:
-                axis.tick_labels.font.color.rgb = RGBColor.from_string(axis_ink.upper())
-            axis.format.line.color.rgb = RGBColor.from_string((per_kind.get("axis_line_hex") or guide.colors.get("color.rule", guide.colors.get("color.ink_muted", {"hex": "808080"}))["hex"]).upper())
-            axis.format.line.width = axis_width
-        grid = per_kind.get("gridlines_major")
-        chart.value_axis.has_major_gridlines = bool(el.get("gridlines", (grid or 0) >= 0.5))
-        if chart.value_axis.has_major_gridlines:
-            gl = chart.value_axis.major_gridlines.format.line
-            gl.color.rgb = RGBColor.from_string((per_kind.get("gridline_color_hex") or guide.colors.get("color.rule", {"hex": "BFBFBF"})["hex"]).upper())
-            gl.width = Pt(per_kind.get("gridline_width_pt") or 0.75)
-        chart.value_axis.has_minor_gridlines = False
-        # a bar with its value written on it needs no value axis: the pitch-book convention
-        # (chart_design.md) and the default here; `hide_value_axis: false` keeps the axis
-        hide_axis = el.get("hide_value_axis")
-        if hide_axis is None:
-            hide_axis = bool(labels_wanted and kind in LABELLED_BAR_KINDS)
-        if hide_axis:
-            chart.value_axis.visible = False
-        if kind in ("bar", "stacked_bar"):
-            # a horizontal bar chart lists categories bottom-up by default; the spec's order
-            # is the reading order, so the category axis runs top-down
-            cat_ax = chart._chartSpace.find(f".//{qn('c:catAx')}")
-            if cat_ax is not None:
-                sc = cat_ax.find(qn("c:scaling"))
-                if sc is not None:
-                    for o in sc.findall(qn("c:orientation")):
-                        sc.remove(o)
-                    etree.SubElement(sc, qn("c:orientation")).set("val", "maxMin")
-        if el.get("number_format"):
-            chart.value_axis.tick_labels.number_format = el["number_format"]
-            chart.value_axis.tick_labels.number_format_is_linked = False
+            _solid_fill(sp_pr, fill)
+    plot = chart.plots[0]
+    for si, (series, s) in enumerate(zip(plot.series, el["series"])):
+        sw = f"{where} series[{si}]"
+        if "fill_role" in s:
+            _fill(series.format, _colour(guide, s["fill_role"], sw))
+        if "line_role" in s:
+            _stroke(series.format, _colour(guide, s["line_role"], sw), s.get("line_width_pt"))
+        if "smooth" in s:
+            series.smooth = bool(s["smooth"])
+        if "marker" in s:
+            m = s["marker"]
+            if m.get("style") is not None:
+                series.marker.style = MARKER_STYLES[m["style"]]
+            if m.get("size") is not None:
+                series.marker.size = int(m["size"])
+            if "fill_role" in m:
+                _fill(series.marker.format, _colour(guide, m["fill_role"], f"{sw} marker"))
+            if "line_role" in m:
+                _stroke(series.marker.format, _colour(guide, m["line_role"], f"{sw} marker"), None)
+        labels = s.get("labels")
+        if labels and labels.get("show", True):
+            _write_labels(DataLabels(series._element.get_or_add_dLbls()), guide, labels, family, f"{sw} labels")
+        for p in s.get("points") or []:
+            pw = f"{sw} point {p['index']}"
+            if "fill_role" in p:
+                _fill(series.points[p["index"]].format, _colour(guide, p["fill_role"], pw))
+            if "line_role" in p:
+                _stroke(series.points[p["index"]].format, _colour(guide, p["line_role"], pw), s.get("line_width_pt"))
+            if "label" in p:
+                merged = {**(labels or {}), **p["label"]}
+                if not (labels and labels.get("show", True)) and "show" not in p["label"]:
+                    merged["show"] = True
+                _write_point_label(series, p["index"], guide, merged, f"{pw} label")
+    taken = dict(parsed["defaults"])
+    for si, (series, s) in enumerate(zip(plot.series, el["series"])):
+        if f"series[{si}].smooth" in taken:
+            taken[f"series[{si}].smooth"] = f"{bool(series.smooth)} ({CHART_DEFAULTS['series.smooth']})"
+    if family in ("bar", "bar_stacked"):
+        if "gap_width" in el:
+            plot.gap_width = int(el["gap_width"])
+        else:
+            taken["gap_width"] = f"{plot.gap_width} ({CHART_DEFAULTS['gap_width']})"
+        if "overlap" in el:
+            plot.overlap = int(el["overlap"])
+        else:
+            taken["overlap"] = f"{plot.overlap} ({CHART_DEFAULTS['overlap']})"
+    if family not in ("pie", "doughnut"):
+        axes = el.get("axes") or {}
+        for name, axis in (("category", chart.category_axis), ("value", chart.value_axis)):
+            ax = axes.get(name) or {}
+            aw = f"{where} axes.{name}"
+            if ax.get("visible") is False:
+                axis.visible = False
+                axis.has_major_gridlines = False
+                continue
+            # python-pptx's chart part writes value-axis gridlines; an omitted choice is none
+            axis.has_major_gridlines = False
+            axis.has_minor_gridlines = False
+            if "line_role" in ax:
+                _stroke(axis.format, _colour(guide, ax["line_role"], aw), ax.get("line_width_pt"))
+            g = ax.get("gridlines")
+            if g and g != NONE:
+                axis.has_major_gridlines = True
+                _stroke(axis.major_gridlines.format, _colour(guide, g["line_role"], f"{aw} gridlines"), g.get("line_width_pt"))
+            lab = ax.get("labels")
+            if lab is not None:
+                if lab.get("show", True) is False:
+                    axis.tick_label_position = XL_TICK_LABEL_POSITION.NONE
+                else:
+                    tspec, ink = _text_style(guide, lab, f"{aw} labels")
+                    _font(axis.tick_labels.font, guide, tspec, ink)
+                    if lab.get("position") is not None:
+                        axis.tick_label_position = TICK_LABEL_POSITIONS[lab["position"]]
+            if "tick_marks" in ax:
+                axis.major_tick_mark = TICK_MARKS[ax["tick_marks"]]
+            else:
+                taken[f"axes.{name}.tick_marks"] = f"{axis.major_tick_mark.name.lower()} ({CHART_DEFAULTS['axis.tick_marks']})"
+            if "reverse" in ax:
+                axis.reverse_order = bool(ax["reverse"])
+            if ax.get("number_format"):
+                axis.tick_labels.number_format = ax["number_format"]
+                axis.tick_labels.number_format_is_linked = False
+            if ax.get("min") is not None:
+                axis.minimum_scale = float(ax["min"])
+            if ax.get("max") is not None:
+                axis.maximum_scale = float(ax["max"])
+            if ax.get("major_unit") is not None:
+                axis.major_unit = float(ax["major_unit"])
     _write_vary_colors(chart._chartSpace)
-    # chart text inherits the theme's Calibri unless every text part names the face
-    tx_pr = chart._chartSpace.find(qn("c:txPr"))
-    if tx_pr is None:
-        tx_pr = etree.SubElement(chart._chartSpace, qn("c:txPr"))
-        etree.SubElement(tx_pr, qn("a:bodyPr"))
-        lst = etree.SubElement(tx_pr, qn("a:lstStyle"))
-        p = etree.SubElement(tx_pr, qn("a:p"))
-        ppr = etree.SubElement(p, qn("a:pPr"))
-        d = etree.SubElement(ppr, qn("a:defRPr"))
-        etree.SubElement(d, qn("a:latin")).set("typeface", face)
-        etree.SubElement(p, qn("a:endParaRPr"))
-    return note
+    return {"id": where, "type": parsed["type_name"], "defaults_taken": [f"{k}: {v}" for k, v in taken.items()]}
+
+
+def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
+    """Every chart text the spec inks, with what it sits on, for the build's contrast
+    gate: data labels per series and per overriding point, axis tick labels, legend.
+    `on` is a list of ("fill", hex, name) and ("plot",); "plot" is the plot fill when
+    the spec names one, else whatever the page draws under the chart. A label whose
+    fill the spec left to the renderer is ("unknown", why). A position the spec left
+    open is scored against every backing the label can land on."""
+    parsed = chart_parse(el, guide)
+    family = parsed["family"]
+    where = el.get("id", "chart")
+    text_spec, text_ink = _text_style(guide, el.get("text"), f"{where} text")
+    on_fill = ON_FILL.get(family, set())
+    out: list[dict] = []
+
+    def ink_of(spec: dict) -> tuple[str | None, str | None, dict | None]:
+        tspec, ink = _text_style(guide, spec, where)
+        name = spec.get("ink_role") or ((el.get("text") or {}).get("ink_role"))
+        return ink or text_ink, name, tspec or text_spec
+
+    def backing(fill_role, position) -> list[tuple]:
+        if family in ("line", "xy", "radar"):
+            return [("plot",)]
+        if fill_role is None:
+            fill = ("unknown", "the series fill is left to the renderer; name a fill_role to score it")
+        elif fill_role == NONE:
+            fill = ("plot",)
+        else:
+            fill = ("fill", guide.hex(fill_role, where=where), fill_role)
+        if family in ("area", "doughnut"):
+            return [fill]
+        if position is None:
+            return [fill, ("plot",)]  # the renderer picks the position
+        return [fill] if position in on_fill else [("plot",)]
+
+    for si, s in enumerate(el["series"]):
+        labels = s.get("labels")
+        series_on = labels is not None and labels.get("show", True)
+        overridden = {}
+        for p in s.get("points") or []:
+            if "label" in p or "fill_role" in p:
+                overridden[p["index"]] = p
+        n = len(s["values"])
+        plain = [i for i in range(n) if i not in overridden]
+        if series_on and plain:
+            ink, name, tspec = ink_of(labels)
+            out.append({"element": where, "part": f"series[{si}] {s['name']!r} labels", "points": plain, "ink": ink, "ink_name": name,
+                        "spec": tspec, "on": backing(s.get("fill_role"), labels.get("position"))})
+        for idx, p in sorted(overridden.items()):
+            merged = {**(labels or {}), **p.get("label", {})}
+            shown = merged.get("show", True) if ("label" in p or series_on) else False
+            if not shown:
+                continue
+            ink, name, tspec = ink_of(merged)
+            out.append({"element": where, "part": f"series[{si}] {s['name']!r} point {idx} label", "points": [idx], "ink": ink, "ink_name": name,
+                        "spec": tspec, "on": backing(p.get("fill_role", s.get("fill_role")), merged.get("position"))})
+    if family not in ("pie", "doughnut"):
+        for name in ("category", "value"):
+            ax = (el.get("axes") or {}).get(name) or {}
+            if ax.get("visible") is False or (ax.get("labels") or {}).get("show") is False:
+                continue
+            ink, ink_name, tspec = ink_of(ax.get("labels") or {})
+            out.append({"element": where, "part": f"{name} axis labels", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": [("plot",)]})
+    legend = el.get("legend")
+    if legend and legend != NONE:
+        ink, ink_name, tspec = ink_of(legend)
+        out.append({"element": where, "part": "legend", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": [("plot",)]})
+    return out
 
 
 # --- slides ------------------------------------------------------------------------------------------

@@ -331,7 +331,7 @@
    },
    "charts": {
     "el-bridge": {
-     "chart_kind": "waterfall",
+     "type": "COLUMN_STACKED",
      "categories": [
       "FY25A",
       "Volume",
@@ -341,21 +341,169 @@
       "FX",
       "FY26E"
      ],
-     "deltas": [
-      331.0,
-      34.0,
-      21.0,
-      -9.0,
-      -11.0,
-      8.0,
-      374.0
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Base",
+       "values": [
+        0.0,
+        331.0,
+        365.0,
+        377.0,
+        366.0,
+        366.0,
+        0.0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Calder EBITDA bridge, FY25A to FY26E",
+       "values": [
+        331.0,
+        34.0,
+        21.0,
+        9.0,
+        11.0,
+        8.0,
+        374.0
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.accent2"
+        },
+        {
+         "index": 3,
+         "fill_role": "color.accent3"
+        },
+        {
+         "index": 4,
+         "fill_role": "color.accent3"
+        },
+        {
+         "index": 6,
+         "fill_role": "color.accent2"
+        }
+       ]
+      },
+      {
+       "name": "Labels",
+       "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "331"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "+34"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "+21"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "(9)"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "text": "(11)"
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "text": "+8"
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "text": "374"
+         }
+        }
+       ]
+      }
      ],
-     "totals": [
-      0,
-      6
-     ],
-     "number_format": "+#,##0;(#,##0);",
-     "series_name": "Calder EBITDA bridge, FY25A to FY26E"
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0
+      }
+     },
+     "gap_width": 60,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "bridge": {
+      "deltas": [
+       331.0,
+       34.0,
+       21.0,
+       -9.0,
+       -11.0,
+       8.0,
+       374.0
+      ],
+      "totals": [
+       0,
+       6
+      ]
+     }
     }
    },
    "rules": {

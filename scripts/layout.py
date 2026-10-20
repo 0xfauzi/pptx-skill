@@ -50,8 +50,10 @@ SLIDE SPEC JSON, one full example:
      {"type": "element", "id": "foot", "kind": "text", "paragraphs": [{"role": "type.footnote", "text": "Source: company filings"}]}]},
  "splittable_groups": [{"group_id": "comps-rows", "kind": "table_row_range", "node_ids": ["comps"], "row_range": {"start": 0, "end": 2}}]}
 Element kinds: text (paragraphs: role, text, bullet_level|null); table (columns
-[{key,label,value_kind}], rows, header_rows, header_role, cell_role,
-cell_padding_role|null); image | chart | rule (optional size {width_emu|null,
+[{key, label, value_kind, width_share?, min_width_role?}], rows, header_rows,
+header_role, cell_role, cell_padding_role|null; a width_share is the column's exact
+share of the table width, a min_width_role a spacing role it never narrows below, and
+the fitter still measures every cell against both and reports any deficit); image | chart | rule (optional size {width_emu|null,
 height_emu|null}: a measured extent, null = flexible). Every element may carry
 weight (flex share, default equal) and scale_class ("scaling" | "fixed": type
 resolves at s = 1). Grid tracks are uniform. Node ids are unique and carry no '#'.
@@ -347,6 +349,8 @@ class Column:
     key: str
     label: str
     value_kind: str
+    width_share: Fraction | None = None  # the spec's share of the table width, taken exactly
+    min_width_role: str | None = None  # a spacing role the column never narrows below
 
 @dataclass(frozen=True)
 class Table:
@@ -446,7 +450,11 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
             raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs")
     elif kind == "table":
         t = raw.get("table") or {}
-        columns = tuple(Column(c["key"], str(c.get("label", c["key"])), str(c.get("value_kind", "text"))) for c in t.get("columns", []))
+        columns = tuple(Column(c["key"], str(c.get("label", c["key"])), str(c.get("value_kind", "text")),
+                               None if c.get("width_share") is None else decimal_fraction(c["width_share"]), c.get("min_width_role")) for c in t.get("columns", []))
+        shares = [c.width_share for c in columns if c.width_share is not None]
+        if any(not 0 < share <= 1 for share in shares) or sum(shares, Fraction(0)) > 1 or (len(shares) == len(columns) and sum(shares, Fraction(0)) != 1):
+            raise LayoutContractError(f"table {node_id!r}: width_share must lie in (0, 1], sum to at most 1, and to exactly 1 when every column has one")
         rows = tuple(tuple(str(cell) for cell in row) for row in t.get("rows", []))
         if not columns or any(len(row) != len(columns) for row in rows):
             raise LayoutContractError(f"table {node_id!r}: every row needs one cell per column")
@@ -891,6 +899,7 @@ class DrawnRole:
 @dataclass(frozen=True)
 class TableFit:
     column_widths: dict[str, int]
+    column_deficits: dict[str, int]
     row_heights: tuple[int, ...]
     cell_lines: dict[tuple[int, str], tuple[str, ...]]
     total_height_emu: int
@@ -1052,11 +1061,30 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
                 widest_value = max(widest_value, one)
         floor = max(widest_segment, widest_value) if column.value_kind in NUMERIC_VALUE_KINDS else widest_segment
         natural[column.key], minimum[column.key] = widest + charge, min(widest + charge, floor + charge)
-    natural_total = sum(natural.values())
-    if natural_total <= box.width:
-        widths, deficit = _spread_surplus(keys, natural, box.width - natural_total), 0
+        if column.min_width_role is not None:
+            least = space_emu(guide, column.min_width_role, scale, "x")
+            natural[column.key], minimum[column.key] = max(natural[column.key], least), max(minimum[column.key], least)
+    # a share is the spec's width, taken as given; the column's measured minimum still
+    # stands, and a share below it is a deficit reported against that column
+    fixed = {c.key: quantize_emu(c.width_share * box.width) for c in table.columns if c.width_share is not None}
+    column_deficits = {k: minimum[k] - w for k, w in fixed.items() if minimum[k] > w}
+    free = [k for k in keys if k not in fixed]
+    target = box.width - sum(fixed.values())
+    if not free:
+        last = keys[-1]
+        fixed[last] += box.width - sum(fixed.values())
+        widths, shortfall = dict(fixed), 0
     else:
-        widths, deficit = _level_down(keys, natural, minimum, box.width)
+        nat, low = {k: natural[k] for k in free}, {k: minimum[k] for k in free}
+        if sum(nat.values()) <= target:
+            free_widths, shortfall = _spread_surplus(free, nat, target - sum(nat.values())), 0
+        else:
+            free_widths, shortfall = _level_down(free, nat, low, max(target, 0))
+            shortfall += max(0, -target)
+        widths = {k: fixed.get(k, free_widths.get(k)) for k in keys}
+    if shortfall:
+        column_deficits["unshared columns"] = shortfall
+    deficit = sum(column_deficits.values())
     cell_lines: dict[tuple[int, str], tuple[str, ...]] = {}
     row_heights: list[int] = []
     for ri, texts in enumerate(grid):
@@ -1069,7 +1097,7 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
             counts.append(len(lines))
         row_heights.append(required_row_height_emu(counts, hundredths(kind.entry.size_pt), hundredths(kind.entry.line_spacing * kind.entry.size_pt), padding, padding))
     total, budget = sum(row_heights), box.height + EMIT_SLACK_EMU
-    return TableFit(widths, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, fitting_prefix(row_heights, table.header_rows, budget), box.width, table.header_rows, padding, header, cell)
+    return TableFit(widths, column_deficits, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, fitting_prefix(row_heights, table.header_rows, budget), box.width, table.header_rows, padding, header, cell)
 
 def fitting_prefix(row_heights: Sequence[int], header_rows: int, budget: int) -> int:
     """The largest body-row prefix that fits `budget` under the header rows."""
@@ -1260,7 +1288,7 @@ def resolved_json(ctx: Context, resolved: Resolved) -> dict[str, Any]:
             elements[node.id] = {"kind": "text", "lines": sum(len(p["lines"]) for p in paragraphs), "height_emu": element_height_emu(resolved.measurements[node.id]), "bodyPr": {"wrap": "square", "anchor": "t", "lIns": 0, "tIns": 0, "rIns": 0, "bIns": 0, "autofit": "noAutofit"}, "paragraphs": paragraphs}
         elif node.table is not None:
             fit = resolved.table_fits[node.id]
-            elements[node.id] = {"kind": "table", "gridCol_w": [fit.column_widths[c.key] for c in node.table.columns], "tr_h": list(fit.row_heights), "total_height_emu": fit.total_height_emu, "cell_margins_emu": {"marL": fit.padding_emu, "marR": fit.padding_emu, "marT": fit.padding_emu, "marB": fit.padding_emu}, "header_rows": fit.header_rows, "header": _entry_hints(fit.header.entry) if fit.header else None, "cell": _entry_hints(fit.cell.entry), "overflow": fit.overflow, "width_deficit_emu": fit.width_deficit_emu, "fitting_row_prefix": fit.fitting_row_prefix, "cells": {f"{r},{k}": list(v) for (r, k), v in fit.cell_lines.items()}}
+            elements[node.id] = {"kind": "table", "gridCol_w": [fit.column_widths[c.key] for c in node.table.columns], "tr_h": list(fit.row_heights), "total_height_emu": fit.total_height_emu, "cell_margins_emu": {"marL": fit.padding_emu, "marR": fit.padding_emu, "marT": fit.padding_emu, "marB": fit.padding_emu}, "header_rows": fit.header_rows, "header": _entry_hints(fit.header.entry) if fit.header else None, "cell": _entry_hints(fit.cell.entry), "overflow": fit.overflow, "width_deficit_emu": fit.width_deficit_emu, "column_deficits_emu": fit.column_deficits, "fitting_row_prefix": fit.fitting_row_prefix, "cells": {f"{r},{k}": list(v) for (r, k), v in fit.cell_lines.items()}}
         else:
             elements[node.id] = {"kind": node.kind}
     return {"scale": str(resolved.scale), "scale_float": float(resolved.scale), "ruler": resolved.ruler, "fit_epsilon_emu": resolved.fit_epsilon_emu, "boxes": {k: v.as_dict() for k, v in resolved.boxes.items()}, "elements": elements, "violations": [v.as_dict() for v in resolved.violations]}

@@ -1,0 +1,404 @@
+{
+ "out": "(scratch)",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "b1-eps",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "read": 10,
+    "source": 1
+   },
+   "tables": {},
+   "density": {
+    "words": 57,
+    "elements": 4,
+    "covered_area_fraction": 0.718,
+    "words_per_slide": {
+     "value": 57,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 4,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.718,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "above"
+    }
+   },
+   "contrast": {
+    "checked": 15,
+    "violations": [],
+    "warnings": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "chart",
+     "part": "category axis labels",
+     "ink": "color.ink_muted",
+     "ratio": 7.0,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.surface"
+    }
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 3,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "above"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [],
+   "chart_defaults_taken": {
+    "chart": []
+   }
+  },
+  {
+   "id": "b2-capital",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "read": 7,
+    "source": 1
+   },
+   "tables": {},
+   "density": {
+    "words": 56,
+    "elements": 4,
+    "covered_area_fraction": 0.718,
+    "words_per_slide": {
+     "value": 56,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 4,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.718,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "above"
+    }
+   },
+   "contrast": {
+    "checked": 13,
+    "violations": [],
+    "warnings": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "chart",
+     "part": "series[1] 'Step above zero' point 4 label",
+     "points": [
+      4
+     ],
+     "ink": "color.ink",
+     "ratio": 4.85,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.accent3 fill of series[1] 'Step above zero' point 4 label"
+    }
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 3,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "above"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [],
+   "chart_defaults_taken": {
+    "chart": []
+   }
+  }
+ ],
+ "position_drift": {},
+ "repetition": {
+  "threshold": 0.5,
+  "pairs": [
+   {
+    "pages": [
+     1,
+     2
+    ],
+    "similarity": 0.905,
+    "similar": true
+   }
+  ],
+  "reference_consecutive_max": 2,
+  "runs_over_reference": []
+ },
+ "emitted_slides": 2,
+ "validation": {
+  "file": "(scratch)/bridge.pptx",
+  "slides": 2,
+  "problems": [],
+  "ok": true
+ },
+ "renders": {
+  "source": "(scratch)/bridge.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 64,
+    "uncovered_count": 0,
+    "uncovered_sample": []
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 12,
+    "uncovered_count": 0,
+    "uncovered_sample": []
+   },
+   "Wingdings": {
+    "rendered_with": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+    "fidelity": "substituted",
+    "codepoints_checked": 1,
+    "uncovered_count": 0,
+    "uncovered_sample": []
+   }
+  },
+  "pages": 2,
+  "images": [
+   "(scratch)/rb/slide-01.png",
+   "(scratch)/rb/slide-02.png"
+  ]
+ },
+ "judge": {
+  "reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+  "total": 0.095,
+  "components": {
+   "families": 0.0,
+   "size_hist": 0.349,
+   "size_ladder": 0.042,
+   "title_size": 0,
+   "bold_ratio": 0.06,
+   "text_colors": 0.171,
+   "fills": null,
+   "lines": null,
+   "aligns": 0.105,
+   "kinds": 0.2,
+   "background": 0.0,
+   "margins": 0.363,
+   "coverage": 0.231,
+   "count": 0.35,
+   "overlap": 0.0,
+   "overflow": 0.0
+  },
+  "per_slide": [
+   0.093,
+   0.097
+  ],
+  "others": {
+   "/home/user/pptx-skill/refs/files/45541_Header.pptx": 0.424,
+   "/home/user/pptx-skill/refs/files/bmo_fairness_opinion_board.pdf": 0.41,
+   "/home/user/pptx-skill/refs/files/deutsche_bank_amtrust_pitchbook.pdf": 0.618,
+   "/home/user/pptx-skill/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.641,
+   "/home/user/pptx-skill/refs/files/goldman_airvana_why_goldman_2009.pdf": 0.632,
+   "/home/user/pptx-skill/refs/files/mckinsey_uf_road_ahead_2023.pdf": 0.661,
+   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.146,
+   "/home/user/pptx-skill/refs/files/perella_weinberg_pitch.pdf": 0.437,
+   "/home/user/pptx-skill/refs/files/themes.pptx": 0.418
+  },
+  "house_spread": {
+   "n": 12,
+   "min": 0.055,
+   "median": 0.091,
+   "p90": 0.223,
+   "max": 0.372
+  },
+  "panel_skipped": {
+   "reason": "no measured type (a scan or an empty deck)",
+   "files": [
+    "/home/user/pptx-skill/refs/files/citigroup_tribune_restructuring_update.pdf"
+   ]
+  },
+  "same_house_on_panel": {
+   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.131,
+   "/home/user/pptx-skill/refs/files/mi_netflix_financing_pitchbook.pptx": 0.096
+  },
+  "panel": "refs/files (default)",
+  "nearest_is_reference": true,
+  "reference_rank": 1,
+  "within_house_spread": true,
+  "layout_clean": true,
+  "filed_under_reference": true
+ }
+}

@@ -254,7 +254,7 @@
    },
    "charts": {
     "el-margin-chart": {
-     "chart_kind": "line",
+     "type": "LINE",
      "categories": [
       "FY21A",
       "FY22A",
@@ -264,6 +264,11 @@
       "FY26E",
       "FY27E"
      ],
+     "number_format": "#,##0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Gross margin (%)",
@@ -275,7 +280,13 @@
         34.8,
         35.6,
         36.2
-       ]
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 1.75,
+       "smooth": false,
+       "labels": {
+        "show": false
+       }
       },
       {
        "name": "EBITDA margin (%)",
@@ -287,12 +298,51 @@
         18.0,
         19.1,
         19.8
-       ]
+       ],
+       "line_role": "color.accent2",
+       "line_width_pt": 1.75,
+       "smooth": false,
+       "labels": {
+        "show": false
+       }
       }
      ],
-     "number_format": "#,##0.0",
-     "data_labels": false,
-     "legend": "b"
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "none",
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "number_format": "#,##0.0",
+       "min": 0,
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      }
+     },
+     "legend": {
+      "position": "b",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "plot_fill_role": "none",
+     "title": "none"
     }
    },
    "rules": {

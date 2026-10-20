@@ -471,12 +471,17 @@
    },
    "charts": {
     "el-segment-chart": {
-     "chart_kind": "column",
+     "type": "COLUMN_CLUSTERED",
      "categories": [
       "Flow Control",
       "Process Instruments",
       "Aftermarket"
      ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Segment revenue",
@@ -484,11 +489,41 @@
         884.0,
         588.0,
         370.0
-       ]
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       }
      ],
-     "number_format": "#,##0",
-     "data_labels": true
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 60,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
     }
    },
    "rules": {

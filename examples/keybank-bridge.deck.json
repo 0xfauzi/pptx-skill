@@ -1,0 +1,598 @@
+{
+ "slides": [
+  {
+   "id": "b1-eps",
+   "layout": "Title and Content",
+   "notes": "EPS bridge: synergies carry FY17E EPS from $1.12 to $1.24",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "EPS bridge: synergies carry FY17E EPS from $1.12 to $1.24"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "chart",
+         "kind": "chart",
+         "weight": 2.6
+        },
+        {
+         "type": "element",
+         "id": "read",
+         "kind": "text",
+         "weight": 1.0,
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "What moves EPS"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Cost synergies of $0.21 are 70% of the gross accretion and the one lever management controls"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Amortisation, financing and dilution together take $0.16 back"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Without revenue synergies the deal is still 9% accretive"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company disclosures, Goldman Stanley estimates. EPS in $ per share."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "chart": {
+     "type": "COLUMN_STACKED",
+     "categories": [
+      "FY17E",
+      "Cost syn.",
+      "Revenue syn.",
+      "Marks",
+      "Amortisation",
+      "Financing",
+      "Issuance",
+      "Pro forma"
+     ],
+     "number_format": "0.00",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Base",
+       "values": [
+        0.0,
+        1.12,
+        1.33,
+        1.36,
+        1.34,
+        1.29,
+        1.24,
+        0.0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Step",
+       "values": [
+        1.12,
+        0.21,
+        0.03,
+        0.04,
+        0.06,
+        0.05,
+        0.05,
+        1.24
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.accent2"
+        },
+        {
+         "index": 4,
+         "fill_role": "color.accent1"
+        },
+        {
+         "index": 5,
+         "fill_role": "color.accent1"
+        },
+        {
+         "index": 6,
+         "fill_role": "color.accent1"
+        },
+        {
+         "index": 7,
+         "fill_role": "color.accent2"
+        }
+       ]
+      },
+      {
+       "name": "Label",
+       "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "number_format": "0.00",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "$1.12"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "+0.21"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "+0.03"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "+0.04"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "text": "(0.06)"
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "text": "(0.05)"
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "text": "(0.05)"
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "text": "$1.24"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0
+      }
+     },
+     "gap_width": 40,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "bridge": {
+      "deltas": [
+       1.12,
+       0.21,
+       0.03,
+       0.04,
+       -0.06,
+       -0.05,
+       -0.05,
+       1.24
+      ],
+      "totals": [
+       0,
+       7
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "b2-capital",
+   "layout": "Title and Content",
+   "notes": "Excess capital: issuance refills the $1.0bn cash-leg hole",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Excess capital: issuance refills the $1.0bn cash-leg hole"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "chart",
+         "kind": "chart",
+         "weight": 1.7
+        },
+        {
+         "type": "element",
+         "id": "read",
+         "kind": "text",
+         "weight": 1.0,
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Capital sequence"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Paying $1.4bn in cash takes standalone excess of $0.6bn to a $0.8bn shortfall"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Deducting acquired intangibles deepens it to $1.0bn below target"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "$1.1bn of common and $0.4bn of preferred restore $0.5bn of headroom"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company disclosures, Goldman Stanley estimates. Excess over a 10% CET1 target, $bn."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "chart": {
+     "type": "COLUMN_STACKED",
+     "categories": [
+      "Standalone excess",
+      "Cash consideration",
+      "Intangibles deduction",
+      "Common issuance",
+      "Preferred issuance",
+      "Pro forma excess"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Base above zero",
+       "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.1,
+        0.0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Step above zero",
+       "values": [
+        0.6,
+        0.6,
+        0.0,
+        0.1,
+        0.4,
+        0.5
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.accent2",
+         "label": {
+          "text": "$0.6bn",
+          "ink_role": "color.ink_inverse"
+         }
+        },
+        {
+         "index": 1,
+         "fill_role": "color.accent1",
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "fill_role": "color.accent3",
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "fill_role": "color.accent3",
+         "label": {
+          "text": "+0.4",
+          "ink_role": "color.ink"
+         }
+        },
+        {
+         "index": 5,
+         "fill_role": "color.accent2",
+         "label": {
+          "text": "$0.5bn",
+          "ink_role": "color.ink_inverse"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Base below zero",
+       "values": [
+        0.0,
+        0.0,
+        -0.8,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Step below zero",
+       "values": [
+        0.0,
+        -0.8,
+        -0.2,
+        -1.0,
+        0.0,
+        0.0
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 1,
+         "fill_role": "color.accent1",
+         "label": {
+          "text": "(1.4)",
+          "ink_role": "color.ink"
+         }
+        },
+        {
+         "index": 2,
+         "fill_role": "color.accent1",
+         "label": {
+          "text": "(0.2)",
+          "ink_role": "color.ink"
+         }
+        },
+        {
+         "index": 3,
+         "fill_role": "color.accent3",
+         "label": {
+          "text": "+1.1",
+          "ink_role": "color.ink"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "position": "low",
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 40,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "bridge": {
+      "deltas": [
+       0.6,
+       -1.4,
+       -0.2,
+       1.1,
+       0.4,
+       0.5
+      ],
+      "totals": [
+       0,
+       5
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

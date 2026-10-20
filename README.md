@@ -111,7 +111,7 @@ scripts/
 components/              four admitted components: football field, title block, bullet stack, KPI row
 examples/house/          deckgen's 14 house specimen pages as deck specs, with COVERAGE.md
 oracles/                 the scripts behind every 'Checked by' in PORT_AUDIT.md
-references/design/       the nine design doctrines
+references/design/       the nine design doctrines and the chart recipes
 examples/                worked completions and page specs for a pptx and a PDF reference
 refs/                    manifest and fetch script for the public reference decks (files git-ignored)
 ```

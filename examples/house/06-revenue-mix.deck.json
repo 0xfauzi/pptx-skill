@@ -392,91 +392,226 @@
    },
    "charts": {
     "el-mekko-0": {
-     "chart_kind": "stacked_column_100",
+     "type": "COLUMN_STACKED_100",
      "categories": [
       "Flow Control"
      ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Europe (%)",
        "values": [
         45.5
-       ]
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       },
       {
        "name": "Americas (%)",
        "values": [
         36.0
-       ]
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       }
       },
       {
        "name": "Asia Pacific (%)",
        "values": [
         18.6
-       ]
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       }
      ],
-     "number_format": "#,##0",
-     "data_labels": true,
-     "legend": "b"
+     "axes": {
+      "category": {
+       "visible": false
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 0,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
     },
     "el-mekko-1": {
-     "chart_kind": "stacked_column_100",
+     "type": "COLUMN_STACKED_100",
      "categories": [
       "Process Instruments"
      ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Europe (%)",
        "values": [
         41.8
-       ]
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       },
       {
        "name": "Americas (%)",
        "values": [
         36.4
-       ]
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       }
       },
       {
        "name": "Asia Pacific (%)",
        "values": [
         21.8
-       ]
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       }
      ],
-     "number_format": "#,##0",
-     "data_labels": true,
-     "legend": "b"
+     "axes": {
+      "category": {
+       "visible": false
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 0,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
     },
     "el-mekko-2": {
-     "chart_kind": "stacked_column_100",
+     "type": "COLUMN_STACKED_100",
      "categories": [
       "Aftermarket"
      ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Europe (%)",
        "values": [
         50.8
-       ]
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       },
       {
        "name": "Americas (%)",
        "values": [
         33.0
-       ]
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       }
       },
       {
        "name": "Asia Pacific (%)",
        "values": [
         16.2
-       ]
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "color.surface",
+       "line_width_pt": 0.75,
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       }
      ],
-     "number_format": "#,##0",
-     "data_labels": true,
-     "legend": "b"
+     "axes": {
+      "category": {
+       "visible": false
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 0,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
     }
    },
    "rules": {}

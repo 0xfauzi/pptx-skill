@@ -472,7 +472,7 @@
    },
    "charts": {
     "chart": {
-     "chart_kind": "bar",
+     "type": "BAR_CLUSTERED",
      "categories": [
       "City National",
       "National Penn",
@@ -484,6 +484,11 @@
       "OneWest",
       "Hudson City"
      ],
+     "number_format": "0.00\"x\"",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "P / TBV",
@@ -497,13 +502,50 @@
         1.3,
         1.14,
         0.86
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.00\"x\"",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 5,
+         "fill_role": "color.accent2",
+         "label": {
+          "role": "type.emphasis"
+         }
+        }
        ]
       }
      ],
-     "number_format": "0.00\"x\"",
-     "data_labels": true,
-     "legend": null,
-     "gap_width": 40
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 40,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
     }
    }
   },
@@ -830,17 +872,23 @@
      "emphasis_rows": [
       4,
       5
-     ]
+     ],
+     "emphasis_fill_role": "color.surface_alt"
     }
    },
    "charts": {
     "chart": {
-     "chart_kind": "stacked_column",
+     "type": "COLUMN_STACKED",
      "categories": [
       "FY16",
       "FY17",
       "FY18"
      ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
      "series": [
       {
        "name": "Precedented",
@@ -848,7 +896,16 @@
         120,
         250,
         295
-       ]
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
       },
       {
        "name": "Gap to required",
@@ -856,13 +913,45 @@
         80,
         150,
         105
-       ]
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       }
       }
      ],
-     "number_format": "0",
-     "data_labels": true,
-     "legend": "b",
-     "gap_width": 50
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 50,
+     "overlap": 100,
+     "legend": {
+      "position": "b",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "plot_fill_role": "none",
+     "title": "none"
     }
    }
   }

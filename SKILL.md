@@ -254,7 +254,8 @@ align, justify, weights) or `grid` (rows, cols, gutter role, areas). Elements ar
 kind, rows, header rows), `chart`, `image`, `rule`, `rect`, or a `component`. Everything
 is a role: `type.body`, `color.accent1`, `space.md`. The full grammar with one worked
 example is the docstring of `scripts/layout.py`; a complete four-page deck spec is
-`examples/keybank-section.deck.json`.
+`examples/keybank-section.deck.json`, and two bridge pages written from the chart
+recipes are `examples/keybank-bridge.deck.json`.
 
 Before writing text, ask the solver what fits:
 
@@ -265,7 +266,7 @@ python3 scripts/layout.py capacity work/deck/s03.spec.json --guide work/ref/guid
 It prints lines and characters per region per role from the measured ruler. Write to
 that budget. Read `references/design/deliberate_composition.md` (every page),
 `ib_slide_composition.md` or `consulting_slide_composition.md` (by genre),
-`dense_table_design.md` (tables), `chart_design.md` (charts), `typography_hierarchy.md`
+`dense_table_design.md` (tables), `chart_design.md` and `chart_recipes.md` (charts), `typography_hierarchy.md`
 and `decoration_and_motifs.md`. Where a doctrine and the reference disagree, the
 reference wins.
 
@@ -294,14 +295,40 @@ their skeleton lines. Overlap 0 everywhere means the gallery has nothing for tha
 (keybank's tables are pasted images, so a table intent finds none): design from the
 guide and the doctrines, not from a near miss.
 
-A bridge is a native chart: `"chart_kind": "waterfall"` with `categories`,
-`deltas` (signed steps) and `totals` (the indices that draw from zero; each must equal
-the running sum of the steps before it, or the build refuses). Steps take
-`color.positive` and `color.negative` when the guide has them, else accent1, and the
-value axis is hidden because every bar carries its label. A step that would reach below
-zero is refused: build that bridge from rects. A slide-layer logo, rule or label the
-reference pastes on every page is drawn on every generated page in the default
-`--chrome auto`; chrome the layout already carries is inherited, never redrawn.
+A slide-layer logo, rule or label the reference pastes on every page is drawn on every
+generated page in the default `--chrome auto`; chrome the layout already carries is
+inherited, never redrawn.
+
+### 6.1 You design every exhibit; the guide is the style
+
+The guide is the reference's style as roles and evidence: colour roles, type roles,
+`charts.series_color_roles` and `charts.per_kind` (what the reference's charts do:
+gridlines, labels, legend), `tables` (header fill and ink, rules, banding), motifs. No
+script turns that evidence into a design. You read it, look at the reference, and write
+every design choice into the spec; the scripts resolve roles, write what the spec says,
+measure and refuse.
+
+- **Charts** are a full spec under `charts.<id>`: `type` (any python-pptx
+  `XL_CHART_TYPE` name: `COLUMN_STACKED`, `BAR_CLUSTERED`, `LINE_MARKERS`, `PIE`,
+  `XY_SCATTER`, ...), series with `fill_role` or `"none"` per series and per point,
+  `line_role` and width, data labels per series and per point (show, position, number
+  format, type role, `ink_role`, your own text), both axes (visible, line, gridlines,
+  number format, reverse, min and max, tick marks, tick labels), `gap_width`, `overlap`,
+  the legend or `"none"`, the chart text role and ink, the plot fill, the title.
+  Colours are roles only; a literal hex is refused, and so is an unknown key. There is
+  no waterfall kind and no football-field kind: they, the mekko, a bridge that crosses
+  zero and labelled bars without a value axis are recipes over the spec in
+  `references/design/chart_recipes.md`, as worked JSON to adapt. The one value written
+  unasked is `c:varyColors val=0` (file safety: the renderers read its absence
+  oppositely), so a pie whose slices differ names a fill per point.
+- **Inks** are yours. Nothing picks an ink for a fill: a white label on a light bar is
+  written white, and the build refuses the page by name. Set `ink_role` on every label
+  that sits on a fill.
+- **Tables**: a column may carry `width_share` (its exact share of the table width) or
+  `min_width_role` (a spacing role it never narrows below); the fitter honours both,
+  still measures every cell, and reports a share below a column's widest word as a
+  width deficit. `emphasis_rows` need `emphasis_fill_role` (a role, or `"none"` for bold
+  on the row's own ground) and may take `emphasis_ink_role`; there is no default fill.
 
 Motifs the digest lists (a band, a rule, a block with a preset, roles and an anchor)
 are applied by you: draw one as a `rule` or `rect` element with the motif's line or
@@ -358,8 +385,14 @@ houses. Read `work/out/deck.build.json`:
   6.7 in on the next reads as two different pages.
 - `component_notes`: a component admitted against another reference; run
   `component.py check` with this guide before trusting its fit.
-- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
-- `contrast` per page: every text run and every table row class scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else `color.surface`). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that); `unbound` lists runs with no ink role, which inherit the master's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank. The table cells' inverse-ink swap the emitter makes is scored as drawn, so a table set in a filled region with unfilled cells is caught here, not by the emitter.
+- `chart_defaults_taken` per page with a chart: every chart choice the spec left out,
+  with the value the file got (`series[0].labels: no data labels`, `gap_width: 150
+  (python-pptx's chart part)`, `axes.value.line_role: no stroke written: each renderer
+  reads the theme's line style, and they differ`). None of these is the house's style.
+  Write each one into the spec and build again until the list is empty or every entry
+  left is one you meant.
+- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
+- `contrast` per page: every text run, every table row class and every chart text (data labels per series and per overriding point, axis labels, legend) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
 - `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`. Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
 - `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.
 - `tieouts` per page: for every table with `totals_last_row`, each number, currency or percent column's body sum against its totals cell at the cell's own decimals ($ , % x stripped, parentheses negative). A row headed median, average or mean is skipped as a statistic; a column with an n.a. cell is skipped and names the cell. A mismatch is a warning under `problems`: a subtotal inside the body or a non-total row styled as the totals row reads as a mismatch, so either compute the figure or take `totals_last_row` off that row.
@@ -488,6 +521,12 @@ again without learning from your pages; `--include-generated` overrides.
 ## 11. Hard rules
 
 - No literal colour, size, font or coordinate in a spec; roles only. The emitter refuses.
+- The guide is the style; you design every exhibit from it. Chart type, fills, inks,
+  axes, labels, legend, gap and overlap, table emphasis fills and column shares are
+  written in the spec by you, never left to a script. The build measures and refuses
+  (fit, contrast, overlap, overflow, tie-outs, the judge); it never decides or corrects
+  a design choice. `chart_defaults_taken` lists what you left to defaults: an exhibit
+  is not finished while that list holds a choice you did not mean.
 - Nothing is dropped to make a page fit. Unfittable is a report and a choice, never a cut.
 - Never generate below `max(floor_pt, absolute_floor_pt)`; the solver cannot, and the
   completion may not set a floor below the absolute one.
@@ -547,7 +586,7 @@ again without learning from your pages; `--include-generated` overrides.
 | `scripts/fingerprint.py` | the style judge: distance to a house, calibration |
 | `scripts/pptx_tools.py` | text, layouts, template, blank, duplicate, delete, clean, validate |
 | `components/` | the contract and admitted components |
-| `references/design/` | nine doctrines, reference-agnostic (the reference always wins) |
-| `examples/` | a four-page deck spec, two completions, a PDF deck spec, a round-trip spec, and `proofs/` with the build reports and raster reports behind the numbers in this file |
+| `references/design/` | nine doctrines, reference-agnostic (the reference always wins), and `chart_recipes.md`, worked chart specs to adapt |
+| `examples/` | a four-page deck spec, a two-page bridge spec, two completions, a PDF deck spec, a round-trip spec, and `proofs/` with the build reports and raster reports behind the numbers in this file |
 | `refs/MANIFEST.md`, `refs/fetch.sh` | eleven public bank and consulting decks for calibration |
 | `PORT_AUDIT.md` | every piece ported from deckgen, its assumption, and how it was checked |
