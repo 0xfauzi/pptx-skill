@@ -173,10 +173,45 @@ class WrappedLine:
     start: int
     advance_units: float
 
+_UNIT_TOKENS = frozenset({"bn", "mm", "m", "k", "b", "x", "%", "bps", "pp", "pts", "p.a.", "yrs", "mn", "bp", "ppt", "pct"})
+_CURRENCY_TOKENS = frozenset({"$", "us$", "c$", "a$", "eur", "gbp", "usd", "cad", "chf", "jpy", "sek", "nok", "dkk", "aud"})
+_PERIOD_PREFIXES = frozenset({"fy", "cy", "q1", "q2", "q3", "q4", "h1", "h2", "ltm", "ntm", "fye", "ye"})
+
+
+def _numeric(token: str) -> bool:
+    core = token.strip("()[]$%,.:;x-\u2013+")
+    return any(ch.isdigit() for ch in core) and all(ch.isdigit() or ch in ".,%$()-x+/" for ch in core)
+
+
+def _glued(before: str, after: str) -> bool:
+    """A figure and its unit, a currency mark and its figure, a period prefix and its
+    year stay on one line: '$1.2 bn', 'EUR 40 mm', 'FY 2024', '12.5 %'. A pitch-book page
+    that breaks inside one of these reads as generated, and PowerPoint would break there."""
+    b, a = before.lower(), after.lower()
+    if _numeric(b) and (a in _UNIT_TOKENS or a.rstrip(".,;:)") in _UNIT_TOKENS):
+        return True
+    if b in _CURRENCY_TOKENS and _numeric(a):
+        return True
+    if b in _PERIOD_PREFIXES and _numeric(a):
+        return True
+    return False
+
+
 def break_opportunities(text: str) -> tuple[int, ...]:
     """Offsets one past each character a line may end on: every space or hyphen
-    (the hyphen stays on the line it ends), plus the end of the string."""
-    stops = [i + 1 for i, ch in enumerate(text) if ch == " " or ch == "-"]
+    (the hyphen stays on the line it ends), plus the end of the string. A space
+    between a figure and its unit (see _glued) and a non-breaking space are not
+    opportunities."""
+    stops: list[int] = []
+    for i, ch in enumerate(text):
+        if ch == "-":
+            stops.append(i + 1)
+        elif ch == " ":
+            before = text[:i].split(" ")[-1]
+            after = text[i + 1:].split(" ")[0]
+            if before and after and _glued(before, after):
+                continue
+            stops.append(i + 1)
     if not stops or stops[-1] != len(text):
         stops.append(len(text))
     return tuple(stops)

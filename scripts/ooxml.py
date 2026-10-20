@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import colorsys
 import math
+import hashlib
 import json
 import re
 import sys
@@ -415,6 +416,8 @@ class SlidePrint:
     tables: list[TableObs] = field(default_factory=list)
     charts: list[ChartObs] = field(default_factory=list)
     hidden: bool = False  # p:sld show="0"; walked as evidence (deckgen rule), flagged so the agent can exclude it
+    page_class: str = "vector"  # pdf triage: vector | vector_with_image | raster_only | raster_ocr | raster_wrapper | other_size | blank
+    image_cover: float = 0.0  # pdf: union area of page images over page area
 
 
 class Chain:
@@ -1337,11 +1340,195 @@ def _pdf_family(fontname: str | None) -> tuple[str | None, bool]:
     return base.strip() or None, bold
 
 
+PDF_TRIAGE_IMAGE_COVER = 0.4
+"""A page whose images cover at least this share is a candidate scan. Measured on the 8
+public reference PDFs (scratchpad/probe_pdf/triage.json, 2026-10-20): EDGAR browser prints
+embed the slide as one image at 0.47 to 0.69 of a letter page; Citi and the UF McKinsey
+scans sit at 1.0; vector decks with a photo or chart image reach 0.61 to 0.66 on single
+pages (jazz p5, p6) and the calstrs deck paints full-bleed background images under vector
+text (cover 1.0 to 2.5 before the union), which is why coverage alone decides nothing and
+the text placement rule below is needed."""
+PDF_TRIAGE_MIN_TEXT_PT = 4.0
+"""Characters below this size are not type a reader sees: the EDGAR prints carry an OCR
+layer at 0 to 1pt (Goldman p3: 4273 of 4414 chars at 1pt) and Tesseract layers come as
+GlyphLessFont at box-derived sizes."""
+
+
+def _slide_shaped(w: float, h: float, tolerance: float = 0.015) -> bool:
+    """4:3, 16:9 or 16:10 within 1.5%: letter landscape is 1.294 and A4 landscape 1.414, both outside."""
+    if w <= 0 or h <= 0:
+        return False
+    ratio = w / h
+    return any(abs(ratio - r) / r <= tolerance for r in (4 / 3, 16 / 9, 16 / 10))
+
+
+def _union_cover(boxes: list[tuple[float, float, float, float]], w: float, h: float) -> float:
+    """Union area of clipped boxes over the page, on a 200x200 grid (exact enough for a share)."""
+    if not boxes or w <= 0 or h <= 0:
+        return 0.0
+    n = 200
+    grid = bytearray(n * n)
+    for x0, t, x1, b in boxes:
+        c0, c1 = max(0, int(x0 / w * n)), min(n, int(x1 / w * n) + 1)
+        r0, r1 = max(0, int(t / h * n)), min(n, int(b / h * n) + 1)
+        for r in range(r0, r1):
+            base = r * n
+            for c in range(c0, c1):
+                grid[base + c] = 1
+    return sum(grid) / (n * n)
+
+
+_TRIAGE_CACHE: dict[tuple[str, int | None], dict] = {}
+
+
+def pdf_triage(path: str, max_pages: int | None = None) -> dict:
+    """Per-page evidence class for a PDF reference, before anything is mined from it.
+
+    vector: real type (>= 4pt, a real font) that is not merely a frame around an image.
+    vector_with_image: a vector page in a vector deck whose body is an image (a chart
+      pasted as a picture): its text is evidence.
+    raster_wrapper: an image is the page and the only real text lies outside it (browser
+      chrome, a source stamp): nothing on the page is typography evidence.
+    raster_ocr: the text layer is an OCR layer (GlyphLessFont or sub-2pt glyphs) over an
+      image: words are content evidence, never sizes, faces or inks.
+    raster_only: an image and no text at all.
+    other_size: a page whose size differs from the deck's modal size (a filing cover, a
+      memo bound in front of the deck): excluded.
+    blank: no text and no image.
+    """
+    import pdfplumber  # optional dependency: only PDF references need it
+
+    cache_key = (str(Path(path).resolve()), max_pages)
+    if cache_key in _TRIAGE_CACHE:
+        return _TRIAGE_CACHE[cache_key]
+    pages: list[dict] = []
+    with pdfplumber.open(path) as pdf:
+        total = len(pdf.pages)
+        for i, page in enumerate(pdf.pages):
+            if max_pages is not None and i >= max_pages:
+                break
+            w, h = float(page.width), float(page.height)
+            imgs = []
+            src_px: dict[tuple[float, float, float, float], tuple[int, int]] = {}
+            for im in page.images:
+                x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
+                t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
+                if x1 > x0 and b > t:
+                    imgs.append((x0, t, x1, b))
+                    size = im.get("srcsize")
+                    if size and len(size) == 2:
+                        src_px[(x0, t, x1, b)] = (int(size[0]), int(size[1]))
+            cover = _union_cover(imgs, w, h)
+            chars = page.chars
+            real = 0
+            ocr = 0
+            inside = 0
+            for ch in chars:
+                if not str(ch.get("text", "")).strip():
+                    continue
+                size = float(ch.get("size", 0) or 0)
+                font = str(ch.get("fontname", "") or "")
+                if "GlyphLessFont" in font or size < 2.0:
+                    ocr += 1
+                    continue
+                if size < PDF_TRIAGE_MIN_TEXT_PT:
+                    continue
+                real += 1
+                cx, cy = float(ch.get("x0", 0)), float(ch.get("top", 0))
+                if any(x0 <= cx <= x1 and t <= cy <= b for x0, t, x1, b in imgs):
+                    inside += 1
+            seen = real + ocr
+            # the largest image is the slide when the page is a wrapper around one
+            big = max(imgs, key=lambda b: (b[2] - b[0]) * (b[3] - b[1])) if imgs else None
+            if big is not None and (big[2] - big[0]) * (big[3] - big[1]) < 0.35 * w * h:
+                # a scan tiled into strips (the UF McKinsey pages carry 8 images): the page is the slide
+                big = (0.0, 0.0, w, h) if cover >= 0.9 else None
+            text_digest = hashlib.sha256("".join(str(ch.get("text", "")) for ch in chars if str(ch.get("text", "")).strip()).encode()).hexdigest()[:16]
+            if seen == 0:
+                cls = "raster_only" if cover >= PDF_TRIAGE_IMAGE_COVER else "blank"
+            elif ocr / seen >= 0.5 and cover >= PDF_TRIAGE_IMAGE_COVER:
+                cls = "raster_ocr"
+            elif cover >= PDF_TRIAGE_IMAGE_COVER and real and inside / real < 0.2:
+                # a slide-shaped page with a pasted chart image is a slide; a letter or A4 page
+                # around an image is a print of a slide (every EDGAR wrapper in the corpus is
+                # 612x792 or 792x612, every pasted-image slide page is 4:3 or 16:9)
+                cls = "vector_with_image" if _slide_shaped(w, h) else "raster_wrapper"
+            else:
+                cls = "vector"
+            px = src_px.get(big) if big else None
+            eff_dpi = round(px[0] / ((big[2] - big[0]) / 72.0)) if (px and big and big[2] > big[0]) else None
+            pages.append({"page": i + 1, "width_pt": round(w, 1), "height_pt": round(h, 1), "chars_real": real, "chars_ocr": ocr,
+                          "in_image_share": round(inside / real, 3) if real else None, "image_cover": round(cover, 3), "class": cls,
+                          "slide_box_pt": [round(v, 1) for v in big] if big else None, "image_px": list(px) if px else None,
+                          "effective_dpi": eff_dpi, "text_digest": text_digest})
+    # deck-level rules, in order: modal page size; a stamp repeated on image pages; wrapper vs pasted image
+    sizes = Counter((p["width_pt"], p["height_pt"]) for p in pages)
+    modal = sizes.most_common(1)[0][0] if sizes else None
+    for p in pages:
+        if modal and (p["width_pt"], p["height_pt"]) != modal and p["class"] in ("vector", "blank", "raster_wrapper"):
+            p["class"] = "other_size"
+    digests = Counter(p["text_digest"] for p in pages if p["class"] == "vector" and p["image_cover"] >= 0.9)
+    for p in pages:  # the same text on half the image pages is a stamp (a source line), not a slide
+        if p["class"] == "vector" and p["image_cover"] >= 0.9 and digests[p["text_digest"]] >= max(2, 0.5 * len(pages)):
+            p["class"] = "raster_wrapper"
+    vector = sum(1 for p in pages if p["class"] == "vector")
+    wrappers = [p for p in pages if p["class"] == "raster_wrapper"]
+    if vector > len(wrappers):
+        for p in wrappers:  # a letter-size vector deck with one pasted image page: still the house
+            p["class"] = "vector_with_image"
+    counts = Counter(p["class"] for p in pages)
+    evidence = [p["page"] for p in pages if p["class"] in ("vector", "vector_with_image")]
+    raster_pages = [p for p in pages if p["class"] in ("raster_only", "raster_ocr", "raster_wrapper")]
+    if not pages:
+        deck_class = "empty"
+    elif len(raster_pages) > len(evidence):
+        deck_class = "raster"
+    elif len(evidence) >= 3 and not raster_pages:
+        deck_class = "vector"
+    elif len(evidence) >= 3:
+        deck_class = "mixed"
+    else:
+        deck_class = "raster" if raster_pages else "empty"
+    # the slide box of a raster deck: the modal largest-image box (wrapper) or the page (raster_only)
+    slide_box = None
+    if raster_pages:
+        boxes = Counter(tuple(p["slide_box_pt"]) for p in raster_pages if p["slide_box_pt"])
+        slide_box = list(boxes.most_common(1)[0][0]) if boxes else None
+    # a print scales the slide: a 4:3 box is read as a 10 x 7.5 in slide, 16:9 as 13.333 x 7.5,
+    # 16:10 as 10 x 6.25, and the scale is reported so sizes read off the pixels can be undone
+    slide_size_in = None
+    print_scale = None
+    size_basis = None
+    if slide_box:
+        bw, bh = (slide_box[2] - slide_box[0]) / 72.0, (slide_box[3] - slide_box[1]) / 72.0
+        # a letter- or A4-ratio box is a deck printed to paper before it was scanned: the
+        # paper size is the only size the pixels can vouch for
+        for ratio, size, basis in ((4 / 3, (10.0, 7.5), "4:3 slide"), (16 / 9, (13.333, 7.5), "16:9 slide"), (16 / 10, (10.0, 6.25), "16:10 slide"),
+                                   (11 / 8.5, (11.0, 8.5), "letter print"), (297 / 210, (11.693, 8.268), "A4 print")):
+            if bh > 0 and abs(bw / bh - ratio) / ratio <= 0.015:
+                slide_size_in = list(size)
+                print_scale = round(bw / size[0], 3)
+                size_basis = basis
+                break
+        if slide_size_in is None:
+            slide_size_in = [round(bw, 3), round(bh, 3)]
+            print_scale = 1.0
+            size_basis = "image box as printed"
+    dpis = [p["effective_dpi"] for p in raster_pages if p.get("effective_dpi")]
+    result = {"file": path, "pages_total": total, "pages_triaged": len(pages), "modal_page_pt": list(modal) if modal else None,
+              "counts": dict(counts), "deck_class": deck_class, "evidence_pages": evidence,
+              "raster_pages": [p["page"] for p in raster_pages], "slide_box_pt": slide_box, "slide_size_in": slide_size_in,
+              "size_basis": size_basis, "print_scale": print_scale, "effective_dpi": (sorted(dpis)[len(dpis) // 2] if dpis else None), "pages": pages}
+    _TRIAGE_CACHE[cache_key] = result
+    return result
+
+
 def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]:
     import pdfplumber  # optional dependency: only PDF references need it
 
     name = Path(path).stem
     out: list[SlidePrint] = []
+    triage = pdf_triage(path, max_pages)
     with pdfplumber.open(path) as pdf:
         for i, page in enumerate(pdf.pages):
             if max_pages is not None and i >= max_pages:
@@ -1353,6 +1540,9 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
             except Exception:  # noqa: BLE001 - older pdfplumber
                 pass
             sp = SlidePrint(name, i, int(w * scale), int(h * scale), None, source="pdf")
+            if i < len(triage["pages"]):
+                sp.page_class = triage["pages"][i]["class"]
+                sp.image_cover = triage["pages"][i]["image_cover"]
             # runs: consecutive chars sharing font, size and colour on one line
             key = None
             buf = 0
@@ -1432,6 +1622,10 @@ def main(argv: list[str]) -> int:
     if not argv:
         print(__doc__)
         return 1
+    if argv[0] == "triage":
+        max_pages = int(argv[2]) if len(argv) > 2 else None
+        print(json.dumps(pdf_triage(argv[1], max_pages), indent=1))
+        return 0
     slides = fingerprint_deck(argv[0])
     print(json.dumps([asdict(s) for s in slides], indent=1, default=str))
     return 0

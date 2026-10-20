@@ -46,9 +46,16 @@ class PatchError(SystemExit):
     pass
 
 
-def model_prov(note: str = "") -> dict:
-    return {"value_provenance": "model_inference", "role_provenance": "inferred", "evidence": [note] if note else [], "frequency": 0,
-            "master_membership": False, "confidence": 0.5}
+def model_prov(note: str = "", value=None) -> dict:
+    """Completion provenance. A patch value may carry provenance "raster_inference" with a
+    confidence of at most 0.5: raster_style.py's measurements on page images are inference
+    from pixels, never observation, and the cap keeps them below any observed value."""
+    kind, confidence = "model_inference", 0.5
+    if isinstance(value, dict) and value.get("provenance") == "raster_inference":
+        kind = "raster_inference"
+        confidence = min(0.5, float(value.get("confidence", 0.5)))
+    return {"value_provenance": kind, "role_provenance": "inferred", "evidence": [note] if note else [], "frequency": 0,
+            "master_membership": False, "confidence": confidence}
 
 
 def floor_for(guide: dict, role: str) -> float:
@@ -90,7 +97,7 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
             if isinstance(value, str) and HEX_RE.match(value):
                 guide["color"]["roles"][role] = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
             elif isinstance(value, dict) and HEX_RE.match(value.get("hex", "")):
-                guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""))}
+                guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
             else:
                 raise PatchError(f"{path}: expected a hex colour")
         elif parts[0] == "extra_roles":
@@ -109,7 +116,7 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
                 if float(spec["size_pt"]) < floor_for(guide, role):
                     raise PatchError(f"{path}: {spec['size_pt']}pt is below the {FLOOR_FAMILY.get(role)} floor {floor_for(guide, role)}pt")
                 spec.setdefault("weight", 400)
-                spec["provenance"] = model_prov(value.get("why", ""))
+                spec["provenance"] = model_prov(value.get("why", ""), value)
                 roles[role] = spec
             elif parts[3] == "members":
                 if role not in roles:

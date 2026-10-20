@@ -64,11 +64,42 @@ render. A face marked `substituted` makes the render useless as evidence of fit.
 
 ### 2.2 PDF references
 
-A PDF yields runs (face, size, colour, bold from the embedded font name), rects and
-lines, page geometry, margins, size ladder, palette and recurring footer lines. It does
-not yield placeholders, bullets, layouts, chart parts or table rules. The draft lists
-each of these as open with the rule to complete it by. Most public pitch books are PDF,
-so treat this as the normal case, not a fallback.
+Most public pitch books are PDF and most of those are not vector exports: of the 19
+reference PDFs this skill was measured on, 8 are page images inside a letter-size print
+(an EDGAR exhibit printed from a browser, a filing with the deck bound in, a scan with an
+OCR layer). Their text layer is browser chrome, searchable-text blocks or OCR output,
+and mining it gives a house of 1pt Times. So the extractor triages every page first and
+the digest says which class the deck is:
+
+```bash
+python3 scripts/ooxml.py triage ref.pdf          # the per-page table, before anything is mined
+```
+
+- `vector` and `vector_with_image` pages carry real type: the extractor mines them as it
+  mines a pptx, minus placeholders, bullets, layouts, chart parts and table rules, which
+  it lists as open. A slide-shaped page with a pasted chart image is still a vector page.
+- `raster_wrapper`, `raster_ocr` and `raster_only` pages are images: nothing on them is
+  type evidence. When they are the majority (`deck_class: raster`) the draft opens every
+  text-derived address, sets the page size from the image box (a letter-ratio image is a
+  deck printed to letter, 11 x 8.5 in; a 4:3 one is 10 x 7.5) and names the next step:
+
+```bash
+python3 scripts/raster_style.py ref.pdf --out work/ref/raster [--dpi 100]
+```
+
+  which renders the raster pages, crops each to its slide box and measures what pixels
+  can still tell: the palette by painted area, the text ink as the modal dark pixel
+  colour, chrome as the pixels that hold one colour on half the pages (rules, bands,
+  logo block, page-number area, with a `chrome-mask.png` to look at), margins by ink
+  extents, and the line pitch by autocorrelation, with a body size estimate from it.
+  `raster.patch.json` applies through `complete_guide.py` with provenance
+  `raster_inference` at confidence 0.5; `raster.md` names the dpi and the size band a
+  pixel measurement carries. Faces cannot be read from pixels: look at the page images
+  next to fc-match candidates and name the family yourself. Sizes come from the run
+  heights table and your eyes; the raster body estimate was within 0.3pt of the truth on
+  a deck rendered and re-measured, and within the stated band on a 104 dpi scan.
+- `other_size` pages (a memo or filing text bound in front of the deck) are excluded;
+  `--pages 7-60` restricts the extraction to a range you choose from the triage table.
 
 ### 2.3 Fonts the sandbox lacks
 
@@ -305,17 +336,25 @@ first, content second.
 - A bullet glyph needs its bullet font (Wingdings squares render as a section sign
   without it); the extractor records it and the emitter writes it.
 - Hidden slides are not exported by the renderer; the gallery counts and skips them.
+- A figure and its unit, a currency mark and its figure, and a period prefix and its
+  year (`$1.2 bn`, `EUR 40 mm`, `FY 2024`, `12.5 %`) never break across lines: the ruler
+  treats that space as unbreakable and the emitter writes the measured lines, so the file
+  cannot re-break there.
+- A scanned PDF's text layer is not evidence; the triage (2.2) decides per page, and the
+  size of the deck is the size of the paper it was printed to, not the letter page around
+  the image.
 - An interrupted `soffice` leaves a lock in its profile; every render uses a fresh profile.
 
 ## 13. Files
 
 | Path | What it is |
 |---|---|
-| `scripts/ooxml.py` | the OOXML and PDF reader with inheritance resolved |
+| `scripts/ooxml.py` | the OOXML and PDF reader with inheritance resolved; `triage` for PDFs |
 | `scripts/extract_style.py` | reference to guide draft with provenance and the open list |
 | `scripts/gallery.py` | component crops, exemplars, skeletons, manifest |
 | `scripts/complete_guide.py` | folds your completion into the draft under the rules |
 | `scripts/render.py` | LibreOffice to PNG, font substitution report, contact sheet |
+| `scripts/raster_style.py` | what a scanned reference can still tell: palette, ink, chrome, margins, line pitch |
 | `scripts/layout.py`, `scripts/textfit.py` | solver, measured text, table fitter, scale descent, capacity |
 | `scripts/emit_pptx.py` | resolved pages to slides on the template |
 | `scripts/build_deck.py` | solve, emit, validate, render, judge, in one command |

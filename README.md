@@ -50,6 +50,8 @@ session that built the skill. None is estimated.
 | The gallery port is deckgen's gallery | Component, candidate, cluster, crop and exemplar counts equal deckgen's recorded manifests on three decks; every exemplar skeleton byte-identical |
 | The extractor reproduces deckgen's draft | Role sizes, surfaces, inks, floors, margins and content bands equal on jazz, keybank, netflix and exhibits; deviations listed in `PORT_AUDIT.md` |
 | New pages read as the house | keybank: 4 generated pages with a novel football-field component, judge distance 0.191 against 0.353 to 0.677 for five other houses. McKinsey PDF: 2 generated pages, 0.360 against 0.378 for the nearest other house |
+| PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders |
+| The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and accent exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.08 in, the top and bottom rules at the walk's positions, body 11.7pt from a 14.4pt pitch against 12pt in the file |
 
 The McKinsey result is marginal and the gap is diagnosed in `SKILL.md` section 9: the
 reference's size histogram puts its mass at 11, 16 and 18pt while the generated pages sit
@@ -78,11 +80,12 @@ designs, instruments measure):
 SKILL.md                 the skill
 PORT_AUDIT.md            every port, its assumption and its check
 scripts/
-  ooxml.py               package reader, inheritance chains, colour transforms, PDF reader
+  ooxml.py               package reader, inheritance chains, colour transforms, PDF reader and triage
   extract_style.py       guide extraction with provenance; markdown report
   complete_guide.py      apply and check a completion patch
   fingerprint.py         style fingerprint and distance; calibrate; compare
   render.py              render to PDF and PNG; font substitution report; contact sheet
+  raster_style.py        palette, ink, chrome, margins and line pitch from page images
   gallery.py             component crops and exemplar skeletons
   layout.py, textfit.py  flex/grid solver, measured wrap, table fitter, scale descent
   emit_pptx.py           write a solved page into a template with house values on every run
@@ -106,7 +109,7 @@ build report names which one ran).
 - No arrangement search: when a page does not fit, the solver reports the splittable
   groups and the row prefix that fits, and the agent decides.
 - Hidden slides are read as evidence (deckgen's rule); the digest lists them and the agent excludes them by deleting them from a copy.
-- PDF references with no usable text layer (scans) are flagged and need an OCR step this
-  skill does not provide.
+- A scanned PDF yields palette, ink, chrome, margins and line pitch from pixels (confidence
+  capped at 0.5) and nothing about faces; the agent names the family by eye.
 - The judge was calibrated on 19 public decks from 8 houses; a house unlike all of them
   needs its own calibration run before the distance means anything.

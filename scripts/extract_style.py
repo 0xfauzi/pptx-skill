@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -343,18 +343,38 @@ def modal(values: list, default=None):
 
 
 class Extractor:
-    def __init__(self, path: str, max_pages: int | None = None) -> None:
+    def __init__(self, path: str, max_pages: int | None = None, pages: tuple[int, int] | None = None) -> None:
         self.path = path
         self.slides: list[SlidePrint] = fingerprint_deck(path, max_pages)
         if not self.slides:
             raise SystemExit(f"{path}: no slides")
         self.is_pdf = self.slides[0].source == "pdf"
-        self.w = self.slides[0].width
-        self.h = self.slides[0].height
-        self.page_area = self.w * self.h
         self.unresolved: list[dict] = []
         self.guide: dict = {}
         self.notes: list[str] = []
+        self.triage: dict | None = None
+        self.raster = False
+        if self.is_pdf:
+            self.triage = pdf_triage(path, max_pages)
+            if pages is not None:
+                lo, hi = pages
+                self.slides = [s for s in self.slides if lo <= s.index + 1 <= hi]
+                self.notes.append(f"pages restricted to {lo}-{hi} by --pages")
+            dropped = [s.index + 1 for s in self.slides if s.page_class not in ("vector", "vector_with_image")]
+            evidence = [s for s in self.slides if s.page_class in ("vector", "vector_with_image")]
+            if self.triage["deck_class"] == "raster" and pages is None:
+                # the text layer is a wrapper or OCR: nothing on these pages is type evidence
+                self.raster = True
+                size_in = self.triage.get("slide_size_in")
+                if size_in:
+                    for s in self.slides:  # the slide is the image, not the letter page around it, at its unscaled size
+                        s.width, s.height = int(size_in[0] * EMU_PER_INCH), int(size_in[1] * EMU_PER_INCH)
+            elif dropped:
+                self.slides = evidence or self.slides
+                self.notes.append(f"pages excluded from the evidence by triage ({self.triage['counts']}): {dropped}")
+        self.w = self.slides[0].width
+        self.h = self.slides[0].height
+        self.page_area = self.w * self.h
         # chrome keys: (kind, quantised box) of layout/master shapes, plus slide-layer shapes
         # repeated at one position on at least half the slides
         self.chrome_keys: set[tuple] = set()
@@ -1237,6 +1257,8 @@ class Extractor:
         hidden = [s.index + 1 for s in self.slides if getattr(s, "hidden", False)]
         if hidden:
             self.notes.append(f"hidden slides counted as evidence (delete them from a copy with pptx_tools.py delete to exclude): {hidden}")
+        if self.raster:
+            return self.run_raster()
         self.typography()
         self.color()
         self.spacing()
@@ -1276,6 +1298,7 @@ class Extractor:
             "schema": "pptx-skill style guide draft v1",
             "reference": {"file": str(self.path), "sha256": hashlib.sha256(Path(self.path).read_bytes()).hexdigest(), "slides": len(self.slides),
                           "format": "pdf" if self.is_pdf else "pptx", "text_layer": text_layer,
+                          "triage": ({k: self.triage[k] for k in ("deck_class", "counts", "evidence_pages", "raster_pages", "modal_page_pt")} if self.triage else None),
                           "page": {"width_emu": self.w, "height_emu": self.h, "width_in": round(self.w / EMU_PER_INCH, 3), "height_in": round(self.h / EMU_PER_INCH, 3),
                                    "orientation": "landscape" if self.w >= self.h else "portrait"},
                           "layouts_used": Counter(s.layout_name for s in self.slides).most_common() if not self.is_pdf else None},
@@ -1284,6 +1307,78 @@ class Extractor:
             "notes": self.notes,
         }
         return self.guide
+
+
+RASTER_OPEN = (
+    ("/typography/roles/type.title", "size, face, weight, case and ink of the title"),
+    ("/typography/roles/type.h1", "section heading inside the page"),
+    ("/typography/roles/type.body", "running text"),
+    ("/typography/roles/type.caption", "chart and table labels"),
+    ("/typography/roles/type.footnote", "source lines and notes"),
+    ("/typography/families", "the faces in use (the raster carries letterforms, not names: match by eye with fc-match candidates)"),
+    ("/color/roles/color.surface", "page ground"),
+    ("/color/roles/color.ink", "primary text colour"),
+    ("/color/roles/color.ink_muted", "secondary text colour"),
+    ("/color/roles/color.rule", "rule colour"),
+    ("/color/roles/color.accent1", "first chart and emphasis colour"),
+    ("/color/roles/color.accent2", "second accent"),
+    ("/color/roles/color.accent3", "third accent"),
+    ("/color/roles/color.accent4", "fourth accent"),
+    ("/color/roles/color.surface_alt", "panel and band fill"),
+    ("/color/roles/color.ink_inverse", "text on dark fills"),
+    ("/spacing/steps", "the spacing scale"),
+    ("/spacing/margins", "page margins per side"),
+    ("/chrome", "recurring furniture: rules, bands, logo block, page number"),
+    ("/composition", "the arrangements the house uses"),
+    ("/tables", "rule classes and header treatment"),
+    ("/charts", "series colours, label and axis treatment"),
+    ("/floors", "smallest sizes the house uses, per family"),
+)
+
+
+def _raster_run(self: "Extractor") -> dict:
+    """A raster reference: every text-derived address opens; raster_style.py and the agent's
+    eyes fill them with raster_inference provenance at confidence <= 0.5."""
+    tri = self.triage or {}
+    for path, reason in RASTER_OPEN:
+        self.open(path, f"raster reference: {reason}", {"provenance": "raster_inference", "max_confidence": 0.5})
+    for path, reason in (("/description", "written by the model from the page images: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
+                         ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
+                         ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
+        self.open(path, reason)
+    self.notes.append("raster reference: the text layer is a wrapper or an OCR layer and was not mined. Next: "
+                      "python3 scripts/raster_style.py <ref.pdf> --out work/ref/raster, read raster.md and the chrome mask, "
+                      "then complete the guide from the page images with raster_inference provenance at confidence <= 0.5.")
+    self.guide = {
+        "schema": "pptx-skill style guide draft v1",
+        "reference": {"file": str(self.path), "sha256": hashlib.sha256(Path(self.path).read_bytes()).hexdigest(), "slides": len(self.slides),
+                      "format": "pdf", "text_layer": {"status": "raster", "deck_class": tri.get("deck_class"), "counts": tri.get("counts"),
+                                                       "raster_pages": tri.get("raster_pages"), "slide_box_pt": tri.get("slide_box_pt"),
+                                                       "slide_size_in": tri.get("slide_size_in"), "size_basis": tri.get("size_basis"), "print_scale": tri.get("print_scale"),
+                                                       "effective_dpi": tri.get("effective_dpi"), "modal_page_pt": tri.get("modal_page_pt")},
+                      "page": {"width_emu": self.w, "height_emu": self.h, "width_in": round(self.w / EMU_PER_INCH, 3), "height_in": round(self.h / EMU_PER_INCH, 3),
+                               "orientation": "landscape" if self.w >= self.h else "portrait"},
+                      "layouts_used": None},
+        "typography": {"families": {"major": None, "minor": None, "fallbacks": []}, "levels": [], "roles": {}, "scale_ratio": None, "bullets": {}},
+        "color": {"theme": {}, "roles": {}, "usage": {}},
+        "spacing": {"steps": {}, "margins": {}, "baseline_emu": None, "gap_levels": []},
+        "composition": {"archetypes": [], "bands": [], "column_grids": [], "alignment_edges": []},
+        "register_stats": {},
+        "density_bands": {},
+        "chrome": [],
+        "motifs": [],
+        "tables": None,
+        "charts": None,
+        "shape_language": {},
+        "imagery": {},
+        "floors": {},
+        "unresolved": self.unresolved,
+        "notes": self.notes,
+    }
+    return self.guide
+
+
+Extractor.run_raster = _raster_run
 
 
 def winner_hex(pool: dict[str, Votes]) -> str | None:
@@ -1373,8 +1468,13 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out", default=None, help="guide JSON (default: <stem>.style.json next to the reference)")
     ap.add_argument("--report", default=None, help="evidence digest markdown (default: alongside the JSON)")
     ap.add_argument("--max-pages", type=int, default=None)
+    ap.add_argument("--pages", default=None, help="PDF page range to treat as the deck, 1-based inclusive, e.g. 7-60 (after reading the triage)")
     args = ap.parse_args(argv)
-    ex = Extractor(args.reference, args.max_pages)
+    pages = None
+    if args.pages:
+        lo, hi = args.pages.split("-")
+        pages = (int(lo), int(hi))
+    ex = Extractor(args.reference, args.max_pages, pages)
     guide = ex.run()
     out = Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json")
     out.write_text(json.dumps(guide, indent=1, default=str))
