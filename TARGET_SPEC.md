@@ -38,7 +38,7 @@ section 3 (design principles); they decide every trade-off below.
 23. Known failure modes to design against
 24. Hard rules
 25. Build order with exit criteria
-Appendix A. Measured annotation and page-craft vocabulary
+Appendix A. Measured page-craft vocabulary
 Appendix B. Reasoning questions for the designer
 Appendix C. OOXML and renderer facts (each measured)
 Appendix D. The development corpus
@@ -254,11 +254,13 @@ Rules that fix a design override the house. Known failure mode: telling the mode
 assertion (claim) titles with computed figures. In 51 sampled content pages of three
 native-pptx bank pitch books, 48 titles are topic phrases (median 4 to 5 words), 3 are
 questions, 0 are claim sentences; the claim lives in a lead-in bullet ending in a colon
-above the exhibit (measured; Appendix A). Measured on another pair of decks: a reference's
-11 titles had a median of 35 characters (longest 57); a planner told to write claim titles
-wrote 19 with a median of 80 (longest 103); only 4 of 19 fit within the reference's
-longest; told a 56-character budget, the designer shortened only 5 of 19, and 17 of 22 held
-pages were held because the title overran its one-line band. In a blind round on an earlier
+above the exhibit (measured; Appendix A.3). Over the whole coded corpus (578 pages), titles
+are topic phrases on 223 of 231 investment-bank pages and 30 of 30 chart-book pages, and
+claim sentences on 197 of 317 strategy-consulting pages. Measured on another pair of decks:
+a reference's 11 titles had a median of 35 characters (longest 57); a planner told to write
+claim titles wrote 19 with a median of 80 (longest 103); only 4 of 19 fit within the
+reference's longest; told a 56-character budget, the designer shortened only 5 of 19, and
+17 of 22 held pages were held because the title overran its one-line band. In a blind round on an earlier
 build, the rater caught every generated page in exactly the two houses where claim titles
 met a topic-title reference.
 
@@ -470,10 +472,11 @@ three are needed, and each is evidence with provenance.
 | Brand guidelines | Stated colours, fonts, logo clear space and minimum sizes, tone | How pages are actually built; anything not written down |
 
 Measured evidence that a template alone does not show habits: title register varies by
-house and even by deck on one house (Appendix A: bank pitch books 48 of 51 and 179 of 184
-topic titles; one consulting house 43 topic and 41 claim of 85, one deck 23 of 30 claims,
-a memo 0 of 12); annotation moves differ by house type (section 22.3 items 2 and 3). None
-of this is recorded in a master or layout.
+house type and even by deck within one house (Appendix A.3: topic titles on 223 of 231
+investment-bank pages; claim titles on 197 of 317 strategy-consulting pages, with one deck
+at 23 of 30 claims and a memo at 0 of 12); annotation moves and composition conventions
+differ by house type and by deck (section 22.3 items 3 and 4; Appendix A.2). None of this
+is recorded in a master or layout.
 
 ### 6.3 Template library inventory
 
@@ -534,8 +537,9 @@ Which decks to mine:
 - Recency matters where templates changed; the policy for weighting older decks is
   unmeasured.
 
-Past decks also contain defects humans made (Appendix A.1 lists measured ones: pictures
-past the margin, colliding data labels, misregistered overlay boxes, mixed fonts). A habit
+Past decks also contain defects humans made (Appendix A.9 lists measured ones, recorded on
+106 of 578 corpus pages: pictures past the margin, colliding data labels, misregistered
+overlay boxes, mixed fonts, mismatched scales on sibling charts). A habit
 is something the company's best pages do repeatedly, not something any page did once.
 
 ### 6.7 Brand guideline documents
@@ -899,19 +903,43 @@ artefacts (section 7.2).
 
 ### 10.4 The page library
 
-A curated set of excellent real pages, each tagged: source type (company deck or external
-public deck), house type, composition, layout, exhibits, annotation moves, emphasis
-devices, and one line on why it is instructive plus the question a designer asked to
-produce it. Shown as examples (not templates) when the model plans a page whose intent
-matches.
+A curated set of excellent real pages, shown as examples (not templates) when the model
+plans a page whose intent matches. Each entry is tagged with the fields below; the external
+starter set (section 22.4) uses exactly these, and the company's own entries use the same
+fields so that one retrieval serves both:
+- **Source**: the page image; the source deck and page as an internal reference (kept in
+  the library's manifest, never written into generated pages); the coder who tagged it;
+  the source type (company deck or external public deck).
+- **House type and page size** (examples do not transfer across aspect ratios; see the
+  rules below).
+- **Composition**: the family from the measured taxonomy (Appendix A.2) plus the coder's
+  own description of the arrangement. The coder's description is the better one where
+  several panels were recorded as one exhibit.
+- **Layout** (for company pages): the layout the page was built on.
+- **Title** and its register (topic, claim, question).
+- **Exhibits**: per exhibit, its type, family, data shape and one message; its annotation
+  moves in the normalised vocabulary (Appendix A.6) and as the coder recorded them.
+- **Emphasis devices** and **craft details**.
+- **Why instructive**: one line on what the page does well.
+- **Designer questions**: what the designer evidently had to know or ask to produce it,
+  phrased as questions, never as rules (Appendix B).
 
 Built from, in order:
 1. The company's own best pages: exemplars the user marks, then pages the model selects
    from past decks during the digest, confirmed by the user where possible. Subject to
    section 7.3.
-2. Optionally, external public pages: a starter set of about 40 to 60 pages from many
-   houses (investment banks, consultancies, research publishers), whose evidence pass is
-   described in section 22.4 and Appendix A.
+2. Optionally, external public pages. The development corpus provides a starter set of
+   about 40 pages: 15 from investment-bank decks, 21 from strategy-consulting decks and 4
+   from a dense market chart book, drawn from each coder group's most instructive pages
+   and balanced across house type and composition rather than chart pages first. 15 of the
+   40 have a table, matrix, diagram or structured text, not a chart, as their main exhibit.
+   What such entries teach, for example: ranking panels re-sorted each period with the
+   subject marked in every panel; a football field judged against the offer line; numbered
+   method-to-finding rows instead of bullets; ordered options as a spectrum with a pointer
+   to the recommendation; the absence of a mark as evidence; the answer as the last row and
+   the only one boxed; each panel proving one clause of a two-part title; the non-focus
+   layers of a diagram faded; the headline number derived on the page; a table and a chart
+   held in one row order.
 
 Rules for the library:
 - Real pages only. Measured: hand-authored specimen pages were scored 3 of 10 by a
@@ -919,6 +947,9 @@ Rules for the library:
 - 3 to 5 diverse examples per intent (external guidance; unmeasured here).
 - The company's own pages always outrank external pages; external pages teach reasoning
   and craft, the company's pages teach its style.
+- The library's mix follows the page mix, not the chart mix: 346 of 578 corpus pages carry
+  no data chart (Appendix A.1), so a library of chart pages would teach the wrong
+  proportion (inferred).
 - Page examples composed for one aspect ratio do not transfer to another (measured: of 14
   specimen families composed for 16:9, 2 fit as written on a 4:3 house). Tag each entry
   with its page size.
@@ -1028,20 +1059,29 @@ script that computed and asserted every stated figure, and it worked well; encou
 ### 12.3 Variety plan
 
 Before building, the model lists the planned composition, layout and exhibit type per page
-and compares against the house's measured variety. Measured in three bank pitch books:
-consecutive content pages differ in composition 83% to 90% of the time, and no composition
-runs longer than 2 pages; the repeats are deliberate parallels (two scenario pages,
-matching summary and conclusion) (Appendix A). The plan states which repeats are deliberate
-and why. Measured: a designer given a composition-history digest and an instruction to vary
-still used one arrangement for 6 of 19 designs where the register allowed 1, so a prompt
-alone did not produce variety. Variety must be planned at section level and checked by the
-repetition gate (section 17.7), which compares content regions, not page furniture.
+and compares against the house's measured variety. Measured over 23 corpus decks (Appendix
+A.10): the median composition change between consecutive pages is 0.69 on a coarse
+10-family taxonomy (investment-bank 0.645, strategy-consulting 0.765), and exhibit types
+change more often than compositions (median exhibit-set change 0.77 and 0.85). On a finer
+taxonomy, three native-pptx bank pitch books change composition 83% to 90% of the time with
+no run longer than 2 pages. Every longer run (up to 7 pages) is a deliberate sibling
+template: recap pages, segment tables, an appendix of row-label pages, two matching
+scenario pages. The plan states which repeats are deliberate and why, and holds a sibling
+template exactly (same layout, scale and category order). Measured: a designer given a
+composition-history digest and an instruction to vary still used one arrangement for 6 of
+19 designs where the register allowed 1, so a prompt alone did not produce variety.
+Variety must be planned at section level and checked by the repetition gate (section
+17.7), which compares content regions, not page furniture.
 
 ### 12.4 Co-equal content
 
 Measured once on two model tiers: "one element dominates" without guidance for co-equal
 blocks produced dashboard-like panel grids on multi-block content. Ask the model to rank
-blocks by how directly each proves the message and size them by that rank.
+blocks by how directly each proves the message and size them by that rank. Equal panels
+are not themselves the defect: 77 of 578 corpus pages carry two or more exhibits, and
+equal small multiples on a shared scale are how the corpus makes a comparison honest
+(Appendix A.2). The question is whether the blocks are a comparison (equal panels, shared
+scale, one order) or unrelated facts (rank and size them).
 
 ---
 
@@ -1090,7 +1130,8 @@ unmeasured.
   lines than the house ever writes is refused first, before other violations (they follow
   from it).
 - Chrome zones are reserved automatically; content never runs under footer furniture.
-- A page with a table or chart and no source or footnote paragraph is refused.
+- A page with a table or chart and no source or footnote paragraph is checked against the
+  house's observed source-line rate (section 17.9).
 - Ids are unique per page; elements that are the same thing across pages (title, source
   line) share ids so position drift can be checked; different things never share ids
   (known failure mode, measured once: drift reported between unrelated elements that
@@ -1227,6 +1268,15 @@ Native charts written from a complete spec the model writes:
   thickness for centred labels) and refuse a label that will break mid-word, naming it.
 - Where the company's past decks paste chart pictures, the generated chart is still native
   (editable), styled to match the pictures' look as read in the digest.
+- Features the measured moves need (Appendix A.6, A.7), each found missing from the chart
+  spec of an earlier build of this kind: combo plots sharing one set of axes (real
+  reference lines and dot overlays on bar and column charts; reference lines appear on 77
+  exhibits); series `dash` and pattern or hatch fills (forecast demarcation on 39
+  exhibits, dashed reference lines); per-point marker overrides; error bars or high-low
+  lines (ranges); a trendline (regression on 3 scatters); series lines between stacks
+  (connectors on 22 exhibits); axis titles; manual data-label positions; and the manual
+  plot layout of section 15.3. An axis break (14 exhibits, with inversion and rebasing) has
+  no native form; it is drawn by the overlay layer or not at all (unmeasured).
 
 ### 15.2 Tables
 
@@ -1242,42 +1292,129 @@ Native charts written from a complete spec the model writes:
   units line or units column; $ only on first and total rows; x suffix on multiples;
   parentheses for negatives; NM and n.a. written out; footnote markers resolving in the
   footer zone; sorted order where the message is a ranking.
+- Cell-level styling, because the measured table moves need it (Appendix A.6, A.7) and a
+  table spec with per-row styling and one emphasis fill per table could not express them
+  (known failure mode, measured on an earlier build: 99 of 192 tables carried at least one
+  such move):
+  - merged header cells (`gridSpan`) for true column spanners and partial underlines
+    (spanners on 57 exhibits, 45 of them tables);
+  - per-cell fill, border, ink, weight and italic (boxed cells on 50 tables, input cells
+    and base cases on 8, semantic cell colour on 15);
+  - per-row italic (italic ratio rows on 16 projection tables);
+  - more than one emphasis style per table, each a role (comps tables emphasise the median
+    row on 12 of 15 and the subject on 8 of 15, often both; projection tables shade several
+    total rows, 27 of 42);
+  - a table with in-cell bars (13 exhibits) as a component from rects sized by weight.
+- Tables carry most of the corpus's pages (192 tables against 291 charts, and in bank decks
+  117 tables against 109 charts; Appendix A.5), so table craft deserves at least the effort
+  given to charts.
 
 ### 15.3 Annotation layer
 
-Humans annotate intelligently. Measured in three native bank pitch books: the most common
-move was an outline box around the region where the claim lives (14 of 33 data exhibits);
-others were column-group spanners, shaded key rows, reference lines at a decision value, a
-highlighted subject in one colour with peers in another, selective data labels, sorted
-order, footnote markers, callout pointers (full table in Appendix A). 27 of 33 data
-exhibits there were pasted pictures with annotation shapes laid over them at absolute
-offsets (measured). Known failure mode: a system that draws native charts but cannot place
-a shape at a data coordinate inside one leaves the model unable to annotate; generated
-exhibits then lack the house's moves, and a blind rater notices (section 23.1).
+Humans annotate almost every data exhibit, and much of what they do is a shape placed on
+the exhibit at a data position. Measured over 601 exhibits on 578 corpus pages (Appendix
+A.6, A.7): 7 of 291 charts carry no annotation; the commonest moves are data labels on all
+marks (131 exhibits), a circled or boxed mark (105, 50 of them on tables), highlight one
+item and mute the rest (90), footnote markers (90), a callout box, arrow or leader (77), a
+reference or benchmark line (77), direct labels instead of a legend (59), column spanners
+(57), shaded or bold total rows (51), brackets or braces (24), event markers (29), an inset
+stats table inside the plot (24), data rows aligned under the chart (29) and connectors or
+zoom lines between marks (22). In the native-pptx bank decks, 27 of 33 data exhibits were
+pasted pictures with annotation shapes laid over them at absolute offsets: humans solve
+the problem by overlay.
 
-Build:
-- An `annotation` element anchored to another element's data coordinates:
-  - for charts: `{category, series}` (a bar or point), a category span, a value (a
-    horizontal or vertical line at a value), a region (categories x value range);
-  - for tables: a cell, a cell range, a row, a column, a header group;
-  - for text: a paragraph.
-- Kinds: outline box (line role, width, padding role), filled band (fill role,
-  transparency as a role), reference line with label, arrow or pointer from a label to an
-  anchor, bracket over a span with a label (for sums or CAGR), callout box with leader
-  line, number badge.
-- Placement: computed deterministically from the anchor. For native charts this requires
-  writing the plot area as a manual layout and computing each category's band and each
-  value's position from the axis scale (min, max, reverse, gap width, overlap, series
-  count). Verify against renders in BOTH LibreOffice and PowerPoint before relying on it:
-  draw a 1-px marker at computed positions and measure the render (unmeasured; this is the
-  first experiment to run).
-- Collision contract: an annotation may overlap only its anchor; it must not cover data
-  labels, axis labels, other annotations or text outside the exhibit; the solver reserves
-  room for labels placed outside the plot.
+Measured against the chart, table and page-grammar spec of an earlier build of this kind
+(native chart features, recipes over them, and a grammar of non-overlapping elements): 150
+of 291 charts (52%) carry at least one move that needs a shape over the chart at data
+coordinates; 99 of 192 tables (52%) carry at least one cell-level move the table spec could
+not express (merged spanners, italic rows, input cells, semantic cell colour, a cell box or
+callout, two emphasis styles); 227 of 578 pages (39%) carry at least one such move. Known
+failure mode: a system that draws native charts but cannot place a shape at a data
+coordinate leaves the model unable to annotate; generated exhibits then lack the house's
+moves, and a blind rater notices (section 23.1).
+
+Known failure mode (found in the code of that earlier build; three independent causes, any
+one of which is enough to block placement on a native chart):
+1. The solver refused any two element boxes that shared area, and the judge gated overlap,
+   so no element could ever sit on a chart or a table.
+2. No manual plot layout was written, so each renderer placed the inner plot rectangle
+   itself after axis labels and legend, and the EMU position of a value was unknown even
+   with a fixed axis range (auto-scaled axes made it worse).
+3. The shape vocabulary had no arrowheads, braces, callout shapes, elbow connectors or
+   rotated lines, so the marks could not be drawn.
+
+Requirements:
+
+- **Anchors.** An `annotation` element is anchored to a host element and to positions in
+  the host's own data:
+  - charts: a point `{category, series}`; a category span; a value on the value axis (a
+    horizontal or vertical line); a region (categories x value range); a date or category
+    on a time axis (event marker); an XY coordinate;
+  - tables: a cell, a cell range, a row, a column, a header group;
+  - text: a paragraph.
+- **Kinds** (each a measured move): outline box or ellipse around a mark, cell or region;
+  filled band or zone shading (fill role, transparency as a role); reference line with
+  label, solid or dashed; event marker (line plus label at a date); arrow or pointer with
+  arrowheads (`a:headEnd`, `a:tailEnd`) from a label to an anchor; elbow connector; bracket
+  or brace (`leftBrace`, `rightBrace` presets) over a span with a label (a sum, a range, a
+  CAGR); callout box with leader line; number or letter badge keyed to text; inset table or
+  stats box inside the plot; logo or image at a category position; connector or zoom lines
+  between marks. Roles only, like everything else.
+- **Fixed plot rectangle.** Every chart that hosts an annotation, or that has data rows or
+  a table aligned under its categories, is written with
+  `c:plotArea/c:layout/c:manualLayout`, `c:layoutTarget val="inner"`, `c:xMode` and
+  `c:yMode` set to `edge`, and x, y, w, h as fractions of the chart frame. The spec takes a
+  `plot_box` (fractions, or an inset in spacing roles). Every axis an annotation refers to
+  must declare `min`, `max` and `crossBetween`; an annotation on an auto-scaled axis is
+  refused by name.
+- **Coordinates computed, never estimated.** With chart frame (X, Y, W, H) in EMU and inner
+  plot fractions (px, py, pw, ph):
+  - value v on a vertical value axis: `y = Y + H * (py + ph * (max - v) / (max - min))`;
+    the mirror form for horizontal bars or a reversed axis;
+  - category i of n with `crossBetween="between"` (bars): centre at
+    `X + W * (px + pw * (i + 0.5) / n)`; with `midCat` (lines):
+    `X + W * (px + pw * i / (n - 1))`;
+  - bar width for k clustered series with gap width g and overlap o (percent):
+    `slot = pw * W / n`, `bar = slot / (k - (k - 1) * o / 100 + g / 100)`; a stacked or
+    single series: `bar = slot / (1 + g / 100)`;
+  - XY scatter: both axes linear on the same rectangle;
+  - table cells: from the solver's fitted column widths and row heights, which PowerPoint
+    realises as written (section 14.2).
+  These formulas are derived from the OOXML layout model and are unmeasured until the
+  verification below passes.
+- **Overlay layer in the page grammar.** Annotations are resolved after the host's box is
+  solved. They are exempt from the overlap check against their own host only, and still
+  checked against every other element, every data and axis label, other annotations and the
+  page edge. The solver reserves room for labels placed outside the plot.
+- **Native gaps beside the overlay** (sections 15.1, 15.2): combo plots, so reference lines
+  and dot overlays can be real series on a bar chart's axes; series dash and hatch for
+  forecasts; series lines for stack connectors; a trendline for regressions; per-cell table
+  styling. Where a move can be native, prefer native (it stays editable and moves with the
+  data).
+- **Verification before reliance** (unmeasured; the first experiment to run):
+  1. Build one test page per chart family (column, clustered column, stacked column,
+     horizontal bar with reversed axis, line, XY scatter) with a known manual layout, fixed
+     axes and one distinctively coloured marker per data point.
+  2. Render at a known width and convert predicted EMU to pixels
+     (`emu * width_px / page_width_emu`).
+  3. Locate bar tops, bar edges and marker centres by scanning for each series' fill
+     colour, and compare with the prediction. A tolerance of 1.5 px at 1600 px has been
+     proposed; it is unmeasured, and the tolerance actually achieved is to be stated.
+  4. Extract the rendered PDF with `pdftotext -bbox` and check that no annotation
+     intersects a data label or tick label.
+  5. Measure once in PowerPoint. Whether PowerPoint honours an inner manual layout the same
+     way LibreOffice does is unmeasured, and the claim must not ship before it is measured.
+  6. Where a renderer diverges, the fallback is to draw the whole exhibit as a component
+     from shapes (as a football-field component does): exact coordinates, but the chart is
+     no longer a native, data-editable chart. The build reports which exhibits took the
+     fallback.
+- **Collision contract.** An annotation may overlap only its anchor; it must not cover
+  data labels, axis labels, other annotations or text outside the exhibit.
 - Annotations are scored by the contrast gate like any text.
 - The model decides whether and what to annotate. The skill supplies the measured
-  vocabulary, the house's own habits (`exhibit_habits`) and the reasoning questions
-  (Appendix B). Nothing annotates automatically.
+  vocabulary (Appendix A), the house's own habits (`exhibit_habits`) and the reasoning
+  questions (Appendix B). Nothing annotates automatically, and no field is offered to the
+  model before its placement is implemented and verified (section 3.4).
 
 ### 15.4 Diagrams
 
@@ -1420,7 +1557,14 @@ spacing step is reported.
 
 ### 17.9 Source line
 
-A page with a table or chart needs a source or footnote paragraph.
+A page with a table or chart and no source or footnote paragraph is reported, located. It
+refuses only where the house's own data pages carry a source line as a rule; elsewhere it
+warns. Measured: source lines are common but not universal on real data pages (two
+strategy-consulting coder groups recorded them on 23 of 111 and 27 of 121 pages; the
+native-pptx bank decks on 2 of 33 data exhibits; a market chart book on 30 of 30), so a
+universal refusal is stricter than many houses (section 23.5). The threshold between
+"as a rule" and "sometimes" is unmeasured (inferred policy). Any source line written names
+the sources actually used (section 24).
 
 ### 17.10 Leakage
 
@@ -1456,8 +1600,9 @@ inconsistent chart text styling across charts; a figure split from its unit; pla
 text; and then design: Is the message findable in two seconds? Is the exhibit annotated
 where the claim lives? Would a managing director mark this up, and what would they write?
 Does it look like the company's best pages, side by side? Does it look like a generated
-deck (card grids, equal tiles, KPI tiles, rounded everything, centred text, three of
-everything, uniform spacing, one composition repeated)?
+deck (card grids, equal tiles where the content is not a comparison, big numbers with no
+base or population, rounded everything, centred text, three of everything, uniform
+spacing, one composition repeated where the pages are not siblings)?
 
 ### 18.3 Caps and keep-best
 
@@ -1674,71 +1819,94 @@ Collected in sections 8, 10, 14 to 19 and Appendix C, each with its measurement.
   three models (20 tasks x 5 repetitions); design quality was not measured. Do not add one
   without a design-quality measurement.
 
-### 22.3 About human pages (corpus evidence, partial)
+### 22.3 About human pages (corpus evidence)
 
-Readers looked at sampled content pages across the development corpus (Appendix D). Three
-of six corpus groups have reported (320 pages): native-pptx bank pitch books (51 pages),
-PDF bank pitch books (184 pages), and four strategy-consulting decks from one house (85
-pages). Decks from two further consulting houses, more from the first, and a dense
-annotated market chart book are not yet coded. Each page record holds composition, title
-register and length, text hierarchy, exhibits with type, data shape, message, every
-annotation move and its anchor, emphasis devices, craft details, density, and the
-page-order sequences. Summary in Appendix A. The same coding applied to a company's past
-decks produces that company's habits (section 6.6). The headline findings:
+Six coder groups looked at sampled content pages across the development corpus (Appendix
+D) and coded all of them: investment-bank decks (11 decks, 231 pages), strategy-consulting
+decks from three houses (12 decks, 317 pages) and a dense market chart book (30 pages); 578
+pages and 601 exhibits in all. Each page record holds composition, title register and
+length, text hierarchy, exhibits with type, data shape, message, every annotation move and
+its anchor, emphasis devices, craft details, density, and the page-order sequences. The
+full measured vocabulary, with its caveats (one coder per group, a keyword taxonomy,
+counts good to about plus or minus 2 to 3, 8 of 24 decks sampled at a stride), is Appendix
+A. The same coding applied to a company's past decks produces that company's habits
+(section 6.6). The headline findings:
 
-1. **Titles are house-specific, and banks use topics.** Bank decks: 48 of 51 (pptx) and 179
-   of 184 (PDF) titles are topic phrases of about 4 to 6 words; 2 of 235 are claims.
-   Strategy-consulting decks: 43 topic, 41 claim, 1 question of 85, varying by deck (one
-   deck 23 of 30 claims, a memo 0 of 12). When the title is a topic, the claim lives
-   elsewhere: a lead-in bullet ending in a colon, a takeaway band or sidebar, a kicker,
-   numbered takeaway rows, or the memo prose; on many bank pages there is no explicit claim
-   at all.
-2. **Annotation is near-universal on data exhibits, and its moves are house-specific.**
-   Charts with no annotation at all: 1 of 101 in bank PDFs; 4 of 57 data exhibits in the
-   consulting decks (all line charts); 3 of 33 in bank pptx. The commonest moves differ by
-   house type: bank decks use data labels on every point, column spanners, shaded totals,
-   footnote markers, subject highlighted against grey or uniform peers, brackets over
-   category groups, NM markers, outline boxes or circles around the point that matters,
-   median rows highlighted, reference lines at a decision value; consulting decks use
-   value labels instead of axes, reference or target lines, highlight-one-grey-the-rest,
-   delta or growth ovals and arrows, callout boxes with leaders, event markers. CAGR arrows:
-   0 in bank decks (growth goes in a CAGR column or inset table).
-3. **Moves follow data shape.** Horizontal bars (rankings) are labelled, sorted and
-   highlight the subject; stacked columns show totals above the stacks; indexed lines use
-   end-of-line labels instead of legends; price lines carry event markers and an inset
-   returns table; football fields carry a reference line at the current or offer price;
-   comps tables highlight the median row; projection tables shade totals and italicise
-   ratio rows.
-4. **The annotation sits where the claim lives.** Examples: a box around only the scenario
-   region of a sensitivity grid that the argument depends on; boxes only on shortfall
-   years, with no box on the one scenario that is the exception the claim names; the
-   subject company in red, peers in blue, with one company order held across four panels so
-   the reader can find the subject; a single current-price line through a football field,
-   with the judgement the chart cannot show put in a bullet.
-5. **Colour is restrained.** Bank pptx: series in two tints of one navy; red only as "look
-   here"; categorical colour only for the subject; no icons, check marks or big-number
-   callouts.
-6. **Variety is high, and repeats are deliberate.** In bank pptx decks, consecutive pages
-   change composition 83% to 90% of the time; no run exceeds 2; repeats are deliberate
-   parallels. Bank PDFs: 51 distinct composition types over 184 pages.
-7. **Text adds what the exhibit cannot.** Assumptions, caveats, history, the implication
-   (for example "consistent with a ~15% impact on prescribers actually called"); it rarely
-   repeats the exhibit.
-8. **Craft details are many and small.** Units line on most numeric pages (18 of 24 in
-   bank pptx; on every currency page); $ on first and total rows only; x on multiples;
-   parentheses for negatives; NM written out; footnote numbers resolving to a bold
-   "Source:"; the subject row set apart; status tags (PRELIMINARY, ILLUSTRATIVE, DRAFT);
-   continuation marks; logos as category labels.
-9. **Exhibits in real bank decks are often pictures.** 27 of 33 data exhibits in the bank
-   pptx decks were pasted pictures of spreadsheet output with annotation shapes laid on top
-   at absolute offsets. Generating native charts is still right (editable), but annotation
-   must be placeable over them precisely.
+1. **Most pages are not charts.** 346 of 578 pages (60%) carry no data chart (bank 135 of
+   231, consulting 210 of 317, chart book 1 of 30). Tables (192), diagrams and processes
+   (62), structured text, image walls and big numbers make up 310 of 601 exhibits; in bank
+   decks tables outnumber charts 117 to 109. Page design is mainly composition, text and
+   tables. The skill's craft (exhibit choice, annotation, emphasis, density, variety) must
+   cover tables, diagrams and structured text as fully as charts.
+2. **Titles are house-specific, and banks use topics.** Topic phrases on 223 of 231 bank
+   pages (2 claims) and 30 of 30 chart-book pages, with a median of 4 words; claim
+   sentences on 197 of 317 consulting pages (62%, median 15 words, 8 to 22, usually two
+   lines), with topic titles on that house type's executive summaries, appendices,
+   trackers and reference pages. When the title is a topic, the claim lives elsewhere on
+   109 of 372 pages: a takeaway band, a lead-in bullet ending in a colon, a kicker, a
+   sidebar, the labels of numbered rows, a units line, or memo prose; on the rest no claim
+   is stated, because the page is reference.
+3. **Annotation is near-universal on data exhibits, and its moves are house-specific.**
+   7 of 291 charts carry no annotation (bank 0 of 109, consulting 4 of 135, chart book 3 of
+   47). Bank decks annotate at least as much as consulting decks and annotate tables more:
+   61 against 41 exhibits carry a circled or boxed mark, and 50 of the 105 boxes overall sit
+   on tables. Commonest moves overall: data labels on all marks 131, circled or boxed mark
+   105, highlight one item and mute the rest 90, footnote markers 90, callout with arrow or
+   leader 77, reference or benchmark line 77. CAGR arrows: 0 in bank decks, 1 in consulting
+   (growth goes in a CAGR column, inset table or oval). About one chart in four relies on
+   labels alone, with no move that points at the message.
+4. **Moves follow data shape.** Rankings are labelled, sorted and highlight the subject;
+   stacks show totals; time series use end labels, event markers and forecast demarcation;
+   football fields carry a reference line at the decision value; comps tables emphasise the
+   median row; projection tables shade totals and italicise ratio rows; sensitivity grids
+   box a cell or region (A.7).
+5. **The annotation sits where the claim lives.** Examples: a box around only the scenario
+   region of a sensitivity grid that the argument depends on; boxes on shortfall years,
+   with no box on the one scenario that is the exception the claim names; the subject in one
+   colour and peers in another, with one company order held across four panels so the
+   reader can find the subject; a single current-price line through a football field, with
+   the judgement the chart cannot show put in a bullet; the bars that sum to the claim
+   coloured.
+6. **Colour is restrained.** One emphasis colour or a single hue is the norm; categorical
+   colour is kept for categorical series; semantic red and green appear on only 9 pages. In
+   the native-pptx bank decks series were two tints of one navy, red meant only "look
+   here", and there were no icons, check marks or big numbers.
+7. **Variety is high, and repeats are deliberate.** Median composition change between
+   consecutive pages is 0.69 over 23 decks on a coarse 10-family taxonomy (bank 0.645,
+   consulting 0.765); coders' finer taxonomies give 0.83 to 0.90 on the native-pptx bank
+   decks and up to 0.93 to 1.00 on one consulting group. Exhibit types change more often
+   than compositions (median exhibit-set change 0.77 bank, 0.85 consulting, 0.97 chart
+   book). Every long run (up to 7 pages) is a deliberate sibling template for comparison;
+   no coder found an accidental run of sameness.
+8. **Text adds what the exhibit cannot.** Assumptions, caveats, causes, history, the
+   so-what, the derived number (for example a percentage fall turned into the implied
+   effect on the population actually reached); it rarely repeats the exhibit (restating the
+   title: 40 of 264 bank exhibits, 8 of 52 chart-book exhibits).
+9. **Craft details are many and small.** Units lines (123 pages; on every chart-book page),
+   footnotes (195), status or caveat tags (122), $ on first and total rows only, x on
+   multiples, parentheses for negatives, NM and NA written out, the subject row set apart,
+   continuation marks, logos as category labels. Source lines are common but not universal:
+   two consulting coder groups recorded them on only 23 of 111 and 27 of 121 pages.
+10. **Exhibits in real bank decks are often pictures.** 27 of 33 data exhibits in the
+    native-pptx bank decks were pasted pictures of spreadsheet output with annotation shapes
+    laid on top at absolute offsets. Generating native charts is still right (editable), but
+    annotation must be placeable over them precisely.
+11. **Much of the vocabulary is a shape at a data position.** Measured against the chart,
+    table and page-grammar spec of an earlier build of this kind: 150 of 291 charts (52%)
+    carry at least one move that needs a shape over the chart at data coordinates, 99 of 192
+    tables (52%) carry at least one cell-level move the table spec could not express, and
+    227 of 578 pages (39%) carry at least one such move (section 15.3).
+12. **Several generic design instructions contradict the evidence** (claim titles always,
+    no labels on every mark, no equal panels, one emphasised row, one fill, a universal
+    source-line refusal, and others); each is a known failure mode in section 23.5.
 
 ### 22.4 The external page library
 
-The evidence pass also curates the 40 most instructive pages with tags and the question a
-designer asked to produce each; this becomes the external starter set of the page library
-(section 10.4), ranked below any company's own pages.
+The evidence pass also curated about 40 of the coded pages (15 bank, 21 consulting, 4 chart
+book; 15 of them with a table, matrix, diagram or structured text as the main exhibit),
+tagged as section 10.4 describes, each with why it is instructive and the questions a
+designer evidently asked to produce it. This is the external starter set of the page
+library, ranked below any company's own pages.
 
 ---
 
@@ -1784,7 +1952,11 @@ a gallery refusing PDFs (10.2); contrast refusing the house's own colours (17.4)
 keys dropped silently (13.1); header and cell roles ignored by the emitter (3.10); XY
 scatter crash and first scatter series not drawn (15.1); undocumented depth limit (13.2);
 raster completion unable to add roles (9.6); no reference line possible on bar charts and
-no per-table overrides (15.1, 15.2, 15.3).
+no per-table overrides (15.1, 15.2, 15.3); no shape placeable at a data coordinate on a
+native chart, because overlap was refused, no manual plot layout was written and the shape
+vocabulary had no arrowheads or braces (15.3); one emphasis style per table and no
+per-cell or per-row styling, so comps tables could not mark both median and subject
+(15.2).
 
 ### 23.3 Requirements and failure modes by part
 
@@ -1818,8 +1990,10 @@ What has been shown feasible, and the failure modes each part must be designed a
 2. **Reasoning instructions** (Appendix B) instead of doctrine rules; doctrine written as
    questions plus measured tendencies, with "the house wins" enforced by measured house
    statistics.
-3. **Annotation layer** with data-anchored placement on native charts and tables, verified
-   against renders in both renderers (section 15.3).
+3. **Annotation layer** with data-anchored placement on native charts and tables: a fixed
+   inner plot rectangle, coordinates computed from the axis scale, an overlay layer exempt
+   from the overlap check only against its host, the full mark vocabulary, and cell-level
+   table styling; verified against renders in both renderers (section 15.3).
 4. **Template and layout choice** by the model from the inventory and past-deck usage
    (sections 6.4, 6.5).
 5. **Section planning with an explicit variety plan** and a content-only repetition gate
@@ -1843,6 +2017,37 @@ What has been shown feasible, and the failure modes each part must be designed a
     the house does.
 15. **Optional**: PowerPoint-side verification of renders when a Windows or macOS runner is
     available.
+
+### 23.5 Design instructions that contradict the evidence
+
+Each line below is a generic design instruction that was written into a working system of
+this kind as a general rule. Each contradicts the corpus counts (Appendix A) in at least
+one house type. "The reference wins" was stated beside every one of them, but a model
+applies a general rule wherever the reference is silent or thin, so the rule itself is the
+failure mode. Requirement in every case: replace the rule with the question in Appendix B
+plus the house's measured habit, and keep hard gates only for what is measurable.
+
+| Instruction (known failure mode) | Evidence | Requirement |
+|---|---|---|
+| Every title is a claim (assertion); topic titles fail | Topic titles on 223 of 231 bank pages and 30 of 30 chart-book pages; claims on 197 of 317 consulting pages, with topics on their reference and appendix pages; the claim sits in another slot on 109 topic-title pages | Title register and length from the house (sections 3.2, 12.1; already in 23.1) |
+| Labelling every mark is an anti-pattern; label only the marks that matter | Labels on all marks are the most frequent chart move in every house type: 120 of 291 charts (bank 65 of 109, consulting 43 of 135, chart book 12 of 47), usually beside one highlighted item | Label density from the house's `exhibit_habits` |
+| Same-sized panels are a dashboard, not a page | 77 of 578 pages carry two or more exhibits; 6 of 30 chart-book pages are two equal panels; several of the most instructive pages are equal small multiples on a shared scale | Ask whether the blocks are a comparison (section 12.4) |
+| Exactly one emphasised row or cell per table; several emphasised rows is emphasis on none | Comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15, often both; projection tables shade several total rows on 27 of 42; sensitivity grids box a region | Several emphasis styles per table, as roles (section 15.2) |
+| Fills are a last resort; one fill on a page says "this is the answer" | Fills are role-coded and multiple: shaded key rows on 52 pages, dark label cells and banners on 37, takeaway bands on 46, grey sidebars on 11 of 29 pages of one deck. *Inferred*: the evidence supports one emphasis colour on one item (88 pages), not one fill | Fill roles from the house; the emphasis colour, not every fill, is the scarce device |
+| Banking pages let the numerals speak while consulting pages argue beside the exhibit | Bank charts are never bare (0 of 109); bank decks box or circle more marks than consulting (61 against 41 exhibits) and annotate tables more (50 of 105 boxes sit on tables, mostly in bank decks) | Annotation from the house's `exhibit_habits`, not from house type folklore |
+| Harvey balls offered as a standard framework exhibit | 0 in bank decks, 0 in the chart book, 2 Harvey-style tables in 317 consulting pages; check, status and red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph moves) | Offer exhibit types by measured frequency and the house's own use |
+| Legends are always replaced by direct labels | Legends present on 49 of 81 bank, 55 of 85 consulting and 29 of 47 chart-book charts where recorded; direct labels replace the legend mostly on lines and indexed series (34 of 85 lines) | Legend or direct labels by data shape and house |
+| Remove every gridline that can be removed | Matches bank (58 of 80 without) and consulting (78 of 89 without); contradicts the chart book, which draws light horizontal gridlines on 47 of 47 | Gridlines from the house's `charts` habits |
+| A page with a table or chart and no source line is refused | Source lines recorded on only 23 of 111 and 27 of 121 pages in two consulting groups, and on 2 of 33 data exhibits in the native-pptx bank decks | Refuse only where the house carries source lines as a rule; otherwise warn (section 17.9) |
+| A kicker is fixed anatomy of a bank page | Kickers or subtitles on 64 of 231 bank pages against 265 of 317 consulting pages; the bank anatomy is title, exhibit, footnotes, source and furniture | Kicker use from the house's titles habits |
+| Big-number tiles are a tell of generated pages and are never used | Mostly right: no bank or chart-book big numbers and only 7 consulting pages; but consulting pages do pair big numbers with icons or rings, and the craft is pairing each number with its base and population | Ask "of what, and for whom?" (Appendix B) rather than banning the form |
+
+Instructions consistent with the evidence, worth keeping: the repetition gate measured
+against the house's own longest run (sections 12.3, 17.7); vary composition unless the
+content demands repetition; comparable charts share one scale; bars start at zero (the two
+non-zero baselines in the chart book were recorded as lapses); the data relationship picks
+the form; source and footnote craft in general; nothing is dropped; the contrast and
+tie-out gates.
 
 ---
 
@@ -1936,124 +2141,477 @@ Each milestone ends with an end-to-end proof recorded beside the claim.
 
 ---
 
-## Appendix A. Measured page-craft vocabulary (partial: 3 of 6 corpus groups)
+## Appendix A. Measured page-craft vocabulary
 
-All counts are one coder's judgement per page, made by looking at the page; not checked
-against a second coder. These are tendencies by house type: context for a company with no
-past decks (section 6.8) and a check on habits mined from a company's own decks; never
-rules.
+These counts describe how professional decks design whole content pages. They are
+tendencies by house type: context for a company with no past decks (section 6.8), a check
+on habits mined from a company's own decks (section 6.6), and the evidence behind the
+reasoning questions of Appendix B. They are never rules; the house's own practice decides.
 
-### A.1 Investment-bank pitch books, native pptx (3 pitch books + 1 talk; 51 content pages)
+### A.0 Corpus, coding and caveats
 
-Compositions: full-width bullets 11; numbered takeaway rows (number badge, arrow label,
-finding box) 6; text plus table 5; label-row grid 4; text plus stacked tables 4;
-full-width table 3; full-width chart 2; framed panel chart 2; 2x2 small multiples 2;
-sidebar plus exhibit 2; ten others once each. Sidebar or takeaway box on 3 of 51.
+Six coder groups each wrote one record per content page: composition, title register and
+length, text hierarchy, exhibits (type, data shape, message, every annotation move and its
+anchor), emphasis devices, craft details, density and page order. All totals below were
+recomputed from those records with one taxonomy across all groups.
 
-Titles: 48 topic, 3 question, 0 claim; median 4 to 5 words. Claims live in a lead-in
-bullet ending in a colon before the exhibit (9 pages), numbered row labels, executive
-summary bullets. Units line on 18 of 24 numeric pages.
+| House type | Coder groups | Decks | Pages | Exhibits | Charts | Tables |
+|---|---|---|---|---|---|---|
+| Investment-bank decks (native pptx pitch books and a talk; PDF pitch books, board decks, a restructuring update) | 2 | 11 | 231 | 264 | 109 | 117 |
+| Strategy-consulting decks (three houses) | 3 | 12 | 317 | 285 | 135 | 70 |
+| A dense market chart book | 1 | 1 | 30 | 52 | 47 | 5 |
+| Total | 6 | 24 | 578 | 601 | 291 | 192 |
 
-Text: 1 hierarchy level on 35 pages, 0 on 11, 2 on 5; median 72 words (range 2 to 221).
+Caveats that apply to every number in this appendix:
+- **One coder per group.** Each page was coded by one person looking at it; there was no
+  second coder, and inter-coder agreement is unmeasured.
+- **Keyword taxonomy.** Each category is a keyword rule over the coders' free-text notes;
+  the rules are the definitions. The taxonomy is coarser than some coders' own (10
+  composition families where one coder used 51 types).
+- **Approximate counts.** Cells are good to about plus or minus 2 to 3. They can differ
+  from a coder's own figure because of the coarser taxonomy and because coders recorded
+  some fields unevenly (one group recorded source lines only when they were notable).
+  Where a coder's own count is sharper it is quoted and marked "coder count".
+- **Strided samples.** 8 of the 24 decks were sampled at a stride rather than as
+  consecutive pages; this matters for the variety measures (A.10).
+- **Construction is visible only in pptx.** All decks except four native-pptx bank decks
+  are PDFs, so how exhibits were built (native chart, pasted picture, drawn shapes) is
+  measured only on those four. One bank deck is a scan with no text layer; one run of
+  pages in one consulting deck had no text layer and was not inspected.
+- **Duplicates.** Exact duplicate pages were dropped (four pages from a second version of
+  one deck, and one repeated page).
+- Anything marked *inferred* is a reading of the evidence, not a count.
 
-Exhibits (45): table 17, chart 11, shape-built text structure 11, diagram 2, evidence
-excerpt 2, logo wall 1, matrix 1. 27 of 33 data exhibits are pasted pictures; no native
-charts in the three pitch books.
+### A.1 Headline: most pages are not charts
 
-Annotation over 33 data exhibits: outline box 14; column-group spanners 6; units column 5;
-shaded key row or block 5; parentheses for negatives 4; sorted order 4; selective data
-labels 3; all data labels 3; reference line 3; footnote marker 3; logos as category labels
-3; NM or N/A 3; callout arrow or pointer 3; base case bolded 3; summary-stats block 2;
-category order held across panels 2; input-cell shading 2; section bands 2; caption naming
-both axes 2; source line 2; highlight one grey the rest 1; direct labels replacing legend
-1. Absent: CAGR arrows, delta labels, brackets with sums, forecast shading, totals above
-stacks, event markers. No annotation on 3 of 33.
+346 of 578 pages (60%) carry no data chart: investment-bank 135 of 231, consulting 210 of
+317, chart book 1 of 30. Tables (192), diagrams and processes (62), structured text, image
+walls and big numbers make up 310 of the 601 exhibits. In the bank decks tables outnumber
+charts (117 to 109).
 
-Emphasis: red or navy outline boxes 13 pages; numbered badges 6; shaded median, subject,
-output or answer rows 6; panel header bars 4; no icons, check marks or big numbers.
+Implication: page design is mainly a question of composition, text and tables. Charts are
+one exhibit family among several. A skill whose craft, recipes and annotation are built
+around charts serves a minority of the pages a company actually makes.
 
-Variety: V = adjacent pairs with different composition / (n - 1): 0.83, 0.90, 0.85 for the
-three pitch books (0.50 for the talk); longest run 2.
+### A.2 Compositions
 
-Defects humans made (do not imitate): pictures past the margin, colliding data labels,
-misregistered overlay boxes, comma decimals in a borrowed chart, repeated titles, subject
-not highlighted, mixed fonts between pasted exhibits and slide text.
+Families are derived from each page's exhibit classes, the sidebar flag and the coder's
+composition text (n = 578 pages).
 
-### A.2 Investment-bank pitch books and board decks, PDF (7 decks; 184 content pages; 224 exhibits)
+| Composition family | Total | Bank (231) | Consulting (317) | Chart book (30) |
+|---|---|---|---|---|
+| Single chart, full width | 113 | 53 | 45 | 15 |
+| Single table, full width | 91 | 45 | 46 | 0 |
+| Exhibit plus side text or takeaway column | 80 | 22 | 58 | 0 |
+| Two or more exhibits (panels, small multiples, chart plus table) | 77 | 38 | 24 | 15 |
+| Structured text (label rows, numbered rows, columns, cards) | 76 | 16 | 60 | 0 |
+| Diagram, process or timeline | 58 | 8 | 50 | 0 |
+| Text only (bullets or paragraphs) | 40 | 23 | 17 | 0 |
+| Image, logo or evidence wall | 19 | 11 | 8 | 0 |
+| Exhibit plus text above or below | 16 | 15 | 1 | 0 |
+| Big numbers or KPI panel | 8 | 0 | 8 | 0 |
 
-Compositions: full table 30; full chart 20; two charts 12; bullets only 9; chart plus
-tables right 9; label-column rows 8; 2x2 chart grid 7; chart plus table below 5; numbered
-rows 5; 51 distinct types. Takeaway column or sidebar 15 of 184; one deck uses a bottom
-takeaway band on 20 of 30 pages.
+Exhibits per page:
 
-Titles: 179 topic, 3 question, 2 claim; mean 3.8 to 5.6 words per deck. Units line 46 of
-184; subtitle or kicker 57; a claim sentence appears somewhere on 47 of 184 pages.
+| Exhibits on the page | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| 0 | 94 | 25 | 69 | 0 |
+| 1 | 390 | 161 | 214 | 15 |
+| 2 | 74 | 34 | 31 | 9 |
+| 3 | 17 | 9 | 3 | 5 |
+| 4 or more | 3 | 2 | 0 | 1 |
 
-Text: hierarchy 0 levels on 110 pages, 1 on 40, 2 on 27, 3 on 7; bold lead-ins 9.
+Sidebar or takeaway box (recorded flag): bank 18 of 231, consulting 55 of 317, chart book
+0 of 30.
 
-Exhibits: column 29; other financial tables 29; sensitivity matrix 24; projection or DCF
-table 20; framework matrix 12; stacked column 11; pie 9; comps table 9; column plus line
-8; line 8; horizontal bar 7; price line with events 5; indexed multi-line 5; numbered list
-5; logo table 5; football field 4; range bars 4; tombstone grid 4; waterfall 3; analysis
-at various prices 3; structure diagram 3; line with peer range band 2; sum-of-parts
-floating bars 2; table with inline bars 2; scatter 1; histogram 1; quote stack 1.
+House-specific conventions. Each comes from one deck or one house; they are examples of
+what mining a company's past decks finds, not tendencies to copy:
+- one bank deck used a bottom takeaway band on 20 of 30 pages (coder count);
+- one consulting deck paired a chart of 62 to 70% of the page width with a grey
+  full-height sidebar on 11 of 29 pages;
+- one consulting deck put a title panel on the left third of the page (6 pages);
+- three native-pptx bank pitch books on one master used rows of number badge, arrow label
+  and finding box on 6 of 51 pages;
+- the chart book's pages are exhibit-only, with no body text, on 30 of 30;
+- one consulting appendix ran a row-label template for 7 pages;
+- one bank board deck shared one template across 6 recap pages and another across 5
+  segment tables.
 
-Annotation (per exhibit, n = 224): data labels on every point 72; column spanners 59;
-shaded or bold total rows 40; footnote markers 30; data rows aligned under chart axis 29;
-subject highlighted, rest grey or uniform 27; bracket or group header over categories 23;
-NM, NA or dash markers 21; callout text with arrow or leader 20; end-of-line labels 20;
-circle or dotted box around the point 19; italic ratio rows 18; sorted order 17; median or
-stat row highlighted 15; reference, benchmark or median line 15; colour encodes series
-role 14; inset stat table 12; forecast or period demarcation 11; logos as labels 11;
-totals above stacks 10; conditional colour 9; event markers 7; delta label 5;
-percent-of-total 4; selective data labels 3; peer range band 2. CAGR arrows 0 (growth in a
-CAGR column or inset table). Charts with no annotation: 1 of 101.
+### A.3 Titles
 
-By data shape: horizontal bar 7 of 7 labelled, 6 sorted, 6 highlight one item; column 25
-of 29 labelled, 11 highlight the subject; stacked column 8 of 11 totals above stacks;
-indexed multi-line 5 of 5 end labels instead of a legend; price line 5 of 5 event markers,
-4 inset returns table; football field 4 of 4 reference line, 3 group brackets; comps 9 of
-9 highlight the median row; projection 17 of 20 shade totals, 14 italic ratio rows;
-sensitivity 18 of 24 rely only on boxed axis headers and spanners, 2 circle the answer.
+| Register | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| Topic phrase | 372 | 223 | 119 | 30 |
+| Claim sentence | 199 | 2 | 197 | 0 |
+| Question | 7 | 6 | 1 | 0 |
 
-### A.3 Strategy-consulting decks, one house, PDF (4 decks incl. a memo; 85 content pages; 103 exhibits)
+Median title length in words: bank topic titles 4; chart book topic titles 4; consulting
+topic titles 7; consulting claim titles 15. Consulting claim titles run 8 to 22 words and
+usually take two lines (coder count).
 
-Compositions: table 18; multiple exhibits side by side 15; diagram or framework 14;
-exhibit plus takeaway sidebar 9 (one deck pairs a 62 to 70% chart with a grey full-height
-sidebar carrying the so-what); parallel columns or icon rows 8; timeline 6; split panel 4;
-matrix 3; big numbers 2. Sidebar or takeaway on 19 of 85.
+Register is a house choice:
+- Bank decks almost never use claim titles (2 of 231); the chart book never does (0 of
+  30); consulting mostly does, but not always (197 of 317, 62%).
+- Consulting topic titles cluster on executive summaries, appendices, trackers and
+  reference pages, often prefixed "For reference:" or "Illustrative:", or carrying a
+  counter such as "(8/11)".
+- Register varies by deck within one house (coder counts: one consulting deck 23 of 30
+  claim titles; a memo 0 of 12).
+- The same exhibit can take both registers in one deck: one consulting fact pack titled
+  the same lever tree as a topic on one page and as a claim on two later pages.
 
-Titles: 43 topic, 41 claim, 1 question; claim titles 8 to 22 words, usually two lines;
-house-specific (one deck 23 of 30 claims; the memo 0 of 12). Kicker or tag on 60 of 85
-("Exhibit n:", numbered section circles, small-caps tracker kickers, PRELIMINARY,
-ILLUSTRATIVE, DRAFT, "Not exhaustive", "(1/2)"). Two-part claim titles split across two
-panels, each panel proving its half with its own headline and units line.
+Where the claim lives when the title is a topic. On 109 of 372 topic-title pages a claim
+sentence sits elsewhere (bank 71 of 223, consulting 36 of 119, chart book 2 of 30):
+- bank: a takeaway band (one deck, 21 of 30 pages); a lead-in bullet that ends in a colon
+  before its exhibit (9 pages over two native-pptx pitch books); the labels of numbered
+  rows; kickers and sidebars (one scanned deck, 8 of 21 pages);
+- chart book: a full claim sentence in the exhibit's units line;
+- consulting: a sidebar or subtitle, or memo prose.
+On the remaining topic-title pages no claim is stated at all: the page is reference
+material.
 
-Text: bold lead-ins 26 of 85; takeaway or callout text 18 of 85, always stating an
-implication the chart does not show directly.
+Units, kickers and continuations:
+- Units line on exhibit titles: bank 64 pages; chart book 27 of 30 (44 of 56 exhibit
+  titles). Coder count for the native-pptx bank decks: 18 of 24 numeric pages, and every
+  page that shows currency.
+- Kicker, subtitle or section tag: consulting 265 of 317 (including "Exhibit n:" labels,
+  trackers and status tags); bank 64 of 231. Kickers are mainly a consulting convention.
+- Continuations ("(1/2)", "(I/III)", or a title beginning with an ellipsis that continues
+  the previous page) appear in four consulting decks.
 
-Exhibits: diagram or framework 22; table 16; line 15; column or bar 8; timeline 7;
-horizontal bar 5; big numbers 3; press quotes 3; map 3; waterfall 3; bubble matrix 2;
-donut 2; 100% stacked column 2; funnel 1.
+### A.4 Text hierarchy and lead-ins
 
-Annotation (57 data exhibits): footnote markers 17; value labels instead of axis 14;
-reference, benchmark, target or trend line 10; highlight one, mute the rest 8; delta or
-growth label 7; sorted 5; direct labels replacing legend 5; callout box with leader 5;
-legend swatch defining a state 4; outline box around one item 4; event marker 4; totals or
-"100% =" bases 3; axis break 2; bracket with computed range 2; forecast shading 1;
-percent-of-total 1. No annotation: 4 of 57 (all line charts).
+Hierarchy levels of body text (pages):
 
-### A.4 Not yet coded
+| Levels | Bank | Consulting | Chart book |
+|---|---|---|---|
+| 0 | 118 | 0 | 30 |
+| 1 | 75 | 108 | 0 |
+| 2 | 31 | 171 | 0 |
+| 3 | 7 | 37 | 0 |
+| 4 | 0 | 1 | 0 |
 
-Decks from two further strategy-consulting houses and more from the first; a dense
-annotated market chart book. Treat A.1 to A.3 as the current evidence and refresh when the
-pass completes.
+- Bold or coloured lead-ins: bank 26 of 231, consulting 179 of 317, chart book 0 of 30.
+- Words per page: two consulting houses averaged 114 to 191 words per deck (coder count);
+  the native-pptx bank decks had a median of 72 words counted from slide XML (range 2 to
+  221); the chart book has no body text.
+- How text and exhibit divide the work: when both are present, the text usually adds what
+  the exhibit cannot show: assumptions and caveats, causes and history, the so-what, the
+  derived number. All six coder groups report this. Text that restates the title was
+  recorded per exhibit: bank 40 of 264, consulting 61 of 180 recorded, chart book 8 of 52.
+  In consulting, restating usually means one panel proves one clause of a two-part title.
+
+### A.5 Exhibit types
+
+By class (n = 601):
+
+| Class | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| Data chart | 291 | 109 | 135 | 47 |
+| Table | 192 | 117 | 70 | 5 |
+| Diagram or process | 62 | 11 | 51 | 0 |
+| Image wall | 23 | 13 | 10 | 0 |
+| Shape-built text structure | 23 | 14 | 9 | 0 |
+| Big numbers | 10 | 0 | 10 | 0 |
+
+By family:
+
+| Family | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| Line (incl. indexed, price, dual-axis, area to baseline) | 85 | 20 | 46 | 19 |
+| Column | 58 | 33 | 20 | 5 |
+| Text or data table | 53 | 29 | 21 | 3 |
+| Stacked bar, column or area (incl. 100%, diverging) | 47 | 13 | 25 | 9 |
+| Financial or projection table | 42 | 31 | 11 | 0 |
+| Process, timeline or plan | 33 | 8 | 25 | 0 |
+| Sensitivity grid | 29 | 29 | 0 | 0 |
+| Diagram or framework | 29 | 3 | 26 | 0 |
+| Framework matrix or placemat | 24 | 11 | 11 | 2 |
+| Image, logo or evidence wall | 23 | 13 | 10 | 0 |
+| Structured text (rows, cards, quotes) | 23 | 14 | 9 | 0 |
+| Horizontal bar | 21 | 7 | 12 | 2 |
+| Status or check matrix | 16 | 1 | 15 | 0 |
+| Comps or benchmark table | 15 | 14 | 1 | 0 |
+| Combo (bar plus line or dot) | 14 | 9 | 1 | 4 |
+| Football field or range bars | 14 | 11 | 1 | 2 |
+| Pie or donut | 13 | 10 | 3 | 0 |
+| Table with in-cell bars | 13 | 2 | 11 | 0 |
+| Waterfall or bridge | 12 | 3 | 8 | 1 |
+| Map | 10 | 1 | 9 | 0 |
+| Big numbers or KPI | 10 | 0 | 10 | 0 |
+| Scatter or bubble | 8 | 1 | 3 | 4 |
+| Histogram | 5 | 1 | 4 | 0 |
+| Funnel | 2 | 0 | 2 | 0 |
+| Heatmap | 2 | 0 | 1 | 1 |
+
+Families specific to a house type: bank decks use sensitivity grids, comps tables, football
+fields, projection tables with italic ratio rows, and tombstone and logo walls; consulting
+decks use check and status (red, amber, green) matrices, tables with in-cell bars, lever
+trees, maps and big numbers; the chart book uses scatters with a regression line and an
+R-squared box, and range bars against an item's own history.
+
+Construction (native-pptx bank decks only): 27 of 33 data exhibits in the three pitch books
+are pasted pictures; not one pitch-book chart is a native PowerPoint chart. Annotations are
+separate shapes laid over the pictures at absolute offsets.
+
+### A.6 Annotation moves
+
+Counted per exhibit (n = 601). "On charts" and "on tables" split the same moves by host.
+
+| Move | Total | Bank (264) | Consulting (285) | Chart book (52) | On charts (291) | On tables (192) |
+|---|---|---|---|---|---|---|
+| Data labels on all marks | 131 | 68 | 51 | 12 | 120 | 10 |
+| Circled or boxed mark | 105 | 61 | 41 | 3 | 39 | 50 |
+| Highlight one item, mute the rest | 90 | 51 | 34 | 5 | 45 | 34 |
+| Footnote markers | 90 | 28 | 56 | 6 | 42 | 36 |
+| Callout box, arrow or leader to the insight | 77 | 27 | 42 | 8 | 56 | 10 |
+| Reference, benchmark or average line | 77 | 21 | 49 | 7 | 61 | 7 |
+| End or direct labels instead of a legend | 59 | 22 | 26 | 11 | 56 | 1 |
+| Column spanners or grouped headers | 57 | 44 | 11 | 2 | 9 | 45 |
+| Shaded or bold total row | 51 | 37 | 13 | 1 | 4 | 47 |
+| Sorted order | 50 | 23 | 23 | 4 | 35 | 10 |
+| Numbered or lettered keys tied to text | 50 | 20 | 29 | 1 | 15 | 12 |
+| Delta, growth or CAGR label | 46 | 15 | 29 | 2 | 26 | 16 |
+| Status glyphs (check, cross, dots) | 41 | 4 | 36 | 1 | 12 | 16 |
+| Forecast or period demarcation | 39 | 13 | 16 | 10 | 31 | 4 |
+| Totals above stacks or "100% =" bases | 34 | 13 | 17 | 4 | 29 | 3 |
+| Data rows or a table aligned under the chart | 29 | 22 | 7 | 0 | 29 | 0 |
+| Event markers on a time axis | 29 | 7 | 18 | 4 | 27 | 0 |
+| NM, NA or n.q. markers | 25 | 18 | 7 | 0 | 11 | 13 |
+| Bracket or brace (often with a sum) | 24 | 10 | 12 | 2 | 16 | 4 |
+| Inset stats table inside the plot | 24 | 13 | 2 | 9 | 24 | 0 |
+| Selective data labels | 23 | 7 | 13 | 3 | 22 | 1 |
+| Connectors or zoom lines between marks | 22 | 4 | 18 | 0 | 15 | 2 |
+| Logos as labels | 20 | 16 | 4 | 0 | 10 | 4 |
+| Italic ratio rows | 16 | 16 | 0 | 0 | 0 | 16 |
+| Median or statistic row or block emphasised | 16 | 16 | 0 | 0 | 1 | 15 |
+| Semantic colour (sign, status, sentiment, heat) | 15 | 3 | 11 | 1 | 7 | 8 |
+| Axis break, inversion or rebasing | 14 | 0 | 11 | 3 | 13 | 1 |
+| Percent-of-total labels | 12 | 3 | 6 | 3 | 9 | 1 |
+| Input cells or base case marked | 8 | 7 | 1 | 0 | 0 | 8 |
+| Derivation shown on the exhibit | 7 | 2 | 5 | 0 | 2 | 4 |
+| Uncertainty (ranges, scenario lines, stamps) | 6 | 1 | 5 | 0 | 4 | 2 |
+| Zone or quadrant shading | 3 | 0 | 3 | 0 | 2 | 1 |
+| Regression line and R-squared | 3 | 0 | 0 | 3 | 3 | 0 |
+
+Mean moves per exhibit: bank 2.25, consulting 2.09, chart book 2.02. Finer coder coding
+gives 2.46 for the chart book and 5.0 for one consulting deck.
+
+CAGR arrows: 0 in the bank decks (both coder groups) and 1 in consulting. Growth is shown
+in a CAGR column, an inset table or an oval instead.
+
+Zero-annotation rates:
+
+| | Bank | Consulting | Chart book |
+|---|---|---|---|
+| Charts with no annotation | 0 of 109 | 4 of 135 | 3 of 47 |
+| All exhibits with no annotation | 13 of 264 | 8 of 285 | 4 of 52 |
+
+Over all houses, 7 of 291 charts carry no annotation. The bare consulting charts are line
+charts whose sidebar explains the method; the bare exhibits that are not charts are mostly
+tables, logo grids and icon rows.
+
+Charts with no move that points at the message (nothing beyond labels, sorting, footnotes,
+totals or spanners): bank 36 of 109, consulting 27 of 135, chart book 12 of 47. About one
+chart in four relies on labels alone.
+
+Chart scaffolding (where recorded):
+- Legend absent: bank 32 of 81, consulting 30 of 85, chart book 18 of 47 (the chart book's
+  legends, about 22, are swatches with text in the series colour).
+- Gridlines absent: bank 58 of 80, consulting 78 of 89, chart book 0 of 47 (light
+  horizontal gridlines on every chart are that house's style).
+- Colour: one emphasis colour or a single hue is the norm; categorical colour is kept for
+  genuinely categorical series (one bank coder group: 24 of 72 single emphasis against 15
+  of 72 categorical; the same pattern in two other groups). In the native-pptx bank decks,
+  series were two tints of one navy and red meant only "look here".
+
+### A.7 Moves by data shape and by message
+
+By data shape (exhibit family, all houses):
+
+| Data shape | n | Most frequent moves (counts) |
+|---|---|---|
+| Line or time series | 85 | end or direct labels 34; reference or benchmark line 22; event markers 21; callout 17; inset stats table 15; forecast demarcation 13 |
+| Column | 58 | all labels 38; highlight one 17; sorted 14; reference line 14; footnotes 10; delta label 9 |
+| Horizontal bar (ranking) | 21 | all labels 20; sorted 15; highlight one 13; selective labels 4 |
+| Stacked or 100% | 47 | all labels 23; totals or "100% =" bases 20; callout 13; rows aligned under the axis 9 |
+| Waterfall | 12 | labels 7; totals 6; connectors 6; footnotes 6 |
+| Football field or ranges | 14 | labels 10; reference line at the offer or current price 8; end labels 6; method spanners 5 |
+| Scatter or bubble | 8 | callout 5; highlight the current point 4; reference line 3; regression and R-squared 3 (chart book) |
+| Histogram | 5 | labels 4; reference lines (median, cap) 3; rows under the axis 2; delta 2 |
+| Financial or projection table | 42 | shaded total rows 27; italic ratio rows 16; spanners 13; highlight 13; boxed rows 12 |
+| Comps or benchmark table | 15 | median or statistic row 12; spanners 9; subject highlighted 8; NM 5 |
+| Sensitivity grid | 29 | boxed cell or region 17; spanners 7; base case marked 3 |
+| Text or data table | 53 | total row 14; footnotes 13; spanners 9 |
+| Status or check matrix | 16 | glyphs 9; highlight 4; footnotes 4 |
+| Process or timeline | 33 | numbered keys 7; boxed 6; status glyphs 6; callouts 5 |
+| Diagram or framework | 29 | glyphs 6; numbered keys 5; fade the non-focus parts 5 |
+
+By message (coders' message-level coding):
+- Subject against peers: bank decks label, highlight the subject, and draw a median line
+  or median row (one bank coder group, 41 exhibits). Consulting peer benchmarks: highlight
+  4 of 5, mean line 4 of 5, delta pill 3 of 5, sorted 3 of 5 (one coder group).
+- Ranking: sorted, labelled and the subject highlighted, all three on 4 of 4 (one bank
+  group) and on 5 of 5 horizontal bars (one consulting group).
+- Change over time: end labels; event markers when the message is what caused the shape;
+  a forecast divider for projections (all coder groups).
+- Valuation range: a reference line at the decision value on 4 of 4 football fields (one
+  bank group), plus brackets and data rows under the axis.
+- Composition: totals above the stacks, "100% =" bases, and the legend replaced by
+  row-aligned labels (2 of 2 on 100% stacks, one consulting group).
+- Estimate or scenario: dashed forecast with period shading 6 of 10, baseline line 6 of 10,
+  circled headline value 4 of 10 (one consulting group).
+- Relationship: regression line, today's point highlighted and an R-squared box on 3 of 3
+  scatters (chart book).
+- Choice or recommendation: a pointer or callout plus a box on the answer (native-pptx bank
+  decks).
+
+### A.8 Emphasis devices
+
+Pages carrying each device:
+
+| Device | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| Boxed or circled figure | 102 | 30 | 68 | 4 |
+| Bold or coloured lead-in or key phrase | 92 | 17 | 75 | 0 |
+| Single emphasis colour on one item | 88 | 38 | 50 | 0 |
+| Shaded key rows, cells or columns | 52 | 13 | 38 | 1 |
+| Takeaway band, box or sidebar | 46 | 22 | 23 | 1 |
+| Navy or dark label cells or banners | 37 | 20 | 17 | 0 |
+| Arrows, chevrons or wedges as connectors | 34 | 7 | 27 | 0 |
+| Icons | 32 | 2 | 30 | 0 |
+| Numbered or lettered markers | 31 | 9 | 22 | 0 |
+| Status glyphs, checks or red-amber-green | 25 | 5 | 20 | 0 |
+| Photos or logos | 12 | 0 | 12 | 0 |
+| Status stamps (draft, preliminary, illustrative) | 10 | 0 | 10 | 0 |
+| Red or green semantic text | 9 | 4 | 3 | 2 |
+| Big numbers | 7 | 0 | 7 | 0 |
+
+Coder counts are higher where coders coded by hand: one bank group found shaded key rows on
+64 of 184 pages and boxed or circled figures on 55 of 184; one consulting group found status
+tags on 31 of 85.
+
+Not seen: Harvey balls (0 in the bank decks, 0 in the chart book, 2 "Harvey-style" tables
+in 317 consulting pages); icons (0 in the native-pptx bank decks, 0 in the chart book).
+
+### A.9 Craft details, density and human defects
+
+Pages carrying each detail:
+
+| Detail | Total | Bank | Consulting | Chart book |
+|---|---|---|---|---|
+| Source line | 227 | 106 | 91 | 30 |
+| Page furniture (number, footer, logo, codename) | 223 | 106 | 87 | 30 |
+| Footnotes or notes | 195 | 93 | 95 | 7 |
+| Units line or units in a header | 123 | 50 | 43 | 30 |
+| Status or caveat tag | 122 | 71 | 51 | 0 |
+| Deliberate repetition or cross-page consistency | 82 | 27 | 51 | 4 |
+| Rounding, method or definitions disclosed | 61 | 17 | 43 | 1 |
+| Number-format habits (x suffix, $ on first and total rows only, ~, K/M) | 35 | 12 | 21 | 2 |
+| As-of date | 22 | 5 | 17 | 0 |
+| Continuation marker or ellipsis title | 19 | 4 | 15 | 0 |
+| Negatives in parentheses | 13 | 6 | 6 | 1 |
+
+Source lines on pages that carry a chart or table, as recorded in craft notes, by coder
+group: bank PDF 84 of 150; bank native pptx 2 of 23; consulting groups 20 of 51, 14 of 63
+and 14 of 60; chart book 30 of 30. Recording was uneven, but the coders' own counts agree
+that a large share of real data pages carry no source line (two consulting groups: source
+lines on 23 of 111 and 27 of 121 pages).
+
+Recurring table habits (bank decks, both coder groups): $ only on the first and total rows;
+x on multiples; italic ratio rows under their $ row; a units column separate from the
+labels; NM and NA written out, never left blank.
+
+Density: median page fill is 0.85 in every house type. Median elements per page: bank about
+80 (two decks at 145 and 119), consulting about 30, chart book about 35. Dense tables reach
+110 to 230 elements (one at 170).
+
+Defects humans made (do not imitate): recorded on 106 pages (bank 39, consulting 64, chart
+book 3). Examples: title typos; mismatched y-scales on sibling charts; truncated axes;
+colliding labels; a disclaimer box overrunning the title on four pages of one deck;
+template residue; numbers inconsistent across pages; a missed subject highlight; a title
+claim with no bracket summing it; in the native-pptx bank decks also pictures past the
+margin, misregistered overlay boxes, comma decimals in a borrowed chart, repeated titles,
+and mixed fonts between pasted exhibits and slide text. Two chart-book charts on non-zero
+baselines were flagged as lapses. These are what a generator should be better than, not
+what it should copy.
+
+### A.10 Variety over consecutive pages
+
+Measures, over adjacent pairs of sampled pages within one deck, using the 10 composition
+families of A.2 (coarser than some coders' taxonomies, so change rates come out lower than
+theirs):
+- **Composition change rate** = adjacent pairs whose composition family differs / (n - 1).
+- **Exhibit-set change rate** = adjacent pairs whose set of exhibit families differs /
+  (n - 1); a page with no exhibit counts as the set {text only}.
+- **V** = mean over adjacent pairs of [0.5 x (1 if the composition family changed, else 0)
+  + 0.5 x (1 - Jaccard similarity of the two pages' exhibit-family sets)].
+- **Repeat rate** = 1 - composition change rate.
+- **Longest run** = the longest sequence of consecutive pages in one composition family.
+- **Entropy** = Shannon entropy, in bits, of the deck's composition-family distribution.
+
+| Deck | n | Strided | Composition change | Exhibit-set change | V | Longest run | Distinct families | Entropy (bits) |
+|---|---|---|---|---|---|---|---|---|
+| Bank 1 | 26 | yes | 0.64 | 0.84 | 0.73 | 4 | 5 | 2.22 |
+| Bank 2 | 21 | no | 0.65 | 0.80 | 0.70 | 5 | 5 | 2.06 |
+| Bank 3 | 14 | no | 0.85 | 0.85 | 0.85 | 2 | 7 | 2.70 |
+| Bank 4 | 42 | no | 0.51 | 0.56 | 0.53 | 7 | 5 | 1.83 |
+| Bank 5 | 28 | no | 0.63 | 0.67 | 0.62 | 4 | 8 | 2.64 |
+| Bank 6 | 30 | no | 0.62 | 0.76 | 0.66 | 5 | 5 | 2.06 |
+| Bank 7 (native pptx) | 19 | no | 0.67 | 0.72 | 0.69 | 3 | 9 | 2.78 |
+| Bank 8 (native pptx) | 11 | no | 0.90 | 1.00 | 0.93 | 2 | 5 | 2.12 |
+| Bank 9 (native pptx) | 14 | no | 0.69 | 0.77 | 0.73 | 2 | 5 | 2.07 |
+| Bank 10 (talk, contrast case) | 7 | no | 0.50 | 0.50 | 0.50 | 4 | 3 | 1.15 |
+| Consulting 1 | 30 | yes | 0.86 | 0.90 | 0.88 | 2 | 8 | 2.61 |
+| Consulting 2 | 30 | yes | 0.69 | 1.00 | 0.84 | 4 | 8 | 2.43 |
+| Consulting 3 | 30 | yes | 0.69 | 0.69 | 0.69 | 7 | 8 | 2.56 |
+| Consulting 4 | 31 | no | 0.60 | 0.53 | 0.53 | 4 | 6 | 2.35 |
+| Consulting 5 | 14 | no | 0.77 | 0.92 | 0.85 | 3 | 5 | 1.92 |
+| Consulting 6 | 30 | yes | 0.79 | 0.83 | 0.78 | 3 | 7 | 2.33 |
+| Consulting 7 | 29 | no | 0.86 | 0.82 | 0.84 | 5 | 6 | 2.16 |
+| Consulting 8 (memo) | 12 | no | 0.55 | 0.91 | 0.73 | 5 | 5 | 1.78 |
+| Consulting 9 | 22 | no | 0.86 | 0.86 | 0.86 | 2 | 6 | 2.53 |
+| Consulting 10 | 30 | no | 0.76 | 0.79 | 0.78 | 3 | 7 | 2.13 |
+| Consulting 11 | 29 | yes | 0.82 | 0.93 | 0.88 | 3 | 6 | 2.43 |
+| Consulting 12 | 30 | yes | 0.76 | 0.72 | 0.74 | 4 | 8 | 2.65 |
+| Chart book | 30 | yes | 0.55 | 0.97 | 0.71 | 6 | 2 | 1.00 |
+
+Summary:
+- Median composition change rate: bank 0.645 (range 0.50 to 0.90; 9 of 10 decks
+  consecutive), consulting 0.765 (range 0.55 to 0.86), chart book 0.55 at a two-page
+  stride, all 23 decks 0.69. Consecutive pages repeat their composition family about 35%
+  of the time in bank decks, 24% in consulting and 45% in the chart book.
+- Exhibit types change more often than compositions: median exhibit-set change rate bank
+  0.77, consulting 0.85, chart book 0.97. The chart book keeps two composition families
+  (full width, or panels) and varies the chart type on nearly every page.
+- Coders' finer taxonomies give higher change rates: one bank group 0.59 to 0.90
+  (composition change); the native-pptx bank group 0.83 to 0.90 (with no run longer than 2
+  by its own types); consulting groups 0.93 to 1.00 (exact layout tag), 0.64 to 0.85 and
+  0.55 to 0.83.
+- Every long run is a deliberate template for comparison: a bank board deck's 7 (6 recap
+  pages, then 5 segment tables), a consulting appendix's 7, the chart book's 6, and a
+  consulting deck's industry template and executive-summary title panels (6 each). No coder
+  found an accidental run of sameness.
+
+*Inferred*: variety in these decks comes from the content's shape changing, and repetition
+comes from content that is meant to be compared. A generator should vary composition unless
+pages are siblings, and should then hold the sibling template exactly.
+
+### A.11 The page library drawn from this corpus
+
+About 40 of the coded pages form the external starter set of the page library (section
+10.4): 15 bank, 21 consulting and 4 chart-book pages, chosen from each coder group's most
+instructive pages and balanced across house type and composition rather than chart pages
+first. 15 of the 40 have a table, matrix, diagram or structured text, not a chart, as their
+main exhibit.
 
 ---
 
 ## Appendix B. Reasoning questions for the designer
 
-Offer these as the way to think, tied to evidence, never as rules.
+Offer these as the way to think, tied to evidence, never as rules. Each question that cites
+counts is *inferred* from what the corpus pages show (Appendix A); the counts say how often
+the corresponding move appears, and the house's own practice always decides.
 
 Per deck:
 - Which of the company's templates fits this deck's type and audience, and which past decks
@@ -2065,18 +2623,47 @@ Per section:
 - What is the storyline, page by page, in one sentence each? Where does the reader need
   evidence, and where only a statement?
 - Which compositions and layouts will each page use, and how does that compare with the
-  house's own variety? Which repeats are deliberate parallels, and why?
+  house's own variety? Which repeats are deliberate parallels, and why? (Every long run in
+  the corpus was a sibling template held on purpose; median composition change 0.69 over
+  23 decks; A.10.)
+- Which pages are one of a set, meant to be compared by flipping? Then hold one template,
+  one scale and one category order across them exactly. (Sibling runs of 5 to 12 pages in
+  the corpus; missed shared scales on sibling charts were recorded as defects.)
 
 Per page:
-- What is the one thing the reader should leave with? Where does the house put that claim:
-  the title, a lead-in bullet, a sidebar, a takeaway band, a kicker? How long are the
-  house's titles?
+- What is the one thing the reader should leave with, and which slot of this house carries
+  it: the title, a lead-in bullet ending in a colon, a sidebar, a takeaway band, a kicker, a
+  units line, the labels of numbered rows? Does this house argue in titles, or name the
+  topic and argue elsewhere? How long are its titles? (Claim titles on 197 of 317
+  consulting pages, 2 of 231 bank pages, 0 of 30 chart-book pages; on 109 topic-title pages
+  the claim sits in another slot; A.3.)
+- Is this a page of argument or a page of reference? (Topic titles, appendix counters and
+  "For reference:" prefixes mark reference pages; they carry complete tables with
+  housekeeping such as spanners, totals and footnotes and little emphasis: in one bank coder
+  group 54 of 224 exhibits had only housekeeping.)
 - Which layout do the company's past decks use for a page like this, and which
   placeholders do they fill?
-- Which element proves it most directly, and does its size reflect that? If several blocks
-  are co-equal, how do they divide the page without becoming a dashboard?
-- What does the text add that the exhibit cannot (assumptions, caveats, history, the
-  implication)? Is anything said twice?
+- Which element proves the message most directly, and does its size reflect that? Where
+  does the eye finish? (One exhibit per page on 390 of 578 pages; the resolution tends to
+  sit at the end of the reading path: the last row boxed and shaded, a bottom band, a down
+  arrow to one bottom-line number.)
+- If several blocks are co-equal, are they a comparison (then equal panels on a shared scale
+  are honest: 77 of 578 pages carry two or more exhibits) or a list of unrelated facts (then
+  equal tiles read as a dashboard)?
+- Should this be a table, a chart, a diagram or structured text? Will the reader look up
+  values (table), compare a pattern (chart), follow a structure (diagram), or match findings
+  to actions (aligned rows)? (Lookup and reference content was a table in 71 of 71 cases,
+  sensitivity in 29 of 29; change over time was a chart 93 times and a table 24 times, the
+  tables being projections where every number is read; 346 of 578 pages carry no chart.
+  Parallel findings became numbered or label rows rather than bullets; ordered options
+  became a spectrum; qualitative text was ranked on an axis.)
+- What does the text add that the exhibit cannot (assumptions, caveats, causes, history,
+  the implication, the derived number)? Is anything said twice? (Restating the title was
+  the minority: 40 of 264 bank exhibits, 8 of 52 chart-book exhibits.)
+- Can the reader check the claim on the page? Is the title's number derivable from what is
+  printed (a share shown as the sum of its parts, the equation that produces a total, raw
+  numerators beside the shares)? (Derivation is rare as a move, 7 exhibits, but frequent
+  among the most instructive pages.)
 - Which company page is nearest to this intent, and what does it do that this page does
   not?
 - Is anything on this page carried over from a past deck that the user did not supply?
@@ -2087,13 +2674,46 @@ Per exhibit:
   house use? Would a table say it better?
 - If the house has never shown this exhibit, how would its designers have drawn it with
   the roles, rules and devices they do use?
-- Where on this exhibit does the claim live (a region of a grid, a few years, one company,
-  a gap to a benchmark)? How does the house mark such a place (outline box, circle,
-  highlight against grey, reference line, bracket)?
-- Can the absence of a mark carry meaning (the one scenario with no box)?
+- What comparison is the reader making, and against what? (Subject against peers:
+  highlight the subject on 22 of 46 such exhibits, emphasise a median or statistic row on
+  12 of 46, sort on 13 of 46. Against a decision value: a reference line, used on 77
+  exhibits, at the offer, the current price, the median or a policy cap. When peers are not
+  one population, benchmark the subject against each cluster's median.)
+- Where on this exhibit does the claim live: a point, a region, a subset or an absence? How
+  does the house mark such a place (outline box, circle, highlight against grey, reference
+  line, bracket)? (Circled or boxed marks on 105 exhibits, 50 of them tables; a box on the
+  scenario region of a sensitivity grid; the bars that sum to the claim coloured; one panel
+  left unboxed to prove "except this one".)
+- Can the absence of a mark carry meaning?
+- What does the shape of this data usually need? (Time series: end labels 34 of 85, event
+  markers 21 of 85, forecast demarcation 13 of 85. Rankings: sorted 15 of 21, highlighted
+  13 of 21. Stacks: totals 20 of 47. Projection tables: shaded totals 27 of 42, italic
+  ratio rows 16 of 42. Comps: a median row 12 of 15. These are tendencies, not
+  prescriptions; A.7.)
+- How much to annotate, and what to leave out? (Only 7 of 291 charts are bare. Selective
+  emphasis is the norm: one judgement on a whole mechanical page; three row groups boxed in
+  a full table; only the first and last bars bracketed. Labelling every mark is common, 131
+  exhibits, and coexists with one emphasised item. Scaffolding is left out: gridlines absent
+  on 136 of 169 bank and consulting charts where recorded, legends replaced by direct labels
+  on 80 of 213 charts; but one house draws light gridlines on 47 of 47. Non-focus parts are
+  faded rather than deleted.)
 - How will the reader find the subject (colour, position, order held across panels)?
 - What value is the decision made against (current price, offer, median, target)? Is it
   drawn?
+- What is estimate and what is fact, and how certain is it? (Forecast demarcation on 39
+  exhibits: a dashed line, hatching, two-tone bars or a "Forecast" divider; ranges in place
+  of points; status stamps such as PRELIMINARY or ILLUSTRATIVE on 10 consulting pages; a
+  broken series shown broken.)
+- What explains the shape? (Event markers on 29 exhibits, all on time axes, where the
+  message is what caused it.)
+- Is the form unfamiliar enough to need a reading key ("How to read this chart", a written
+  reading rule, the key placed in an empty grid cell)?
+- Colour means relative to what? (Heat and status colour were defined against a named
+  benchmark or a decision; semantic red and green appear on 9 pages; elsewhere red means
+  "look here".)
+- For a big number: of what, and for whom? Is its base and population on the page? (Big
+  numbers are rare: 0 bank and chart-book pages, 7 consulting pages; where used, the craft
+  was pairing each number with its base.)
 - What does the chart not say that the reader needs, and where does that go?
 - Labels: every point, selected points, or none with an axis? Legend, or direct labels?
   Number formats, units, negatives, NM?
@@ -2145,26 +2765,23 @@ decks that stand in for a company's library, then re-evaluated on the company's 
 material at deployment. Every file is fetched once, type-checked, hashed and treated as
 untrusted; a manifest records source, licence basis and hash.
 
-What the corpus measured above contained:
-- **Investment-bank training pitch books, native pptx**: several decks built on one
-  fictional bank's master (a sell-side for a pharmaceutical company, with a PDF twin; a
-  bank-sector M&A deck; a media company's equity, debt and convertible financing). Because
-  they share one master, these are the closest public stand-in for a company with one
-  template and several past decks; use them for template inventory, layout usage and
-  habit mining (scenarios 1, 2, 7, 10).
-- **Investment-bank decks released as PDFs through regulatory filings or litigation**:
-  pitch books, a go-private board deck, a restructuring update (scanned), a fairness
-  opinion (243 pages including filing text), and a scanned "why us" credentials deck.
-- **A conference talk pptx** (contrast case) and a theme test file.
-- **Strategy-consulting decks released through public-records requests**, from three
-  houses: for one house, a board governance deck for a public pension fund, project
-  documents for a federal agency, a transit authority's financial review, a pharmaceutical
-  growth memo and two related decks, a state public-health fact pack, and a 520-page scanned
-  university deck; for a second house, a city services review, a public housing
-  authority's support functions review and a state economic impact deck; for the third, a
-  205-page university operational diagnostic.
-- **A dense annotated market chart book** from a bank's research publication, as a craft
-  reference.
+What the corpus measured above contained (all public; described here by type only):
+- **Investment-bank decks** (11 decks; 231 coded content pages):
+  - four native pptx decks: three training pitch books built on one fictional bank's
+    master (a sell-side book with a PDF twin, an M&A book and a financing book), plus a
+    conference talk kept as a contrast case. Because the three share one master, they are
+    the closest public stand-in for a company with one template and several past decks;
+    use them for template inventory, layout usage and habit mining (scenarios 1, 2, 7, 10);
+  - seven PDF decks released through regulatory filings or litigation: pitch books, board
+    decks (including a go-private board deck and a fairness opinion bound with filing
+    text), a scanned restructuring update with no text layer, and a credentials deck.
+- **Strategy-consulting decks** (12 decks from three houses; 317 coded content pages),
+  released through public-records requests: public-sector reviews, fact packs, operational
+  diagnostics, governance and financial reviews, and a memo. Several run to hundreds of
+  pages and were coded at a stride.
+- **A dense market chart book** (30 coded pages, sampled at a stride), as a craft
+  reference for annotated charts.
+- A theme test file.
 
 Known gaps: native pptx working decks from real banks are almost unobtainable publicly
 (searches found only PDFs and template-store products); public web archives were
