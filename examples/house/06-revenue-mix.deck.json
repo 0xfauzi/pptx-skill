@@ -1,0 +1,485 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/06-revenue-mix.json",
+ "slides": [
+  {
+   "id": "06-revenue-mix",
+   "layout": "Title and Content",
+   "notes": "Show both how large each segment is and how differently each one is spread across regions.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Flow control is the group's scale; aftermarket is its European concentration"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "row-mekko-heads",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-mekko-head-0",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-mekko-name-0",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Flow Control"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-mekko-size-0",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$884m of revenue, 48% of the group"
+            }
+           ]
+          }
+         ],
+         "weight": 4.8
+        },
+        {
+         "type": "region",
+         "id": "grp-mekko-head-1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-mekko-name-1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Process Instruments"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-mekko-size-1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$588m of revenue, 32% of the group"
+            }
+           ]
+          }
+         ],
+         "weight": 3.2
+        },
+        {
+         "type": "region",
+         "id": "grp-mekko-head-2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-mekko-name-2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Aftermarket"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-mekko-size-2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$370m of revenue, 20% of the group"
+            }
+           ]
+          }
+         ],
+         "weight": 2.0
+        }
+       ],
+       "weight": 0.9
+      },
+      {
+       "type": "region",
+       "id": "row-mekko-key",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-key-asia",
+         "weight": 1.6,
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.emphasis",
+           "text": "Asia Pacific"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "el-key-americas",
+         "weight": 1.6,
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.emphasis",
+           "text": "Americas"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "el-key-europe",
+         "weight": 1.6,
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.emphasis",
+           "text": "Europe"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "el-key-note",
+         "weight": 7.2,
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.caption",
+           "text": "Read top to bottom in the order above; column width is the segment's revenue and the split inside it is where that revenue is earned."
+          }
+         ]
+        }
+       ],
+       "weight": 0.4
+      },
+      {
+       "type": "region",
+       "id": "band-mekko",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-mekko-0",
+         "weight": 4.8,
+         "kind": "chart"
+        },
+        {
+         "type": "element",
+         "id": "el-mekko-1",
+         "weight": 3.2,
+         "kind": "chart"
+        },
+        {
+         "type": "element",
+         "id": "el-mekko-2",
+         "weight": 2.0,
+         "kind": "chart"
+        }
+       ],
+       "weight": 3.6
+      },
+      {
+       "type": "region",
+       "id": "band-reading",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-mekko-reading",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.emphasis",
+           "text": "Aftermarket is the narrowest column and the most European, which is exactly the concentration a buyer with an Asian installed base would pay to fix."
+          }
+         ]
+        }
+       ],
+       "weight": 0.7
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Calder operating model, Segments!B5:J14"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-mekko-size-0": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-mekko-size-1": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-mekko-size-2": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-key-asia": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Asia Pacific",
+         "emphasis": true
+        }
+       ],
+       "ink_role": "color.accent3"
+      }
+     }
+    },
+    "el-key-americas": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Americas",
+         "emphasis": true
+        }
+       ],
+       "ink_role": "color.accent2"
+      }
+     }
+    },
+    "el-key-europe": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Europe",
+         "emphasis": true
+        }
+       ],
+       "ink_role": "color.accent1"
+      }
+     }
+    },
+    "el-key-note": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-mekko-reading": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Aftermarket is the narrowest column and the most European, which is exactly the concentration a buyer with an Asian installed base would pay to fix.",
+         "emphasis": true
+        }
+       ]
+      }
+     }
+    }
+   },
+   "charts": {
+    "el-mekko-0": {
+     "chart_kind": "stacked_column_100",
+     "categories": [
+      "Flow Control"
+     ],
+     "series": [
+      {
+       "name": "Europe (%)",
+       "values": [
+        45.5
+       ]
+      },
+      {
+       "name": "Americas (%)",
+       "values": [
+        36.0
+       ]
+      },
+      {
+       "name": "Asia Pacific (%)",
+       "values": [
+        18.6
+       ]
+      }
+     ],
+     "number_format": "#,##0",
+     "data_labels": true,
+     "legend": "b"
+    },
+    "el-mekko-1": {
+     "chart_kind": "stacked_column_100",
+     "categories": [
+      "Process Instruments"
+     ],
+     "series": [
+      {
+       "name": "Europe (%)",
+       "values": [
+        41.8
+       ]
+      },
+      {
+       "name": "Americas (%)",
+       "values": [
+        36.4
+       ]
+      },
+      {
+       "name": "Asia Pacific (%)",
+       "values": [
+        21.8
+       ]
+      }
+     ],
+     "number_format": "#,##0",
+     "data_labels": true,
+     "legend": "b"
+    },
+    "el-mekko-2": {
+     "chart_kind": "stacked_column_100",
+     "categories": [
+      "Aftermarket"
+     ],
+     "series": [
+      {
+       "name": "Europe (%)",
+       "values": [
+        50.8
+       ]
+      },
+      {
+       "name": "Americas (%)",
+       "values": [
+        33.0
+       ]
+      },
+      {
+       "name": "Asia Pacific (%)",
+       "values": [
+        16.2
+       ]
+      }
+     ],
+     "number_format": "#,##0",
+     "data_labels": true,
+     "legend": "b"
+    }
+   },
+   "rules": {}
+  }
+ ]
+}

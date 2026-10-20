@@ -1,0 +1,26 @@
+{
+ "kind": "title_block",
+ "checked_boxes": [
+  {
+   "width_emu": 8229600,
+   "height_emu": 1143000
+  },
+  {
+   "width_emu": 2743200,
+   "height_emu": 1828800
+  },
+  {
+   "width_emu": 4572000,
+   "height_emu": 2743200
+  },
+  {
+   "width_emu": 6400800,
+   "height_emu": 1219200
+  }
+ ],
+ "held_out_passed": true,
+ "sheet": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/components/title_block/title_block.sheet.png",
+ "judge_total": 0.196,
+ "guide_reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+ "guide_reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad"
+}

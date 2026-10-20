@@ -19,7 +19,7 @@
   }
  ],
  "held_out_passed": true,
- "sheet": "/tmp/claude-0/-home-user-deckgen/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/e2e/components-v2/football_field.sheet.png",
+ "sheet": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/components/football_field/football_field.sheet.png",
  "judge_total": 0.17,
  "guide_reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
  "guide_reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad"

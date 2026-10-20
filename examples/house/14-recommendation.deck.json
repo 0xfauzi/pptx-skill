@@ -1,0 +1,664 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/14-recommendation.json",
+ "slides": [
+  {
+   "id": "14-recommendation",
+   "layout": "Title and Content",
+   "notes": "State the recommendation, the price it implies, and the one condition that would change it.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "space_between"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Run a targeted process now and hold the line above the precedent median"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-chain",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-step-0",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-step-0-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "$331m"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-0-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "FY25A EBITDA"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-0-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 3.0
+        },
+        {
+         "type": "region",
+         "id": "grp-step-1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-step-1-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "times 13.0x"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-1-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Top of the precedent transactions range"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-1-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 3.4
+        },
+        {
+         "type": "region",
+         "id": "grp-step-2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-step-2-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "gives $43.43 per share"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-2-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "A 11.5% premium to the market, and the number to hold in a negotiation"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-step-2-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 5.6
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-value",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-value-bridge",
+         "weight": 7.4,
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "line",
+            "label": "Line",
+            "value_kind": "label"
+           },
+           {
+            "key": "value",
+            "label": "Value",
+            "value_kind": "text"
+           },
+           {
+            "key": "note",
+            "label": "Basis",
+            "value_kind": "text"
+           }
+          ],
+          "rows": [
+           [
+            "FY25A EBITDA",
+            "$331m",
+            "Reported, twelve months to 31 December 2025"
+           ],
+           [
+            "Multiple applied",
+            "13.0x",
+            "Top of the 11.0x - 13.0x precedent range"
+           ],
+           [
+            "Enterprise value",
+            "$4,303m",
+            "EBITDA at the multiple above"
+           ],
+           [
+            "Less net debt",
+            "($629m)",
+            "Reported net debt at 31 December 2025"
+           ],
+           [
+            "Equity value",
+            "$3,674m",
+            "Enterprise value less net debt"
+           ],
+           [
+            "Shares outstanding",
+            "84.6m",
+            "Fully diluted, including options in the money"
+           ],
+           [
+            "Value per share",
+            "$43.43",
+            "Equity value divided by shares outstanding"
+           ],
+           [
+            "Premium to market",
+            "11.5%",
+            "Against the $38.95 close on 14 August 2026"
+           ]
+          ],
+          "header_rows": 1
+         }
+        },
+        {
+         "type": "region",
+         "id": "grp-why",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-why-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-why-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "Why the top of the range"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-why-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-why-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Calder is the second most profitable asset in the flow control set and the cheapest on every forward measure, so the discount is a rating gap rather than a quality one."
+            },
+            {
+             "role": "type.body",
+             "text": "The aftermarket book is 20% of revenue at roughly twice group margin, and it is the part a strategic buyer cannot build."
+            },
+            {
+             "role": "type.body",
+             "text": "Half the precedents on the credentials page cleared eleven times, and the highest of them reached 12.9x."
+            }
+           ]
+          }
+         ],
+         "weight": 4.6
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-asks",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-do",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-do-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-do-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "What we recommend"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-do-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-do-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Approach the four strategic parties that clear the antitrust test, and put no sponsor on the list."
+            },
+            {
+             "role": "type.body",
+             "text": "Run a six-week first round against a published timetable, so the process itself signals that the seller is not in a hurry."
+            },
+            {
+             "role": "type.body",
+             "text": "Hold the line above the precedent median and be prepared to close at the top of the overlap."
+            }
+           ]
+          }
+         ],
+         "weight": 5.0
+        },
+        {
+         "type": "region",
+         "id": "grp-unless",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-unless-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-unless-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "What would change it"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-unless-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-unless-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "A second bidder clearing the same antitrust test would turn a targeted approach into an auction."
+            },
+            {
+             "role": "type.body",
+             "text": "That is the one case in which the discounted cash flow range becomes the number to hold rather than the number to argue from."
+            }
+           ]
+          }
+         ],
+         "weight": 3.0
+        },
+        {
+         "type": "region",
+         "id": "grp-next",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-next-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-next-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "What happens next"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-next-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-next-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "This week: circulate the outreach list for board approval."
+            },
+            {
+             "role": "type.body",
+             "text": "Within a fortnight: complete vendor diligence and lock the data room."
+            },
+            {
+             "role": "type.body",
+             "text": "By 6 July: first approaches made, under the timetable on the previous page."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Calder operating model, Segments!B5:J14, Valuation!B32:D46; Deal team, Management estimates; Flow control transaction log, Credentials!A2:G34"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-step-0-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-step-1-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-step-2-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-why-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      },
+      "1": {
+       "ink_role": "color.ink_muted"
+      },
+      "2": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-unless-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      },
+      "1": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-next-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      },
+      "1": {
+       "ink_role": "color.ink_muted"
+      },
+      "2": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    }
+   },
+   "rules": {
+    "grp-step-0-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-step-1-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-step-2-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-why-head-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-do-head-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-unless-head-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-next-head-rule": {
+     "line_role": "color.rule"
+    }
+   }
+  }
+ ]
+}

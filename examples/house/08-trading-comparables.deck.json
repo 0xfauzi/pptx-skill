@@ -1,0 +1,429 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/08-trading-comparables.json",
+ "slides": [
+  {
+   "id": "08-trading-comparables",
+   "layout": "Title and Content",
+   "notes": "Show that Calder's forward multiple sits below its flow control peers while its margin and growth sit above them.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Calder trades below its flow control peers on every forward multiple"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-exhibit",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-comps",
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "ticker",
+            "label": "Ticker",
+            "value_kind": "label"
+           },
+           {
+            "key": "company",
+            "label": "Company",
+            "value_kind": "label"
+           },
+           {
+            "key": "ev_usdm",
+            "label": "EV ($m)",
+            "value_kind": "currency"
+           },
+           {
+            "key": "ev_ebitda_ltm",
+            "label": "EV/EBITDA LTM",
+            "value_kind": "number"
+           },
+           {
+            "key": "ev_ebitda_cy26e",
+            "label": "EV/EBITDA 26E",
+            "value_kind": "number"
+           },
+           {
+            "key": "ev_ebitda_cy27e",
+            "label": "EV/EBITDA 27E",
+            "value_kind": "number"
+           },
+           {
+            "key": "ev_sales_cy26e",
+            "label": "EV/Sales 26E",
+            "value_kind": "number"
+           },
+           {
+            "key": "ebitda_margin_cy26e",
+            "label": "EBITDA margin (%)",
+            "value_kind": "percent"
+           },
+           {
+            "key": "rev_growth_cy26e",
+            "label": "Rev. growth (%)",
+            "value_kind": "percent"
+           },
+           {
+            "key": "net_debt_ebitda",
+            "label": "Net debt/EBITDA",
+            "value_kind": "number"
+           }
+          ],
+          "rows": [
+           [
+            "CALD",
+            "Calder Industrial Group",
+            "3,924",
+            "11.9",
+            "10.5",
+            "9.8",
+            "2.0",
+            "19.1",
+            "6.3",
+            "1.9"
+           ],
+           [
+            "VLVE",
+            "Valmere Flow Systems",
+            "14,820",
+            "14.2",
+            "12.8",
+            "11.7",
+            "2.9",
+            "22.5",
+            "6.8",
+            "1.9"
+           ],
+           [
+            "HKSN",
+            "Harkness Controls",
+            "9,340",
+            "12.8",
+            "11.6",
+            "10.7",
+            "2.4",
+            "20.7",
+            "5.4",
+            "1.7"
+           ],
+           [
+            "PMTC",
+            "Pemberton Fluid Technologies",
+            "6,210",
+            "12.2",
+            "11.2",
+            "10.3",
+            "2.1",
+            "18.9",
+            "4.9",
+            "1.8"
+           ],
+           [
+            "ARDN",
+            "Arden Process Group",
+            "4,980",
+            "11.8",
+            "10.9",
+            "10.1",
+            "2.0",
+            "18.2",
+            "4.1",
+            "1.8"
+           ],
+           [
+            "TRNB",
+            "Thornbury Valve",
+            "3,640",
+            "11.2",
+            "10.4",
+            "9.7",
+            "1.8",
+            "17.0",
+            "3.6",
+            "1.7"
+           ],
+           [
+            "KLST",
+            "Kelstrom Instruments",
+            "2,870",
+            "11.1",
+            "10.2",
+            "9.5",
+            "1.8",
+            "17.3",
+            "5.1",
+            "1.6"
+           ],
+           [
+            "BRDG",
+            "Bridgen Pumps",
+            "1,950",
+            "9.7",
+            "9.1",
+            "8.6",
+            "1.5",
+            "16.3",
+            "2.8",
+            "1.9"
+           ],
+           [
+            "\u2013",
+            "Flow control median",
+            "4,980",
+            "11.8",
+            "10.9",
+            "10.1",
+            "2.0",
+            "18.2",
+            "4.9",
+            "1.8"
+           ],
+           [
+            "MRTN",
+            "Merton Industrial Holdings",
+            "22,400",
+            "10.8",
+            "10.2",
+            "9.5",
+            "1.8",
+            "17.6",
+            "4.4",
+            "2.0"
+           ],
+           [
+            "OKWD",
+            "Oakwood Motion",
+            "11,760",
+            "10.1",
+            "9.6",
+            "9.0",
+            "1.7",
+            "17.6",
+            "3.9",
+            "2.1"
+           ],
+           [
+            "SEVR",
+            "Severin Engineered Systems",
+            "8,450",
+            "9.8",
+            "9.3",
+            "8.8",
+            "1.7",
+            "17.8",
+            "3.2",
+            "2.2"
+           ],
+           [
+            "LNGF",
+            "Langford Automation",
+            "5,320",
+            "9.3",
+            "8.8",
+            "8.2",
+            "1.5",
+            "17.5",
+            "4.7",
+            "1.9"
+           ],
+           [
+            "WYCM",
+            "Wythe Components",
+            "3,180",
+            "8.9",
+            "8.5",
+            "8.1",
+            "1.4",
+            "16.7",
+            "2.1",
+            "2.1"
+           ],
+           [
+            "CASN",
+            "Casson Materials Handling",
+            "2,040",
+            "8.4",
+            "8.1",
+            "7.8",
+            "1.3",
+            "15.9",
+            "1.6",
+            "2.1"
+           ],
+           [
+            "HLBK",
+            "Holbeck Precision",
+            "1,290",
+            "7.6",
+            "7.4",
+            "7.2",
+            "1.2",
+            "16.6",
+            "1.2",
+            "1.8"
+           ],
+           [
+            "\u2013",
+            "Diversified industrial median",
+            "5,320",
+            "9.3",
+            "8.8",
+            "8.2",
+            "1.5",
+            "17.5",
+            "3.2",
+            "2.1"
+           ]
+          ],
+          "header_rows": 1
+         }
+        },
+        {
+         "type": "element",
+         "id": "el-comps-basis",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.footnote",
+           "text": "Enterprise values at the close on 14 August 2026; EBITDA and sales on consensus; medians exclude Calder."
+          }
+         ]
+        }
+       ],
+       "weight": 4.2
+      },
+      {
+       "type": "region",
+       "id": "band-takeaway",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": "space.sm",
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-takeaway",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.emphasis",
+           "text": "Calder is the cheapest flow control asset in the set on every forward measure, and the second most profitable."
+          }
+         ]
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Street consensus, Comps!A4:J21"
+        }
+       ]
+      }
+     ]
+    },
+    "splittable_groups": [
+     {
+      "group_id": "grp-comps-blocks",
+      "kind": "table_row_range",
+      "node_ids": [
+       "el-comps"
+      ],
+      "row_range": {
+       "start": 0,
+       "end": 9
+      },
+      "boundary_label": "end of the flow control block, before the diversified industrial peers"
+     }
+    ]
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-comps": {
+     "totals_last_row": true,
+     "emphasis_rows": [
+      8
+     ]
+    },
+    "el-comps-basis": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-takeaway": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Calder is the cheapest flow control asset in the set on every forward measure, and the second most profitable.",
+         "emphasis": true
+        }
+       ]
+      }
+     }
+    },
+    "band-takeaway": {
+     "fill_role": "color.surface_alt"
+    }
+   },
+   "rules": {}
+  }
+ ]
+}

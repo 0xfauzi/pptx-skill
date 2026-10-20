@@ -31,7 +31,7 @@
    1371600,
    5486400
   ],
-  "height_rule": "at least rows x (one label line pitch + space.xs + bar height) + marker line + axis + tick line; the compact variant uses the caption pitch and a space.xs bar"
+  "height_rule": "wide when every row label wraps to at most two lines in the label column (measured with guide['_api']) and the measured rows, marker line, axis and tick line fit the box height; otherwise compact (caption labels with the value inline, a space.xs bar)"
  },
  "variants": {
   "wide": "label column beside the bars, value column after them",

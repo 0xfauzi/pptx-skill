@@ -1,0 +1,26 @@
+{
+ "kind": "bullet_stack",
+ "checked_boxes": [
+  {
+   "width_emu": 8229600,
+   "height_emu": 1600200
+  },
+  {
+   "width_emu": 2743200,
+   "height_emu": 4114800
+  },
+  {
+   "width_emu": 5486400,
+   "height_emu": 3200400
+  },
+  {
+   "width_emu": 7315200,
+   "height_emu": 2286000
+  }
+ ],
+ "held_out_passed": true,
+ "sheet": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/components/bullet_stack/bullet_stack.sheet.png",
+ "judge_total": 0.097,
+ "guide_reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+ "guide_reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad"
+}
