@@ -101,7 +101,10 @@ EMU_PER_POINT = 12_700
 EMU_PER_HUNDREDTH_POINT = 127
 #: deckgen config/provisional.py:35 - the one font grid; 0.5 pt lands on sz.
 FONT_QUANTUM_PT = Fraction(1, 2)
-#: deckgen contracts limits.py: MAX_TREE_DEPTH 5 (docs/measurements/E10-decision.md).
+#: deckgen contracts limits.py: MAX_TREE_DEPTH 5 (docs/measurements/E10-decision.md):
+#: observed shape-containment depth 3 on three reference decks plus a fixed headroom
+#: of 2, a runaway bound. That measured shapes, not this tree's layout regions, so it
+#: says nothing about how deep a well-designed layout tree needs to be.
 MAX_TREE_DEPTH, MAX_NODES, MAX_GRID_TRACKS = 5, 400, 64
 #: deckgen measure/tolerance.py:157 - what the emit gate forgives between two
 #: measurements of the same text; the table fitter's height budget slack.
@@ -362,6 +365,7 @@ class Table:
     cell_padding_role: str | None
     totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
     emphasis_rows: frozenset = frozenset()  # data-row indices the emitter bolds (the subject deal on a comps page)
+    header_bold: bool = False  # the emitter bolds the header row (the guide's or the table's header_bold), so it is measured bold
 
 @dataclass(frozen=True)
 class Element:
@@ -464,7 +468,7 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         if not 0 <= header_rows <= 4 or (not rows and not header_rows):
             raise LayoutContractError(f"table {node_id!r}: header_rows outside 0..4 or no rows at all")
         table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"),
-                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])))
+                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])), bool(t.get("header_bold")))
     elif kind not in ("image", "chart", "rule"):
         raise LayoutContractError(f"element {node_id!r}: kind must be text, table, image, chart or rule")
     size = raw.get("size") or {}
@@ -483,10 +487,18 @@ def parse_spec(raw: Mapping[str, Any]) -> Spec:
         raise LayoutContractError("root must be a region")
     seen: set[str] = set()
     count = 0
+    chain: list[str] = []
     for node, depth in walk(root):
         count += 1
-        if node.id in seen or count > MAX_NODES or depth > MAX_TREE_DEPTH:
-            raise LayoutContractError(f"duplicate id {node.id!r}, or tree past {MAX_NODES} nodes / depth {MAX_TREE_DEPTH}")
+        del chain[depth:]
+        chain.append(node.id)
+        if node.id in seen:
+            raise LayoutContractError(f"duplicate node id {node.id!r}: every region and element id must be unique on the page")
+        if depth > MAX_TREE_DEPTH:
+            raise LayoutContractError(f"tree too deep: {' > '.join(chain)} puts {node.id!r} at depth {depth}; the limit is {MAX_TREE_DEPTH} levels below the root "
+                                      "(root = 0). Remove a region that wraps a single child, or merge a column into its parent column")
+        if count > MAX_NODES:
+            raise LayoutContractError(f"tree past {MAX_NODES} nodes (reached at {node.id!r}); split the page")
         seen.add(node.id)
     groups = tuple(SplittableGroup(g["group_id"], g["kind"], tuple(g["node_ids"]), g.get("row_range")) for g in raw.get("splittable_groups", []))
     for g in groups:
@@ -1040,7 +1052,8 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     cell_bold = DrawnRole(e, ctx.index.resolve(e.family, bold=True, italic=e.italic).path)
     header = None
     if table.header_rows:
-        header = DrawnRole(h := ctx.entry(element, table.header_role, scale), ctx.face(h).path)
+        h = ctx.entry(element, table.header_role, scale)
+        header = DrawnRole(h, ctx.index.resolve(h.family, bold=True, italic=h.italic).path if table.header_bold else ctx.face(h).path)
     labels = [apply_case(c.label, header.entry.case) if header else c.label for c in table.columns]
     grid: list[list[str]] = [labels if i == 0 else [""] * len(table.columns) for i in range(table.header_rows)]
     grid.extend(list(row) for row in table.rows)
@@ -1340,9 +1353,11 @@ def build_context(spec_path: str, guide_path: str) -> Context:
     raw_guide = json.loads(Path(guide_path).read_text(encoding="utf-8"))
     # the CLI budgets the page the build enforces: the guide's page size, the chrome zones
     # and the title band that build_deck injects, so a printed capacity is the real one
-    from build_deck import normalise, prepare_page
+    from build_deck import mark_measured_weights, normalise, prepare_page
     if "root" in raw:
-        raw["root"] = normalise(raw["root"], {})
+        slide: dict = {}
+        raw["root"] = normalise(raw["root"], slide)
+        mark_measured_weights(raw["root"], slide, raw_guide)
     prepare_page(raw, raw_guide)
     spec = parse_spec(raw)
     guide = load_guide(raw_guide)

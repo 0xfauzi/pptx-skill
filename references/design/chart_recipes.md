@@ -71,6 +71,17 @@ keybank (the pages named under "Proven on") and read from the render.
 - `gap_width` (0 to 500, percent of a bar's width) and `overlap` (-100 to 100) belong to
   bar and column types only. A stacked type wants `overlap: 100`; the series stack in
   every renderer only then.
+- `smooth` (true or false) on a line or scatter series is written as `c:smooth`; omitted,
+  the report names the value the file got.
+- `plot_area: {"x", "y", "w", "h"}` fixes the inner plot rectangle (inside the axes and
+  their labels) as fractions of the chart frame, written as a manual layout. Leave room
+  outside it for the tick labels: they are drawn outside the rectangle, not measured.
+- `reference_lines: [{"axis", "at", "line_role", "line_width_pt", "dash"}]` draws a
+  straight line across the plot at a data value: `axis` `"value"`, or `"category"` for
+  the x axis of a scatter or bubble chart. It needs `plot_area` and that axis's `min` and
+  `max`, so the position is computed from the spec; `reverse` is honoured. `dash` is a
+  DrawingML preset (`dash`, `sysDot`, `lgDash`, ...). The line is a connector over the
+  chart, not a series: it does not move if someone edits the chart's data later.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
 - `c:varyColors val="0"` is written on every chart and is not yours to set: PowerPoint
@@ -247,10 +258,20 @@ Proven on keybank (scratch page `ff`, five methods, $20 to $40).
 }
 ```
 
+The offer price as a line across every method: give the chart a `plot_area` and a
+`reference_lines` entry on the value axis. Proven on keybank (the section's football
+field, value axis $16 to $44, plot 0.36 / 0.08 / 0.6 / 0.9 of the frame): the dashed
+line at $36.50 sits an eighth of the way from the $36 tick to the $40 tick in the
+LibreOffice render.
+
+```json
+ "plot_area": {"x": 0.36, "y": 0.08, "w": 0.6, "h": 0.9},
+ "reference_lines": [{"axis": "value", "at": 36.5, "line_role": "color.accent3", "line_width_pt": 1.5, "dash": "dash"}]
+```
+
 The `football_field` component (`components/football_field`) draws the same exhibit
-from rects with an offer marker and measured label widths; pick the chart when the page
-wants native, editable data, the component when it wants the marker and the label
-column the component lays out.
+from rects with measured label widths; pick the chart when the page wants native,
+editable data, the component when it wants the label column the component lays out.
 
 ## Mekko approximation: one 100% column per segment, widths by weight
 

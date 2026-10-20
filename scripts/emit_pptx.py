@@ -23,7 +23,8 @@ Spec shape (one slide shown):
      "fill_role": null, "line_role": null, "anchor": "t"},
     {"id": "comps", "kind": "table", "box": [...], "header_rows": 1,
      "columns": [{"key": "name", "label": "Company", "value_kind": "label"}, {"key": "ev", "label": "EV ($m)", "value_kind": "number"}],
-     "rows": [["Acme", "1,234"]], "column_widths_emu": [...], "row_heights_emu": [...], "totals_last_row": false},
+     "rows": [["Acme", "1,234"]], "column_widths_emu": [...], "row_heights_emu": [...], "totals_last_row": false,
+     "header_role": "type.table_header", "cell_role": "type.table_cell"},
     {"id": "chart", "kind": "chart", "box": [...], "type": "COLUMN_STACKED", "categories": ["2023", "2024"],
      "series": [{"name": "Revenue", "values": [1.0, 2.0], "fill_role": "color.accent2", "line_role": "none",
                  "labels": {"show": true, "position": "center", "number_format": "0.0", "role": "type.data_label", "ink_role": "color.ink_inverse"},
@@ -481,17 +482,54 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
     tc_pr.insert(insert_at, ln)
 
 
+# Table keys that set how a table is drawn, read from the table element (build_deck
+# lifts them there from the tree node, its table spec or slide.styling, refusing a key
+# given twice). Each fill or ink key, when present, replaces the guide's tables value
+# for this table only; "none" means no fill.
+TABLE_STYLE_KEYS = {"totals_last_row", "emphasis_rows", "emphasis_fill_role", "emphasis_ink_role", "header_align",
+                    "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role"}
+# Keys of a table's column entries; `align` overrides the guide's
+# alignment_by_column_type for that column (header_align still sets the header row).
+TABLE_COLUMN_KEYS = {"key", "label", "value_kind", "width_share", "min_width_role", "align"}
+TABLE_ALIGNS = ("left", "center", "right")
+
+
+def table_header_bold(el: dict, guide: Guide) -> bool:
+    """Whether the header row is written bold: the table's header_bold, else the guide's.
+    The solver measures the header in the face this names (build_deck passes it on)."""
+    return bool(el["header_bold"] if "header_bold" in el else guide.tables.get("header_bold"))
+
+
+def table_roles(el: dict, guide: Guide) -> tuple[dict, dict]:
+    """The header and cell type specs from the roles the solver measured, which the
+    table element carries as header_role and cell_role; without them it is refused."""
+    where = el.get("id", "table")
+    missing = [k for k in ("header_role", "cell_role") if not el.get(k)]
+    if missing:
+        raise SpecError(f"{where}: table element needs {missing}, the type roles the solver measured (build_deck carries them from the layout)")
+    return guide.type_spec(el["header_role"], where=f"{where} header_role"), guide.type_spec(el["cell_role"], where=f"{where} cell_role")
+
+
 def table_row_styles(el: dict, guide: Guide) -> list[dict]:
-    """The fill, ink and weight of every row of a table, from the guide's table section
-    and the spec: the header fill and ink, banding parity, the guide's data fill, and the
-    emphasis rows' fill and ink, which the spec names (`emphasis_fill_role`, a colour role
-    or "none"; `emphasis_ink_role`, else the cell ink). Nothing here picks an ink for a
-    fill: a pair that reads below 3:1 is the build's contrast gate's to refuse. The
+    """The fill, ink and weight of every row of a table. Each comes from the table's
+    own key when it has one (header_fill_role, header_ink_role, header_bold,
+    banding_role, data_fill_role: a colour role or "none"), else from the guide's
+    table section. Emphasis rows take the spec's `emphasis_fill_role` (a role or
+    "none") and `emphasis_ink_role`, else the cell ink. Nothing here picks an ink for
+    a fill: a pair that reads below 3:1 is the build's contrast gate's to refuse. The
     emitter and that gate both read rows through this one function."""
     where = el.get("id", "table")
     t = guide.tables
     header_rows = int(el.get("header_rows", 1))
     n_rows = header_rows + len(el["rows"])
+    for col in el["columns"]:
+        extra = sorted(set(col) - TABLE_COLUMN_KEYS)
+        if extra:
+            raise SpecError(f"{where} column {col.get('key')!r}: unknown keys {extra}; allowed {sorted(TABLE_COLUMN_KEYS)}")
+        if col.get("align") is not None and col["align"] not in TABLE_ALIGNS:
+            raise SpecError(f"{where} column {col.get('key')!r}: align {col['align']!r} not in {list(TABLE_ALIGNS)}")
+    if el.get("header_align") is not None and el["header_align"] not in TABLE_ALIGNS:
+        raise SpecError(f"{where}: header_align {el['header_align']!r} not in {list(TABLE_ALIGNS)}")
     emphasis_rows = {int(i) for i in (el.get("emphasis_rows") or [])}
     if emphasis_rows and "emphasis_fill_role" not in el:
         raise SpecError(f"{where}: emphasis_rows {sorted(emphasis_rows)} need emphasis_fill_role, a colour role from the guide or \"none\" (bold on the row's own ground)")
@@ -503,17 +541,23 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
             return guide.hex(role, where=f"{where} {label}"), role
         return None, None
 
-    header_fill = role_hex(t.get("header_fill_role"), t.get("header_fill_hex"), "header fill")
-    header_ink = role_hex(t.get("header_ink_role"), None, "header ink")
-    band = role_hex(t.get("banding_role"), t.get("banding_hex"), "banding")
-    data = role_hex(None, t.get("data_fill_hex"), "data fill")
+    def pick(key: str, guide_role: str | None, guide_literal: str | None, label: str) -> tuple[str | None, str | None]:
+        if key in el:
+            return role_hex(el[key], None, f"{label} ({key})")
+        return role_hex(guide_role, guide_literal, label)
+
+    header_fill = pick("header_fill_role", t.get("header_fill_role"), t.get("header_fill_hex"), "header fill")
+    header_ink = pick("header_ink_role", t.get("header_ink_role"), None, "header ink")
+    band = pick("banding_role", t.get("banding_role"), t.get("banding_hex"), "banding")
+    data = pick("data_fill_role", None, t.get("data_fill_hex"), "data fill")
     emphasis_fill = role_hex(el.get("emphasis_fill_role"), None, "emphasis fill")
-    cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where=where)
+    _, cell_spec = table_roles(el, guide)
     cell_ink_role = cell_spec.get("ink_role")
     cell_ink = (guide.hex(cell_ink_role, where=f"{where} cell ink"), cell_ink_role) if cell_ink_role else \
-        ((cell_spec["ink"], "type.table_cell observed ink") if HEX_RE.match(cell_spec.get("ink") or "") else (None, None))
+        ((cell_spec["ink"], f"{el['cell_role']} observed ink") if HEX_RE.match(cell_spec.get("ink") or "") else (None, None))
     emphasis_ink = role_hex(el.get("emphasis_ink_role"), None, "emphasis ink") if el.get("emphasis_ink_role") else cell_ink
     totals = bool(el.get("totals_last_row"))
+    header_bold = table_header_bold(el, guide)
     rows = []
     for ri in range(n_rows):
         is_header = ri < header_rows
@@ -521,7 +565,7 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
         is_totals = totals and ri == n_rows - 1
         is_emphasis = not is_header and data_index in emphasis_rows
         if is_header:
-            fill, ink, klass, bold = header_fill, header_ink, "header", bool(t.get("header_bold"))
+            fill, ink, klass, bold = header_fill, header_ink, "header", header_bold
         elif is_emphasis:
             fill, ink, klass, bold = emphasis_fill, emphasis_ink, "emphasis", True
         else:
@@ -554,8 +598,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         col.width = Emu(int(widths[i]))
     heights = el.get("row_heights_emu")
     pad = int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
-    header_spec = guide.type_spec("type.table_header" if "type.table_header" in guide.roles else "type.body", where="table")
-    cell_spec = guide.type_spec("type.table_cell" if "type.table_cell" in guide.roles else "type.body", where="table")
+    header_spec, cell_spec = table_roles(el, guide)
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
     totals = bool(el.get("totals_last_row"))
     for ri in range(n_rows):
@@ -578,6 +621,8 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             spec = header_spec if is_header else cell_spec
             kind = col.get("value_kind", "label")
             align = (align_by_kind.get("numeric") if kind in ("number", "percent", "currency") else align_by_kind.get("text")) or ("right" if kind in ("number", "percent", "currency") else "left")
+            if col.get("align"):
+                align = col["align"]
             if is_header and el.get("header_align"):
                 align = el["header_align"]
             p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
@@ -609,6 +654,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
 # being asked for: it is file safety, not design (E38 class 10, below).
 
 CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title", "foreign",
+              "plot_area", "reference_lines",
               "bridge"}  # bridge: a declaration the build's tie-out reads; nothing here draws from it
 SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth"}
 LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
@@ -618,6 +664,9 @@ AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_forma
 AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role"}
 TICK_LABEL_POSITIONS = {"next_to": XL_TICK_LABEL_POSITION.NEXT_TO_AXIS, "low": XL_TICK_LABEL_POSITION.LOW, "high": XL_TICK_LABEL_POSITION.HIGH}
 GRIDLINE_KEYS = {"line_role", "line_width_pt"}
+PLOT_AREA_KEYS = {"x", "y", "w", "h"}
+REFERENCE_LINE_KEYS = {"axis", "at", "line_role", "line_width_pt", "dash"}
+DASHES = ("solid", "dot", "dash", "lgDash", "dashDot", "lgDashDot", "lgDashDotDot", "sysDash", "sysDot", "sysDashDot", "sysDashDotDot")
 LEGEND_KEYS = {"position", "hide_entries", "role", "ink_role"}
 TEXT_KEYS = {"role", "ink_role"}
 MARKER_KEYS = {"style", "size", "fill_role", "line_role"}
@@ -671,6 +720,7 @@ CHART_DEFAULTS = {
     "text": "chart text inherits the theme's face, size and colour",
     "plot_fill_role": "no plot fill: the slide shows through",
     "title": "none",
+    "plot_area": "automatic: each renderer places the plot inside the frame itself",
 }
 
 
@@ -753,12 +803,27 @@ def _stroke(fmt, hex_or_none, width_pt) -> None:
         fmt.line.width = Pt(float(width_pt))
 
 
+def _spelling(value, allowed) -> str:
+    """A refusal's hint when the value is an allowed word in another spelling (OOXML's
+    nextTo for next_to, bestFit for best_fit): case and separators ignored."""
+    def norm(v) -> str:
+        return re.sub(r"[^a-z0-9]", "", str(v).lower())
+    same = [a for a in allowed if norm(a) == norm(value)]
+    return f"; this spec spells {value!r} as {same[0]!r}" if same else ""
+
+
+def _enum(where: str, label: str, value, allowed) -> None:
+    if value not in allowed:
+        raise SpecError(f"{where}: {label} {value!r} not in {sorted(allowed)}{_spelling(value, allowed)}")
+
+
 def _check_position(family: str, position, where: str) -> None:
     if position is None:
         return
     allowed = FAMILY_POSITIONS.get(family, ())
     if position not in LABEL_POSITIONS or position not in allowed:
-        raise SpecError(f"{where}: label position {position!r} is not offered for this chart type; offered: {list(allowed) or 'none (omit position)'}")
+        raise SpecError(f"{where}: label position {position!r} is not offered for this chart type; offered: {list(allowed) or 'none (omit position)'}"
+                        f"{_spelling(position, allowed or LABEL_POSITIONS)}")
 
 
 def chart_parse(el: dict, guide: Guide) -> dict:
@@ -811,8 +876,8 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             took(f"series[{si}].smooth", "series.smooth")
         if "marker" in s:
             m = _keys(f"{sw} marker", s["marker"], MARKER_KEYS)
-            if m.get("style") is not None and m["style"] not in MARKER_STYLES:
-                raise SpecError(f"{sw}: marker style {m['style']!r} not in {sorted(MARKER_STYLES)}")
+            if m.get("style") is not None:
+                _enum(sw, "marker style", m["style"], MARKER_STYLES)
             for k in ("fill_role", "line_role"):
                 if k in m:
                     _colour(guide, m[k], f"{sw} marker")
@@ -868,12 +933,12 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             if "labels" in ax:
                 _keys(f"{aw} labels", ax["labels"], AXIS_LABEL_KEYS)
                 _text_style(guide, ax["labels"], f"{aw} labels")
-                if ax["labels"].get("position") is not None and ax["labels"]["position"] not in TICK_LABEL_POSITIONS:
-                    raise SpecError(f"{aw} labels: position {ax['labels']['position']!r} not in {sorted(TICK_LABEL_POSITIONS)}")
+                if ax["labels"].get("position") is not None:
+                    _enum(f"{aw} labels", "position", ax["labels"]["position"], TICK_LABEL_POSITIONS)
             else:
                 took(f"axes.{name}.labels", "axis.labels")
-            if ax.get("tick_marks") is not None and ax["tick_marks"] not in TICK_MARKS:
-                raise SpecError(f"{aw}: tick_marks {ax['tick_marks']!r} not in {sorted(TICK_MARKS)}")
+            if ax.get("tick_marks") is not None:
+                _enum(aw, "tick_marks", ax["tick_marks"], TICK_MARKS)
             for k, d in (("tick_marks", "axis.tick_marks"), ("reverse", "axis.reverse")):
                 if k not in ax:
                     took(f"axes.{name}.{k}", d)
@@ -898,8 +963,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
         took("legend", "legend")
     elif legend != NONE:
         _keys(f"{where} legend", legend, LEGEND_KEYS)
-        if legend.get("position") not in LEGEND_POSITIONS:
-            raise SpecError(f"{where} legend: position {legend.get('position')!r} not in {sorted(LEGEND_POSITIONS)}")
+        _enum(f"{where} legend", "position", legend.get("position"), LEGEND_POSITIONS)
         _text_style(guide, legend, f"{where} legend")
     if "text" in el:
         _keys(f"{where} text", el["text"], TEXT_KEYS)
@@ -916,7 +980,105 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     elif title != NONE:
         _keys(f"{where} title", title, TITLE_KEYS)
         _text_style(guide, title, f"{where} title")
+    if "plot_area" in el:
+        pa = _keys(f"{where} plot_area", el["plot_area"], PLOT_AREA_KEYS)
+        if set(pa) != PLOT_AREA_KEYS or any(isinstance(v, bool) or not isinstance(v, int | float) or not 0 <= v <= 1 for v in pa.values()) \
+                or pa["w"] <= 0 or pa["h"] <= 0 or pa["x"] + pa["w"] > 1 or pa["y"] + pa["h"] > 1:
+            raise SpecError(f"{where} plot_area: x, y, w and h are all required, fractions of the chart frame, with x + w and y + h at most 1")
+    else:
+        took("plot_area", "plot_area")
+    lines = el.get("reference_lines") or []
+    if lines and family in ("pie", "doughnut", "radar", "other"):
+        raise SpecError(f"{where}: reference_lines need a value axis; a {type_name} has none")
+    for li, line in enumerate(lines):
+        lw = f"{where} reference_lines[{li}]"
+        _keys(lw, line, REFERENCE_LINE_KEYS)
+        reference_line_geometry(el, family, line, lw)
+        if _colour(guide, line.get("line_role"), lw) == NONE:
+            raise SpecError(f"{lw}: line_role must be a colour role")
+        if "line_width_pt" not in line:
+            raise SpecError(f"{lw}: line_width_pt is required")
+        if line.get("dash") is not None:
+            _enum(lw, "dash", line["dash"], DASHES)
     return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults}
+
+
+def reference_line_geometry(el: dict, family: str, line: dict, where: str) -> tuple[str, float]:
+    """Where a reference line sits: ("vertical" | "horizontal", its offset as a fraction of
+    the inner plot from the left or the top). The plot's inner rectangle is the spec's
+    plot_area, written as a manual layout, and the axis's min and max are the spec's,
+    so the value maps to a position without reading the renderer."""
+    axis = line.get("axis")
+    if axis not in ("value", "category"):
+        raise SpecError(f"{where}: axis must be \"value\" or \"category\" (the x axis of an XY or bubble chart)")
+    if axis == "category" and family not in ("xy", "bubble"):
+        raise SpecError(f"{where}: a category axis has no scale; a line across categories sits on the value axis")
+    if "plot_area" not in el:
+        raise SpecError(f"{where}: needs the chart's plot_area, so the line's position on the page is computable")
+    ax = (el.get("axes") or {}).get(axis) or {}
+    lo, hi, at = ax.get("min"), ax.get("max"), line.get("at")
+    if not all(isinstance(v, int | float) and not isinstance(v, bool) for v in (lo, hi, at)) or not lo < hi:
+        raise SpecError(f"{where}: needs a numeric `at` and axes.{axis}.min < axes.{axis}.max set in the spec")
+    if not lo <= at <= hi:
+        raise SpecError(f"{where}: at {at} lies outside axes.{axis} {lo}..{hi}")
+    t = (at - lo) / (hi - lo)
+    # a horizontal bar chart lays its value axis across the page; an XY chart lays x across, y up
+    across = (axis == "value" and el["type"].startswith("BAR_")) or (axis == "category")
+    if across:
+        return "vertical", 1 - t if ax.get("reverse") else t
+    return "horizontal", t if ax.get("reverse") else 1 - t
+
+
+
+def _pad_point_counts(chart_space: etree._Element) -> None:
+    """Every XY and bubble series declares the group's largest point count; a shorter
+    series' missing points are blanks (python-pptx writes dispBlanksAs gap). Measured on
+    LibreOffice 24.2: a first scatter series shorter than a later one was not drawn at
+    all (10 points before 12, and 2 before 12), and drew once its ptCount matched."""
+    area = chart_space.find(".//" + qn("c:plotArea"))
+    for group in area if area is not None else []:
+        if etree.QName(group).localname not in ("scatterChart", "bubbleChart"):
+            continue
+        counts = [pc for ser in group.findall(qn("c:ser")) for tag in ("c:xVal", "c:yVal", "c:bubbleSize")
+                  for pc in ser.findall(f"{qn(tag)}//{qn('c:ptCount')}")]
+        if counts:
+            n = max(int(pc.get("val")) for pc in counts)
+            for pc in counts:
+                pc.set("val", str(n))
+
+
+def _write_plot_layout(chart_space: etree._Element, pa: dict) -> None:
+    """The plot's inner rectangle (inside the axes) as a manual layout, fractions of the
+    chart frame, so a data value maps to a page position."""
+    area = chart_space.find(".//" + qn("c:plotArea"))
+    old = area.find(qn("c:layout"))
+    if old is not None:
+        area.remove(old)
+    layout = etree.Element(qn("c:layout"))
+    manual = etree.SubElement(layout, qn("c:manualLayout"))
+    etree.SubElement(manual, qn("c:layoutTarget")).set("val", "inner")
+    etree.SubElement(manual, qn("c:xMode")).set("val", "edge")
+    etree.SubElement(manual, qn("c:yMode")).set("val", "edge")
+    for k in ("x", "y", "w", "h"):
+        etree.SubElement(manual, qn(f"c:{k}")).set("val", repr(float(pa[k])))
+    area.insert(0, layout)
+
+
+def _write_reference_line(slide, el: dict, family: str, line: dict, index: int, guide: Guide, box: tuple[int, int, int, int]) -> None:
+    """A straight connector over the chart at the line's data value, across the inner plot."""
+    x, y, w, h = box
+    pa = el["plot_area"]
+    direction, t = reference_line_geometry(el, family, line, f"{el.get('id', 'chart')} reference_lines[{index}]")
+    left, top = x + round(pa["x"] * w), y + round(pa["y"] * h)
+    pw, ph = round(pa["w"] * w), round(pa["h"] * h)
+    if direction == "vertical":
+        at = left + round(t * pw)
+        shape = slide.shapes.add_connector(1, Emu(at), Emu(top), Emu(at), Emu(top + ph))
+    else:
+        at = top + round(t * ph)
+        shape = slide.shapes.add_connector(1, Emu(left), Emu(at), Emu(left + pw), Emu(at))
+    shape.name = f"{el.get('id', 'chart')}-reference-{index}"
+    _set_line(shape._element.spPr, guide.hex(line["line_role"], where=shape.name), int(round(float(line["line_width_pt"]) * EMU_PER_PT)), line.get("dash"))
 
 
 def _write_vary_colors(chart_space: etree._Element) -> None:
@@ -1044,7 +1206,8 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         if "line_role" in s:
             _stroke(series.format, _colour(guide, s["line_role"], sw), s.get("line_width_pt"))
         if "smooth" in s:
-            series.smooth = bool(s["smooth"])
+            # through the element: python-pptx's XySeries has no smooth property
+            series._element.get_or_add_smooth().val = bool(s["smooth"])
         if "marker" in s:
             m = s["marker"]
             if m.get("style") is not None:
@@ -1072,7 +1235,9 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     taken = dict(parsed["defaults"])
     for si, (series, s) in enumerate(zip(plot.series, el["series"])):
         if f"series[{si}].smooth" in taken:
-            taken[f"series[{si}].smooth"] = f"{bool(series.smooth)} ({CHART_DEFAULTS['series.smooth']})"
+            smooth = series._element.smooth
+            written = "absent" if smooth is None else str(bool(smooth.val))
+            taken[f"series[{si}].smooth"] = f"{written} ({CHART_DEFAULTS['series.smooth']})"
     if family in ("bar", "bar_stacked"):
         if "gap_width" in el:
             plot.gap_width = int(el["gap_width"])
@@ -1125,6 +1290,11 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if ax.get("major_unit") is not None:
                 axis.major_unit = float(ax["major_unit"])
     _write_vary_colors(chart._chartSpace)
+    _pad_point_counts(chart._chartSpace)
+    if el.get("plot_area"):
+        _write_plot_layout(chart._chartSpace, el["plot_area"])
+    for li, line in enumerate(el.get("reference_lines") or []):
+        _write_reference_line(slide, el, family, line, li, guide, box)
     return {"id": where, "type": parsed["type_name"], "defaults_taken": [f"{k}: {v}" for k, v in taken.items()]}
 
 
