@@ -112,11 +112,17 @@ def chrome_zones(guide: dict, mode: str = "auto") -> list[dict]:
     return zones
 
 
+def top_rules(guide: dict) -> list[dict]:
+    """The guide's top rules: rules anchored to the top edge on at least half the
+    reference's slides. The title band is everything above them."""
+    n = max(1, guide.get("reference", {}).get("slides", 1))
+    return [ch for ch in guide.get("chrome", []) if ch["kind"] == "rule" and ch.get("anchor") == "slide_top" and ch.get("slides_present", 0) >= 0.5 * n]
+
+
 def title_band_emu(guide: dict) -> int | None:
     """Height of the band above the top rule, measured from the reference's own top
     margin: the title must fit there, as every reference title does."""
-    n = max(1, guide.get("reference", {}).get("slides", 1))
-    rules = [ch for ch in guide.get("chrome", []) if ch["kind"] == "rule" and ch.get("anchor") == "slide_top" and ch.get("slides_present", 0) >= 0.5 * n]
+    rules = top_rules(guide)
     if not rules:
         return None
     rule_top = min(ch["box_in"][1] for ch in rules) * EMU_PER_INCH
@@ -236,30 +242,59 @@ def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict
     out = {"words": words, "elements": n_elements, "covered_area_fraction": round(covered, 3)}
     for key, value in (("words_per_slide", words), ("elements_per_slide", n_elements), ("content_area_fraction", covered)):
         band = bands.get(key) or {}
-        lo, hi = band.get("low"), band.get("high")
-        if lo is None or hi is None:
+        if band.get("low") is None or band.get("high") is None:
             continue
-        out[key] = {"value": round(value, 3), "band": [lo, hi], "verdict": "below" if value < lo else "above" if value > hi else "in band"}
+        out[key] = _against_band(value, band)
     return out
 
 
-def position_drift(slides: list[dict], guide: dict) -> dict:
-    """An element id that appears on more than one page should sit where it sat: a source
+def drift_step(guide: dict) -> int:
+    return (guide.get("spacing", {}).get("steps", {}).get("space.sm") or {}).get("emu") or 182880
+
+
+def element_tracks(pages: list[tuple[int, list[dict]]], step: int) -> list[dict]:
+    """One element followed across pages: the same id and kind, with its left edge and
+    width each within `step` of where the track first had them. An id reused for a
+    different column in a different arrangement (bcg's right-t: 7.45 in from the left and
+    5.31 wide on one page, 0.57 and 4.32 on another) starts a new track instead of
+    reading as one element that drifted."""
+    tracks: list[dict] = []
+    for number, els in pages:
+        for el in els:
+            if not el.get("box") or el.get("_spacer"):
+                continue
+            x, y, w, _ = el["box"]
+            for t in tracks:
+                if (t["id"] == el.get("id", "?") and t["kind"] == el["kind"] and abs(t["left"] - x) <= step and abs(t["width"] - w) <= step
+                        and number not in t["pages"]):
+                    t["pages"].append(number)
+                    t["tops"].append(y)
+                    t["boxes"].append(el["box"])
+                    break
+            else:
+                tracks.append({"id": el.get("id", "?"), "kind": el["kind"], "left": x, "width": w, "pages": [number], "tops": [y], "boxes": [el["box"]]})
+    return tracks
+
+
+def position_drift(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
+    """An element that appears on more than one page should sit where it sat: a source
     line at 5.54, 6.78, 3.87 and 6.78 in reads as four different pages, and the eye is the
-    only instrument SKILL.md had for it. Flagged when the top varies by more than space.sm."""
-    step = (guide.get("spacing", {}).get("steps", {}).get("space.sm") or {}).get("emu") or 182880
-    tops: dict[str, list[tuple[int, int]]] = {}
-    for i, sd in enumerate(slides, 1):
-        for el in sd.get("elements", []):
-            if el.get("box") and not el.get("_spacer"):
-                tops.setdefault(el.get("id", "?"), []).append((i, el["box"][1]))
-    out = {}
-    for ident, seen in tops.items():
-        if len(seen) < 2:
+    only instrument SKILL.md had for it. Flagged when the top of one element_track varies
+    by more than space.sm; an id that splits into several tracks is listed as reused
+    across arrangements, never as drift."""
+    step = drift_step(guide)
+    tracks = element_tracks(pages, step)
+    out: dict = {}
+    split = Counter(t["id"] for t in tracks)
+    for t in tracks:
+        if len(t["pages"]) < 2:
             continue
-        ys = [y for _, y in seen]
-        if max(ys) - min(ys) > step:
-            out[ident] = {"pages": [p for p, _ in seen], "top_in": [round(y / EMU_PER_INCH, 2) for y in ys], "drift_in": round((max(ys) - min(ys)) / EMU_PER_INCH, 2)}
+        if max(t["tops"]) - min(t["tops"]) > step:
+            key = t["id"] if split[t["id"]] == 1 else f"{t['id']} (pages {t['pages']})"
+            out[key] = {"pages": t["pages"], "top_in": [round(y / EMU_PER_INCH, 2) for y in t["tops"]], "drift_in": round((max(t["tops"]) - min(t["tops"])) / EMU_PER_INCH, 2)}
+    reused = {i: [t["pages"] for t in tracks if t["id"] == i] for i, n in split.items() if n > 1}
+    if reused:
+        out["_ids_reused_across_arrangements"] = reused
     return out
 
 
@@ -356,10 +391,11 @@ def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dic
     """The worst (ink, backing) pair against its AA threshold, as deckgen reports it."""
     worst = min(backings, key=lambda b: contrast_ratio(ink, b))
     ratio = contrast_ratio(ink, worst)
-    return {"ratio": round(ratio, 2), "threshold": aa_threshold(size_pt, bold), "size_pt": size_pt, "bold": bold, "backing": names.get(worst, worst)}
+    return {"ratio": round(ratio, 2), "threshold": aa_threshold(size_pt, bold), "size_pt": size_pt, "bold": bold, "backing": names.get(worst, worst),
+            "ink_hex": ink, "backing_hex": worst}
 
 
-def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto") -> dict:
+def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto", precedent: dict | None = None) -> dict:
     """WCAG 2.2 contrast of every text run, every table row class, every chart text and
     every chrome text line against the fill the page draws behind it. A text run's backing: the element's own
     fill, else the chain under it. A table's: the row's own fill as the emitter writes it
@@ -368,12 +404,23 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
     fill or the chain under the chart for a position off it, both when the spec leaves
     the position open (emit_pptx.chart_label_inks); axis labels and the legend: the plot.
     The ink scored is the ink the spec names: nothing swaps it, so a wrong one is
-    refused here by name."""
+    refused here by name.
+
+    House precedent: a pair under AA that the reference itself draws (the same ink hex
+    over the same backing hex, ooxml.ink_backings) at this size or smaller is the house's
+    own choice, not a defect of the deck. It is filed under `house_precedent` with the
+    reference's evidence, neither refused nor warned. `precedent` None means no reference
+    was given, and every pair is judged on WCAG alone."""
     eg = EmitGuide(guide)
-    out: dict = {"checked": 0, "violations": [], "warnings": [], "undecidable": [], "unbound": [], "nearest_pass": None}
+    out: dict = {"checked": 0, "violations": [], "warnings": [], "house_precedent": [], "undecidable": [], "unbound": [], "nearest_pass": None,
+                 "precedent_source": "reference" if precedent is not None else "none: no --reference, so no pair can claim the house's precedent"}
 
     def file(finding: dict) -> None:
         out["checked"] += 1
+        seen = (precedent or {}).get((finding["ink_hex"], finding["backing_hex"]))
+        if finding["ratio"] < finding["threshold"] and seen and isinstance(finding["size_pt"], (int, float)) and seen["min_size_pt"] <= finding["size_pt"]:
+            out["house_precedent"].append({**finding, "reference": {"min_size_pt": seen["min_size_pt"], "chars": seen["chars"], "pages": sorted(seen["pages"])[:12]}})
+            return
         if finding["ratio"] < CONTRAST_REFUSAL:
             out["violations"].append(finding)
         elif finding["ratio"] < finding["threshold"]:
@@ -483,12 +530,21 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
 REGISTER_KIND = {"text": "text", "image": "image", "rect": "shape", "table": "table", "chart": "chart", "rule": "line"}
 
 
+NO_EVIDENCE = "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+
+
 def _against_band(value: float | None, band: dict | None, digits: int = 3) -> dict:
+    """A value against the reference's 10th to 90th percentile band. A band of [0, 0] is
+    absence, not a ceiling: a reference that pastes its exhibits as pictures has no
+    native table or chart to count, and a PDF whose words were not read has no word
+    count. A value above such a band is reported as no evidence, never as 'above'."""
     lo, hi = (band or {}).get("low"), (band or {}).get("high")
     if value is None:
         return {"value": None, "band": [lo, hi], "verdict": "no text on the page"}
     if lo is None or hi is None:
         return {"value": round(value, digits), "band": None, "verdict": "no band in the guide"}
+    if hi == 0 and value > 0:
+        return {"value": round(value, digits), "band": [lo, hi], "verdict": NO_EVIDENCE}
     return {"value": round(value, digits), "band": [lo, hi], "verdict": "below" if value < lo else "above" if value > hi else "in band"}
 
 
@@ -509,18 +565,40 @@ def register_of(elements: list[dict], guide: dict) -> dict:
             "container_ratio": _against_band(container, stats.get("container_ratio"))}
 
 
+def frame_tracks(pages: list[tuple[int, list[dict]]], guide: dict) -> list[dict]:
+    """The page frame: element_tracks present on EVERY emitted page (the title, the units
+    line, the lead, the source line, a drawn band). The frame is the same on every page
+    by construction, so counting it makes any two pages alike before their content is
+    compared (netflix: title, units, lead and source gave 4/8 on pages whose exhibits all
+    differed). A table, chart or image on every page is content repeating, never frame.
+    A one-page deck has no frame."""
+    if len(pages) < 2:
+        return []
+    every = {n for n, _ in pages}
+    return [t for t in element_tracks(pages, drift_step(guide)) if set(t["pages"]) == every and t["kind"] not in ("table", "chart", "image")]
+
+
 def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
     """Arrangement similarity of each consecutive pair of emitted pages: the extractor's
     slide_similarity (Hungarian on box IoU over the larger set) on the flattened
-    elements' boxes, similar at the archetype threshold it clusters the reference with.
-    A run of similar consecutive pages longer than the reference's longest run of one
-    archetype (composition.archetypes consecutive_max) is flagged."""
+    elements' boxes with the page frame (frame_tracks) left out, similar at the archetype
+    threshold it clusters the reference with. A run of similar consecutive pages longer
+    than the reference's longest run of one archetype (composition.archetypes
+    consecutive_max) is flagged. The reference's run is the extractor's, which leaves out
+    layout and master chrome and recurring furniture but keeps a repeated title: the
+    house is held to the more lenient count, never the stricter one."""
     archetypes = (guide.get("composition") or {}).get("archetypes") or []
     reference_max = max((int(a.get("consecutive_max") or 1) for a in archetypes), default=None)
+    frame = frame_tracks(pages, guide)
+    framed = {(n, tuple(b)) for t in frame for n, b in zip(t["pages"], t["boxes"])}
+
+    def content(number: int, els: list[dict]) -> list[tuple]:
+        return [tuple(el["box"]) for el in els if (number, tuple(el["box"])) not in framed]
+
     pairs, runs = [], []
     run = [pages[0][0]] if pages else []
     for (pa, ea), (pb, eb) in zip(pages, pages[1:]):
-        sim = slide_similarity([tuple(el["box"]) for el in ea], [tuple(el["box"]) for el in eb])
+        sim = slide_similarity(content(pa, ea), content(pb, eb))
         similar = sim >= ARCHETYPE_IOU_THRESHOLD
         pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": similar})
         if similar:
@@ -531,7 +609,7 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
     if run:
         runs.append(run)
     over = [{"pages": r, "length": len(r)} for r in runs if reference_max is not None and len(r) > reference_max]
-    return {"threshold": ARCHETYPE_IOU_THRESHOLD, "pairs": pairs, "reference_consecutive_max": reference_max, "runs_over_reference": over}
+    return {"threshold": ARCHETYPE_IOU_THRESHOLD, "frame_left_out": sorted(t["id"] for t in frame), "pairs": pairs, "reference_consecutive_max": reference_max, "runs_over_reference": over}
 
 
 # --- tie-outs and the source line ------------------------------------------------------------
@@ -650,12 +728,13 @@ def source_line_missing(elements: list[dict]) -> bool:
     return exhibit and not sourced
 
 
-def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto") -> list[dict]:
+def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
+                  precedent: dict | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, no source line). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
-    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode)
+    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent)
     entry["register"] = register_of(elements, guide)
     entry["tieouts"] = tieouts_of(elements)
     problems = [{"kind": "tieout", "severity": "warning", "detail": f"{t['table']} column {t['column']!r}: body rows sum to {t['sum']}, the totals cell reads {t['total']}"} for t in entry["tieouts"] if t["status"] == "mismatch"]
@@ -1005,6 +1084,12 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     api = component_api.make_api(guide, lg, ruler, index)
     emit_spec = {"slides": []}
     report = {"out": out, "ruler": ruler.name, "slides": []}
+    ref_slides = None
+    precedent = None
+    if reference:
+        from ooxml import fingerprint_deck, ink_backings
+        ref_slides = fingerprint_deck(reference)
+        precedent = ink_backings(ref_slides)
     pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
     emitted: list[dict] = []  # the report entry of every emitted page, in emit order
     for number, slide in enumerate(deck["slides"], 1):
@@ -1058,12 +1143,12 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         entry["problems"] = page_problems(entry, elements, resolved, guide, [
             {"kind": "chart label breaks mid-word", "severity": "refusal",
              "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
-            for b in breaks], chrome)
+            for b in breaks], chrome, precedent)
         pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)
         emitted.append(entry)
-    report["position_drift"] = position_drift(emit_spec["slides"], guide)
+    report["position_drift"] = position_drift(pages, guide)
     report["repetition"] = repetition_of(pages, guide)
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
@@ -1090,41 +1175,15 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         except json.JSONDecodeError:
             report["renders"] = {"error": completed.stderr[-500:]}
     if reference:
-        from fingerprint import distance, fingerprint_deck, house_features, house_spread, layout_clean, panel, same_house, scorable, slide_features, text_overflows, total
-        ref_slides = fingerprint_deck(reference)
-        ref = house_features(ref_slides)
-        cand = fingerprint_deck(out)
-        d = distance(house_features(cand), ref)
-        judge = {"reference": reference, "total": round(total(d), 3), "components": {k: (round(v, 3) if v is not None else None) for k, v in d.items()},
-                 "per_slide": [round(total(distance(slide_features(s), ref)), 3) for s in cand], "others": {},
-                 # the shapes behind the overflow component, by page and shape name
-                 "overflow_where": [f for s in cand for f in text_overflows(s)[0]]}
-        chosen = panel(others, reference)
-        skipped = []
-        kin = {}
-        judge["house_spread"] = house_spread(ref_slides)
-        for o in chosen:
-            hf = house_features(fingerprint_deck(o, 25))
-            if not scorable(hf):
-                skipped.append(o)
-                continue
-            if same_house(hf, ref, judge["house_spread"]):
-                kin[o] = round(total(distance(house_features(cand), hf)), 3)
-                continue
-            judge["others"][o] = round(total(distance(house_features(cand), hf)), 3)
-        if skipped:
-            judge["panel_skipped"] = {"reason": "no measured type (a scan or an empty deck)", "files": skipped}
-        judge["same_house_on_panel"] = kin
-        judge["panel"] = "given" if others else "refs/files (default)"
-        judge["nearest_is_reference"] = all(judge["total"] < v for v in judge["others"].values()) if judge["others"] else None
-        judge["reference_rank"] = 1 + sum(1 for v in judge["others"].values() if v <= judge["total"]) if judge["others"] else None
+        from fingerprint import judge as judge_style
+        judge = judge_style(out, reference, others, ref_slides=ref_slides)
         # the judge reads style; fit is the solver's verdict and validity the package's. A
-        # page is filed under the house only when all three hold.
+        # page is filed under the house only when all three hold, and never when the judge
+        # could not read the reference.
         all_fit = all(sl.get("status") == "fit" and not sl.get("violations") for sl in report["slides"])
-        judge["within_house_spread"] = judge["total"] <= judge["house_spread"]["p90"] if judge["house_spread"] else None
-        judge["layout_clean"] = layout_clean(d)
-        judge["filed_under_reference"] = (bool(judge["nearest_is_reference"]) and bool(judge["within_house_spread"]) and judge["layout_clean"]
-                                          and all_fit and bool(report.get("validation", {}).get("ok")))
+        judge["filed_under_reference"] = None if "cannot_judge" in judge else (
+            bool(judge["nearest_is_reference"]) and bool(judge["within_house_spread"]) and judge["layout_clean"]
+            and all_fit and bool(report.get("validation", {}).get("ok")))
         report["judge"] = judge
     Path(out).with_suffix(".build.json").write_text(json.dumps(report, indent=1, default=str))
     return report

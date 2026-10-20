@@ -730,8 +730,10 @@ def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], di
 def render_fidelity(fonts: dict[str, dict[str, object]]) -> str:
     """deckgen's worst-family verdict. A metric alias (Liberation, Carlito,
     Caladea) keeps the layout faithful and the letterforms not; an unrelated
-    substitute changes text extents too; a deck that vouches for nothing is unknown."""
-    verdicts = {str(entry.get("fidelity")) for entry in fonts.values()}
+    substitute changes text extents too; a deck that vouches for nothing is unknown.
+    A face proven to draw bullet glyphs only (render.font_report bullets_only) sets no
+    text, so its substitute does not decide the verdict; the manifest still lists it."""
+    verdicts = {str(entry.get("fidelity")) for entry in fonts.values() if not entry.get("bullets_only")}
     if not verdicts or "substituted" in verdicts:
         return "unknown_substitution"
     return "metric_substituted" if "metric_alias" in verdicts else "faithful"
@@ -951,9 +953,9 @@ def manifest_markdown(
         "",
         FIDELITY_NOTES[fidelity],
         "",
-        "| declared font | rendered with | fidelity | codepoints checked | uncovered |",
-        "|---|---|---|---|---|",
-        *(f"| {face} | {entry['rendered_with']} | {entry['fidelity']} | {entry.get('codepoints_checked')} | {entry.get('uncovered_count')} |"
+        "| declared font | rendered with | fidelity | codepoints checked | uncovered | draws |",
+        "|---|---|---|---|---|---|",
+        *(f"| {face} | {entry['rendered_with']} | {entry['fidelity']} | {entry.get('codepoints_checked')} | {entry.get('uncovered_count')} | {'bullet glyphs only' if entry.get('bullets_only') else 'text'} |"
           for face, entry in fonts.items()),
         "",
         "## Crops",

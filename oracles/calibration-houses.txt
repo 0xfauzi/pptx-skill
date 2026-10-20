@@ -1,0 +1,14 @@
+# The judge's calibration corpus: eight houses, one per line (name=deck,deck,...).
+# Paths under refs/ live in this repo (refs/fetch.sh fetches them); every other path is
+# relative to the deckgen checkout given as --corpus-root. Read by
+#   python3 -I scripts/fingerprint.py calibrate --houses-file oracles/calibration-houses.txt \
+#       --corpus-root /path/to/deckgen --max-pages 25 --fit-weights
+# header and themes are two houses, not one (the two Apache POI test decks).
+gs=fixtures/corpus/jazz.pptx,fixtures/corpus/keybank.pptx,fixtures/corpus/netflix.pptx
+header=refs/files/45541_Header.pptx
+themes=refs/files/themes.pptx
+taste=experiments/taste-spike/out/v1/dev/slide1.pptx,experiments/taste-spike/out/v1/dev/slide2.pptx,experiments/taste-spike/out/v1/dev/slide3.pptx,experiments/taste-spike/out/v1/product/slide1.pptx,experiments/taste-spike/out/v1/product/slide2.pptx,experiments/taste-spike/out/v1/product/slide3.pptx,experiments/taste-spike/out/v2/dev/slide1.pptx,experiments/taste-spike/out/v2/dev/slide2.pptx,experiments/taste-spike/out/v2/product/slide1.pptx,experiments/taste-spike/out/v2/product/slide2.pptx,experiments/taste-spike/out/v2/product/slide3.pptx,experiments/taste-spike/out/v3/product/slide1.pptx,experiments/taste-spike/out/v3/product/slide2.pptx,experiments/taste-spike/out/v3/product/slide3.pptx,experiments/taste-spike/out/v4/dev/slide1.pptx,experiments/taste-spike/out/v4/dev/slide2.pptx,experiments/taste-spike/out/v4/dev/slide3.pptx,experiments/taste-spike/out/v4/product/slide1.pptx,experiments/taste-spike/out/v4/product/slide2.pptx,experiments/taste-spike/out/v4/product/slide3.pptx
+mckinsey=fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf,fixtures/corpus/consulting/mckinsey-mta-covid-financial-2020.pdf,fixtures/corpus/consulting/mckinsey-purdue-bdc-ghost-deck-2014.pdf,fixtures/corpus/consulting/mckinsey-purdue-market-access-appendix-2019.pdf,fixtures/corpus/consulting/mckinsey-virginia-covid-factpack-2020.pdf,fixtures/corpus/consulting/mckinsey-cbp-project-documents-2018.pdf
+bcg=fixtures/corpus/consulting/bcg-dallas-loose-dogs-2016.pdf,fixtures/corpus/consulting/bcg-nycha-support-functions-2012.pdf,fixtures/corpus/consulting/bcg-nystate-covid-impact-2020.pdf
+bain=fixtures/corpus/consulting/bain-ucberkeley-diagnostic-2010.pdf
+jpm=fixtures/corpus/taste/craft/jpm-guide-to-the-markets.pdf

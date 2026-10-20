@@ -43,7 +43,7 @@ session that built the skill. None is estimated.
 
 | Claim | Measurement |
 |---|---|
-| The judge tells houses apart | 157 of 171 held-out slides over 8 houses filed correctly with the fitted weights, 132 with equal weights (chance bound 30; weights fitted on the other half of the same corpus, judged leave-one-slide-out, single-slide decks split by deck). The three Mergers and Inquisitions books are one house (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same house, not as rivals |
+| The judge tells houses apart | 152 of 165 held-out slides over 8 houses filed correctly with the shipped weights, 151 with weights re-fitted in the same run, 132 with equal weights (chance bound 29; weights fitted on the other half of the same corpus, judged leave-one-slide-out, single-slide decks split by deck, raster pages not scored; houses in `oracles/calibration-houses.txt`). The three Mergers and Inquisitions books are one house (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same house, not as rivals |
 | The judge is not fooled by copying the master | deckgen's master-reuse deck (E18), which inherits the reference master verbatim, is flagged as off-style |
 | The judge is not fooled by a wreck in the house's clothes | Five decks a rater calls wrong (keybank's shapes at random positions, all stacked at one point, nine random boxes a page, a wall of text, every box overflowing) once filed under keybank at 0.013 to 0.192; they now carry `overlap` or `overflow` at 1.0 and fail the layout gate |
 | The layout port is deckgen's solver | 383 boxes over 14 specimen slides at three scales: maximum difference 0 EMU; validation findings agree on 14 of 14 |

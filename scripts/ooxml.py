@@ -344,6 +344,7 @@ class Run:
     mar_l_emu: int | None = None  # paragraph left margin as resolved, bullets hang inside it
     indent_emu: int | None = None
     text: str = ""  # the whole run, for the renderer's glyph-coverage check only
+    box: tuple[int, int, int, int] | None = None  # PDF runs only: the glyphs' extent in EMU (a pptx run sits in its shape's box)
 
 
 @dataclass
@@ -432,8 +433,19 @@ class SlidePrint:
     hidden: bool = False  # p:sld show="0"; walked as evidence (deckgen rule), flagged so the agent can exclude it
     page_class: str = "vector"  # pdf triage: vector | vector_with_image | raster_only | raster_ocr | raster_wrapper | other_size | blank
     image_cover: float = 0.0  # pdf: union area of page images over page area
+    pdf_fills: list[tuple[tuple[int, int, int, int], str | None]] = field(default_factory=list)  # pdf: every filled area (rects, filled paths, images) as (box EMU, hex); None = colour unreadable (image, pattern, shading)
     generated: bool = False  # carries emit_pptx's origin tag: this skill made it, so it is not reference evidence
     unread_glyphs: int = 0  # pdf: glyphs set at an angle no type size can be read along, left out of the runs
+
+
+TYPE_EVIDENCE_CLASSES = ("vector", "vector_with_image")
+"""PDF page classes whose text layer is type evidence. A raster page's text layer is a
+browser wrapper or an OCR layer (Times at 1pt in a grey no one drew): nothing read from
+it describes the house."""
+
+
+def is_type_evidence(s: SlidePrint) -> bool:
+    return s.source != "pdf" or s.page_class in TYPE_EVIDENCE_CLASSES
 
 
 class Chain:
@@ -1423,6 +1435,69 @@ def fingerprint_deck(path: str, max_pages: int | None = None) -> list[SlidePrint
     return out
 
 
+# --- ink over backing, as the reference draws it -------------------------------------
+
+
+def _covers(outer: tuple[int, int, int, int], x: float, y: float) -> bool:
+    return outer[0] <= x <= outer[0] + outer[2] and outer[1] <= y <= outer[1] + outer[3]
+
+
+def ink_backings(slides: list[SlidePrint]) -> dict[tuple[str, str], dict]:
+    """Every (text ink, backing fill) pair the reference draws, with the smallest size it
+    sets that pair at, the characters and the pages. In a pptx the backing of a run is its
+    own shape's fill, else the topmost filled shape drawn before it whose box holds the
+    shape's centre (master, then layout, then slide layer, in file order), else the page
+    ground; in a PDF, the smallest filled area holding the run's centre. A run over a
+    picture, a pattern or a shading has no known backing and is left out, as are table
+    runs (cell fills are per cell) and chrome runs (their shape ids repeat across layers).
+    Raster pages and generated slides are not evidence."""
+    out: dict[tuple[str, str], dict] = {}
+    for s in slides:
+        if not is_type_evidence(s) or s.generated:
+            continue
+        under = [sh for layer in ("master", "layout") for sh in s.chrome if sh.layer == layer] + list(s.shapes)
+        for r in s.runs:
+            if not r.color or r.ph_class == "table" or not r.chars:
+                continue
+            if s.source == "pdf":
+                if r.box is None:
+                    continue
+                cx, cy = r.box[0] + r.box[2] / 2, r.box[1] + r.box[3] / 2
+                # a PDF keeps no draw order across rects, paths and images: the smallest filled
+                # area holding the run's centre is taken as the one drawn under it
+                holding = [(b[2] * b[3], hexv) for b, hexv in s.pdf_fills if _covers(b, cx, cy)]
+                backing = min(holding, key=lambda t: t[0])[1] if holding else (s.background or None)
+                if backing is None:
+                    continue
+            else:
+                own_idx = next((i for i, sh in enumerate(under) if sh.layer == "slide" and r.ref.startswith(sh.ref + "/")), None)
+                if own_idx is None or under[own_idx].box is None:
+                    continue
+                own = under[own_idx]
+                b = own.box
+                cx, cy = b[0] + b[2] / 2, b[1] + b[3] / 2
+                backing = own.fill or None
+                if backing is None:
+                    for sh in reversed(under[:own_idx]):
+                        if sh.box is None or not _covers(sh.box, cx, cy):
+                            continue
+                        if sh.kind == "picture":
+                            backing = "picture"
+                            break
+                        if sh.fill and sh.kind != "line":
+                            backing = sh.fill
+                            break
+                    else:
+                        backing = s.background
+            if not backing or backing == "picture":
+                continue
+            entry = out.setdefault((r.color, backing), {"min_size_pt": r.size_pt, "chars": 0, "pages": set()})
+            entry["min_size_pt"] = min(entry["min_size_pt"], r.size_pt)
+            entry["chars"] += r.chars
+            entry["pages"].add(s.index + 1)
+    return out
+
+
 # --- pdf references ------------------------------------------------------------------
 
 
@@ -1891,12 +1966,29 @@ def _segment_runs(seg: _Segment) -> list[dict]:
         sep = " " if (pending or gap) else ""
         if runs and runs[-1]["key"] == key:
             runs[-1]["text"] += sep + g.text
+            runs[-1]["ext"] = _union_ext(runs[-1]["ext"], (g.u0, g.v0, g.u1, g.v1))
         else:
             if runs and sep:
                 runs[-1]["text"] += sep
-            runs.append({"key": key, "text": g.text})
+            runs.append({"key": key, "text": g.text, "ext": (g.u0, g.v0, g.u1, g.v1)})
         prev, pending = g, False
     return runs
+
+
+def _union_ext(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+    """Two (u0, v0, u1, v1) extents in a line's own frame, as one."""
+    return min(a[0], b[0]), min(a[1], b[1]), max(a[2], b[2]), max(a[3], b[3])
+
+
+def _page_box(direction: str, ext: tuple[float, float, float, float], w: float, h: float) -> tuple[float, float, float, float]:
+    """A (u0, v0, u1, v1) extent in a line's own frame as the (x, y, width, height) it covers
+    on the page, in points: _pdf_glyph's frames turned back."""
+    u0, v0, u1, v1 = ext
+    if direction == "ltr":
+        return u0, v0, u1 - u0, v1 - v0
+    if direction == "btt":
+        return v0, h - u1, v1 - v0, u1 - u0
+    return w - v1, u0, v1 - v0, u1 - u0
 
 
 def _pdf_blocks(segments: list[_Segment]) -> list[list[_Segment]]:
@@ -1984,6 +2076,7 @@ def _block_paragraphs(blk: list[_Segment]) -> list[dict]:
                     runs[-1]["text"] += " "  # a wrapped line ends a word
                 if runs and runs[-1]["key"] == r["key"]:
                     runs[-1]["text"] += r["text"]
+                    runs[-1]["ext"] = _union_ext(runs[-1]["ext"], r["ext"])
                 else:
                     runs.append(r)
         bullet = group[0].bullet
@@ -2000,7 +2093,8 @@ def _block_paragraphs(blk: list[_Segment]) -> list[dict]:
                       "bullet_font": (None if bullet is None or ((bullet.family or "").lower().startswith(SYMBOL_FACES) and ord(bullet.text) < 0xE000)
                                       else bullet.family),
                       "runs": [{"text": r["text"].rstrip() if i == len(runs) - 1 else r["text"], "size_pt": r["key"][3], "bold": r["key"][1],
-                                "italic": r["key"][2], "color": r["key"][4], "caps": False, "family": r["key"][0]} for i, r in enumerate(runs)]})
+                                "italic": r["key"][2], "color": r["key"][4], "caps": False, "family": r["key"][0], "ext": r["ext"]}
+                               for i, r in enumerate(runs)]})
     return paras
 
 
@@ -2074,7 +2168,8 @@ def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | No
                                    bullet="char" if bullet.startswith("char:") else "none", text_sample=r["text"].strip()[:40],
                                    words=len(r["text"].split()), bullet_glyph=bullet[5:] if bullet.startswith("char:") else None,
                                    bullet_font=para["bullet_font"], text=r["text"],
-                                   mar_l_emu=para["mar_l_emu"] if bullet.startswith("char:") else None, indent_emu=para["indent_emu"]))
+                                   mar_l_emu=para["mar_l_emu"] if bullet.startswith("char:") else None, indent_emu=para["indent_emu"],
+                                   box=tuple(int(v * scale) for v in _page_box(blk[0].direction, r["ext"], w, h))))  # type: ignore[arg-type]
         text = " ".join("".join(r["text"] for r in p["runs"]) for p in paras)
         sp.shapes.append(Shape("text_box", (int(x * scale), int(y * scale), int(bw * scale), int(bh * scale)), None, None, None, None, False,
                                None, "slide", ref=ref, rotation=rotation, text_chars=chars, text=text[:80], paragraphs=paras,
@@ -2140,6 +2235,11 @@ def _pdf_title_slot(prints: list[SlidePrint]) -> dict:
 PDF_PROGRESS_EVERY = 50  # pages between progress lines on stderr; a 205-page reference reads for about half a minute
 
 
+def _pdf_box(o: dict, scale: float) -> tuple[int, int, int, int]:
+    return (int(float(o["x0"]) * scale), int(float(o["top"]) * scale),
+            int((float(o["x1"]) - float(o["x0"])) * scale), int((float(o["bottom"]) - float(o["top"])) * scale))
+
+
 def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]:
     import pdfplumber  # optional dependency: only PDF references need it
 
@@ -2169,6 +2269,18 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 sp.image_cover = triage["pages"][i]["image_cover"]
             _pdf_text(page, sp, scale, painted)
             page_area = w * h
+
+            for im in page.images:
+                try:
+                    sp.pdf_fills.append((_pdf_box(im, scale), None))
+                except (KeyError, TypeError, ValueError):
+                    sp.pdf_fills.append(((0, 0, int(w * scale), int(h * scale)), None))  # an image with no extent may lie anywhere
+            for obj in list(page.rects) + list(page.curves):
+                if obj.get("fill"):
+                    try:
+                        sp.pdf_fills.append((_pdf_box(obj, scale), _pdf_color(obj.get("non_stroking_color"))))
+                    except (KeyError, TypeError, ValueError):
+                        continue
             for k, rect in enumerate(page.rects):
                 rw, rh = float(rect.get("width", 0)), float(rect.get("height", 0))
                 if rw <= 0 or rh <= 0:

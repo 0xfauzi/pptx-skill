@@ -30,7 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
-from build_deck import build, component_root, load_component  # noqa: E402
+from build_deck import EMU_PER_INCH, build, chrome_zones, component_root, load_component, top_rules  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent / "components"
 #: deckgen expansion_checks.py HASH_SEEDS: two seeds are enough, since one differing
@@ -100,14 +100,28 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
     tests = [dict(t, held_out=False) for t in spec["tests"]["shown"]] + [dict(spec["tests"]["held_out"], held_out=True)]
     stable = determinism(kind, tests, guide_path)
     margin = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 457200)
+    # the harness page is emitted on the template, so the master's and layout's furniture
+    # is drawn over it: the page reserves the build's chrome zones, and everything above
+    # the top rule (the harness has no title to set there), so a component that crosses a
+    # rule or a band is a reserved_zone violation, not a pass the sheet contradicts
+    zones = chrome_zones(guide)
+    page_w = guide["reference"]["page"]["width_emu"]
+    top = max([margin] + [int((r["box_in"][1] + r["box_in"][3]) * EMU_PER_INCH) for r in top_rules(guide)])
+    if top > margin:
+        zones = zones + [{"left": 0, "top": 0, "width": page_w, "height": top, "source": "title band (above the top rule; the harness sets no title)"}]
+    floor = min([z["top"] for z in zones if z["top"] > top] + [guide["reference"]["page"]["height_emu"]])
     deck = {"slides": []}
+    unplaceable = {}
     for t in tests:
         data = json.loads((component_root(kind) / t["data"]).read_text())
         w, h = t["box"]["width_emu"], t["box"]["height_emu"]
+        if top + h > floor:
+            # the box cannot stand on this template between the top rule and the footer zone
+            unplaceable[t["name"]] = f"test box {h / EMU_PER_INCH:.2f} in tall; this template leaves {(floor - top) / EMU_PER_INCH:.2f} in between its top furniture and its bottom zone"
         deck["slides"].append({
             "id": t["name"],
             "layout": None,
-            "spec": {"page": {"width_emu": w + 2 * margin, "height_emu": h + 2 * margin, "reserved_zones": []},
+            "spec": {"page": {"width_emu": w + 2 * margin, "height_emu": top + h + margin, "reserved_zones": zones},
                      "root": {"type": "region", "id": "root",
                               "layout": {"kind": "flex", "direction": "column", "gap_role": "space.xs", "pad_role": "space.margin", "align": "stretch", "justify": "start"},
                               "children": [{"type": "component", "id": "c", "kind": kind, "data": data}]}},
@@ -123,14 +137,15 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
         # the harness page is the component alone, so the page rule "a table or chart needs a
         # source line" is not the component's to pass; contrast is (its own inks on its own fills)
         refusals = {p["kind"] for p in s.get("problems", []) if p["severity"] == "refusal"}
-        ok = s.get("solver_status", s["status"]) == "fit" and not s.get("violations") and refusals <= {"no source line"} and d["deterministic"]
+        ok = (s.get("solver_status", s["status"]) == "fit" and not s.get("violations") and refusals <= {"no source line"} and d["deterministic"]
+              and t["name"] not in unplaceable)
         # a figure, a tick or a marker label that wrapped is not fit, whatever the solver says:
         # '$1' over '4' is the defect the first admission let through
         wrapped = sorted(k for k, lines in (s.get("text_lines") or {}).items() if lines > 1 and any(tag in k for tag in single))
         if wrapped:
             ok = False
         verdict.append({"test": t["name"], "held_out": t["held_out"], "box": t["box"], "pass": ok, "scale": s.get("scale"),
-                        "violations": s.get("violations", []), "reason": s.get("reason"), "wrapped_single_line": wrapped,
+                        "violations": s.get("violations", []), "reason": unplaceable.get(t["name"]) or s.get("reason"), "wrapped_single_line": wrapped,
                         "deterministic": d["deterministic"], "first_difference": d.get("first_difference") or d.get("error"),
                         "contrast_violations": (s.get("contrast") or {}).get("violations", [])})
     sheet = None

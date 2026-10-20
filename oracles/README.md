@@ -129,7 +129,7 @@ guide completed from a fresh keybank draft:
 | g3_overflow | 0.0 | 1.0 | false |
 | g4_giant | 0.0 | 1.0 | false |
 | g5_random | 1.0 | 0.6 | false |
-| honest section | 0.0 | 0.0 | true (total 0.085) |
+| honest section | 0.0 | 0.0 | true (total 0.086) |
 
 ## raster_keybank.sh: the raster instrument on a deck whose values are known
 
