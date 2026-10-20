@@ -15,6 +15,7 @@ from __future__ import annotations
 import colorsys
 import math
 import hashlib
+import itertools
 import json
 import re
 import sys
@@ -368,6 +369,8 @@ class Shape:
     paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, runs: [{text, size_pt, bold, italic, color}]}] for import
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
+    paint_order: int = 0  # position in the page's painting sequence: a higher one paints over a lower one
+    line_style: dict | None = None  # PDF text lines only: modal family, size_pt, ink_hex and bold of the line's glyphs
 
 
 @dataclass
@@ -553,6 +556,18 @@ def xfrm_rotation(sp: etree._Element) -> int:
     return 0
 
 
+def visual_extent(bounds: tuple[int, int, int, int], rotation: int) -> tuple[int, int, int, int]:
+    """The axis-aligned box a rotated shape occupies: OOXML rotates about the
+    centre, so w' = |w cos| + |h sin|. Exact for any angle."""
+    if not rotation:
+        return bounds
+    x, y, w, h = bounds
+    radians = math.radians(rotation / 60_000)
+    cos, sin = abs(math.cos(radians)), abs(math.sin(radians))
+    tw, th = round(w * cos + h * sin), round(w * sin + h * cos)
+    return x + (w - tw) // 2, y + (h - th) // 2, tw, th
+
+
 def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:
     """The corner radius a roundRect draws: adj / 100000 x min(w, h), adj pinned to
     [0, 50000] as the preset definition pins it (deckgen style/tokens.py:5575-5600). An
@@ -611,6 +626,9 @@ def _shape_kind(sp: etree._Element) -> str:
 _LAYER_OF_HOLDER = ("shape", "layout", "master", "master", "presentation")
 
 
+LAYER_PAINT_BASE = {"master": 0, "layout": 1_000_000, "slide": 2_000_000}
+
+
 class SlideWalker:
     def __init__(self, pkg: Package, slide_part: str, deck: str, index: int) -> None:
         self.pkg = pkg
@@ -630,6 +648,7 @@ class SlideWalker:
         self.print.generated = slide_generated(pkg, slide_part)
         self._table_styles: dict[str, etree._Element] | None = None
         self._para_capture: list | None = None
+        self._painted = 0
 
     # text chain ------------------------------------------------------------------
     def _level_holders(self, sp: etree._Element, layer: str, ph: tuple[str | None, int | None] | None) -> list[tuple[etree._Element | None, str]]:
@@ -1322,6 +1341,9 @@ class SlideWalker:
             )
             if shape.prst == "roundRect" and box is not None:
                 shape.corner_radius_emu = round_rect_radius(prst_el, box)
+            # the master paints first, then the layout, then the slide, each in spTree order
+            shape.paint_order = LAYER_PAINT_BASE[layer] + self._painted
+            self._painted += 1
             sink.append(shape)
             cls = ph_class(ph[0]) if ph else "none"
             tx = sp.find(_p("txBody"))
@@ -1439,6 +1461,80 @@ PDF_TRIAGE_MIN_TEXT_PT = 4.0
 """Characters below this size are not type a reader sees: the EDGAR prints carry an OCR
 layer at 0 to 1pt (Goldman p3: 4273 of 4414 chars at 1pt) and Tesseract layers come as
 GlyphLessFont at box-derived sizes."""
+
+
+def _pdf_key(obj: dict) -> tuple:
+    return (obj.get("object_type"), round(float(obj.get("x0", 0)), 2), round(float(obj.get("top", 0)), 2),
+            round(float(obj.get("x1", 0)), 2), round(float(obj.get("bottom", 0)), 2))
+
+
+def _pdf_glyph_pt(c: dict) -> float:
+    """The em size of a glyph, to the half point. pdfminer's glyph box spans one em across
+    the baseline: pdfplumber's `size` is that span on an upright glyph, but on a turned
+    one it is the page-vertical extent (the advance, at 90 degrees), so the span across
+    the baseline is read from the box along the matrix's angle."""
+    if c.get("upright", True):
+        return round(float(c.get("size", 0)) * 2) / 2
+    a, b = (float(v) for v in (c.get("matrix") or (1, 0))[:2])
+    theta = math.atan2(b, a)
+    across = abs(float(c.get("width", 0)) * math.sin(theta)) + abs(float(c.get("height", 0)) * math.cos(theta))
+    return round(across * 2) / 2
+
+
+def _pdf_line_style(glyphs: list[dict]) -> dict | None:
+    """Modal family, size, ink and weight of one text line's glyphs."""
+    if not glyphs:
+        return None
+
+    def modal(values: list) -> object:
+        return Counter(values).most_common(1)[0][0]
+
+    faces = [_pdf_family(c.get("fontname")) for c in glyphs]
+    return {"family": modal([f[0] for f in faces]), "size_pt": modal([_pdf_glyph_pt(c) for c in glyphs]),
+            "ink_hex": modal([_pdf_color(c.get("non_stroking_color")) for c in glyphs]), "bold": modal([f[1] for f in faces])}
+
+
+def _pdf_rotated_lines(chars: list[dict], painted: dict[tuple, int], scale: float) -> list[Shape]:
+    """Glyphs off the horizontal, read as lines along their own baseline: grouped by
+    angle and by offset across the baseline, ordered along it. The box is the
+    pre-rotation box OOXML uses (centred on the glyphs, length along the baseline,
+    thickness across it) and `rotation` the clockwise angle, so a line keeps both."""
+    groups: dict[tuple[int, int], list[tuple[float, dict]]] = {}
+    for c in chars:
+        if not str(c.get("text", "")):
+            continue
+        a, b, _, _, e, f = (float(v) for v in c.get("matrix") or (1, 0, 0, 1, 0, 0))
+        theta = math.atan2(b, a)  # counter-clockwise in PDF space, y up
+        along = e * math.cos(theta) + f * math.sin(theta)
+        across = -e * math.sin(theta) + f * math.cos(theta)
+        groups.setdefault((round(math.degrees(theta)) % 360, round(across / 2.0)), []).append((along, c))
+    out: list[Shape] = []
+    for (deg, _), members in sorted(groups.items()):
+        members.sort(key=lambda m: m[0])
+        segments: list[list[tuple[float, dict]]] = [[members[0]]]
+        for prev, cur in itertools.pairwise(members):
+            # a gap wider than three em is a column break, as in the horizontal lines
+            if cur[0] - prev[0] > 3.0 * max(_pdf_glyph_pt(prev[1]), 2.0):
+                segments.append([cur])
+            else:
+                segments[-1].append(cur)
+        for seg in segments:
+            glyphs = [c for _, c in seg]
+            text = " ".join("".join(str(c["text"]) for c in glyphs).split())
+            if not text:
+                continue
+            rad = math.radians(deg)
+            ux, uy = math.cos(rad), -math.sin(rad)  # the baseline direction in page space, y down
+            corners = [(float(c[x]), float(c[y])) for c in glyphs for x in ("x0", "x1") for y in ("top", "bottom")]
+            length = max(px * ux + py * uy for px, py in corners) - min(px * ux + py * uy for px, py in corners)
+            thick = max(-px * uy + py * ux for px, py in corners) - min(-px * uy + py * ux for px, py in corners)
+            cx = (min(p[0] for p in corners) + max(p[0] for p in corners)) / 2
+            cy = (min(p[1] for p in corners) + max(p[1] for p in corners)) / 2
+            box = (int((cx - length / 2) * scale), int((cy - thick / 2) * scale), int(length * scale), int(thick * scale))
+            out.append(Shape("text_box", box, None, None, None, None, False, None, "slide", rotation=((360 - deg) % 360) * 60000,
+                             text_chars=len(text), text=text[:80], paint_order=min(painted.get(_pdf_key(c), 0) for c in glyphs),
+                             line_style=_pdf_line_style(glyphs)))
+    return out
 
 
 def _slide_shaped(w: float, h: float, tolerance: float = 0.015) -> bool:
@@ -1636,6 +1732,10 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 break
             w, h = float(page.width), float(page.height)
             scale = 12700.0  # pt -> EMU so margins and areas share the pptx arithmetic
+            # content-stream order is paint order: a later object paints over an earlier one
+            painted: dict[tuple, int] = {}
+            for order, obj in enumerate(page.iter_layout_objects(page.layout._objs)):
+                painted.setdefault(_pdf_key(obj), order)
             try:
                 page = page.dedupe_chars(tolerance=1)  # overprinted glyphs (fake bold) otherwise read twice
             except Exception:  # noqa: BLE001 - older pdfplumber
@@ -1674,18 +1774,20 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 lw = float(rect.get("linewidth") or 0) if stroke else None
                 sp.shapes.append(Shape("line" if thin else "shape", box, None if thin else fill,
                                        (fill if thin and fill else stroke), int((lw if lw else min(rw, rh)) * scale) if (thin or stroke) else None,
-                                       None, False, None, "slide"))
+                                       None, False, None, "slide", paint_order=painted.get(_pdf_key(rect), 0)))
             for line in page.lines:
                 lw = float(line.get("linewidth") or 1.0)
                 color = _pdf_color(line.get("stroking_color"))
                 box = (int(float(line["x0"]) * scale), int(float(line["top"]) * scale),
                        int(max(1.0, float(line["x1"]) - float(line["x0"])) * scale), int(max(lw, float(line["bottom"]) - float(line["top"])) * scale))
-                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide"))
+                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide", paint_order=painted.get(_pdf_key(line), 0)))
             if sp.background is None:
                 sp.background = "FFFFFF"
             # text extents feed the margins: a PDF has no text boxes, so words stand in for them
+            # rotated glyphs are read along their own baseline below: extract_words reads
+            # them as horizontal fragments (a vertical copyright line came out 'thgirypoC')
             try:
-                words = page.extract_words()
+                words = page.filter(lambda o: o.get("object_type") != "char" or o.get("upright", True)).extract_words(return_chars=True)
             except Exception:  # noqa: BLE001 - a malformed page still has rects
                 words = []
             # words grouped into lines (same top within 2pt) carry their text, so a footer or a
@@ -1712,7 +1814,10 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                     bottom = max(float(d["bottom"]) for d in seg)
                     text = " ".join(str(d["text"]) for d in seg)
                     box = (int(x0 * scale), int(top * scale), int((x1 - x0) * scale), int((bottom - top) * scale))
-                    sp.shapes.append(Shape("text_box", box, None, None, None, None, False, None, "slide", text_chars=len(text), text=text[:80]))
+                    glyphs = [c for d in seg for c in d.get("chars", [])]
+                    sp.shapes.append(Shape("text_box", box, None, None, None, None, False, None, "slide", text_chars=len(text), text=text[:80],
+                                           paint_order=min((painted.get(_pdf_key(c), 0) for c in glyphs), default=0), line_style=_pdf_line_style(glyphs)))
+            sp.shapes.extend(_pdf_rotated_lines([c for c in page.chars if not c.get("upright", True)], painted, scale))
             out.append(sp)
     return out
 

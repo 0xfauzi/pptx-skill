@@ -33,11 +33,11 @@ import re
 import statistics
 import sys
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -322,6 +322,10 @@ def union_area(boxes: list[tuple[int, int, int, int]], w: int, h: int) -> int:
     return total
 
 
+def _inside(inner: tuple[int, int, int, int], outer: tuple[int, int, int, int]) -> bool:
+    return outer[0] <= inner[0] and outer[1] <= inner[1] and inner[0] + inner[2] <= outer[0] + outer[2] and inner[1] + inner[3] <= outer[1] + outer[3]
+
+
 def quant(box: tuple[int, int, int, int]) -> tuple[int, int, int, int]:
     return tuple(v // POSITION_DIAMETER_EMU for v in box)  # type: ignore[return-value]
 
@@ -406,7 +410,9 @@ class Extractor:
                 # has no placeholders, so a short text line repeated at one position (a footer
                 # label, a page number) counts there.
                 furniture = sh.ph_type in CHROME_TYPES or (sh.text_chars == 0 and sh.kind in ("line", "shape", "picture"))
-                pdf_label = self.is_pdf and sh.text is not None and len(sh.text) <= 48 and sh.box[1] > 0.8 * self.h  # type: ignore[index]
+                # a rotated line (a copyright up the page edge) is furniture wherever it sits
+                # and however long; recurrence at one position below still decides it
+                pdf_label = self.is_pdf and sh.text is not None and (bool(sh.rotation) or (len(sh.text) <= 48 and sh.box[1] > 0.8 * self.h))  # type: ignore[index]
                 if sh.box and (furniture or pdf_label):
                     if pdf_label:
                         # a footer line often carries the page number: key on the words and the
@@ -435,7 +441,10 @@ class Extractor:
         return False
 
     def content_boxes(self, s: SlidePrint) -> list[Shape]:
-        return [sh for sh in s.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and not self.is_chrome(sh)]
+        """The slide's content shapes, each with the page area it covers as its box (a
+        rotated shape's declared box is its pre-rotation box, which can lie off the page)."""
+        return [replace(sh, box=visual_extent(sh.box, sh.rotation)) if sh.rotation else sh
+                for sh in s.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and not self.is_chrome(sh)]
 
     def open(self, path: str, reason: str, constraints: dict | None = None, candidates: list | None = None) -> None:
         self.unresolved.append({"path": path, "reason": reason, "constraints": constraints or {}, "candidates": candidates or []})
@@ -1060,12 +1069,19 @@ class Extractor:
         samples: dict[tuple, Shape] = {}
         presence: Counter = Counter()
         text_of: dict[tuple, str] = {}
+        # each entry's rank in its page's painting sequence, per page it is on: the drawn
+        # chrome must paint in the reference's order (a full-page band drawn last buries
+        # every other entry)
+        paint_ranks: dict[tuple, list[float]] = {}
+        content_on: Counter = Counter()  # key -> pages on which a content box lies inside it
         for s in self.slides:
+            on_page: dict[tuple, int] = {}
             for c in s.chrome:
                 if c.box:
                     k = (c.kind, quant(c.box), c.layer)
                     samples.setdefault(k, c)
                     presence[k] += 1
+                    on_page.setdefault(k, c.paint_order)
             for sh in s.shapes:
                 if not sh.box or not self.is_chrome(sh):
                     continue
@@ -1075,6 +1091,7 @@ class Extractor:
                     k = (sh.kind, (q[0], q[1], 0, 0), "slide")
                     samples.setdefault(k, sh)
                     presence[k] += 1
+                    on_page.setdefault(k, sh.paint_order)
                     if k not in text_of:
                         has_number = bool(re.search(r"\d+\s*$", sh.text or ""))
                         text_of[k] = (label if label != "<page number>" else "") + (" <page number>" if has_number or label == "<page number>" else "")
@@ -1082,10 +1099,17 @@ class Extractor:
                 k = (sh.kind, quant(sh.box), "slide")
                 samples.setdefault(k, sh)
                 presence[k] += 1
+                on_page.setdefault(k, sh.paint_order)
                 if sh.text_chars and k not in text_of:
                     text_of[k] = " ".join(r.text_sample for r in s.runs if r.ref.startswith(sh.ref + "/"))[:60]
-            for r in s.chrome_runs:
-                pass
+            ordered = sorted(on_page, key=lambda key: on_page[key])
+            for rank, k in enumerate(ordered):
+                paint_ranks.setdefault(k, []).append(rank / max(1, len(ordered) - 1))
+            content = self.content_boxes(s)
+            for k in on_page:
+                box = samples[k].box
+                if box and any(_inside(c.box, box) for c in content):  # type: ignore[arg-type]
+                    content_on[k] += 1
         chrome_text: dict[str, str] = {}
         for s in self.slides[:1]:
             for r in s.chrome_runs:
@@ -1122,11 +1146,12 @@ class Extractor:
                 kind = "label"
             elif sh.fill:
                 kind = "band"
-            span = "full" if (w >= MOTIF_FULL_SPAN * self.w or h >= MOTIF_FULL_SPAN * self.h) else "partial"
-            dist = {"slide_top": y / self.h, "slide_bottom": (self.h - y - h) / self.h, "slide_left": x / self.w, "slide_right": (self.w - x - w) / self.w}
-            if w >= MOTIF_FULL_SPAN * self.w:  # a full-width mark anchors to a horizontal edge
+            vx, vy, vw, vh = visual_extent(sh.box, sh.rotation)  # type: ignore[arg-type]
+            span = "full" if (vw >= MOTIF_FULL_SPAN * self.w or vh >= MOTIF_FULL_SPAN * self.h) else "partial"
+            dist = {"slide_top": vy / self.h, "slide_bottom": (self.h - vy - vh) / self.h, "slide_left": vx / self.w, "slide_right": (self.w - vx - vw) / self.w}
+            if vw >= MOTIF_FULL_SPAN * self.w:  # a full-width mark anchors to a horizontal edge
                 dist = {k: v for k, v in dist.items() if k in ("slide_top", "slide_bottom")}
-            elif h >= MOTIF_FULL_SPAN * self.h:
+            elif vh >= MOTIF_FULL_SPAN * self.h:
                 dist = {k: v for k, v in dist.items() if k in ("slide_left", "slide_right")}
             anchor = min(dist, key=dist.get)
             if dist[anchor] > 0.15:
@@ -1141,19 +1166,23 @@ class Extractor:
                 "layers": sorted(set(layers)),
                 "slides_present": present, "of_slides": len(self.slides),
                 "exclusion_zone_in": [round(v / EMU_PER_INCH, 3) for v in (x, y, w, h)],
+                "paint_rank": statistics.median(paint_ranks.get(k) or [0.0]),
+                "carries_content_on": content_on[k],
             }
-            if self.is_pdf and sh.text is not None:
-                y0, y1 = sh.box[1], sh.box[1] + sh.box[3]  # type: ignore[index]
-                runs = [r for sl in self.slides[:3] for r in sl.runs if r.text_sample and sh.text.startswith(r.text_sample[:8])]
-                if runs:
-                    entry["text_style"] = {"family": modal([r.family for r in runs]), "size_pt": modal([r.size_pt for r in runs]),
-                                           "ink_hex": modal([r.color for r in runs]), "bold": modal([r.bold for r in runs])}
+            if sh.rotation:
+                entry["rotation_deg"] = round(sh.rotation / 60000, 2)  # clockwise about the centre of box_in, the pre-rotation box
+            if self.is_pdf and sh.text is not None and sh.line_style:
+                entry["text_style"] = dict(sh.line_style)
             if sh.layer != "slide" and sh.text_chars:
                 runs = [r for s in self.slides[:1] for r in s.chrome_runs if r.ref.startswith(sh.ref)]
                 if runs:
                     entry["text_style"] = {"family": modal([r.family for r in runs]), "size_pt": modal([r.size_pt for r in runs]),
                                            "ink_hex": modal([r.color for r in runs]), "bold": modal([r.bold for r in runs])}
             chrome.append(entry)
+        for order, i in enumerate(sorted(range(len(chrome)), key=lambda i: (chrome[i]["paint_rank"], i))):
+            chrome[i]["paint_order"] = order
+        for entry in chrome:
+            del entry["paint_rank"]
         self.guide["chrome"] = chrome
         motifs = []
         for c in chrome:
@@ -1536,7 +1565,10 @@ def report(guide: dict) -> str:
     out.append(f"Alignment edges (top): {[(e['axis'], e['edge_kind'], round(e['position_emu'] / EMU_PER_INCH, 2), e['member_count']) for e in comp.get('alignment_edges', [])][:12]}")
     out += ["", "## Chrome and motifs", ""]
     for ch in g.get("chrome", []):
-        out.append(f"- {ch['chrome_id']} {ch['kind']} ({ch['shape_kind']}, {ch['source_layer']}) box {ch['box_in']} in, {ch['anchor']}, {ch['span']}, fill {ch['fill_hex']}, line {ch['line_hex']} {ch['line_width_pt']}pt, text {ch['text']!r}, style {ch.get('text_style')}, on {ch['slides_present']}/{ch['of_slides']} slides")
+        out.append(f"- {ch['chrome_id']} {ch['kind']} ({ch['shape_kind']}, {ch['source_layer']}) box {ch['box_in']} in"
+                   + (f" turned {ch['rotation_deg']} deg" if ch.get("rotation_deg") else "")
+                   + f", {ch['anchor']}, {ch['span']}, fill {ch['fill_hex']}, line {ch['line_hex']} {ch['line_width_pt']}pt, text {ch['text']!r}, style {ch.get('text_style')}, on {ch['slides_present']}/{ch['of_slides']} slides"
+                   + f", paints {ch.get('paint_order')}" + (f", content inside on {ch['carries_content_on']} slides" if ch.get("carries_content_on") else ""))
     for m in g.get("motifs", []):
         out.append(f"- {m['motif_id']}: {m['name']}, line {m['line_role']} {m['line_width_pt']}pt, fill {m['fill_role']}")
     out += ["", "## Register and density", ""]
