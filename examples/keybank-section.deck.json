@@ -37,7 +37,7 @@
         "direction": "row",
         "gap_role": "space.gutter",
         "pad_role": null,
-        "align": "start",
+        "align": "stretch",
         "justify": "start"
        },
        "children": [
@@ -247,7 +247,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Precedent bank deals: 1.33x is below the 1.58x median; the 40% synergy case is the top of the set"
+         "text": "Precedent deals: 1.33x is below the 1.58x median multiple"
         }
        ]
       },
@@ -412,7 +412,7 @@
         "direction": "row",
         "gap_role": "space.gutter",
         "pad_role": null,
-        "align": "start",
+        "align": "stretch",
         "justify": "start"
        },
        "children": [
@@ -544,7 +544,7 @@
         "direction": "row",
         "gap_role": "space.gutter",
         "pad_role": null,
-        "align": "start",
+        "align": "stretch",
         "justify": "start"
        },
        "children": [
@@ -682,7 +682,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Synergies: $400m is required, $295m is precedented at run-rate"
+         "text": "Synergies: $400m required, $295m precedented at run-rate"
         }
        ]
       },

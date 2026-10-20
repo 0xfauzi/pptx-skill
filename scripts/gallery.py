@@ -873,7 +873,12 @@ def manifest_markdown(
 
 def main(argv: list[str]) -> int:
     for a in argv:
-        if a.lower().endswith(".pdf"):
+        head = b""
+        try:
+            head = Path(a).read_bytes()[:4] if Path(a).is_file() else b""
+        except OSError:
+            head = b""
+        if a.lower().endswith(".pdf") or head.startswith(b"%PDF"):
             print("gallery.py reads .pptx only: for a PDF reference look at the page renders (render.py) and the triage table (ooxml.py triage); the crops a PDF could give are its pages")
             return 2
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

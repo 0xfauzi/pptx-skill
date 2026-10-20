@@ -1285,6 +1285,18 @@ class Extractor:
                            "provenance": observed([], len(vals), False, 1.0)}
         self.guide["floors"] = floors
         self.guide["floors_note"] = "absolute_floor_pt: product safety floor measured in deckgen E45 (7.0pt, both render media); never generate below max(floor_pt, absolute_floor_pt)"
+        # an inferred role below its own family's measured floor cannot be emitted (the solver
+        # refuses it), so it is unbound here and reopened with the floor as its constraint
+        for role, fam in (("type.caption", "annotation"), ("type.footnote", "annotation"), ("type.source_line", "annotation"), ("type.kicker", "annotation")):
+            spec = self._roles.get(role)
+            if not spec or spec.get("provenance", {}).get("role_provenance") != "inferred":
+                continue
+            f = floors.get(fam) or {}
+            floor = max(float(f.get("floor_pt") or 0.0), float(f.get("absolute_floor_pt") or 0.0))
+            if spec.get("size_pt") is not None and float(spec["size_pt"]) < floor:
+                del self._roles[role]
+                self.open(f"/typography/roles/{role}", f"the inferred {spec['size_pt']}pt level is below the {fam} floor {floor}pt",
+                          {"min_size_pt": floor, "ladder_sizes_pt": [lv.get("size_pt") for lv in self.guide.get("typography", {}).get("levels", [])]})
 
     # ---- assembly ----
     def run(self) -> dict:
