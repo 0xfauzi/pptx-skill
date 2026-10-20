@@ -16,28 +16,38 @@ levels, bold runs, fills and inverse ink, the row and column arrangement (shapes
 overlap vertically share a row, weights follow widths) and pictures (as sized images
 without their bytes, so the render shows an empty frame). What does not: charts and
 tables are left as notes in the spec for the agent to rebuild from data.
+
+A PDF page imports from ooxml.py's text blocks (`--slide` is the page number): the title
+is the block at the deck's recurring title position, a block's fill is the filled
+rectangle under its centre, text at a position where the guide mined chrome is left to
+the chrome, and text turned a quarter is left out (a page spec sets text upright). Build
+it on the blank template with --chrome draw.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
+from PIL import Image
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ooxml import EMU_PER_PT, Shape, delta_e, fingerprint_deck  # noqa: E402
+from extract_style import POSITION_DIAMETER_EMU  # noqa: E402  the grain chrome is mined at
+from ooxml import Shape, SlidePrint, delta_e, fingerprint_deck  # noqa: E402
 
 EMU_PER_INCH = 914400
 CHROME_PH = {"sldNum", "ftr", "dt"}
 
 
-def role_table(guide: dict) -> list[tuple[str, float, int]]:
+def role_table(guide: dict) -> list[tuple[str, float, int, str | None]]:
     out = []
     for name, spec in guide["typography"]["roles"].items():
         if spec.get("size_pt"):
-            out.append((name, float(spec["size_pt"]), int(spec.get("weight") or 400)))
+            out.append((name, float(spec["size_pt"]), int(spec.get("weight") or 400), spec.get("ink_role")))
     return out
 
 
@@ -45,12 +55,12 @@ PREFERENCE = ["type.body", "type.h2", "type.h1", "type.emphasis", "type.caption"
               "type.kicker", "type.table_cell", "type.table_header", "type.axis_label", "type.data_label", "type.title", "type.subtitle"]
 
 
-def bind_role(size: float, bold: bool, is_title: bool, roles: list[tuple[str, float, int]]) -> str:
+def bind_role(size: float, bold: bool, is_title: bool, roles: list[tuple[str, float, int, str | None]]) -> str:
     if is_title and any(r[0] == "type.title" for r in roles):
         return "type.title"
     weight = 700 if bold else 400
     best = None
-    for name, rsize, rweight in roles:
+    for name, rsize, rweight, _ in roles:
         if name == "type.title":
             continue
         cost = abs(rsize - size) * 10 + (0 if rweight == weight else 3) + (PREFERENCE.index(name) if name in PREFERENCE else 20) * 0.01
@@ -104,7 +114,9 @@ def rows_of(shapes: list[Shape]) -> list[list[Shape]]:
     return rows
 
 
-def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int]], colours: dict[str, str], styling: dict, notes: list[str]) -> dict:
+def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str | None]], colours: dict[str, str], styling: dict, notes: list[str],
+                 fill: str | None = None, extra_fills: tuple[str, ...] = ()) -> dict:
+    fill = fill or sh.fill
     paragraphs = []
     para_style: dict[str, dict] = {}
     inverse = None
@@ -126,7 +138,10 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int]], col
             para_style.setdefault(str(len(paragraphs) - 1), {})["align"] = {"ctr": "center", "r": "right"}[para["align"]]
         if lead.get("color"):
             name, d = nearest_colour(lead["color"], colours, ("color.ink", "color.accent", "color.rule"))
-            if name and d < 12 and name not in ("color.ink",):
+            # the ink is written whenever it differs from the bound role's own ink: a role
+            # bound by size can carry another ink (a white box header) than the run had
+            own = next((r[3] for r in roles if r[0] == role), None) or "color.ink"
+            if name and d < 12 and name != own:
                 para_style.setdefault(str(len(paragraphs) - 1), {})["ink_role"] = name
                 if name == "color.ink_inverse":
                     inverse = name
@@ -134,13 +149,14 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int]], col
     st: dict = {}
     if sh.text_anchor in ("ctr", "b"):
         st["anchor"] = "m" if sh.text_anchor == "ctr" else "b"
-    if sh.fill:
-        name, d = nearest_colour(sh.fill, colours, ("color.surface", "color.accent", "color.rule"))
+    if fill:
+        # a fill may take any role a fill can name: the surfaces, accents, rule and the extra roles
+        name, d = nearest_colour(fill, colours, ("color.surface", "color.accent", "color.rule", *extra_fills))
         if name and d < 12:
             st["fill_role"] = name
             st["pad_role"] = "space.xs"
         else:
-            notes.append(f"{ident}: fill {sh.fill} has no colour role within CIE76 12 (nearest {name} at {d:.1f}); left unfilled")
+            notes.append(f"{ident}: fill {fill} has no colour role within CIE76 12 (nearest {name} at {d:.1f}); left unfilled")
     if para_style:
         st["paragraphs"] = para_style
     if st:
@@ -148,19 +164,90 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int]], col
     return el
 
 
-def import_slide(path: str, index: int, guide: dict) -> dict:
-    slides = fingerprint_deck(path)
+CHROME_TEXT_KINDS = {"label", "page_number", "footer", "date"}
+
+
+def chrome_boxes(guide: dict) -> list[tuple[int, int, int, int]]:
+    """The guide's text chrome positions in EMU. A PDF page carries its footer and page
+    number as page text, so the slide's own copy is recognised by where the guide found
+    that chrome (a band or a rule is never a text block's position)."""
+    out = []
+    for c in guide.get("chrome") or []:
+        box = c.get("box_in")
+        if c.get("kind") in CHROME_TEXT_KINDS and isinstance(box, list) and len(box) == 4:
+            out.append(tuple(int(v * EMU_PER_INCH) for v in box))  # type: ignore[arg-type]
+    return out  # type: ignore[return-value]
+
+
+def is_guide_chrome(box: tuple[int, int, int, int], chrome: list[tuple[int, int, int, int]]) -> bool:
+    return any(abs(box[0] - cx) <= POSITION_DIAMETER_EMU and abs(box[1] - cy) <= POSITION_DIAMETER_EMU for cx, cy, _, _ in chrome)
+
+
+def fill_under(sh: Shape, s: SlidePrint) -> str | None:
+    """A PDF paints a text box's fill as its own rectangle under the text: the fill of the
+    smallest filled rectangle holding the block's centre stands in for the shape fill a
+    pptx declares. The page's own ground is no fill."""
+    x, y, w, h = sh.box  # type: ignore[misc]
+    cx, cy = x + w // 2, y + h // 2  # the centre: a line can overhang its box by a glyph (bain p45 tab)
+    best: tuple[int, str] | None = None
+    for o in s.shapes:
+        if o.kind != "shape" or not o.fill or not o.box:
+            continue
+        ox, oy, ow, oh = o.box
+        if ox <= cx <= ox + ow and oy <= cy <= oy + oh and (best is None or ow * oh < best[0]):
+            best = (ow * oh, o.fill)
+    return best[1] if best and best[1] != s.background else None
+
+
+PICTURE_DPI = 150  # the page render a PDF picture is cut from; the build scales it into the solved box
+
+
+def pdf_picture(path: str, index: int, box: tuple[int, int, int, int], out_dir: Path, ident: str) -> str | None:
+    """A PDF picture's pixels: the page rendered once by pdftoppm and the picture's box cut
+    from it, so the round trip draws the reference's own image, not an empty frame."""
+    page_png = out_dir / f"{Path(path).stem}-page{index + 1}.png"
+    if not page_png.exists():
+        subprocess.run(["pdftoppm", "-png", "-r", str(PICTURE_DPI), "-f", str(index + 1), "-l", str(index + 1), "-singlefile", path,
+                        str(page_png.with_suffix(""))], check=True, timeout=300)
+    scale = PICTURE_DPI / EMU_PER_INCH
+    with Image.open(page_png) as page:
+        left, top = max(0, round(box[0] * scale)), max(0, round(box[1] * scale))
+        right, bottom = min(page.width, round((box[0] + box[2]) * scale)), min(page.height, round((box[1] + box[3]) * scale))
+        if right - left < 2 or bottom - top < 2:
+            return None
+        target = out_dir / f"{Path(path).stem}-page{index + 1}-{ident}.png"
+        page.crop((left, top, right, bottom)).save(target, format="PNG")
+    return str(target)
+
+
+def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = None) -> dict:
+    slides = fingerprint_deck(path)  # every page: a PDF title is found from the position titles recur at
+    if not 0 <= index < len(slides):
+        raise SystemExit(f"{path}: slide {index + 1} does not exist ({len(slides)} slides)")
     s = slides[index]
     roles = role_table(guide)
     colours = colour_roles(guide)
+    extra = tuple(name for name, spec in (guide.get("extra_roles") or {}).items() if spec.get("hex"))
     notes: list[str] = []
     styling: dict = {}
-    content = [sh for sh in s.shapes if sh.box and sh.ph_type not in CHROME_PH and sh.kind not in ("line",) and (sh.text_chars or sh.kind in ("picture", "table", "chart"))]
+    images: dict = {}
+    chrome = chrome_boxes(guide) if s.source == "pdf" else []
+    content = []
+    for sh in s.shapes:
+        if not sh.box or sh.ph_type in CHROME_PH or sh.kind in ("line",) or not (sh.text_chars or sh.kind in ("picture", "table", "chart")):
+            continue
+        if chrome and is_guide_chrome(sh.box, chrome):
+            notes.append(f"{sh.ref}: {sh.text!r} sits at a chrome position of the guide; the build draws chrome, so it is not imported")
+            continue
+        if sh.rotation:
+            notes.append(f"{sh.ref}: text turned {sh.rotation // 60000} degrees ({sh.text!r}); a page spec sets text upright, so it is not imported")
+            continue
+        content.append(sh)
     title = next((sh for sh in content if sh.ph_type == "title"), None)
     body = [sh for sh in content if sh is not title]
     children: list[dict] = []
     if title is not None:
-        children.append(text_element(title, "title", roles, colours, styling, notes))
+        children.append(text_element(title, "title", roles, colours, styling, notes, fill_under(title, s) if s.source == "pdf" else None, extra))
     n = 0
     for row in rows_of(body):
         elems = []
@@ -169,12 +256,17 @@ def import_slide(path: str, index: int, guide: dict) -> dict:
             ident = f"e{n}"
             if sh.kind == "picture":
                 elems.append({"type": "element", "id": ident, "kind": "image", "size": {"width_emu": sh.box[2], "height_emu": sh.box[3]}})  # type: ignore[index]
-                notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, bytes not imported")  # type: ignore[index]
+                crop = pdf_picture(path, index, sh.box, image_dir, ident) if s.source == "pdf" and image_dir is not None else None  # type: ignore[arg-type]
+                if crop:
+                    images[ident] = {"path": crop}
+                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, cut from the page render: {crop}")  # type: ignore[index]
+                else:
+                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, bytes not imported")  # type: ignore[index]
             elif sh.kind in ("table", "chart"):
                 elems.append({"type": "element", "id": ident, "kind": "text", "paragraphs": [{"role": "type.body", "text": f"[{sh.kind} to rebuild from data]"}]})
                 notes.append(f"{ident}: {sh.kind} left as a placeholder; rebuild it from the dataset")
             else:
-                elems.append(text_element(sh, ident, roles, colours, styling, notes))
+                elems.append(text_element(sh, ident, roles, colours, styling, notes, fill_under(sh, s) if s.source == "pdf" else None, extra))
         if len(elems) == 1:
             children.append(elems[0])
         else:
@@ -203,6 +295,8 @@ def import_slide(path: str, index: int, guide: dict) -> dict:
     slide = {"id": f"import-{index + 1}", "layout": s.layout_name or "Title and Content",
              "notes": f"round trip of {Path(path).name} slide {index + 1}: roles and weights only, no coordinates",
              "spec": {"root": root, "splittable_groups": []}, "styling": styling, "import_notes": notes}
+    if images:
+        slide["images"] = images
     return {"slides": [slide]}
 
 
@@ -214,7 +308,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out", required=True)
     args = ap.parse_args(argv)
     guide = json.loads(Path(args.guide).read_text())
-    deck = import_slide(args.reference, args.slide - 1, guide)
+    deck = import_slide(args.reference, args.slide - 1, guide, Path(args.out).resolve().parent)
     Path(args.out).write_text(json.dumps(deck, indent=1))
     sl = deck["slides"][0]
     print(json.dumps({"out": args.out, "layout": sl["layout"], "elements": sum(1 for _ in json.dumps(sl["spec"]).split('"kind":')) - 1,

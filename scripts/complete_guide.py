@@ -22,7 +22,12 @@ Patch shape: {"<unresolved path>": <value>, ...}. Paths are JSON-pointer-like wi
 draft's spelling, e.g. "/typography/roles/type.footnote", "/color/roles/color.accent3",
 "/tables", "/charts", "/description", "/derivation_rules", "/continuation",
 "/typography/roles/type.h1/members" (a dict of the missing members),
-"/typography/roles/type.body/line_spacing", "/spacing/baseline_emu".
+"/typography/roles/type.body/line_spacing", "/spacing/baseline_emu". A colour, under
+/color/roles or /extra_roles, is "RRGGBB" or {"hex": "RRGGBB", "why": "..."}. null answers
+line_spacing (single spacing), /typography/scale_ratio (not a geometric ladder),
+/spacing/baseline_emu and /density_bands/table_rows_per_inch, and closes them. On a
+raster draft (no levels table) a new type role is writable when its value carries
+"provenance": "raster_inference".
 """
 
 from __future__ import annotations
@@ -129,12 +134,20 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
     # and "use the levels the histogram shows" could not be followed without this
     parts = [q for q in path.split("/") if q]
     levels = {float(lv.get("size_pt")) for lv in guide.get("typography", {}).get("levels", []) if lv.get("size_pt")}
-    if (len(parts) == 3 and parts[0] == "typography" and parts[1] == "roles" and parts[2] not in guide["typography"]["roles"]
-            and isinstance(value, dict) and value.get("size_pt") is not None and float(value["size_pt"]) in levels):
+    new_role = (len(parts) == 3 and parts[0] == "typography" and parts[1] == "roles" and parts[2] not in guide["typography"]["roles"]
+                and isinstance(value, dict) and value.get("size_pt") is not None)
+    if new_role and float(value["size_pt"]) in levels:
+        return
+    # a raster reference has no levels table (its text layer is not type evidence), so a
+    # size can only be read off the pixels: raster_style.py's run heights. A new role there
+    # is writable when it says so, and it carries raster_inference provenance at <= 0.5
+    raster = (guide.get("reference", {}).get("text_layer") or {}).get("status") == "raster"
+    if new_role and raster and value.get("provenance") == "raster_inference":
         return
     under = f"; it sits under {settled[0]}, value_provenance {settled[1]}" if settled else ""
     raise PatchError(f"{path}: not an open address{under}. A patch answers the draft's unresolved list and nothing else (a new "
-                     f"type role needs a size the reference writes, levels {sorted(levels)}); open: {sorted(open_paths)}")
+                     f"type role needs a size the reference writes, levels {sorted(levels)}"
+                     f"{'; on this raster reference, a new role with provenance raster_inference' if raster else ''}); open: {sorted(open_paths)}")
 
 
 def core_open(guide: dict) -> list[str]:
@@ -171,10 +184,16 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
             else:
                 raise PatchError(f"{path}: expected a hex colour")
         elif parts[0] == "extra_roles":
-            if not (isinstance(value, str) and HEX_RE.match(value)):
-                raise PatchError(f"{path}: expected a hex colour")
+            # the same two forms a colour role takes: a bare hex, or {"hex", "why"} (SKILL.md
+            # section 3 asks for the why, so the object form is the documented one)
+            if isinstance(value, str) and HEX_RE.match(value):
+                spec = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
+            elif isinstance(value, dict) and isinstance(value.get("hex"), str) and HEX_RE.match(value["hex"]):
+                spec = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
+            else:
+                raise PatchError(f"{path}: expected a hex colour, or {{\"hex\": \"RRGGBB\", \"why\": \"...\"}}")
             guide["extra_roles"] = guide.get("extra_roles") or {}
-            guide["extra_roles"][parts[1]] = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
+            guide["extra_roles"][parts[1]] = spec
         elif parts[0] == "typography" and parts[1] == "roles":
             role = parts[2]
             roles = guide["typography"]["roles"]
@@ -201,7 +220,9 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
             else:
                 member = parts[3]
                 if member == "line_spacing":
-                    roles[role]["line_spacing"] = float(value)
+                    # null is an answer: the role keeps single spacing (1.2 x size, the
+                    # renderer's measured default when no lnSpc is written)
+                    roles[role]["line_spacing"] = None if value is None else float(value)
                 else:
                     raise PatchError(f"{path}: member {member} is not open")
             check_color_refs(guide, value if isinstance(value, dict) else {}, path)
@@ -215,7 +236,8 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
                 # stand-in faces for measurement only: the file names the real face
                 guide["typography"].setdefault("families", {})["substitutes"] = dict(value)
             elif path == "/typography/scale_ratio":
-                guide["typography"]["scale_ratio"] = float(value)
+                # null is an answer: the ladder is not geometric, and nothing reads a ratio
+                guide["typography"]["scale_ratio"] = None if value is None else float(value)
             elif path == "/spacing/baseline_emu":
                 guide["spacing"]["baseline_emu"] = int(value) if value is not None else None
             elif path == "/density_bands/table_rows_per_inch":

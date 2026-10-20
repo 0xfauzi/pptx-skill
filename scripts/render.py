@@ -14,6 +14,10 @@ that face which the rendered file's charset (fc-query) does not cover, with up t
 10 samples: a nonzero count means that face draws empty boxes or another face's
 glyphs. --grid also writes DIR/grid.png, a labelled contact sheet for a first look.
 
+A .pdf is rasterized as it is, and its fonts.json lists the families the file names
+(pdffonts): an embedded face is drawn from the file's own glyphs (exact), a face the file
+only names is matched through fontconfig as above.
+
 The renderer runs one conversion at a time in a fresh profile directory, because
 a shared LibreOffice profile hangs on the second call in sandboxes.
 """
@@ -150,6 +154,40 @@ def font_report(faces: set[str], deck: Path | None = None) -> dict[str, dict[str
     return out
 
 
+_PDFFONTS_ROW = re.compile(r"^(\S+)\s+.*?\s(yes|no)\s+(yes|no)\s+(yes|no)\s+\d+\s+\d+\s*$")
+
+
+def pdf_font_report(pdf: Path) -> dict[str, dict[str, object]]:
+    """Per family a PDF names (pdffonts), what the page renders draw it with. pdftoppm
+    draws an embedded font from the file's own glyphs, so the render is exact for it; a
+    face the file only names is drawn with what fontconfig picks, and is judged like a
+    pptx face (exact, metric_alias or substituted). An embedded subset holds exactly the
+    glyphs the file sets, so no codepoint check applies; a named face is not checked
+    either (the file's text is not mapped to faces here) and says so."""
+    try:
+        listing = subprocess.run(["pdffonts", str(pdf)], capture_output=True, text=True, timeout=120).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        listing = ""
+    embedded: dict[str, bool] = {}
+    for line in listing.splitlines()[2:]:
+        m = _PDFFONTS_ROW.match(line)
+        if not m or m.group(1) == "[none]":
+            continue
+        family, _ = ooxml._pdf_family(m.group(1))
+        if family:
+            embedded[family] = embedded.get(family, True) and m.group(2) == "yes"
+    named = {face for face, emb in embedded.items() if not emb}
+    out = font_report(named) if named else {}
+    for face in out:
+        out[face]["embedded"] = False
+        out[face]["codepoints_checked"] = None
+    for face, emb in embedded.items():
+        if emb:
+            out[face] = {"rendered_with": face, "file": None, "fidelity": "exact", "embedded": True, "codepoints_checked": None,
+                         "uncovered_count": 0, "uncovered_sample": []}
+    return dict(sorted(out.items()))
+
+
 def uncovered_faces(fonts: dict[str, dict[str, object]]) -> dict[str, dict[str, object]]:
     """Faces that cannot draw some of the deck's characters."""
     return {face: entry for face, entry in fonts.items() if int(entry.get("uncovered_count") or 0) > 0}
@@ -245,6 +283,9 @@ def main(argv: list[str]) -> int:
         work = Path(tmp)
         if src.suffix.lower() == ".pdf":
             pdf = src
+            fonts = pdf_font_report(src)
+            report["fonts"] = fonts
+            (out / "fonts.json").write_text(json.dumps(fonts, indent=1))
         else:
             faces = declared_fonts(src)
             fonts = font_report(faces, src)

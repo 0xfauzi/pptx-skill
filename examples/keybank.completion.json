@@ -195,5 +195,22 @@
  "/color/roles/color.accent2": {
   "hex": "113D63",
   "why": "the deep-blue house swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
- }
+ },
+ "/color/roles/color.positive": {
+  "hex": "113D63",
+  "why": "no green appears anywhere in the deck and it never colours a figure as favourable; a positive figure takes the house deep blue (the observed color.rule) so it reads in the house palette"
+ },
+ "/color/roles/color.negative": {
+  "hex": "FF0000",
+  "why": "the only saturated non-blue in the deck: the red outline that flags the adverse figure (one rule vote in the draft's usage pools)"
+ },
+ "/typography/scale_ratio": null,
+ "/typography/roles/type.title/line_spacing": null,
+ "/typography/roles/type.body/line_spacing": null,
+ "/typography/roles/type.caption/line_spacing": null,
+ "/typography/roles/type.emphasis/line_spacing": null,
+ "/typography/roles/type.h1/line_spacing": null,
+ "/typography/roles/type.h2/line_spacing": null,
+ "/spacing/baseline_emu": null,
+ "/density_bands/table_rows_per_inch": null
 }

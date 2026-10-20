@@ -29,14 +29,14 @@
   "ink_role": "color.accent1"
  },
  "/typography/roles/type.source_line": {
-  "size_pt": 8,
+  "size_pt": 9,
   "weight": 400,
   "italic": false,
   "family": "Arial",
   "alignment": "left",
   "case": "as_typed",
   "ink_role": "color.ink",
-  "why": "the 8pt caption level carries the source lines on every page"
+  "why": "the reference sets its source lines at 8pt; the annotation floor this draft measured is 9.0pt (Tukey fence over 43 annotation runs, 33 of them at 9pt), so 9pt is the smallest size it admits"
  },
  "/typography/roles/type.table_header": {
   "size_pt": 12,
@@ -170,5 +170,30 @@
  "/typography/families/substitutes": {
   "Georgia": "DejaVu Serif",
   "Aptos": "Carlito"
- }
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 9,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "the numbered note under the skills matrix (page 14) is set like the source line, at the 9pt floor"
+ },
+ "/shape_language/corner_radii": {
+  "modal_radius_emu": 0,
+  "rounded_share": 0.0,
+  "why": "every box in the renders is square-cornered: the skills matrix cells and group frames (page 14), the panels on pages 12 and 13"
+ },
+ "/typography/scale_ratio": null,
+ "/spacing/baseline_emu": null,
+ "/density_bands/table_rows_per_inch": null,
+ "/typography/roles/type.title/line_spacing": null,
+ "/typography/roles/type.body/line_spacing": null,
+ "/typography/roles/type.caption/line_spacing": null,
+ "/typography/roles/type.emphasis/line_spacing": null,
+ "/typography/roles/type.footnote/line_spacing": null,
+ "/typography/roles/type.h1/line_spacing": null,
+ "/typography/roles/type.h2/line_spacing": null
 }
