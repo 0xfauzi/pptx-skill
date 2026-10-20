@@ -57,8 +57,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
-from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
+from ooxml import visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 #: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
@@ -74,22 +75,33 @@ STATISTIC_LABELS = ("median", "average", "mean")
 TIEOUT_KINDS = ("number", "currency", "percent")
 
 
-def chrome_zones(guide: dict) -> list[dict]:
-    """Reserved zones from the guide's chrome. Furniture anchored to the bottom edge
-    reserves everything below it (the reference's content never runs under its footer
-    rule); a top-anchored rule stays a thin boundary, because the title band sits above
-    it and the solver must be free to place the title there."""
+def chrome_box_emu(ch: dict) -> tuple[int, int, int, int]:
+    """The page area a chrome entry covers, in EMU: its box_in turned by its rotation_deg."""
+    box = tuple(int(v * EMU_PER_INCH) for v in ch["box_in"])
+    return visual_extent(box, round(float(ch.get("rotation_deg") or 0) * 60000))  # type: ignore[arg-type]
+
+
+def is_surface(ch: dict) -> bool:
+    """A band the reference builds its pages on: a content box lies inside it on at least
+    half the slides that carry it (bain's white page frame and body band, its navy title
+    band). It is ground, not furniture: no zone is reserved for it, and the contrast gate
+    scores whatever lands on it against its fill."""
+    return ch["kind"] == "band" and ch.get("carries_content_on", 0) >= 0.5 * max(1, ch.get("slides_present", 0))
+
+
+def chrome_zones(guide: dict, mode: str = "auto") -> list[dict]:
+    """Reserved zones from the chrome a page carries in this --chrome mode
+    (emit_pptx.chrome_on_page). Furniture anchored to the bottom edge reserves everything
+    below it (the reference's content never runs under its footer rule); a top-anchored
+    rule stays a thin boundary, because the title band sits above it and the solver must
+    be free to place the title there. A surface band reserves nothing (is_surface)."""
     zones = []
-    n = max(1, guide.get("reference", {}).get("slides", 1))
     page_h = guide["reference"]["page"]["height_emu"]
     page_w = guide["reference"]["page"]["width_emu"]
-    for ch in guide.get("chrome", []):
-        if ch.get("slides_present", 0) < 0.5 * n:
+    for ch in chrome_on_page(guide, mode):
+        if ch["kind"] not in ("footer", "page_number", "date", "logo", "rule", "band", "label") or is_surface(ch):
             continue
-        if ch["kind"] not in ("footer", "page_number", "date", "logo", "rule", "band", "label"):
-            continue
-        x, y, w, h = ch["box_in"]
-        left, top, width, height = int(x * EMU_PER_INCH), int(y * EMU_PER_INCH), int(w * EMU_PER_INCH), int(h * EMU_PER_INCH)
+        left, top, width, height = chrome_box_emu(ch)
         if ch.get("anchor") == "slide_bottom":
             # the reference's content stops a spacing step above its footer rule, never on it:
             # the zone grows upward by the smallest spacing step so a source line keeps that air
@@ -267,20 +279,46 @@ def _contains(outer: list, inner: list) -> bool:
     return outer[0] <= inner[0] and outer[1] <= inner[1] and outer[0] + outer[2] >= inner[0] + inner[2] and outer[1] + outer[3] >= inner[1] + inner[3]
 
 
-def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict[str, str]) -> tuple[list[str], bool]:
+def chrome_layers(guide: dict, mode: str) -> list[dict]:
+    """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
+    under whatever lands on them) and text lines (a run to score), each with its EMU page
+    box. Drawn chrome lies under every content element."""
+    eg = EmitGuide(guide)
+    out = []
+    for ch in chrome_on_page(guide, mode):
+        box = list(chrome_box_emu(ch))
+        if ch["kind"] == "band" and chrome_hex(ch, eg, "fill"):
+            out.append({"kind": "band", "id": ch["chrome_id"], "box": box, "fill_hex": chrome_hex(ch, eg, "fill")})
+        elif chrome_text(ch) is not None:
+            out.append({"kind": "text", "id": ch["chrome_id"], "box": box, "text": chrome_text(ch) or "<page number>", "style": ch.get("text_style") or {}})
+    return out
+
+
+def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict[str, str], chrome: list[dict] | None = None) -> tuple[list[str], bool]:
     """Every colour that can lie under element `index`, and whether an image can: the
-    guide's color.surface (the emitter's ground), then every earlier-drawn element whose
-    box intersects, in draw order (flatten's order is the emitter's). An opaque fill
-    whose box CONTAINS the element's box becomes the new ground and the only backing (a
-    region's fill rect is drawn before its children, so the nearest enclosing filled
-    region wins); a fill with another preset is one more possibility. The guide's colour
-    roles carry no alpha, so nothing composites. `names` collects a role name per hex."""
+    guide's color.surface (the emitter's ground), then every chrome band whose box
+    intersects (chrome is drawn under the content, in its paint order), then every
+    earlier-drawn element whose box intersects, in draw order (flatten's order is the
+    emitter's). An opaque fill whose box CONTAINS the element's box becomes the new
+    ground and the only backing (a region's fill rect is drawn before its children, so the
+    nearest enclosing filled region wins); a fill with another preset is one more
+    possibility. The guide's colour roles carry no alpha, so nothing composites. `names`
+    collects a role name per hex."""
     surface = eg.colors.get("color.surface", {}).get("hex")
     box = elements[index]["box"]
     backings = [surface] if surface else []
     if surface:
         names.setdefault(surface, "color.surface")
     undecidable = surface is None
+    for band in chrome or []:
+        if band["kind"] != "band" or not _intersects(band["box"], box):
+            continue
+        if _contains(band["box"], box):
+            backings, undecidable = [band["fill_hex"]], False
+            names.setdefault(band["fill_hex"], f"chrome {band['id']}")
+        else:
+            backings.append(band["fill_hex"])
+            names.setdefault(band["fill_hex"], f"chrome {band['id']} (partial)")
     for earlier in elements[:index]:
         if not _intersects(earlier["box"], box):
             continue
@@ -321,9 +359,9 @@ def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dic
     return {"ratio": round(ratio, 2), "threshold": aa_threshold(size_pt, bold), "size_pt": size_pt, "bold": bold, "backing": names.get(worst, worst)}
 
 
-def contrast_of(elements: list[dict], resolved: dict, guide: dict) -> dict:
-    """WCAG 2.2 contrast of every text run, every table row class and every chart text
-    against the fill the page draws behind it. A text run's backing: the element's own
+def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto") -> dict:
+    """WCAG 2.2 contrast of every text run, every table row class, every chart text and
+    every chrome text line against the fill the page draws behind it. A text run's backing: the element's own
     fill, else the chain under it. A table's: the row's own fill as the emitter writes it
     (emit_pptx.table_row_styles: header, banding, data, emphasis), else the chain. A
     chart's data labels: the series or point fill for a position on the mark, the plot
@@ -343,11 +381,26 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict) -> dict:
         elif out["nearest_pass"] is None or finding["ratio"] / finding["threshold"] < out["nearest_pass"]["ratio"] / out["nearest_pass"]["threshold"]:
             out["nearest_pass"] = finding  # the tightest pair that passed, so a near miss is visible
 
+    chrome = chrome_layers(guide, chrome_mode)
+    for ci, line in enumerate(chrome):
+        # a chrome line is scored like a run: its observed ink over the surface and the
+        # chrome bands painted before it (_lower_backings over the chrome alone)
+        if line["kind"] != "text":
+            continue
+        style = line["style"]
+        where = {"element": line["id"], "part": "chrome text", "text": line["text"][:40]}
+        if not style.get("ink_hex"):
+            out["unbound"].append({**where, "why": "the chrome entry carries no text_style.ink_hex; the drawn run inherits the master's text colour"})
+            continue
+        names: dict[str, str] = {}
+        lower, _ = _lower_backings([*chrome[:ci], line], ci, eg, names)
+        line_pt = float(style.get("size_pt") or eg.roles.get("type.caption", {}).get("size_pt") or 9)  # the size draw_chrome writes
+        file({**where, "ink": f"observed ink {style['ink_hex']} of {line['id']}", **_score(style["ink_hex"], lower, line_pt, bool(style.get("bold")), names)})
     for i, el in enumerate(elements):
         if el["kind"] not in ("text", "table", "chart"):
             continue
-        names: dict[str, str] = {}
-        lower, image_below = _lower_backings(elements, i, eg, names)
+        names = {}
+        lower, image_below = _lower_backings(elements, i, eg, names, chrome)
         own = eg.hex(el.get("fill_role"), where=el.get("id", el["kind"])) if el.get("fill_role") else None
         if own:
             names.setdefault(own, f"{el['fill_role']} of {el.get('id')}")
@@ -597,12 +650,12 @@ def source_line_missing(elements: list[dict]) -> bool:
     return exhibit and not sourced
 
 
-def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None) -> list[dict]:
+def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto") -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, no source line). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
-    entry["contrast"] = contrast_of(elements, resolved, guide)
+    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode)
     entry["register"] = register_of(elements, guide)
     entry["tieouts"] = tieouts_of(elements)
     problems = [{"kind": "tieout", "severity": "warning", "detail": f"{t['table']} column {t['column']!r}: body rows sum to {t['sum']}, the totals cell reads {t['total']}"} for t in entry["tieouts"] if t["status"] == "mismatch"]
@@ -775,7 +828,7 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
     return findings, unmeasured
 
 
-def prepare_page(spec_raw: dict, guide: dict) -> None:
+def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None:
     """The page as the build enforces it: the guide's page size, the chrome zones, the
     indent progression for a bullet-less reference, and the title band. `layout.py
     capacity` calls this too, so the budget it prints is the budget the build solves."""
@@ -783,7 +836,7 @@ def prepare_page(spec_raw: dict, guide: dict) -> None:
     page.setdefault("width_emu", guide["reference"]["page"]["width_emu"])
     page.setdefault("height_emu", guide["reference"]["page"]["height_emu"])
     if "reserved_zones" not in page:
-        page["reserved_zones"] = chrome_zones(guide)
+        page["reserved_zones"] = chrome_zones(guide, chrome_mode)
     if "bullet_indent_roles" not in spec_raw and not guide.get("typography", {}).get("bullets"):
         # a reference with no bullets (a PDF, a deck of prose) gets the indent progression
         # of the spacing scale: sm, md, lg (deckgen 4b row 1: continue the indent progression)
@@ -958,7 +1011,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         spec_raw = json.loads(json.dumps(slide["spec"]))
         spec_raw["root"] = normalise(spec_raw["root"], slide)
         mark_measured_weights(spec_raw["root"], slide, guide)
-        prepare_page(spec_raw, guide)
+        prepare_page(spec_raw, guide, chrome)
         # components: probe once with placeholders to learn their boxes, then expand at those boxes
         tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
         if pending:
@@ -1005,7 +1058,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         entry["problems"] = page_problems(entry, elements, resolved, guide, [
             {"kind": "chart label breaks mid-word", "severity": "refusal",
              "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
-            for b in breaks])
+            for b in breaks], chrome)
         pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)
@@ -1021,6 +1074,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         entry["problems"].extend({"kind": "emitted text overflows", "severity": "refusal", "detail": f"{f['shape']}: {f['detail']}"} for f in found)
         if entry["status"] == "fit":
             entry["status"], entry["reason"] = "unfittable", "emitted text overflows"
+    report["chrome"] = {**emit_report["chrome"], "drawn": [page["chrome_drawn"] for page in emit_report["slides"]]}
     for entry, page in zip(emitted, emit_report["slides"]):
         if page.get("charts"):
             # every chart choice the spec left out, with the value written for it

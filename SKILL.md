@@ -237,6 +237,23 @@ For a PDF reference the template is blank at the reference's page size, and
 `build_deck.py --chrome draw` paints the guide's chrome (rules, bands, footer labels, a
 page-number field) and the surface colour on every slide.
 
+How chrome is drawn, and what you can change in the guide's `chrome` entries:
+
+- Order: entries paint in `paint_order`, the reference's own painting sequence (PDF content
+  stream order; master, layout, slide and spTree order for a pptx), all of them under the
+  content. A hand-written entry without `paint_order` keeps its place in the list.
+- Text: one line, never wrapped, in the entry's `text_style` (family, size_pt, ink_hex,
+  bold, read from the reference's glyphs). An entry with `rotation_deg` is turned about the
+  centre of `box_in`, which is the pre-rotation box as OOXML keeps it (a copyright line up
+  the page edge reads as one line, bottom to top). Chrome text is scored by the contrast
+  gate like any run (section 7); an entry with no `text_style.ink_hex` is listed under
+  `contrast.unbound`.
+- Logo: with `image_path`, the picture; else a placeholder painted only in what the
+  entry names (`fill_hex`/`fill_role`, `line_hex`/`line_role` with `line_width_pt`). An
+  entry naming neither is not drawn, and the build report's `chrome.notes` says so.
+- No drawn shape keeps a theme style reference: python-pptx's default p:style would add
+  the template theme's effect (a drop shadow on every rule in LibreOffice) and accent1.
+
 ## 4.1 Prove the chain on the house's own page
 
 Before writing a page of your own, round-trip one of the reference's: import a slide
@@ -335,7 +352,12 @@ Conventions the build enforces:
   reference's top rule when it has one. A two-line title the house never wrote is refused;
   shorten it or move the second clause into a lead sentence.
 - Chrome zones from the guide are reserved automatically; content never runs under the
-  footer rule. Pass `page.reserved_zones` yourself only to override.
+  footer rule. Pass `page.reserved_zones` yourself only to override. The zones follow
+  `--chrome`: under `none` only chrome the template inherits (a layout or master entry)
+  is reserved. A band with `carries_content_on` at least half its `slides_present` is a
+  surface the reference builds its pages on (bain's white page frame and body band, its
+  navy title band) and reserves nothing; whatever lands on it is scored against its fill
+  by the contrast gate, so text that straddles a navy band edge is refused there.
 - A region may carry `fill_role` and `pad_role`: it becomes a filled box with padded
   children (a takeaway panel). Text inside takes `ink_role` on its paragraph.
 - Height: a region is as tall as its content (a column sums its children, a row takes
@@ -367,7 +389,8 @@ guide and the doctrines, not from a near miss.
 
 A slide-layer logo, rule or label the reference pastes on every page is drawn on every
 generated page in the default `--chrome auto`; chrome the layout already carries is
-inherited, never redrawn.
+inherited, never redrawn. The build report's `chrome` section lists what each page drew
+(`drawn`) and every entry that could not be drawn as observed (`notes`).
 
 ### 6.1 You design every exhibit; the guide is the style
 
@@ -479,7 +502,7 @@ houses. Read `work/out/deck.build.json`:
 - `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas; `chart label breaks mid-word`; `emitted text overflows`); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
 - The file is written at the sizes the solver fitted: at scale 0.89 a 12pt cell is written at 10.5pt, with the scaled line pitch, paragraph spacing, tracking and cell inset. After the emit the build reads the written file back and measures it against the solved boxes: every text element's written lines at the width the solver wrapped at, its height at the written pitch and spacing, and every table's rows re-wrapped at the written column widths, insets and sizes. Any shape that outgrows its box refuses the page as `emitted text overflows`, naming the shape; a page that fit in the solver and overflows in the file is a defect between the two, not a page to accept.
 - `chart_label_breaks` per page with a bar or column chart: words a renderer must break between characters, measured with the solver's ruler at the chart text's size. A column chart's category label wraps to its slot (at most the chart's width over the category count); a centred data label wraps to the bar's thickness (at most the slot less `gap_width`, shared by the series when clustered). Both are upper bounds, so a word over one breaks for certain (`Standalo / ne`, `Remaini / ng`) and refuses the page as `chart label breaks mid-word`; a word under one may still break in a crowded plot, so read the render. `unmeasured` lists labels whose text the check cannot form (a number format it does not read). XY labels and labels outside the bar are not measured.
-- `contrast` per page: every text run, every table row class and every chart text (data labels per series and per overriding point, axis labels, legend) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
+- `contrast` per page: every text run, every table row class, every chart text (data labels per series and per overriding point, axis labels, legend) and every chrome text line the page carries (footer label, page number, at its observed ink) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else a chrome band under it, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
 - `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`. Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
 - `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.
 - `tieouts` per page: for every table with `totals_last_row`, each number, currency or percent column's body sum against its totals cell at the cell's own decimals ($ , % x stripped, parentheses negative). A row headed median, average or mean is skipped as a statistic; a column with an n.a. cell is skipped and names the cell. A mismatch is a warning under `problems`: a subtotal inside the body or a non-total row styled as the totals row reads as a mismatch, so either compute the figure or take `totals_last_row` off that row.

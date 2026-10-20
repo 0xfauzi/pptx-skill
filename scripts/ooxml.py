@@ -369,6 +369,8 @@ class Shape:
     name: str | None = None  # p:cNvPr/@name: the emitter writes the element id there, so a finding can name it
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
+    paint_order: int = 0  # position in the page's painting sequence: a higher one paints over a lower one
+    line_style: dict | None = None  # PDF text blocks only: modal family, size_pt, ink_hex and bold of the block's glyphs
 
 
 @dataclass
@@ -563,6 +565,18 @@ def xfrm_rotation(sp: etree._Element) -> int:
     return 0
 
 
+def visual_extent(bounds: tuple[int, int, int, int], rotation: int) -> tuple[int, int, int, int]:
+    """The axis-aligned box a rotated shape occupies: OOXML rotates about the
+    centre, so w' = |w cos| + |h sin|. Exact for any angle."""
+    if not rotation:
+        return bounds
+    x, y, w, h = bounds
+    radians = math.radians(rotation / 60_000)
+    cos, sin = abs(math.cos(radians)), abs(math.sin(radians))
+    tw, th = round(w * cos + h * sin), round(w * sin + h * cos)
+    return x + (w - tw) // 2, y + (h - th) // 2, tw, th
+
+
 def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:
     """The corner radius a roundRect draws: adj / 100000 x min(w, h), adj pinned to
     [0, 50000] as the preset definition pins it (deckgen style/tokens.py:5575-5600). An
@@ -621,6 +635,9 @@ def _shape_kind(sp: etree._Element) -> str:
 _LAYER_OF_HOLDER = ("shape", "layout", "master", "master", "presentation")
 
 
+LAYER_PAINT_BASE = {"master": 0, "layout": 1_000_000, "slide": 2_000_000}
+
+
 class SlideWalker:
     def __init__(self, pkg: Package, slide_part: str, deck: str, index: int) -> None:
         self.pkg = pkg
@@ -640,6 +657,7 @@ class SlideWalker:
         self.print.generated = slide_generated(pkg, slide_part)
         self._table_styles: dict[str, etree._Element] | None = None
         self._para_capture: list | None = None
+        self._painted = 0
 
     # text chain ------------------------------------------------------------------
     def _level_holders(self, sp: etree._Element, layer: str, ph: tuple[str | None, int | None] | None) -> list[tuple[etree._Element | None, str]]:
@@ -1336,6 +1354,9 @@ class SlideWalker:
             )
             if shape.prst == "roundRect" and box is not None:
                 shape.corner_radius_emu = round_rect_radius(prst_el, box)
+            # the master paints first, then the layout, then the slide, each in spTree order
+            shape.paint_order = LAYER_PAINT_BASE[layer] + self._painted
+            self._painted += 1
             sink.append(shape)
             cls = ph_class(ph[0]) if ph else "none"
             tx = sp.find(_p("txBody"))
@@ -1453,6 +1474,11 @@ PDF_TRIAGE_MIN_TEXT_PT = 4.0
 """Characters below this size are not type a reader sees: the EDGAR prints carry an OCR
 layer at 0 to 1pt (Goldman p3: 4273 of 4414 chars at 1pt) and Tesseract layers come as
 GlyphLessFont at box-derived sizes."""
+
+
+def _pdf_key(obj: dict) -> tuple:
+    return (obj.get("object_type"), round(float(obj.get("x0", 0)), 2), round(float(obj.get("top", 0)), 2),
+            round(float(obj.get("x1", 0)), 2), round(float(obj.get("bottom", 0)), 2))
 
 
 def _slide_shaped(w: float, h: float, tolerance: float = 0.015) -> bool:
@@ -1720,6 +1746,7 @@ class _Glyph:
     u1: float
     v0: float  # across the line, increasing from one line to the next
     v1: float
+    paint: int = 0  # the glyph's place in the page's content stream
 
     @property
     def space(self) -> bool:
@@ -1767,7 +1794,7 @@ class _Segment:
         return self.em, all(g.bold for g in ink)
 
 
-def _pdf_glyph(ch: dict, w: float, h: float) -> tuple[str, _Glyph] | None:
+def _pdf_glyph(ch: dict, w: float, h: float, painted: dict[tuple, int] | None = None) -> tuple[str, _Glyph] | None:
     """(direction, glyph), or None for a glyph set at an angle no type size can be read
     along. pdfplumber's `size` is the glyph box's height on the page, which is the type
     size only for upright text: a quarter-turned glyph's height is its advance (bcg's
@@ -1785,12 +1812,13 @@ def _pdf_glyph(ch: dict, w: float, h: float) -> tuple[str, _Glyph] | None:
     italic = "italic" in name or "oblique" in name
     color = _pdf_color(ch.get("non_stroking_color"))
     text = str(ch.get("text", ""))
+    paint = (painted or {}).get(_pdf_key(ch), 0)
     if abs(b) <= tol and abs(c) <= tol and a > 0 and d > 0:
-        return "ltr", _Glyph(text, family, bold, italic, color, float(ch.get("size", bottom - top)), x0, x1, top, bottom)
+        return "ltr", _Glyph(text, family, bold, italic, color, float(ch.get("size", bottom - top)), x0, x1, top, bottom, paint)
     if abs(a) <= tol and abs(d) <= tol:
         if b > 0:  # the baseline runs up the page: lines follow one another to the right
-            return "btt", _Glyph(text, family, bold, italic, color, x1 - x0, h - bottom, h - top, x0, x1)
-        return "ttb", _Glyph(text, family, bold, italic, color, x1 - x0, top, bottom, w - x1, w - x0)
+            return "btt", _Glyph(text, family, bold, italic, color, x1 - x0, h - bottom, h - top, x0, x1, paint)
+        return "ttb", _Glyph(text, family, bold, italic, color, x1 - x0, top, bottom, w - x1, w - x0, paint)
     return None
 
 
@@ -1995,14 +2023,27 @@ def _block_box(blk: list[_Segment], w: float, h: float) -> tuple[tuple[float, fl
     return (cx - bw / 2, cy - bh / 2, bw, bh), rotation
 
 
-def _pdf_text(page, sp: SlidePrint, scale: float) -> None:
+def _block_style(blk: list[_Segment]) -> dict:
+    """Modal family, size, ink and weight of a block's glyphs: the style a chrome entry
+    draws its text in."""
+    ink = [g for s in blk for g in s.ink]
+
+    def modal(values: list) -> object:
+        return Counter(values).most_common(1)[0][0]
+
+    return {"family": modal([g.family for g in ink]), "size_pt": modal([round(g.em * 2) / 2 for g in ink]),
+            "ink_hex": modal([g.color for g in ink]), "bold": modal([g.bold for g in ink])}
+
+
+def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | None = None) -> None:
     """Runs and text blocks of one page: the PDF's runs carry their words and text, and
-    one block is one element, as one text box is in a pptx."""
+    one block is one element, as one text box is in a pptx. `painted` maps a glyph to its
+    place in the content stream, so a block paints when its first glyph does."""
     w, h = float(page.width), float(page.height)
     by_dir: dict[str, list[_Glyph]] = {}
     unread = 0
     for ch in page.chars:
-        got = _pdf_glyph(ch, w, h)
+        got = _pdf_glyph(ch, w, h, painted)
         if got is None:
             unread += 1 if str(ch.get("text", "")).strip() else 0
             continue
@@ -2036,7 +2077,8 @@ def _pdf_text(page, sp: SlidePrint, scale: float) -> None:
                                    mar_l_emu=para["mar_l_emu"] if bullet.startswith("char:") else None, indent_emu=para["indent_emu"]))
         text = " ".join("".join(r["text"] for r in p["runs"]) for p in paras)
         sp.shapes.append(Shape("text_box", (int(x * scale), int(y * scale), int(bw * scale), int(bh * scale)), None, None, None, None, False,
-                               None, "slide", ref=ref, rotation=rotation, text_chars=chars, text=text[:80], paragraphs=paras))
+                               None, "slide", ref=ref, rotation=rotation, text_chars=chars, text=text[:80], paragraphs=paras,
+                               paint_order=min(g.paint for s in blk for g in s.ink), line_style=_block_style(blk)))
 
 
 RECURRENCE_FLOOR = 0.5
@@ -2113,6 +2155,10 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 print(f"ooxml: reading page {i + 1} of {total}", file=sys.stderr, flush=True)
             w, h = float(page.width), float(page.height)
             scale = 12700.0  # pt -> EMU so margins and areas share the pptx arithmetic
+            # content-stream order is paint order: a later object paints over an earlier one
+            painted: dict[tuple, int] = {}
+            for order, obj in enumerate(page.iter_layout_objects(page.layout._objs)):
+                painted.setdefault(_pdf_key(obj), order)
             try:
                 page = page.dedupe_chars(tolerance=1)  # overprinted glyphs (fake bold) otherwise read twice
             except Exception:  # noqa: BLE001 - older pdfplumber
@@ -2121,7 +2167,7 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
             if i < len(triage["pages"]):
                 sp.page_class = triage["pages"][i]["class"]
                 sp.image_cover = triage["pages"][i]["image_cover"]
-            _pdf_text(page, sp, scale)
+            _pdf_text(page, sp, scale, painted)
             page_area = w * h
             for k, rect in enumerate(page.rects):
                 rw, rh = float(rect.get("width", 0)), float(rect.get("height", 0))
@@ -2137,23 +2183,28 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 lw = float(rect.get("linewidth") or 0) if stroke else None
                 sp.shapes.append(Shape("line" if thin else "shape", box, None if thin else fill,
                                        (fill if thin and fill else stroke), int((lw if lw else min(rw, rh)) * scale) if (thin or stroke) else None,
-                                       None, False, None, "slide", ref=f"r{k}"))
+                                       None, False, None, "slide", ref=f"r{k}", paint_order=painted.get(_pdf_key(rect), 0)))
             for k, line in enumerate(page.lines):
                 lw = float(line.get("linewidth") or 1.0)
                 color = _pdf_color(line.get("stroking_color"))
                 box = (int(float(line["x0"]) * scale), int(float(line["top"]) * scale),
                        int(max(1.0, float(line["x1"]) - float(line["x0"])) * scale), int(max(lw, float(line["bottom"]) - float(line["top"])) * scale))
-                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide", ref=f"l{k}"))
+                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide", ref=f"l{k}",
+                                       paint_order=painted.get(_pdf_key(line), 0)))
             boxes = []
+            orders = []
             for im in page.images:
                 x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
                 t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
                 # an image under the whole page is its ground, as a page-sized rect is
                 if x1 > x0 and b > t and (x1 - x0) * (b - t) < 0.98 * page_area:
                     boxes.append((x0, t, x1, b))
+                    orders.append(painted.get(_pdf_key(im), 0))
             for k, (x0, t, x1, b) in enumerate(_image_regions(boxes, w, h)):
+                # a region paints when its first member does
+                first = min((o for (bx0, bt, bx1, bb), o in zip(boxes, orders) if x0 <= (bx0 + bx1) / 2 <= x1 and t <= (bt + bb) / 2 <= b), default=0)
                 sp.shapes.append(Shape("picture", (int(x0 * scale), int(t * scale), int((x1 - x0) * scale), int((b - t) * scale)),
-                                       None, None, None, None, False, None, "slide", ref=f"img{k}"))
+                                       None, None, None, None, False, None, "slide", ref=f"img{k}", paint_order=first))
             if sp.background is None:
                 sp.background = "FFFFFF"
             out.append(sp)

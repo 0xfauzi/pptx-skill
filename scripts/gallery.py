@@ -317,22 +317,10 @@ def content_leaves(slide: Slide) -> list[Leaf]:
 
 # --- geometry ------------------------------------------------------------------------------
 
-def visual_extent(bounds: Box, rotation: int) -> Box:
-    """The axis-aligned box a rotated shape occupies: OOXML rotates about the
-    centre, so w' = |w cos| + |h sin|. Exact for any angle."""
-    if not rotation:
-        return bounds
-    x, y, w, h = bounds
-    radians = math.radians(rotation / 60_000)
-    cos, sin = abs(math.cos(radians)), abs(math.sin(radians))
-    tw, th = round(w * cos + h * sin), round(w * sin + h * cos)
-    return x + (w - tw) // 2, y + (h - th) // 2, tw, th
-
-
 def extent_of(leaf: Leaf) -> Box:
     if leaf.bounds is None:
         raise ValueError(f"{leaf.ref} has no geometry")
-    return visual_extent(leaf.bounds, leaf.rotation)
+    return ooxml.visual_extent(leaf.bounds, leaf.rotation)
 
 
 def box_gap_emu(a: Box, b: Box) -> int:

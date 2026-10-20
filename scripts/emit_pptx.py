@@ -180,6 +180,17 @@ def _solid_fill(parent: etree._Element, hex_color: str) -> None:
     etree.SubElement(sf, qn("a:srgbClr")).set("val", hex_color.upper())
 
 
+def _without_theme_style(shape):
+    """python-pptx gives a new autoshape or connector a p:style whose lnRef and fillRef
+    paint accent1 and whose effectRef paints a theme effect style (the blank template's
+    is a drop shadow, which LibreOffice renders under every rule). The emitter writes
+    each fill and line itself, so no theme reference stays on the shape."""
+    style = shape._element.find(qn("p:style"))
+    if style is not None:
+        shape._element.remove(style)
+    return shape
+
+
 def _insert_fill_first(parent: etree._Element, fill: etree._Element) -> None:
     """DrawingML orders fill before ln/effects: put a fill right after xfrm/prstGeom."""
     anchor = 0
@@ -366,7 +377,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
 def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     x, y, w, h = box
     horizontal = w >= h
-    line = slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h))
+    line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h)))
     line.name = el.get("id", "rule")
     hex_color = guide.hex(el.get("line_role") or "color.rule", where=el.get("id", "rule"))
     width = el.get("line_width_emu") or (guide.g.get("motifs") or [{}])[0].get("line_width_pt")
@@ -378,12 +389,9 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
     x, y, w, h = box
     prst = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
             "rightArrow": MSO_SHAPE.RIGHT_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE}.get(el.get("prst", "rect"), MSO_SHAPE.RECTANGLE)
-    shape = slide.shapes.add_shape(prst, Emu(x), Emu(y), Emu(w), Emu(h))
+    shape = _without_theme_style(slide.shapes.add_shape(prst, Emu(x), Emu(y), Emu(w), Emu(h)))
     shape.name = el.get("id", "rect")
     sp_pr = shape._element.spPr
-    style = shape._element.find(qn("p:style"))
-    if style is not None:
-        shape._element.remove(style)  # theme style refs would paint accent1 and a line the guide never chose
     fill_hex = guide.hex(el.get("fill_role"), where=el.get("id", "rect"))
     if fill_hex:
         _solid_fill(sp_pr, fill_hex)
@@ -1413,24 +1421,51 @@ def _copy_chrome_placeholders(slide, layout, wanted: set[str]) -> None:
                 cnv.set("id", str(max(int(c.get("id", "0")) for c in slide.shapes._spTree.iter(qn("p:cNvPr"))) + 1))
 
 
-def _chrome_fill_hex(ch: dict, guide: Guide) -> str | None:
-    if ch.get("fill_hex"):
-        return ch["fill_hex"]
-    role = ch.get("fill_role")
+def chrome_hex(ch: dict, guide: Guide, part: str) -> str | None:
+    """An entry's observed `<part>_hex`, else the hex of its `<part>_role` (part: fill or
+    line). None when the entry names neither: nothing is chosen for it."""
+    if ch.get(f"{part}_hex"):
+        return ch[f"{part}_hex"]
+    role = ch.get(f"{part}_role")
     return guide.colors[role]["hex"] if role in guide.colors else None
+
+
+CHROME_TEXT_KINDS = ("label", "page_number", "footer", "date")
+
+
+def chrome_text(ch: dict) -> str | None:
+    """The words a text entry draws, without its page-number marker; None for an entry
+    that draws no text."""
+    if ch["kind"] not in CHROME_TEXT_KINDS or not (ch.get("text") or ch["kind"] == "page_number"):
+        return None
+    return (ch.get("text") or "").replace("<page number>", "").strip()
+
+
+def chrome_on_page(guide_data: dict, mode: str) -> list[dict]:
+    """The guide's chrome a generated page carries, in the reference's paint order: every
+    entry on at least half the reference's slides, and under --chrome none only what the
+    template inherits (an entry on a layout or master). The emitter draws from this list
+    and build_deck reserves zones and scores contrast from it, so what is checked is what
+    is drawn. An entry without `paint_order` (a hand-written guide) keeps its list place."""
+    n = max(1, guide_data.get("reference", {}).get("slides", 1))
+    entries = [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
+    if mode == "none":
+        entries = [ch for ch in entries if _layers(ch) != ["slide"]]
+    return [ch for _, ch in sorted(enumerate(entries), key=lambda ie: (ie[1].get("paint_order", ie[0]), ie[0]))]
 
 
 def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int, entries: list[dict] | None = None, notes: list[dict] | None = None) -> list[str]:
     """The guide's own chrome, drawn from the observed hexes and positions. These are
     observed values of the reference, which is why literal hexes are allowed here and
-    nowhere else. `entries` is the list to draw; by default every entry on at least half
-    the reference's slides (the PDF and blank-template path, --chrome draw). An entry is
-    drawn at most once per slide and named by its chrome_id. A picture entry (kind logo)
-    becomes a picture when the entry carries `image_path`, else a rect placeholder with
-    the entry's fill, and `notes` names it. Returns the chrome_ids drawn."""
-    n = max(1, guide_data.get("reference", {}).get("slides", 1))
+    nowhere else. `entries` is the list to draw, in paint order; by default
+    chrome_on_page(guide_data, "draw") (the PDF and blank-template path, --chrome draw).
+    An entry is drawn at most once per slide and named by its chrome_id. A text entry is
+    one line at its observed face, size and ink, turned by its rotation_deg. A picture
+    entry (kind logo) becomes a picture when the entry carries `image_path`, else a rect
+    placeholder in the entry's own fill or line, and `notes` names it; an entry with
+    neither is not drawn, and `notes` says so. Returns the chrome_ids drawn."""
     if entries is None:
-        entries = [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
+        entries = chrome_on_page(guide_data, "draw")
     present = {sp.name for sp in slide.shapes}
     drawn: list[str] = []
     for ch in entries:
@@ -1438,18 +1473,16 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
             continue
         x, y, w, h = (int(v * 914400) for v in ch["box_in"])
         kind = ch["kind"]
+        text = chrome_text(ch)
         if kind == "rule":
             width_emu = int(round((ch.get("line_width_pt") or 0.75) * EMU_PER_PT))
-            line = slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2))
+            line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2)))
             line.name = ch["chrome_id"]
-            _set_line(line._element.spPr, ch.get("line_hex") or ch.get("fill_hex") or guide.colors.get("color.rule", {}).get("hex", "000000"), width_emu)
-        elif kind == "band" and _chrome_fill_hex(ch, guide):
-            shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
+            _set_line(line._element.spPr, chrome_hex(ch, guide, "line") or chrome_hex(ch, guide, "fill") or guide.colors.get("color.rule", {}).get("hex", "000000"), width_emu)
+        elif kind == "band" and chrome_hex(ch, guide, "fill"):
+            shape = _without_theme_style(slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h)))
             shape.name = ch["chrome_id"]
-            style = shape._element.find(qn("p:style"))
-            if style is not None:
-                shape._element.remove(style)
-            _solid_fill(shape._element.spPr, _chrome_fill_hex(ch, guide))
+            _solid_fill(shape._element.spPr, chrome_hex(ch, guide, "fill"))  # type: ignore[arg-type]
             _set_line(shape._element.spPr, None, None)
         elif kind == "logo":
             if ch.get("image_path"):
@@ -1457,33 +1490,36 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                 pic.name = ch["chrome_id"]
             else:
                 # no image bytes travel with a guide entry: a placeholder the agent can see
-                # and replace, in the entry's fill or, with none, an outline in the rule colour
-                shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
+                # and replace, painted only in what the entry itself names
+                fill_hex, line_hex = chrome_hex(ch, guide, "fill"), chrome_hex(ch, guide, "line")
+                noted = notes is not None and any(n["chrome_id"] == ch["chrome_id"] for n in notes)  # once per deck, not per page
+                if not fill_hex and not line_hex:
+                    if notes is not None and not noted:
+                        notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": None,
+                                      "reason": "the entry carries no image_path, fill or line; add image_path, or a fill_hex/fill_role or line_hex/line_role (with line_width_pt) for a placeholder"})
+                    continue
+                shape = _without_theme_style(slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h)))
                 shape.name = ch["chrome_id"]
-                style = shape._element.find(qn("p:style"))
-                if style is not None:
-                    shape._element.remove(style)
-                fill_hex = _chrome_fill_hex(ch, guide)
                 if fill_hex:
                     _solid_fill(shape._element.spPr, fill_hex)
-                    _set_line(shape._element.spPr, None, None)
                 else:
                     _insert_fill_first(shape._element.spPr, etree.Element(qn("a:noFill")))
-                    _set_line(shape._element.spPr, guide.colors.get("color.rule", guide.colors.get("color.ink", {"hex": "000000"}))["hex"], 9525)
-                if notes is not None:
-                    notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": "rect placeholder", "fill_hex": fill_hex,
+                _set_line(shape._element.spPr, line_hex, round(float(ch.get("line_width_pt") or 0.75) * EMU_PER_PT) if line_hex else None)
+                if notes is not None and not noted:
+                    notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": "rect placeholder", "fill_hex": fill_hex, "line_hex": line_hex,
                                   "reason": "the guide entry carries no image bytes; add image_path to the entry or place the picture by hand"})
-        elif kind in ("label", "page_number", "footer", "date") and (ch.get("text") or kind == "page_number"):
-            box_w = max(w, 457200)
-            if ch.get("anchor") == "slide_right" or x + w > 0.8 * page_w:
+        elif text is not None:
+            rotation = float(ch.get("rotation_deg") or 0)
+            box_w = max(w, 457200) if not rotation else w
+            if not rotation and (ch.get("anchor") == "slide_right" or x + w > 0.8 * page_w):
                 x = x + w - box_w  # keep the observed right edge: a wider box grows leftwards
-            tb = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(box_w), Emu(max(h, 152400)))
+            tb = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(box_w), Emu(max(h, 152400) if not rotation else h))
             tb.name = ch["chrome_id"]
             tf = tb.text_frame
             _body_props(tf._txBody, "t")
+            tf._txBody.find(qn("a:bodyPr")).set("wrap", "none")  # the entry is one line of the reference: it never wraps
             p = tf.paragraphs[0]
             style = ch.get("text_style") or {}
-            text = (ch.get("text") or "").replace("<page number>", "").strip()
             if text:
                 run = p.add_run()
                 run.text = text
@@ -1503,25 +1539,32 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                     etree.SubElement(sf, qn("a:srgbClr")).set("val", style["ink_hex"].upper())
                 etree.SubElement(rpr, qn("a:latin")).set("typeface", style.get("family") or guide.families.get("minor") or "Arial")
                 etree.SubElement(fld, qn("a:t")).text = "1"
-            if ch.get("anchor") == "slide_right" or x + box_w > 0.8 * page_w:
+            if not rotation and (ch.get("anchor") == "slide_right" or x + box_w > 0.8 * page_w):
                 p.alignment = PP_ALIGN.RIGHT
         else:
             continue
+        if ch.get("rotation_deg"):
+            # box_in is the pre-rotation box: turned about its centre, the shape covers what the reference's does
+            # python-pptx appends each new shape to the spTree: the last child is the one just drawn
+            slide.shapes._spTree[-1].find(".//" + qn("a:xfrm")).set("rot", str(round(float(ch["rotation_deg"]) * 60000)))
         drawn.append(ch["chrome_id"])
         present.add(ch["chrome_id"])
     return drawn
 
 
 def _send_to_back(slide, names: list[str]) -> None:
-    """Drawn chrome goes behind the content: index 2 of the spTree follows its two
-    property children."""
+    """Drawn chrome goes behind the content and keeps its own order among itself (`names`
+    is paint order): the spTree's first two children are its properties, so the first
+    name lands at index 2, the next at 3."""
     tree = slide.shapes._spTree
-    wanted = set(names)
+    by_name: dict[str, etree._Element] = {}
     for el in list(tree):
         cnv = el.find(".//" + qn("p:cNvPr"))
-        if cnv is not None and cnv.get("name") in wanted:
-            tree.remove(el)
-            tree.insert(2, el)
+        if cnv is not None and cnv.get("name") in names:
+            by_name.setdefault(cnv.get("name"), el)
+    for i, name in enumerate(n for n in names if n in by_name):
+        tree.remove(by_name[name])
+        tree.insert(2 + i, by_name[name])
 
 
 def _origin_tag_xml() -> bytes:
@@ -1568,11 +1611,8 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
     surface = guide.colors.get("color.surface", {}).get("hex")
     wanted_chrome: set[str] = set()
     slide_only: list[dict] = []
-    n = max(1, guide_data.get("reference", {}).get("slides", 1))
     if chrome == "auto":
-        for ch in guide_data.get("chrome", []):
-            if ch.get("slides_present", 0) < 0.5 * n:
-                continue
+        for ch in chrome_on_page(guide_data, chrome):
             layers = _layers(ch)
             if "slide" in layers and ch["kind"] in PLACEHOLDER_KIND:
                 wanted_chrome.add(PLACEHOLDER_KIND[ch["kind"]])
