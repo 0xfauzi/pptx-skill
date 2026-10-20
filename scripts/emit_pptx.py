@@ -26,6 +26,8 @@ Spec shape (one slide shown):
      "rows": [["Acme", "1,234"]], "column_widths_emu": [...], "row_heights_emu": [...], "totals_last_row": false},
     {"id": "chart", "kind": "chart", "box": [...], "chart_kind": "column", "categories": ["2023", "2024"],
      "series": [{"name": "Revenue", "values": [1.0, 2.0]}], "number_format": "0.0", "data_labels": true, "legend": null},
+    {"id": "bridge", "kind": "chart", "box": [...], "chart_kind": "waterfall", "categories": ["FY16", "Volume", "Price", "FX", "FY17"],
+     "deltas": [1000, 120, 50, -30, 1140], "totals": [0, 4], "number_format": "#,##0"},
     {"id": "rule", "kind": "rule", "box": [...], "line_role": "color.rule"},
     {"id": "band", "kind": "rect", "box": [...], "fill_role": "color.accent1", "prst": "rect"},
     {"id": "logo", "kind": "image", "box": [...], "path": "logo.png"}
@@ -36,6 +38,19 @@ Spec shape (one slide shown):
 Text bodies are written with zero insets, square wrap and explicit noAutofit, paragraph
 spacing and line pitch as absolute points, and, when the solver measured the wrap, the
 measured lines as literal breaks: the file carries the wrap the fit decision was made on.
+
+A waterfall is a native stacked column whose first series is an invisible spacer (the
+running base; a step below the running total sits on min(running, running + delta)) and
+whose second series carries the step heights; indices in `totals` draw from zero and
+must equal the running sum of the steps before them. A step reaching below zero is
+refused: a native stack cannot draw it.
+
+What the file carries so that PowerPoint and LibreOffice draw the same page (deckgen
+E38): both cells of every shared table edge declare the edge identically, every chart
+plot group writes c:varyColors, no rule is written below 0.5pt unless the guide's own
+rule width says so. Every generated slide carries a tags part (p:custDataLst/p:tags,
+one p:tag name="pptx-skill" val="generated"), which deckgen 2E-1 measured surviving a
+PowerPoint save: `pptx_tools.py text` reads it back as the slide's origin.
 """
 
 from __future__ import annotations
@@ -51,14 +66,31 @@ from lxml import etree
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.opc.constants import CONTENT_TYPE as CT
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from pptx.opc.package import Part
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
+P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
+# The origin tag every generated slide carries (one p:tag in its own tags part). deckgen
+# 2E-1 measured the part coming back out of a PowerPoint save with the p:tag intact.
+ORIGIN_TAG_NAME = "pptx-skill"
+ORIGIN_TAG_VALUE = "generated"
+# The thinnest stroke PowerPoint still inks: at 0.25pt it lays 0.48px where LibreOffice
+# lays 1.27px (deckgen E38 class 5); at 0.5pt both are above one pixel.
+RULE_WEIGHT_FLOOR_EMU = 6350
+# Chart plot groups whose schema carries c:varyColors (ECMA-376 21.2.2). The element
+# defaults to TRUE and the two renderers read the default oppositely (E38 class 10).
+VARY_COLORS_GROUPS = {"barChart", "bar3DChart", "lineChart", "line3DChart", "pieChart", "pie3DChart", "ofPieChart", "doughnutChart",
+                      "areaChart", "area3DChart", "scatterChart", "radarChart", "bubbleChart"}
+# Children that precede c:varyColors in those groups' sequences.
+_VARY_COLORS_PREDECESSORS = {"barDir", "grouping", "scatterStyle", "radarStyle", "ofPieType"}
 
 
 class SpecError(SystemExit):
@@ -374,12 +406,56 @@ def write_image(slide, el: dict, box: tuple[int, int, int, int]) -> None:
 
 
 def _table_edge(guide: Guide, klass: str) -> tuple[str | None, int]:
-    rule = (guide.tables.get("edge_rules") or {}).get(klass)
+    rules = guide.tables.get("edge_rules") or {}
+    rule = rules.get(klass)
+    if rule is None and klass == "totals_top":
+        # a guide without its own totals class: the totals rule is the header rule when the
+        # guide asks for one (tables.totals_rule), else the row interior like any other edge
+        rule = rules.get("header_bottom") if guide.tables.get("totals_rule") else rules.get("row_interior")
     if not rule or rule.get("none"):
         return None, 0
     hex_color = rule.get("color_hex") or (guide.hex(rule.get("color_role"), where=f"table edge {klass}") if rule.get("color_role") else None)
     width = rule.get("width_emu") or (int(round(float(rule["width_pt"]) * EMU_PER_PT)) if rule.get("width_pt") else 12700)
     return hex_color, int(width)
+
+
+def _horizontal_edge_class(index: int, header_rows: int, n_rows: int, totals_index: int | None) -> str:
+    if index == 0:
+        return "table_top"
+    if index == n_rows:
+        return "table_bottom"
+    if header_rows and index == header_rows:
+        return "header_bottom"
+    if totals_index is not None and index == totals_index:
+        return "totals_top"
+    return "row_interior"
+
+
+def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_rows: int, totals_index: int | None) -> None:
+    """Every shared edge written to BOTH of its declaring cells from one rule, so the two
+    sides agree byte for byte (upper lnB == lower lnT, left lnR == right lnL). Measured
+    (deckgen E38 class 4, 8 of 8 cases in both axes): where the sides differ, PowerPoint
+    draws the first-declared side and writes it back on save while LibreOffice draws the
+    heavier one, so a totals rule declared on the totals row's lnT alone shows in the
+    render and vanishes in PowerPoint. Identical sides leave no conflict to resolve."""
+    def tc_pr(ri: int, ci: int) -> etree._Element:
+        return table.cell(ri, ci)._tc.get_or_add_tcPr()
+
+    for index in range(n_rows + 1):
+        hex_color, width = _table_edge(guide, _horizontal_edge_class(index, header_rows, n_rows, totals_index))
+        for ci in range(n_cols):
+            if index > 0:
+                _cell_border(tc_pr(index - 1, ci), "a:lnB", hex_color, width)
+            if index < n_rows:
+                _cell_border(tc_pr(index, ci), "a:lnT", hex_color, width)
+    for index in range(n_cols + 1):
+        klass = "table_left" if index == 0 else ("table_right" if index == n_cols else "column_interior")
+        hex_color, width = _table_edge(guide, klass)
+        for ri in range(n_rows):
+            if index > 0:
+                _cell_border(tc_pr(ri, index - 1), "a:lnR", hex_color, width)
+            if index < n_cols:
+                _cell_border(tc_pr(ri, index), "a:lnL", hex_color, width)
 
 
 def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_emu: int) -> None:
@@ -484,52 +560,146 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 etree.SubElement(sf, qn("a:srgbClr")).set("val", fill_hex.upper())
             else:
                 etree.SubElement(tc_pr, qn("a:noFill"))
-            top_class = "table_top" if ri == 0 else ("header_bottom" if ri == header_rows else "row_interior")
-            bottom_class = "table_bottom" if ri == n_rows - 1 else ("header_bottom" if ri == header_rows - 1 else "row_interior")
-            left_class = "table_left" if ci == 0 else "column_interior"
-            right_class = "table_right" if ci == len(cols) - 1 else "column_interior"
-            for side, klass in (("a:lnL", left_class), ("a:lnR", right_class), ("a:lnT", top_class), ("a:lnB", bottom_class)):
-                hex_color, width = _table_edge(guide, klass)
-                _cell_border(tc_pr, side, hex_color, width)
-            if is_totals and guide.tables.get("totals_rule"):
-                hex_color, width = _table_edge(guide, "header_bottom")
-                _cell_border(tc_pr, "a:lnT", hex_color, width)
+    _write_table_edges(table, guide, n_rows, len(cols), header_rows, n_rows - 1 if totals else None)
 
 
 CHART_TYPES = {
     "column": XL_CHART_TYPE.COLUMN_CLUSTERED, "stacked_column": XL_CHART_TYPE.COLUMN_STACKED, "stacked_column_100": XL_CHART_TYPE.COLUMN_STACKED_100,
     "bar": XL_CHART_TYPE.BAR_CLUSTERED, "stacked_bar": XL_CHART_TYPE.BAR_STACKED, "line": XL_CHART_TYPE.LINE, "line_markers": XL_CHART_TYPE.LINE_MARKERS,
     "pie": XL_CHART_TYPE.PIE, "doughnut": XL_CHART_TYPE.DOUGHNUT, "area": XL_CHART_TYPE.AREA, "stacked_area": XL_CHART_TYPE.AREA_STACKED,
-    "scatter": XL_CHART_TYPE.XY_SCATTER,
+    "scatter": XL_CHART_TYPE.XY_SCATTER, "waterfall": XL_CHART_TYPE.COLUMN_STACKED,
 }
+LABELLED_BAR_KINDS = ("column", "bar", "stacked_column", "stacked_bar", "waterfall")
 
 
-def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
+def _write_vary_colors(chart_space: etree._Element) -> None:
+    """c:varyColors val=0 on every plot group that can carry it. python-pptx 1.0.2 writes
+    none for a bar chart; absent, PowerPoint paints one series in five theme colours and
+    LibreOffice in one (E38 class 10). Series and point fills are written explicitly, so 0
+    is the value under which both renderers draw the guide's colours."""
+    area = chart_space.find(".//" + qn("c:plotArea"))
+    if area is None:
+        return
+    for group in area:
+        if etree.QName(group).localname not in VARY_COLORS_GROUPS:
+            continue
+        vc = group.find(qn("c:varyColors"))
+        if vc is None:
+            vc = etree.Element(qn("c:varyColors"))
+            at = 0
+            for i, child in enumerate(group):
+                if etree.QName(child).localname in _VARY_COLORS_PREDECESSORS:
+                    at = i + 1
+            group.insert(at, vc)
+        vc.set("val", "0")
+
+
+def _label_ink(ink: str, fill_hex: str, inverse: str) -> str:
+    """A label inside a dark bar takes the inverse ink: WCAG 3:1 against its own fill."""
+    if _contrast(ink, fill_hex) < 3.0 and _contrast(inverse, fill_hex) >= _contrast(ink, fill_hex):
+        return inverse
+    return ink
+
+
+def _waterfall_steps(el: dict) -> tuple[list[float], list[float], list[str], float]:
+    """Spacer bases and visible heights for a native waterfall (deckgen chart_plan.py: the
+    spacer is the stack's bottom by OOXML series order). A step at running total r with
+    delta d draws from min(r, r + d) with height |d|; a total draws from zero and must
+    equal the running sum before it. A base below zero has no native stack: refused."""
+    where = el.get("id", "chart")
+    cats = el["categories"]
+    deltas = [float(v) for v in el["deltas"]]
+    if len(deltas) != len(cats):
+        raise SpecError(f"{where}: {len(deltas)} deltas for {len(cats)} categories")
+    totals = {int(i) for i in (el.get("totals") or [])}
+    bad = sorted(i for i in totals if not 0 <= i < len(deltas))
+    if bad:
+        raise SpecError(f"{where}: totals {bad} outside 0..{len(deltas) - 1}")
+    running = 0.0
+    bases: list[float] = []
+    heights: list[float] = []
+    kinds: list[str] = []
+    for i, d in enumerate(deltas):
+        if i in totals:
+            if i > 0 and abs(d - running) > 0.005 * max(abs(d), abs(running), 1e-9):
+                raise SpecError(f"{where}: total {cats[i]!r} is {d:g} but the steps before it sum to {running:g}")
+            base, height, step = 0.0, d, "total"
+            running = d
+        else:
+            base, height, step = min(running, running + d), abs(d), ("positive" if d >= 0 else "negative")
+            running += d
+        if base < 0 or height < 0:
+            raise SpecError(f"{where}: {cats[i]!r} reaches below zero ({min(base, height):g}); a native stacked column cannot draw it, build the bridge from rects")
+        bases.append(base)
+        heights.append(height)
+        kinds.append(step)
+    return bases, heights, kinds, running
+
+
+def _point_label(series, idx: int, ink_hex: str, size, face: str, number_format: str | None) -> None:
+    """One point's label with its own ink. A c:dLbl replaces the series' dLbls for that
+    point, so the number format and position are written on it too."""
+    dl = series.points[idx].data_label
+    dl.font.size = size
+    dl.font.name = face
+    dl.font.color.rgb = RGBColor.from_string(ink_hex.upper())
+    dl.position = XL_LABEL_POSITION.CENTER
+    d_lbl = dl._dLbl
+    if number_format and d_lbl is not None:
+        fmt = etree.Element(qn("c:numFmt"))
+        fmt.set("formatCode", number_format)
+        fmt.set("sourceLinked", "0")
+        d_lbl.find(qn("c:idx")).addnext(fmt)
+
+
+def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> dict:
     x, y, w, h = box
     kind = el.get("chart_kind", "column")
     if kind not in CHART_TYPES:
         raise SpecError(f"{el.get('id')}: chart kind {kind!r} not in {sorted(CHART_TYPES)}; build other families from rects and rules")
     data = CategoryChartData()
     data.categories = el["categories"]
-    for s in el["series"]:
-        data.add_series(s["name"], s["values"], number_format=el.get("number_format"))
+    note: dict = {"id": el.get("id", "chart"), "chart_kind": kind}
+    waterfall: dict | None = None
+    if kind == "waterfall":
+        bases, heights, steps, running_end = _waterfall_steps(el)
+        waterfall = {"steps": steps}
+        note["waterfall"] = {"steps": steps, "end": running_end}
+        data.add_series("spacer", bases, number_format=el.get("number_format"))
+        data.add_series(el.get("series_name") or "Value", heights, number_format=el.get("number_format"))
+        series_specs = [{"name": "spacer"}, {"name": el.get("series_name") or "Value"}]
+    else:
+        series_specs = el["series"]
+        for s in series_specs:
+            data.add_series(s["name"], s["values"], number_format=el.get("number_format"))
     gf = slide.shapes.add_chart(CHART_TYPES[kind], Emu(x), Emu(y), Emu(w), Emu(h), data)
     gf.name = el.get("id", "chart")
     chart = gf.chart
     palette = list(guide.charts.get("series_color_hex") or []) or [guide.colors[r]["hex"] for r in ("color.accent1", "color.accent2", "color.accent3") if r in guide.colors]
     if not palette:
         raise SpecError("the guide has no series colours and no accents; complete color.accent1 first")
+    positive_hex = guide.colors.get("color.positive", {}).get("hex")
+    negative_hex = guide.colors.get("color.negative", {}).get("hex")
+    if waterfall is not None:
+        # steps take the guide's positive and negative roles when it has them, else accent1
+        # for every bar; totals always take accent1 (the first palette entry)
+        step_hex = {"total": palette[0], "positive": positive_hex or palette[0], "negative": negative_hex or palette[0]}
+        note["waterfall"]["colours"] = step_hex
+        if not (positive_hex and negative_hex):
+            note["waterfall"]["note"] = "no color.positive/color.negative in the guide: every step is accent1 and only the label tells the direction"
     chart.has_title = bool(el.get("title"))
     if el.get("title"):
         chart.chart_title.text_frame.text = el["title"]
-    per_kind = (guide.charts.get("per_kind") or {}).get(kind.split("_")[-1]) or (guide.charts.get("per_kind") or {}).get(kind) or {}
+    per_kind_all = guide.charts.get("per_kind") or {}
+    per_kind = per_kind_all.get(kind.split("_")[-1]) or per_kind_all.get(kind) or (per_kind_all.get("column") if kind == "waterfall" else None) or {}
     legend = el.get("legend")
-    if legend is None:
-        legend = per_kind.get("legend_position") if len(el["series"]) > 1 else None
+    if legend is None and waterfall is None:
+        legend = per_kind.get("legend_position") if len(series_specs) > 1 else None
     axis_spec = guide.roles.get("type.axis_label") or guide.roles.get("type.caption") or guide.roles.get("type.body")
     axis_ink = (axis_spec or {}).get("ink") or guide.colors.get("color.ink_muted", guide.colors.get("color.ink", {})).get("hex")
     axis_size = Pt(float((axis_spec or {"size_pt": 10})["size_pt"]))
     face = guide.face(axis_spec or {})
+    inverse = guide.colors.get("color.ink_inverse", {}).get("hex") or "FFFFFF"
     chart.has_legend = bool(legend)
     if legend:
         chart.legend.position = {"b": XL_LEGEND_POSITION.BOTTOM, "t": XL_LEGEND_POSITION.TOP, "r": XL_LEGEND_POSITION.RIGHT, "l": XL_LEGEND_POSITION.LEFT}.get(legend, XL_LEGEND_POSITION.BOTTOM)
@@ -538,20 +708,70 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         chart.legend.font.name = face
         if axis_ink:
             chart.legend.font.color.rgb = RGBColor.from_string(axis_ink.upper())
+        if waterfall is not None:
+            # the spacer has no legend entry: its values are stacking offsets, not a series
+            legend_el = chart._chartSpace.find(".//" + qn("c:legend"))
+            entry = etree.Element(qn("c:legendEntry"))
+            etree.SubElement(entry, qn("c:idx")).set("val", "0")
+            etree.SubElement(entry, qn("c:delete")).set("val", "1")
+            pos = legend_el.find(qn("c:legendPos"))
+            if pos is not None:
+                pos.addnext(entry)
+            else:
+                legend_el.insert(0, entry)
+    labels_wanted = bool(el.get("data_labels", per_kind.get("data_labels", 0) >= 0.5))
     for plot in chart.plots:
         for si, series in enumerate(plot.series):
             fill = series.format.fill
+            if waterfall is not None and si == 0:
+                fill.background()  # the spacer: no ink and no stroke
+                series.format.line.fill.background()
+                continue
             fill.solid()
+            if waterfall is not None:
+                si = 0  # the spacer holds index 0; the visible series takes the first accent
             fill.fore_color.rgb = RGBColor.from_string(palette[si % len(palette)].upper())
             if kind.startswith("line"):
                 series.format.line.color.rgb = RGBColor.from_string(palette[si % len(palette)].upper())
                 series.format.line.width = Pt(1.75)
                 series.smooth = False
-        plot.has_data_labels = bool(el.get("data_labels", per_kind.get("data_labels", 0) >= 0.5))
+            if kind in ("pie", "doughnut"):
+                # one slice per palette entry, written on the points: varyColors is 0 on
+                # every chart, so a pie coloured by the renderer would be one colour
+                for pi in range(len(el["categories"])):
+                    pf = series.points[pi].format.fill
+                    pf.solid()
+                    pf.fore_color.rgb = RGBColor.from_string(palette[pi % len(palette)].upper())
+            if waterfall is not None:
+                for pi, step in enumerate(waterfall["steps"]):
+                    if step_hex[step] != palette[0]:
+                        pf = series.points[pi].format.fill
+                        pf.solid()
+                        pf.fore_color.rgb = RGBColor.from_string(step_hex[step].upper())
         label_spec = guide.roles.get("type.data_label") or axis_spec
         label_size = Pt(float(label_spec.get("size_pt") or axis_spec.get("size_pt") or 10))
         label_ink_role = label_spec.get("ink_role")
         label_ink_hex = guide.hex(label_ink_role, where="chart data label") if label_ink_role else axis_ink
+        if waterfall is not None:
+            plot.has_data_labels = False  # a plot-level label set would number the spacer
+            if labels_wanted:
+                visible = plot.series[1]
+                sdl = visible.data_labels
+                sdl.font.size = label_size
+                sdl.font.name = face
+                sdl.show_value = True
+                sdl.position = XL_LABEL_POSITION.CENTER
+                if el.get("number_format"):
+                    sdl.number_format = el["number_format"]
+                    sdl.number_format_is_linked = False
+                series_ink = _label_ink(label_ink_hex or "000000", palette[0], inverse)
+                sdl.font.color.rgb = RGBColor.from_string(series_ink.upper())
+                for pi, step in enumerate(waterfall["steps"]):
+                    ink = _label_ink(label_ink_hex or "000000", step_hex[step], inverse)
+                    if ink != series_ink:
+                        _point_label(visible, pi, ink, label_size, face, el.get("number_format"))
+        else:
+            plot.has_data_labels = labels_wanted
         if plot.has_data_labels:
             dl = plot.data_labels
             dl.font.size = label_size
@@ -562,10 +782,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 dl.number_format = el["number_format"]
                 dl.number_format_is_linked = False
             if kind.startswith("stacked"):
-                # a label inside a dark bar takes the inverse ink: WCAG 3:1 against its own fill
-                from pptx.enum.chart import XL_LABEL_POSITION
                 dl.position = XL_LABEL_POSITION.CENTER
-                inverse = guide.colors.get("color.ink_inverse", {}).get("hex") or "FFFFFF"
                 for si, series in enumerate(plot.series):
                     fill_hex = palette[si % len(palette)]
                     sdl = series.data_labels
@@ -576,21 +793,23 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                     if el.get("number_format"):
                         sdl.number_format = el["number_format"]
                         sdl.number_format_is_linked = False
-                    label_ink = axis_ink or "000000"
-                    if _contrast(label_ink, fill_hex) < 3.0:
-                        label_ink = inverse if _contrast(inverse, fill_hex) >= _contrast(label_ink, fill_hex) else label_ink
-                    sdl.font.color.rgb = RGBColor.from_string(label_ink.upper())
-        if kind in ("column", "bar", "stacked_column", "stacked_bar"):
+                    sdl.font.color.rgb = RGBColor.from_string(_label_ink(axis_ink or "000000", fill_hex, inverse).upper())
+        if kind in LABELLED_BAR_KINDS:
             plot.gap_width = int(el.get("gap_width", 60))
-            if kind.startswith("stacked"):
+            if kind.startswith("stacked") or kind == "waterfall":
                 plot.overlap = 100
     if kind not in ("pie", "doughnut"):
+        # the axis stroke carries an explicit width: with none, each renderer substitutes
+        # its own reading of the theme's first line style (E38 class 5). The keybank
+        # template's theme1.xml declares 9525 EMU there, so 0.75pt changes nothing on it
+        axis_width = Pt(float(per_kind.get("axis_line_width_pt") or 0.75))
         for axis in (chart.category_axis, chart.value_axis):
             axis.tick_labels.font.size = axis_size
             axis.tick_labels.font.name = face
             if axis_ink:
                 axis.tick_labels.font.color.rgb = RGBColor.from_string(axis_ink.upper())
             axis.format.line.color.rgb = RGBColor.from_string((per_kind.get("axis_line_hex") or guide.colors.get("color.rule", guide.colors.get("color.ink_muted", {"hex": "808080"}))["hex"]).upper())
+            axis.format.line.width = axis_width
         grid = per_kind.get("gridlines_major")
         chart.value_axis.has_major_gridlines = bool(el.get("gridlines", (grid or 0) >= 0.5))
         if chart.value_axis.has_major_gridlines:
@@ -602,7 +821,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         # (chart_design.md) and the default here; `hide_value_axis: false` keeps the axis
         hide_axis = el.get("hide_value_axis")
         if hide_axis is None:
-            hide_axis = bool(plot.has_data_labels and kind in ("column", "bar", "stacked_column", "stacked_bar"))
+            hide_axis = bool(labels_wanted and kind in LABELLED_BAR_KINDS)
         if hide_axis:
             chart.value_axis.visible = False
         if kind in ("bar", "stacked_bar"):
@@ -618,6 +837,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         if el.get("number_format"):
             chart.value_axis.tick_labels.number_format = el["number_format"]
             chart.value_axis.tick_labels.number_format_is_linked = False
+    _write_vary_colors(chart._chartSpace)
     # chart text inherits the theme's Calibri unless every text part names the face
     tx_pr = chart._chartSpace.find(qn("c:txPr"))
     if tx_pr is None:
@@ -629,6 +849,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         d = etree.SubElement(ppr, qn("a:defRPr"))
         etree.SubElement(d, qn("a:latin")).set("typeface", face)
         etree.SubElement(p, qn("a:endParaRPr"))
+    return note
 
 
 # --- slides ------------------------------------------------------------------------------------------
@@ -662,13 +883,28 @@ def _copy_chrome_placeholders(slide, layout, wanted: set[str]) -> None:
                 cnv.set("id", str(max(int(c.get("id", "0")) for c in slide.shapes._spTree.iter(qn("p:cNvPr"))) + 1))
 
 
-def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int) -> None:
-    """For a reference without a master (a PDF): the guide's own chrome, drawn from the
-    observed hexes and positions. These are observed values of the reference, which is why
-    literal hexes are allowed here and nowhere else."""
+def _chrome_fill_hex(ch: dict, guide: Guide) -> str | None:
+    if ch.get("fill_hex"):
+        return ch["fill_hex"]
+    role = ch.get("fill_role")
+    return guide.colors[role]["hex"] if role in guide.colors else None
+
+
+def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int, entries: list[dict] | None = None, notes: list[dict] | None = None) -> list[str]:
+    """The guide's own chrome, drawn from the observed hexes and positions. These are
+    observed values of the reference, which is why literal hexes are allowed here and
+    nowhere else. `entries` is the list to draw; by default every entry on at least half
+    the reference's slides (the PDF and blank-template path, --chrome draw). An entry is
+    drawn at most once per slide and named by its chrome_id. A picture entry (kind logo)
+    becomes a picture when the entry carries `image_path`, else a rect placeholder with
+    the entry's fill, and `notes` names it. Returns the chrome_ids drawn."""
     n = max(1, guide_data.get("reference", {}).get("slides", 1))
-    for ch in guide_data.get("chrome", []):
-        if ch.get("slides_present", 0) < 0.5 * n:
+    if entries is None:
+        entries = [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
+    present = {sp.name for sp in slide.shapes}
+    drawn: list[str] = []
+    for ch in entries:
+        if ch["chrome_id"] in present:
             continue
         x, y, w, h = (int(v * 914400) for v in ch["box_in"])
         kind = ch["kind"]
@@ -677,14 +913,36 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int)
             line = slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2))
             line.name = ch["chrome_id"]
             _set_line(line._element.spPr, ch.get("line_hex") or ch.get("fill_hex") or guide.colors.get("color.rule", {}).get("hex", "000000"), width_emu)
-        elif kind == "band" and ch.get("fill_hex"):
+        elif kind == "band" and _chrome_fill_hex(ch, guide):
             shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
             shape.name = ch["chrome_id"]
             style = shape._element.find(qn("p:style"))
             if style is not None:
                 shape._element.remove(style)
-            _solid_fill(shape._element.spPr, ch["fill_hex"])
+            _solid_fill(shape._element.spPr, _chrome_fill_hex(ch, guide))
             _set_line(shape._element.spPr, None, None)
+        elif kind == "logo":
+            if ch.get("image_path"):
+                pic = slide.shapes.add_picture(ch["image_path"], Emu(x), Emu(y), Emu(w), Emu(h))
+                pic.name = ch["chrome_id"]
+            else:
+                # no image bytes travel with a guide entry: a placeholder the agent can see
+                # and replace, in the entry's fill or, with none, an outline in the rule colour
+                shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h))
+                shape.name = ch["chrome_id"]
+                style = shape._element.find(qn("p:style"))
+                if style is not None:
+                    shape._element.remove(style)
+                fill_hex = _chrome_fill_hex(ch, guide)
+                if fill_hex:
+                    _solid_fill(shape._element.spPr, fill_hex)
+                    _set_line(shape._element.spPr, None, None)
+                else:
+                    _insert_fill_first(shape._element.spPr, etree.Element(qn("a:noFill")))
+                    _set_line(shape._element.spPr, guide.colors.get("color.rule", guide.colors.get("color.ink", {"hex": "000000"}))["hex"], 9525)
+                if notes is not None:
+                    notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": "rect placeholder", "fill_hex": fill_hex,
+                                  "reason": "the guide entry carries no image bytes; add image_path to the entry or place the picture by hand"})
         elif kind in ("label", "page_number", "footer", "date") and (ch.get("text") or kind == "page_number"):
             box_w = max(w, 457200)
             if ch.get("anchor") == "slide_right" or x + w > 0.8 * page_w:
@@ -717,6 +975,60 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int)
                 etree.SubElement(fld, qn("a:t")).text = "1"
             if ch.get("anchor") == "slide_right" or x + box_w > 0.8 * page_w:
                 p.alignment = PP_ALIGN.RIGHT
+        else:
+            continue
+        drawn.append(ch["chrome_id"])
+        present.add(ch["chrome_id"])
+    return drawn
+
+
+def _send_to_back(slide, names: list[str]) -> None:
+    """Drawn chrome goes behind the content: index 2 of the spTree follows its two
+    property children."""
+    tree = slide.shapes._spTree
+    wanted = set(names)
+    for el in list(tree):
+        cnv = el.find(".//" + qn("p:cNvPr"))
+        if cnv is not None and cnv.get("name") in wanted:
+            tree.remove(el)
+            tree.insert(2, el)
+
+
+def _origin_tag_xml() -> bytes:
+    root = etree.Element(qn("p:tagLst"), nsmap={"p": P_NS})
+    tag = etree.SubElement(root, qn("p:tag"))
+    tag.set("name", ORIGIN_TAG_NAME)
+    tag.set("val", ORIGIN_TAG_VALUE)
+    return etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+
+
+def write_origin_tag(slide) -> str:
+    """One User Defined Tags part per generated slide, referenced from p:cSld/p:custDataLst
+    (deckgen render/emit/chrome.py add_tag_part and attach_tag_reference; 2E-1 measured
+    the part surviving a PowerPoint save with its p:tag intact). python-pptx writes the
+    part's content type into [Content_Types].xml and the relationship into the slide's
+    rels on save. p:custDataLst follows p:spTree in CT_CommonSlideData's sequence."""
+    package = slide.part.package
+    partname = package.next_partname("/ppt/tags/tag%d.xml")
+    part = Part(partname, CT.PML_TAGS, package, _origin_tag_xml())
+    rid = slide.part.relate_to(part, RT.TAGS)
+    common = slide._element.find(qn("p:cSld"))
+    if common is None:
+        raise SpecError("the new slide has no p:cSld to carry its origin tag")
+    custom = common.find(qn("p:custDataLst"))
+    if custom is None:
+        custom = etree.Element(qn("p:custDataLst"))
+        common.find(qn("p:spTree")).addnext(custom)
+    tags = etree.SubElement(custom, qn("p:tags"))
+    tags.set(qn("r:id"), rid)
+    return str(partname)
+
+
+PLACEHOLDER_KIND = {"page_number": "SLIDE_NUMBER", "footer": "FOOTER", "date": "DATE"}
+
+
+def _layers(ch: dict) -> list[str]:
+    return sorted(set(ch.get("layers") or [ch.get("source_layer") or "slide"]))
 
 
 def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> dict:
@@ -725,13 +1037,22 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
     kept = len(prs.slides)  # a template made with --keep carries pages the new ones follow
     surface = guide.colors.get("color.surface", {}).get("hex")
     wanted_chrome: set[str] = set()
+    slide_only: list[dict] = []
+    n = max(1, guide_data.get("reference", {}).get("slides", 1))
     if chrome == "auto":
-        n = max(1, guide_data.get("reference", {}).get("slides", 1))
         for ch in guide_data.get("chrome", []):
-            on_slides = "slide" in (ch.get("layers") or [ch.get("source_layer")])
-            if on_slides and ch["kind"] in ("page_number", "footer", "date") and ch.get("slides_present", 0) >= 0.5 * n:
-                wanted_chrome.add({"page_number": "SLIDE_NUMBER", "footer": "FOOTER", "date": "DATE"}[ch["kind"]])
-    report = {"out": out, "slides": []}
+            if ch.get("slides_present", 0) < 0.5 * n:
+                continue
+            layers = _layers(ch)
+            if "slide" in layers and ch["kind"] in PLACEHOLDER_KIND:
+                wanted_chrome.add(PLACEHOLDER_KIND[ch["kind"]])
+            if layers == ["slide"]:
+                # furniture the reference pastes on every slide (a logo, a rule, a label):
+                # nothing inherits it from the layout, so it is drawn on every generated
+                # slide; an entry with a layout or master layer is inherited and never redrawn
+                slide_only.append(ch)
+    chrome_report: dict = {"mode": chrome, "placeholders_copied": sorted(wanted_chrome), "slide_layer_entries": [ch["chrome_id"] for ch in slide_only], "notes": []}
+    report = {"out": out, "slides": [], "chrome": chrome_report}
     for si, sd in enumerate(spec["slides"], 1):
         layout = _layout_named(prs, sd.get("layout"))
         slide = prs.slides.add_slide(layout)
@@ -764,6 +1085,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
         for ph in list(slide.placeholders):
             if ph.placeholder_format.idx not in filled:
                 ph._element.getparent().remove(ph._element)  # an unfilled prompt is not content
+        charts: list[dict] = []
         for el in sd.get("elements", []):
             box = tuple(int(v) for v in el["box"])
             if any(v < 0 for v in box[2:]):
@@ -782,27 +1104,33 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             elif kind == "table":
                 write_table(slide, el, guide, box)
             elif kind == "chart":
-                write_chart(slide, el, guide, box)
+                charts.append(write_chart(slide, el, guide, box))
             else:
                 raise SpecError(f"{el.get('id')}: unknown element kind {kind!r}")
         if wanted_chrome:
             _copy_chrome_placeholders(slide, layout, wanted_chrome)
+        drawn: list[str] = []
+        page_w, page_h = int(prs.slide_width), int(prs.slide_height)
         if chrome == "draw":
             if surface and surface.upper() != "FFFFFF":
                 slide.background.fill.solid()
                 slide.background.fill.fore_color.rgb = RGBColor.from_string(surface.upper())
-            draw_chrome(slide, guide, guide_data, int(prs.slide_width), int(prs.slide_height))
-            # drawn chrome goes to the back of the z-order so content sits on top
-            tree = slide.shapes._spTree
-            chrome_ids = {ch["chrome_id"] for ch in guide_data.get("chrome", [])}
-            for el in list(tree):
-                cnv = el.find(".//" + qn("p:cNvPr"))
-                if cnv is not None and cnv.get("name") in chrome_ids:
-                    tree.remove(el)
-                    tree.insert(2, el)
+            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, notes=chrome_report["notes"])
+        elif chrome == "auto" and slide_only:
+            # a slide-layer page number, footer or date whose placeholder the layout carries
+            # was copied above; the rest is drawn, each entry once, named by its chrome_id
+            layout_kinds = {str(sp.placeholder_format.type).split(".")[-1].split(" ")[0] for sp in layout.placeholders}
+            entries = [ch for ch in slide_only if PLACEHOLDER_KIND.get(ch["kind"]) not in layout_kinds]
+            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, entries=entries, notes=chrome_report["notes"])
+        if drawn:
+            _send_to_back(slide, drawn)
+        tag_part = write_origin_tag(slide)
         if sd.get("notes"):
             slide.notes_slide.notes_text_frame.text = sd["notes"]
-        report["slides"].append({"slide": si, "layout": layout.name, "elements": len(sd.get("elements", []))})
+        entry = {"slide": si, "layout": layout.name, "elements": len(sd.get("elements", [])), "chrome_drawn": drawn, "origin_tag": tag_part}
+        if charts:
+            entry["charts"] = charts
+        report["slides"].append(entry)
     prs.save(out)
     return report
 
