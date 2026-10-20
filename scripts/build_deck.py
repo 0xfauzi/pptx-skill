@@ -29,20 +29,47 @@ scale chosen, lines per text element, every violation, the fitting row prefix of
 table when a split is needed, and after rendering the judge's distance to the reference
 and to every other house given. An unfittable slide is still emitted from its last
 attempt and marked, so the render shows what did not fit; nothing is dropped silently.
+
+After the solve and before the emit, four more instruments read the resolved page:
+`contrast` (WCAG 2.2 ratio of every text run and table row class against the fill the
+page draws behind it; below 3.0:1 refuses the page with reason "contrast", below AA
+warns), `register` (kind counts, decoration count and container ratio against the
+reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
+a warning listed first under `problems`), and the source-line rule (a table or chart
+with no type.source_line or type.footnote paragraph refuses the page with reason "no
+source line"). `repetition` at deck level is the arrangement similarity of each
+consecutive pair of pages (the extractor's own slide_similarity) with any run of
+look-alike pages longer than the reference's longest.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import component_api  # noqa: E402
 import layout as L  # noqa: E402
-from emit_pptx import emit as emit_slides  # noqa: E402
+from emit_pptx import HEX_RE, Guide as EmitGuide, emit as emit_slides  # noqa: E402
+from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
 
 EMU_PER_INCH = 914400
+#: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
+#: AA_NORMAL, AA_LARGE, LARGE_REGULAR_PT, LARGE_BOLD_PT), cited there to
+#: https://www.w3.org/TR/WCAG22/#contrast-minimum and #dfn-large-scale.
+AA_NORMAL, AA_LARGE, LARGE_REGULAR_PT, LARGE_BOLD_PT = 4.5, 3.0, 18.0, 14.0
+#: Below this a run is refused, not warned: the line the emitter's own table-ink swap
+#: already draws at (emit_pptx.write_table), so a page is never refused for a cell the
+#: file corrects.
+CONTRAST_REFUSAL = 3.0
+SOURCE_ROLES = ("type.source_line", "type.footnote")
+#: A totals row headed by one of these is a statistic over the column, not its sum.
+STATISTIC_LABELS = ("median", "average", "mean")
+TIEOUT_KINDS = ("number", "currency", "percent")
 
 
 def chrome_zones(guide: dict) -> list[dict]:
@@ -186,6 +213,324 @@ def position_drift(slides: list[dict], guide: dict) -> dict:
     return out
 
 
+# --- contrast on the resolved page (deckgen quality/contrast.py, style/contrast.py) -------
+
+
+def aa_threshold(size_pt: float, bold: bool) -> float:
+    """The SC 1.4.3 minimum for a run of this size and weight."""
+    return AA_LARGE if size_pt >= LARGE_REGULAR_PT or (bold and size_pt >= LARGE_BOLD_PT) else AA_NORMAL
+
+
+def _intersects(a: list, b: list) -> bool:
+    return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
+
+
+def _contains(outer: list, inner: list) -> bool:
+    return outer[0] <= inner[0] and outer[1] <= inner[1] and outer[0] + outer[2] >= inner[0] + inner[2] and outer[1] + outer[3] >= inner[1] + inner[3]
+
+
+def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict[str, str]) -> tuple[list[str], bool]:
+    """Every colour that can lie under element `index`, and whether an image can: the
+    guide's color.surface (the emitter's ground), then every earlier-drawn element whose
+    box intersects, in draw order (flatten's order is the emitter's). An opaque fill
+    whose box CONTAINS the element's box becomes the new ground and the only backing (a
+    region's fill rect is drawn before its children, so the nearest enclosing filled
+    region wins); a fill with another preset is one more possibility. The guide's colour
+    roles carry no alpha, so nothing composites. `names` collects a role name per hex."""
+    surface = eg.colors.get("color.surface", {}).get("hex")
+    box = elements[index]["box"]
+    backings = [surface] if surface else []
+    if surface:
+        names.setdefault(surface, "color.surface")
+    undecidable = surface is None
+    for earlier in elements[:index]:
+        if not _intersects(earlier["box"], box):
+            continue
+        if earlier["kind"] == "image":
+            undecidable = True
+            continue
+        if earlier["kind"] not in ("rect", "text") or not earlier.get("fill_role"):
+            continue  # a table cannot overlap (the solver refuses it); a chart draws no plot fill here; a rule is a line
+        fill = eg.hex(earlier["fill_role"], where=earlier.get("id", "fill"))
+        if fill is None:
+            continue
+        full_rect = earlier["kind"] == "text" or (earlier.get("prst") or "rect") == "rect"
+        if full_rect and _contains(earlier["box"], box):
+            backings, undecidable = [fill], False
+            names.setdefault(fill, f"{earlier['fill_role']} of {earlier.get('id')}")
+        else:
+            backings.append(fill)
+            names.setdefault(fill, f"{earlier['fill_role']} of {earlier.get('id')} (partial)")
+    return list(dict.fromkeys(backings)), undecidable
+
+
+def _spec_ink(eg: EmitGuide, spec: dict, ink_role: str | None, where: str) -> tuple[str | None, str | None]:
+    """The ink the emitter writes for a run: the paragraph's ink_role, else the type
+    role's ink_role, else the role's observed literal (emit_pptx.write_text)."""
+    role = ink_role or spec.get("ink_role")
+    if role:
+        return eg.hex(role, where=where), role
+    literal = spec.get("ink")
+    if literal and HEX_RE.match(literal):
+        return literal, f"{where} observed ink"
+    return None, None
+
+
+def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dict[str, str]) -> dict:
+    """The worst (ink, backing) pair against its AA threshold, as deckgen reports it."""
+    worst = min(backings, key=lambda b: contrast_ratio(ink, b))
+    ratio = contrast_ratio(ink, worst)
+    return {"ratio": round(ratio, 2), "threshold": aa_threshold(size_pt, bold), "size_pt": size_pt, "bold": bold, "backing": names.get(worst, worst)}
+
+
+def contrast_of(elements: list[dict], resolved: dict, guide: dict) -> dict:
+    """WCAG 2.2 contrast of every text run and every table row class against the fill
+    the page draws behind it. A text run's backing: the element's own fill, else the
+    chain under it. A table's: the header fill under header ink, the banding parity or
+    data fill the emitter draws under body rows, the emphasis fill under emphasis rows,
+    else the chain; the emitter's own swap to color.ink_inverse (a cell ink under 3:1
+    against its fill or the surface) is mirrored, so the file's ink is what is scored.
+    Chart text is not scored: its backing is the series fill the label sits on, which
+    the emitter picks per series by contrast and this walk does not see."""
+    eg = EmitGuide(guide)
+    out: dict = {"checked": 0, "violations": [], "warnings": [], "undecidable": [], "unbound": [], "nearest_pass": None}
+
+    def file(finding: dict) -> None:
+        out["checked"] += 1
+        if finding["ratio"] < CONTRAST_REFUSAL:
+            out["violations"].append(finding)
+        elif finding["ratio"] < finding["threshold"]:
+            out["warnings"].append(finding)
+        elif out["nearest_pass"] is None or finding["ratio"] / finding["threshold"] < out["nearest_pass"]["ratio"] / out["nearest_pass"]["threshold"]:
+            out["nearest_pass"] = finding  # the tightest pair that passed, so a near miss is visible
+
+    for i, el in enumerate(elements):
+        if el["kind"] not in ("text", "table"):
+            continue
+        names: dict[str, str] = {}
+        lower, image_below = _lower_backings(elements, i, eg, names)
+        own = eg.hex(el.get("fill_role"), where=el.get("id", el["kind"])) if el.get("fill_role") else None
+        if own:
+            names.setdefault(own, f"{el['fill_role']} of {el.get('id')}")
+        measured = resolved["elements"].get(el["id"], {})
+        if el["kind"] == "text":
+            if image_below and not own:
+                out["undecidable"].append({"element": el["id"], "why": "an image lies under the text; contrast needs pixels"})
+                continue
+            for pi, para in enumerate(el["paragraphs"]):
+                spec = eg.type_spec(para["role"], where=el["id"])
+                ink, ink_name = _spec_ink(eg, spec, para.get("ink_role"), para["role"])
+                if ink is None:
+                    out["unbound"].append({"element": el["id"], "paragraph": pi, "role": para["role"], "why": "no ink role or observed ink; the run inherits the master's text colour"})
+                    continue
+                meas = measured.get("paragraphs", [{}])[pi] if pi < len(measured.get("paragraphs", [])) else {}
+                size_pt = (meas.get("sz") or round(float(spec["size_pt"]) * 100)) / 100
+                for ri, run in enumerate(para.get("runs") or [{"text": ""}]):
+                    bold = bool(meas.get("b") or run.get("emphasis") or spec.get("weight", 400) >= 700)
+                    finding = {"element": el["id"], "paragraph": pi, "run": ri, "role": para["role"], "ink": ink_name,
+                               "text": (run.get("text") or "")[:40], **_score(ink, [own] if own else lower, size_pt, bold, names)}
+                    file(finding)
+            continue
+        # a table: the emitter's fills and inks per row class (emit_pptx.write_table)
+        t = eg.tables
+        header_fill = t.get("header_fill_hex") or (eg.hex(t["header_fill_role"], where="table header") if t.get("header_fill_role") else None)
+        if header_fill:
+            names.setdefault(header_fill, f"{t.get('header_fill_role') or 'header fill'} of {el['id']}")
+        header_ink = eg.hex(t["header_ink_role"], where="table header") if t.get("header_ink_role") else None
+        band_hex = t.get("banding_hex") or (eg.hex(t["banding_role"], where="table banding") if t.get("banding_role") else None)
+        if band_hex:
+            names.setdefault(band_hex, f"{t.get('banding_role') or 'banding'} of {el['id']}")
+        data_hex = t.get("data_fill_hex")
+        if data_hex:
+            names.setdefault(data_hex, f"data fill of {el['id']}")
+        cell_spec = eg.type_spec("type.table_cell" if "type.table_cell" in eg.roles else "type.body", where="table")
+        emphasis_role = el.get("emphasis_fill_role") or "color.surface_alt"
+        emphasis_fill = eg.hex(emphasis_role, where="table emphasis") if (el.get("emphasis_fill_role") or "color.surface_alt" in eg.colors) else None
+        if emphasis_fill:
+            names.setdefault(emphasis_fill, f"{emphasis_role} of {el['id']}")
+        cell_ink, cell_ink_name = _spec_ink(eg, cell_spec, cell_spec.get("ink_role"), "type.table_cell")
+        inverse_ink = eg.colors.get("color.ink_inverse", {}).get("hex")
+        surface = eg.colors.get("color.surface", {}).get("hex") or "FFFFFF"
+        header_rows = int(el.get("header_rows", 1))
+        n_rows = header_rows + len(el["rows"])
+        totals = bool(el.get("totals_last_row"))
+        emphasis_rows = {int(r) for r in (el.get("emphasis_rows") or [])}
+        header_sz = (measured.get("header") or {}).get("sz")
+        cell_sz = (measured.get("cell") or {}).get("sz")
+        classes: dict[tuple, dict] = {}
+        for ri in range(n_rows):
+            is_header = ri < header_rows
+            is_totals = totals and ri == n_rows - 1
+            data_index = ri - header_rows
+            is_emphasis = not is_header and data_index in emphasis_rows
+            fill_hex = header_fill if is_header else (emphasis_fill if (is_emphasis and emphasis_fill) else (band_hex if (band_hex and data_index % 2 == 0) else data_hex))
+            ink, ink_name = (header_ink, t.get("header_ink_role")) if is_header else (cell_ink, cell_ink_name)
+            ground = fill_hex or surface
+            swapped = False
+            if ink and contrast_ratio(ink, ground) < CONTRAST_REFUSAL and inverse_ink and contrast_ratio(inverse_ink, ground) > contrast_ratio(ink, ground):
+                ink, ink_name, swapped = inverse_ink, "color.ink_inverse", True
+            klass = "header" if is_header else "totals" if is_totals else "emphasis" if is_emphasis else ("body even" if data_index % 2 == 0 else "body odd")
+            bold = bool(t.get("header_bold")) if is_header else (is_totals or is_emphasis or cell_spec.get("weight", 400) >= 700)
+            size_pt = ((header_sz if is_header else cell_sz) or round(float(cell_spec["size_pt"]) * 100)) / 100
+            key = (klass, ink, fill_hex, bold)
+            entry = classes.setdefault(key, {"element": el["id"], "row_class": klass, "rows": [], "ink": ink_name, "swapped_by_emitter": swapped, "fill": names.get(fill_hex) if fill_hex else None, "size_pt": size_pt, "bold": bold})
+            entry["rows"].append(ri)
+        for (_, ink_hex, fill_hex, _), entry in classes.items():
+            if ink_hex is None:
+                out["unbound"].append({"element": el["id"], "row_class": entry["row_class"], "why": "no ink role bound; the cells inherit the master's text colour"})
+                continue
+            if fill_hex is None and image_below:
+                out["undecidable"].append({"element": el["id"], "row_class": entry["row_class"], "why": "an image lies under unfilled rows; contrast needs pixels"})
+                continue
+            file({**entry, **_score(ink_hex, [fill_hex] if fill_hex else lower, entry["size_pt"], entry["bold"], names)})
+    return out
+
+
+# --- register against the reference's bands (extract_style.composition) --------------------
+
+REGISTER_KIND = {"text": "text", "image": "image", "rect": "shape", "table": "table", "chart": "chart", "rule": "line"}
+
+
+def _against_band(value: float | None, band: dict | None, digits: int = 3) -> dict:
+    lo, hi = (band or {}).get("low"), (band or {}).get("high")
+    if value is None:
+        return {"value": None, "band": [lo, hi], "verdict": "no text on the page"}
+    if lo is None or hi is None:
+        return {"value": round(value, digits), "band": None, "verdict": "no band in the guide"}
+    return {"value": round(value, digits), "band": [lo, hi], "verdict": "below" if value < lo else "above" if value > hi else "in band"}
+
+
+def register_of(elements: list[dict], guide: dict) -> dict:
+    """The page's register as the extractor measures a reference slide's: per-kind
+    counts of the drawn shapes (a region's fill is a shape, a rule is a line), the
+    decoration count (fills and lines without text), and the container ratio (text
+    shapes carrying their own fill or outline over all text shapes), each against the
+    reference's 10th to 90th percentile band. A takeaway set in a filled REGION counts
+    as one decoration and one bare text shape, which is what the emitter draws."""
+    stats = guide.get("register_stats") or {}
+    kinds = Counter(REGISTER_KIND[el["kind"]] for el in elements if el["kind"] in REGISTER_KIND)
+    texty = [el for el in elements if el["kind"] == "text"]
+    container = (sum(1 for el in texty if el.get("fill_role") or el.get("line_role")) / len(texty)) if texty else None
+    decoration = sum(1 for el in elements if el["kind"] in ("rect", "rule"))
+    return {"kind_counts": {k: _against_band(kinds.get(k, 0), (stats.get("kind_counts") or {}).get(k)) for k in ("text", "image", "shape", "table", "chart", "line")},
+            "decoration_count": _against_band(decoration, stats.get("decoration_counts")),
+            "container_ratio": _against_band(container, stats.get("container_ratio"))}
+
+
+def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
+    """Arrangement similarity of each consecutive pair of emitted pages: the extractor's
+    slide_similarity (Hungarian on box IoU over the larger set) on the flattened
+    elements' boxes, similar at the archetype threshold it clusters the reference with.
+    A run of similar consecutive pages longer than the reference's longest run of one
+    archetype (composition.archetypes consecutive_max) is flagged."""
+    archetypes = (guide.get("composition") or {}).get("archetypes") or []
+    reference_max = max((int(a.get("consecutive_max") or 1) for a in archetypes), default=None)
+    pairs, runs = [], []
+    run = [pages[0][0]] if pages else []
+    for (pa, ea), (pb, eb) in zip(pages, pages[1:]):
+        sim = slide_similarity([tuple(el["box"]) for el in ea], [tuple(el["box"]) for el in eb])
+        similar = sim >= ARCHETYPE_IOU_THRESHOLD
+        pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": similar})
+        if similar:
+            run.append(pb)
+        else:
+            runs.append(run)
+            run = [pb]
+    if run:
+        runs.append(run)
+    over = [{"pages": r, "length": len(r)} for r in runs if reference_max is not None and len(r) > reference_max]
+    return {"threshold": ARCHETYPE_IOU_THRESHOLD, "pairs": pairs, "reference_consecutive_max": reference_max, "runs_over_reference": over}
+
+
+# --- tie-outs and the source line ------------------------------------------------------------
+
+_FIGURE_STRIP = str.maketrans("", "", "$,%x ")
+
+
+def parse_figure(text: str) -> float | None:
+    """A table figure as a number: $ , % x and spaces stripped, parentheses negative,
+    a Unicode minus honoured. None for anything else (n.a., n.m., a dash, blank)."""
+    s = str(text).strip()
+    negative = s.startswith("(") and s.endswith(")")
+    if negative:
+        s = s[1:-1]
+    s = s.replace("−", "-").translate(_FIGURE_STRIP)
+    if not s:
+        return None
+    try:
+        value = float(s)
+    except ValueError:
+        return None
+    return -value if negative else value
+
+
+def _decimals(text: str) -> int:
+    m = re.search(r"\.(\d+)", str(text))
+    return len(m.group(1)) if m else 0
+
+
+def tieouts_of(elements: list[dict]) -> list[dict]:
+    """For every table with totals_last_row: each number, currency or percent column's
+    body sum against its totals cell, compared at the totals cell's own precision. A
+    totals row headed median, average or mean is a statistic and is skipped; a column
+    with an unparseable cell (n.a., n.m.) is skipped and says which cell."""
+    out = []
+    for el in elements:
+        if el["kind"] != "table" or not el.get("totals_last_row") or len(el["rows"]) < 2:
+            continue
+        head = str(el["rows"][-1][0]).strip().lower()
+        if any(word in head for word in STATISTIC_LABELS):
+            out.append({"table": el["id"], "status": "skipped", "note": f"totals row {el['rows'][-1][0]!r} is a statistic over the column, not its sum"})
+            continue
+        for ci, col in enumerate(el["columns"]):
+            if col.get("value_kind") not in TIEOUT_KINDS:
+                continue
+            total_text = str(el["rows"][-1][ci])
+            total = parse_figure(total_text)
+            rec = {"table": el["id"], "column": col.get("label", col.get("key")), "total": total_text}
+            if total is None:
+                out.append({**rec, "status": "skipped", "note": "the totals cell is blank or not a figure"})
+                continue
+            body = [(str(r[ci]), parse_figure(r[ci])) for r in el["rows"][:-1]]
+            bad = [text for text, value in body if value is None]
+            if bad:
+                out.append({**rec, "status": "skipped", "note": f"cells not figures: {bad}"})
+                continue
+            d = _decimals(total_text)
+            total_sum = sum(value for _, value in body)
+            rec.update({"sum": f"{total_sum:.{d}f}", "precision": d, "status": "ok" if abs(round(total_sum, d) - round(total, d)) < 10 ** -(d + 6) else "mismatch"})
+            out.append(rec)
+    return out
+
+
+def source_line_missing(elements: list[dict]) -> bool:
+    """A page carrying a table or a chart needs a type.source_line or type.footnote."""
+    exhibit = any(el["kind"] in ("table", "chart") for el in elements)
+    sourced = any(p["role"] in SOURCE_ROLES for el in elements if el["kind"] == "text" for p in el["paragraphs"])
+    return exhibit and not sourced
+
+
+def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict) -> list[dict]:
+    """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
+    the agent meant), then the refusals (contrast, no source line). A refusal turns a fit
+    page unfittable with the refusal's name as the reason; a page the solver already
+    refused keeps the solver's reason, the first cause."""
+    entry["contrast"] = contrast_of(elements, resolved, guide)
+    entry["register"] = register_of(elements, guide)
+    entry["tieouts"] = tieouts_of(elements)
+    problems = [{"kind": "tieout", "severity": "warning", "detail": f"{t['table']} column {t['column']!r}: body rows sum to {t['sum']}, the totals cell reads {t['total']}"} for t in entry["tieouts"] if t["status"] == "mismatch"]
+    for v in entry["contrast"]["violations"]:
+        where = f"{v['element']} paragraph {v['paragraph']} run {v['run']}" if "run" in v else f"{v['element']} {v['row_class']} rows"
+        problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})"})
+    if source_line_missing(elements):
+        problems.append({"kind": "no source line", "severity": "refusal", "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote"})
+    refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
+    entry["solver_status"] = entry["status"]  # the geometry verdict alone; component.py's harness page reads it
+    if refusals and entry["status"] == "fit":
+        entry["status"], entry["reason"] = "unfittable", "; ".join(refusals)
+    return problems
+
+
 def prepare_page(spec_raw: dict, guide: dict) -> None:
     """The page as the build enforces it: the guide's page size, the chrome zones, the
     indent progression for a bullet-less reference, and the title band. `layout.py
@@ -210,11 +555,19 @@ def prepare_page(spec_raw: dict, guide: dict) -> None:
         root_children[0]["scale_class"] = "fixed"
 
 
+def component_root(kind: str) -> Path:
+    """A component's directory: `components/<kind>` in the repo, or the directory itself
+    when `kind` is a path (a component under development outside the library)."""
+    if "/" in kind or kind.startswith("."):
+        return Path(kind).resolve()
+    return Path(__file__).resolve().parent.parent / "components" / kind
+
+
 def admission_note(kind: str, guide: dict) -> str | None:
     """Admission is bound to the guide it was checked with: a component admitted on keybank
     overflowed its band on netflix (12pt floor, different padding). Say so when the guide
     differs, and point at the check."""
-    rec_path = Path(__file__).resolve().parent.parent / "components" / kind / "admitted.json"
+    rec_path = component_root(kind) / "admitted.json"
     if not rec_path.exists():
         return f"component {kind!r} is not admitted; run component.py check and admit"
     rec = json.loads(rec_path.read_text())
@@ -226,20 +579,24 @@ def admission_note(kind: str, guide: dict) -> str | None:
 
 def load_component(kind: str):
     import importlib.util
-    root = Path(__file__).resolve().parent.parent / "components" / kind
+    root = component_root(kind)
     spec_file = root / "expand.py"
     if not spec_file.exists():
-        raise SystemExit(f"component {kind!r}: no components/{kind}/expand.py")
-    module_spec = importlib.util.spec_from_file_location(f"component_{kind}", spec_file)
+        raise SystemExit(f"component {kind!r}: no {spec_file}")
+    module_spec = importlib.util.spec_from_file_location(f"component_{root.name}", spec_file)
     module = importlib.util.module_from_spec(module_spec)  # type: ignore[arg-type]
     module_spec.loader.exec_module(module)  # type: ignore[union-attr]
     return module.expand
 
 
-def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None) -> tuple[dict, bool]:
+def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None, api: dict | None = None) -> tuple[dict, bool]:
     """Replace component nodes. With no boxes yet, each becomes a flexible placeholder so a
-    probe solve can learn its box; with boxes, each is expanded at its box."""
+    probe solve can learn its box; with boxes, each is expanded at its box. Every expand
+    call receives the guide with `_api` (component_api.py: the solver's own text width
+    and line pitch) so a component measures instead of estimating."""
     pending = False
+    api = api if api is not None else component_api.make_api(guide)
+    guide_for_components = component_api.with_api(guide, api)
 
     def visit(node: dict) -> dict:
         nonlocal pending
@@ -257,7 +614,7 @@ def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None) 
             note = admission_note(node["kind"], guide)
             if note:
                 slide.setdefault("component_notes", []).append(note)
-            sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide)
+            sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide_for_components)
             sub = normalise(sub, slide)
             sub["weight"] = node.get("weight")
             if sub.get("id") != node["id"]:
@@ -338,22 +695,24 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
     index = L.default_index()
+    api = component_api.make_api(guide, lg, ruler, index)
     emit_spec = {"slides": []}
     report = {"out": out, "ruler": ruler.name, "slides": []}
-    for slide in deck["slides"]:
+    pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
+    for number, slide in enumerate(deck["slides"], 1):
         spec_raw = json.loads(json.dumps(slide["spec"]))
         spec_raw["root"] = normalise(spec_raw["root"], slide)
         mark_measured_weights(spec_raw["root"], slide)
         prepare_page(spec_raw, guide)
         # components: probe once with placeholders to learn their boxes, then expand at those boxes
-        tree, pending = expand_components(spec_raw["root"], slide, guide, None)
+        tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
         if pending:
             # the probe measures the text around the placeholder first, so the component gets
             # the space the text leaves and not an equal share with a one-line source
             probe_spec = L.parse_spec({**spec_raw, "root": tree})
             attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
             probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
-            tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()})
+            tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
         spec_raw["root"] = tree
         spec = L.parse_spec(spec_raw)
         ctx = L.Context(lg, ruler, index, spec)
@@ -384,9 +743,12 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
         elements = flatten(slide, resolved, spec_raw)
         entry["density"] = density_of(elements, resolved, guide, spec_raw)
+        entry["problems"] = page_problems(entry, elements, resolved, guide)
+        pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)
     report["position_drift"] = position_drift(emit_spec["slides"], guide)
+    report["repetition"] = repetition_of(pages, guide)
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
     from pptx_tools import validate
@@ -453,9 +815,10 @@ def main(argv: list[str]) -> int:
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome)
+    shown = ("id", "status", "reason", "problems", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes")
     brief = {"out": report["out"], "ruler": report["ruler"],
-             "slides": [{k: v for k, v in s.items() if k in ("id", "status", "scale", "violations", "text_lines", "tables", "reason", "density", "component_notes")} for s in report["slides"]],
-             "position_drift": report.get("position_drift"),
+             "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures
+             "position_drift": report.get("position_drift"), "repetition": report.get("repetition"),
              "validation_ok": report.get("validation", {}).get("ok"), "problems": report.get("validation", {}).get("problems"),
              "judge": report.get("judge"), "renders": (report.get("renders") or {}).get("images")}
     print(json.dumps(brief, indent=1, default=str))
