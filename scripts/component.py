@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent / "components"
 def check(kind: str, guide_path: str, template: str, out: str, reference: str | None) -> dict:
     spec = json.loads((ROOT / kind / "spec.json").read_text())
     guide = json.loads(Path(guide_path).read_text())
+    guide_ref = {"guide_reference": guide.get("reference", {}).get("file"), "guide_reference_sha256": guide.get("reference", {}).get("sha256")}
     tests = [dict(t, held_out=False) for t in spec["tests"]["shown"]] + [dict(spec["tests"]["held_out"], held_out=True)]
     margin = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 457200)
     deck = {"slides": []}
@@ -49,16 +50,22 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
     pptx = str(Path(out) / f"{kind}.check.pptx")
     report = build(deck, guide, template, pptx, reference, [], str(Path(out) / "renders"), True)
     verdict = []
+    single = tuple(spec.get("single_line_ids") or ())
     for t, s in zip(tests, report["slides"]):
         ok = s["status"] == "fit" and not s.get("violations")
+        # a figure, a tick or a marker label that wrapped is not fit, whatever the solver says:
+        # '$1' over '4' is the defect the first admission let through
+        wrapped = sorted(k for k, lines in (s.get("text_lines") or {}).items() if lines > 1 and any(tag in k for tag in single))
+        if wrapped:
+            ok = False
         verdict.append({"test": t["name"], "held_out": t["held_out"], "box": t["box"], "pass": ok, "scale": s.get("scale"),
-                        "violations": s.get("violations", []), "reason": s.get("reason")})
+                        "violations": s.get("violations", []), "reason": s.get("reason"), "wrapped_single_line": wrapped})
     sheet = None
     images = (report.get("renders") or {}).get("images") or []
     if images:
         from render import grid
         sheet = str(grid([Path(p) for p in images], Path(out) / f"{kind}.sheet.png", cols=2, cell_w=700))
-    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict), "tests": verdict, "pptx": pptx, "sheet": sheet,
+    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict), "tests": verdict, "pptx": pptx, "sheet": sheet, **guide_ref,
               "judge": report.get("judge"), "validation_ok": report.get("validation", {}).get("ok")}
     (Path(out) / f"{kind}.check.json").write_text(json.dumps(result, indent=1, default=str))
     return result
@@ -68,7 +75,9 @@ def admit(kind: str, out: str) -> dict:
     result = json.loads((Path(out) / f"{kind}.check.json").read_text())
     if not result["all_pass"]:
         raise SystemExit(f"{kind}: the last check did not pass every box; fix and re-check before admitting")
-    record = {"kind": kind, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True, "sheet": result["sheet"], "judge_total": (result.get("judge") or {}).get("total")}
+    record = {"kind": kind, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True, "sheet": result["sheet"], "judge_total": (result.get("judge") or {}).get("total"),
+              # admission is bound to the guide it passed under; build_deck says so when the guide differs
+              "guide_reference": result.get("guide_reference"), "guide_reference_sha256": result.get("guide_reference_sha256")}
     (ROOT / kind / "admitted.json").write_text(json.dumps(record, indent=1))
     return record
 

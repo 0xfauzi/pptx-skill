@@ -194,6 +194,15 @@ repetition; the reference's families tell you its own range.
 Numbers: use the user's figures byte for byte. Never invent a number; a figure you do
 not have is a placeholder the user must fill, named as such in the report.
 
+### 5.1 Every figure in a title is computed
+
+Before writing a title or a bullet that states a figure, compute it from the exhibit's
+own data: midpoints, medians, counts above or below a line. Write the computed figure.
+The shipped example once said "$11.40 sits above every method's midpoint" over a field
+where two midpoints were above it, and "the offer is at the top of the range" over a
+table where its multiple was below the median; the build cannot catch a false sentence,
+only you can, and a managing director will.
+
 ## 6. Write the page specs
 
 A page is a tree. Regions lay out children with `flex` (direction, gap role, pad role,
@@ -235,8 +244,14 @@ Conventions the build enforces:
 
 ```bash
 python3 scripts/build_deck.py work/deck/deck.json --guide work/ref/guide.json --template work/tpl.pptx \
-  -o work/out/deck.pptx --reference ref.pptx --others <two or three other decks or PDFs>
+  -o work/out/deck.pptx --reference ref.pptx --renders work/out/renders
 ```
+
+Leave `--others` alone: the judge's panel is every deck under `refs/files` (fetch them
+once with `refs/fetch.sh`), the reference's twin removed by hash, scans with no type
+skipped, and decks that sit inside the reference's own spread reported as the same
+house rather than as rivals. A pass against two alien decks and a fail against the
+sister decks is the same deck; the panel is not yours to choose.
 
 One command solves every page with measured fit, emits on the template, validates the
 package, renders every page, and judges the deck against the reference and the other
@@ -246,15 +261,34 @@ houses. Read `work/out/deck.build.json`:
   Scale below 1.0 means the solver stepped the whole type ladder down toward the floor;
   say so in the report if it went below 0.9.
 - `status: unfittable` names the smallest admitted scale, every violation, and for each
-  table the row prefix that would fit. Nothing is dropped silently. Your moves, in this
+  table `rows_to_fit_slide`, the body-row count at which to split the page (the
+  `fitting_row_prefix` beside it is the probe-box figure the fitter worked from, not the
+  cut). A title that needs two lines is named first, before any other violation, because
+  every other violation on that page follows from it. Nothing is dropped silently. Your moves, in this
   order: re-arrange (two columns instead of one, a table beside the chart instead of
   below it, a compact component variant), cut words, split the page at a declared
   boundary (the table's fitting rows become page one, the rest page two with the
   continuation convention from the guide). Then build again.
-- `judge.total` is the fingerprint distance to the reference; `judge.others` the same
-  distance to the other houses. `nearest_is_reference: false` is a failed page set.
-  `judge.components` names what is off: `size_hist` and `size_ladder` (sizes off the
-  reference's histogram), `fills` and `text_colors` (palette), `margins`, `kinds`.
+- `judge.filed_under_reference` is the verdict, and it is four gates: nearest the
+  reference among the panel's other houses, inside the reference's own spread
+  (`house_spread.p90`, the leave-one-out distance of the reference's own pages), layout
+  clean (no measured overlap between content shapes, no text shape whose paragraphs
+  outgrow it: `overlap` and `overflow` in the components, each a gate at 0.2 of its
+  span), and every page fit and the package valid. `judge.total` and `judge.others` are
+  the distances; `same_house_on_panel` lists the decks the judge recognises as the
+  reference's own house. `judge.components` names what is off: `size_hist` and
+  `size_ladder` (sizes off the reference's histogram), `fills` and `text_colors`
+  (palette), `margins`, `kinds` (text boxes where the house draws shapes, rectangles
+  where it draws none).
+- `density` per page: words, elements and covered area against the reference's bands,
+  each marked `below`, `in band` or `above`. A page that fits and reads `below` on
+  covered area ends half-way down the canvas: give the body region weight and its rows
+  `align: stretch` so they share the content height, or add content.
+- `position_drift`: an element id present on several pages whose top moves by more
+  than one spacing step, with its positions. A source line at 5.5 in on one page and
+  6.7 in on the next reads as two different pages.
+- `component_notes`: a component admitted against another reference; run
+  `component.py check` with this guide before trusting its fit.
 
 Density is a loop, not a setting. Add content to a page, build again, read the report.
 When a page fits with room at the reference's upper density band, add the next item.
@@ -277,6 +311,14 @@ python3 scripts/component.py check football_field --guide work/ref/guide.json --
 python3 scripts/component.py admit football_field --out work/components
 ```
 
+Admission is bound to the guide it was checked with (`guide_reference_sha256` in
+`admitted.json`): the football field admitted on keybank overflowed its band on netflix,
+whose 12pt floor and padding left no headroom, until the value column was sized to its
+figures. Re-run `check` with every new guide; the build says so when the guide differs.
+`spec.json` may name `single_line_ids`, id fragments of figures, ticks and marker labels
+that must never wrap; the check fails a box where one of them did ("$1" over "4" is a
+defect the solver's fit verdict does not see).
+
 Look at the contact sheet before admitting. A component is admitted only when all four
 boxes solve with no violation; the held-out case is what stops one tuned to its examples.
 Use it in a page as `{"type": "component", "id": "ff", "kind": "football_field", "data": {...}}`.
@@ -284,7 +326,10 @@ Use it in a page as `{"type": "component", "id": "ff", "kind": "football_field",
 ## 9. QA: what to look at and what each failure means
 
 The build already ran `pptx_tools.py validate` (package integrity, relationship targets,
-content types, slide ids, shapes inside the page, charts parse). Then:
+one layout per slide and one master per layout, content types, slide ids, shapes inside
+the page, charts parse). `validate --render` also reads the rendered page back with
+pdftotext and names every paragraph that did not draw: a schema-invalid spacing value
+once blanked sixteen bullets on a page that validated and judged clean. Then:
 
 1. Look at every render at full size. The defects to look for, in order: text cut at a
    box edge; two elements sharing area; a source line touching the footer rule; uneven
@@ -360,6 +405,13 @@ first, content second.
   year (`$1.2 bn`, `EUR 40 mm`, `FY 2024`, `12.5 %`) never break across lines: the ruler
   treats that space as unbreakable and the emitter writes the measured lines, so the file
   cannot re-break there.
+- A master that spaces paragraphs by percent (`spcPct`) is read as points at the
+  boundary (a share of the 1.2 x size line); nothing negative reaches the guide, and the
+  emitter never writes a negative `spcPts`, which LibreOffice answers by drawing nothing.
+- A shape's `p:style/a:fontRef` sets its default text colour, above the master's default
+  and below the run's own; a table style's `tcTxStyle` colour child does the same for
+  cells. White labels on filled rectangles and white header rows read as black without
+  these.
 - A scanned PDF's text layer is not evidence; the triage (2.2) decides per page, and the
   size of the deck is the size of the paper it was printed to, not the letter page around
   the image.

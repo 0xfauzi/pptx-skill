@@ -34,19 +34,16 @@
   "height_rule": "at least rows x (one label line pitch + space.xs + bar height) + marker line + axis + tick line; the compact variant uses the caption pitch and a space.xs bar"
  },
  "variants": {
-  "wide": "label column beside the bars",
-  "narrow": "label above each bar"
+  "wide": "label column beside the bars, value column after them",
+  "narrow": "label with the value above each bar"
  },
  "roles_used": [
   "type.body",
   "type.caption",
-  "type.kicker",
+  "type.data_label",
   "color.accent1",
   "color.accent2",
-  "color.rule",
-  "color.ink_muted",
-  "space.xs",
-  "space.sm"
+  "color.rule"
  ],
  "tests": {
   "shown": [
@@ -83,5 +80,12 @@
    },
    "data": "data-heldout.json"
   }
- }
+ },
+ "single_line_ids": [
+  "-tk",
+  "-val",
+  "-mlabel"
+ ],
+ "single_line_rule": "tick labels, value captions and the marker label must stay on one line in every test box; component.py check fails otherwise",
+ "marker": "a 1.5pt rule in color.accent1 at the marker value, in the label row and inside every bar row (cut out of the band where it crosses it)"
 }

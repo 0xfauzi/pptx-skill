@@ -41,12 +41,49 @@ EMU_PER_INCH = 914400
 # --- text ---------------------------------------------------------------------------------------
 
 
+def _leaf_shapes(shapes):
+    """Shapes with the groups opened: a run inside p:grpSp is text too."""
+    for shape in shapes:
+        if shape.shape_type is not None and "GROUP" in str(shape.shape_type):
+            yield from _leaf_shapes(shape.shapes)
+        else:
+            yield shape
+
+
+def sniff(path: str) -> None:
+    """Refuse what is not a presentation before any library traceback can."""
+    p = Path(path)
+    if not p.exists():
+        raise SystemExit(f"{path}: no such file")
+    head = p.read_bytes()[:4]
+    if head.startswith(b"%PDF"):
+        raise SystemExit(f"{path}: a PDF; this command reads .pptx (extract_style.py and render.py read PDFs)")
+    if head[:2] != b"PK":
+        raise SystemExit(f"{path}: not a zip, so not a .pptx")
+    with zipfile.ZipFile(path) as z:
+        if "ppt/presentation.xml" not in z.namelist():
+            raise SystemExit(f"{path}: a zip without ppt/presentation.xml; not a presentation")
+
+
+def slide_count(path: str) -> int:
+    with zipfile.ZipFile(path) as z:
+        pres = etree.fromstring(z.read("ppt/presentation.xml"))
+    return len(list(pres.iter(qn("p:sldId"))))
+
+
+def check_slide_numbers(path: str, numbers: list[int]) -> None:
+    n = slide_count(path)
+    bad = [k for k in numbers if not 1 <= k <= n]
+    if bad:
+        raise SystemExit(f"{path}: slide numbers {bad} are outside 1..{n}")
+
+
 def slide_text(path: str) -> list[dict]:
     prs = Presentation(path)
     out = []
     for i, slide in enumerate(prs.slides, 1):
         entry: dict = {"slide": i, "layout": slide.slide_layout.name, "title": None, "blocks": [], "tables": [], "notes": None}
-        for shape in slide.shapes:
+        for shape in _leaf_shapes(slide.shapes):
             if shape.has_text_frame and shape.text_frame.text.strip():
                 text = "\n".join(p.text for p in shape.text_frame.paragraphs)
                 if shape.is_placeholder and shape.placeholder_format.type is not None and "TITLE" in str(shape.placeholder_format.type) and entry["title"] is None:
@@ -265,6 +302,31 @@ def clean(path: str, out: str) -> dict:
 # --- validate ---------------------------------------------------------------------------------------------
 
 
+def _norm(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", text.lower())
+
+
+def undrawn_paragraphs(path: str, pdf: Path) -> list[str]:
+    """Paragraph texts of each slide against pdftotext of the rendered page: a paragraph
+    whose first twelve letters do not appear on its page did not draw."""
+    out: list[str] = []
+    prs = Presentation(path)
+    for i, slide in enumerate(prs.slides, 1):
+        try:
+            page = subprocess.run(["pdftotext", "-f", str(i), "-l", str(i), "-layout", str(pdf), "-"], capture_output=True, text=True, timeout=60).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            return out
+        haystack = _norm(page)
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+            for para in shape.text_frame.paragraphs:
+                key = _norm("".join(r.text for r in para.runs))[:12]
+                if len(key) >= 6 and key not in haystack:
+                    out.append(f"slide {i}: paragraph {key!r}... in {shape.name!r} did not draw")
+    return out
+
+
 def validate(path: str, render: bool) -> dict:
     problems: list[str] = []
     info: dict = {"file": path}
@@ -305,6 +367,21 @@ def validate(path: str, render: bool) -> dict:
                     resolved = "/".join(parts)
                 if resolved not in names:
                     problems.append(f"{n}: {rel.get('Id')} -> {target} missing")
+        # every slide needs its layout and every layout its master, or the text, layouts and
+        # duplicate commands crash on the same file that validated
+        for n in names:
+            if n.startswith("ppt/slides/slide") and n.endswith(".xml"):
+                rels_name = n.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels"
+                kinds = []
+                if rels_name in names:
+                    kinds = [r.get("Type", "").rsplit("/", 1)[-1] for r in etree.fromstring(z.read(rels_name))]
+                if kinds.count("slideLayout") != 1:
+                    problems.append(f"{n}: {kinds.count('slideLayout')} slideLayout relationships (needs exactly one)")
+            if n.startswith("ppt/slideLayouts/slideLayout") and n.endswith(".xml"):
+                rels_name = n.replace("ppt/slideLayouts/", "ppt/slideLayouts/_rels/") + ".rels"
+                kinds = [r.get("Type", "").rsplit("/", 1)[-1] for r in etree.fromstring(z.read(rels_name))] if rels_name in names else []
+                if kinds.count("slideMaster") != 1:
+                    problems.append(f"{n}: {kinds.count('slideMaster')} slideMaster relationships (needs exactly one)")
         # slide list consistency and per-slide shape ids
         pres = etree.fromstring(z.read("ppt/presentation.xml"))
         pres_rels = etree.fromstring(z.read("ppt/_rels/presentation.xml.rels"))
@@ -344,7 +421,10 @@ def validate(path: str, render: bool) -> dict:
                             if sz is not None and ext is not None:
                                 w, h = int(sz.get("cx")), int(sz.get("cy"))
                                 x, y = int(off.get("x", "0")), int(off.get("y", "0"))
-                                if x + int(ext.get("cx", "0")) > w + 9525 or y + int(ext.get("cy", "0")) > h + 9525 or x < -9525 or y < -9525:
+                                # a title box a tenth of an inch above the slide is how three of five
+                                # real references are built; it is a warning, not a broken package
+                                tol = 91440 if el.find(qn("p:txBody")) is not None else 9525
+                                if x + int(ext.get("cx", "0")) > w + tol or y + int(ext.get("cy", "0")) > h + tol or x < -tol or y < -tol:
                                     problems.append(f"{sp}: shape {el.find('.//' + qn('p:cNvPr')).get('id') if el.find('.//' + qn('p:cNvPr')) is not None else '?'} extends past the slide")
             for gf in root.iter(qn("p:graphicFrame")):
                 for ch in gf.iter(qn("c:chart")):
@@ -378,6 +458,9 @@ def validate(path: str, render: bool) -> dict:
                     info["rendered_pages"] = int(m.group(1)) if m else None
                     if m and info.get("slides") and int(m.group(1)) != info["slides"]:
                         problems.append(f"rendered {m.group(1)} pages for {info['slides']} slides (hidden slides are not exported)")
+                    # every paragraph the file carries must draw: a schema-invalid value once
+                    # blanked sixteen bullets on a page that validated and judged clean
+                    problems.extend(undrawn_paragraphs(path, pdf))
             except (OSError, subprocess.TimeoutExpired) as exc:
                 problems.append(f"render failed: {exc}")
     info["problems"] = problems
@@ -410,6 +493,14 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     if args.cmd == "blank":
         print(json.dumps(blank(args.out, args.width_emu, args.height_emu))); return 0
+    if args.cmd in ("text", "layouts", "template", "duplicate", "delete", "clean", "validate"):
+        sniff(args.deck)
+    if args.cmd == "template":
+        check_slide_numbers(args.deck, [int(k) for k in args.keep.split(",") if k.strip()])
+    if args.cmd == "duplicate":
+        check_slide_numbers(args.deck, [args.slide] + ([args.after] if args.after is not None else []))
+    if args.cmd == "delete":
+        check_slide_numbers(args.deck, [int(k) for k in args.slides.split(",") if k.strip()])
     if args.cmd == "text":
         entries = slide_text(args.deck)
         print(json.dumps(entries, indent=1)) if args.json else print_text(entries)

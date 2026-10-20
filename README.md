@@ -43,20 +43,34 @@ session that built the skill. None is estimated.
 
 | Claim | Measurement |
 |---|---|
-| The judge tells houses apart | 147 of 161 held-out slides over 8 houses filed correctly (chance bound 28); 128 of 161 with the whole deck held out over 19 decks (chance bound 14) |
+| The judge tells houses apart | 157 of 171 held-out slides over 8 houses filed correctly with the fitted weights, 132 with equal weights (chance bound 30; weights fitted on the other half of the same corpus, judged leave-one-slide-out, single-slide decks split by deck). The three Mergers and Inquisitions books are one house (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same house, not as rivals |
 | The judge is not fooled by copying the master | deckgen's master-reuse deck (E18), which inherits the reference master verbatim, is flagged as off-style |
+| The judge is not fooled by a wreck in the house's clothes | Five decks a rater calls wrong (keybank's shapes at random positions, all stacked at one point, nine random boxes a page, a wall of text, every box overflowing) once filed under keybank at 0.013 to 0.192; they now carry `overlap` or `overflow` at 1.0 and fail the layout gate |
 | The layout port is deckgen's solver | 383 boxes over 13 specimen slides at three scales: maximum difference 0 EMU; validation findings agree on 14 of 14 |
 | The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback the sandbox has |
 | The gallery port is deckgen's gallery | Component, candidate, cluster, crop and exemplar counts equal deckgen's recorded manifests on three decks; every exemplar skeleton byte-identical |
 | The extractor reproduces deckgen's draft | Role sizes, surfaces, inks, floors, margins and content bands equal on jazz, keybank, netflix and exhibits; deviations listed in `PORT_AUDIT.md` |
-| New pages read as the house | keybank: 4 generated pages with a novel football-field component, judge distance 0.126 against 0.353 to 0.662 for five other houses (the house's own slides sit at 0.08 to 0.13). McKinsey PDF: 2 generated pages, 0.360 against 0.378 for the nearest other house |
-| The chain reproduces the house's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.093, inside the house's own spread; the render matches the original to the eye |
+| New pages read as the house | keybank: 4 generated pages with a novel football-field component, 0.079 against the reference with the house's own pages at 0.055 to 0.372 (median 0.091), nearest among nine other houses, layout clean, every page fit, filed. A cold run of the skill on netflix by a reviewer produced two pages at 0.054 after the fixes it prompted (one still over budget until trimmed). McKinsey PDF: 2 generated pages, 0.360 against 0.378 for the nearest other house |
+| The chain reproduces the house's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.057, inside the house's own spread; the render matches the original to the eye |
 | PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders |
 | The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and accent exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.08 in, the top and bottom rules at the walk's positions, body 11.7pt from a 14.4pt pitch against 12pt in the file |
 
 The McKinsey result is marginal and the gap is diagnosed in `SKILL.md` section 9: the
 reference's size histogram puts its mass at 11, 16 and 18pt while the generated pages sit
 on the 12pt body role, and its pages use navy fills that the specs did not ask for.
+
+## What the review round found
+
+Four reviewers ran the skill cold on a deck no proof had touched, attacked the judge,
+fed it hostile inputs and judged the pages as a managing director would; skeptics then
+tried to refute each finding. The reproduced ones are fixed in this tree and listed in
+`PORT_AUDIT.md`: a percent paragraph spacing read as negative points that blanked every
+bullet in LibreOffice, white labels read as black because a shape style's font reference
+was ignored, the judge blind to overlap and overflow, a panel the agent could choose to
+pass, table text with no ink on a dark reference, a football field that never drew the
+offer it was about, titles false against their own exhibit. Not done, recorded: table
+column levelling by added line count, paragraph rhythm per composition family, a
+capacity command over component pages.
 
 ## Adopted and rejected, on merit
 

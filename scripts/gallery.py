@@ -872,6 +872,10 @@ def manifest_markdown(
 
 
 def main(argv: list[str]) -> int:
+    for a in argv:
+        if a.lower().endswith(".pdf"):
+            print("gallery.py reads .pptx only: for a PDF reference look at the page renders (render.py) and the triage table (ooxml.py triage); the crops a PDF could give are its pages")
+            return 2
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("deck")
     ap.add_argument("--out", required=True)

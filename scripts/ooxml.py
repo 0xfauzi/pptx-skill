@@ -783,10 +783,15 @@ class SlideWalker:
             indent = self._resolve_para(ppr, holders, level, g_attr_int("indent"))
             captured: dict | None = None
             if self._para_capture is not None:
-                captured = {"level": level, "bullet": str(bullet), "align": str(align), "runs": []}
+                captured = {"level": level, "bullet": str(bullet), "align": str(align), "mar_l_emu": mar_l if isinstance(mar_l, int) else 0, "runs": []}
                 self._para_capture.append(captured)
             ri = 0
             for r in para:
+                if _local(r) == "br" and captured is not None:
+                    # an explicit break: the emitter writes the measured lines this way, and a
+                    # reader joining the runs without it would glue two words into one
+                    captured["runs"].append({"text": "\n", "size_pt": DEFAULT_SIZE_PT, "bold": False, "italic": False, "color": None, "caps": False, "br": True})
+                    continue
                 if _local(r) not in ("r", "fld"):
                     continue
                 t = r.find(_a("t"))
@@ -813,18 +818,24 @@ class SlideWalker:
                     color_layer = "theme"
                 chars = len(text.strip())
                 total_chars += chars
+                size_pt = float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT
+                # spcPct is a share of a line (1.2 x size): decoded here so no negative value
+                # leaves the reader (the stock master's 20% once reached the emitter as -20pt
+                # and LibreOffice dropped every paragraph carrying it)
+                before_pt = float(before) if before >= 0 else -float(before) * 1.2 * size_pt
+                after_pt = float(after) if after >= 0 else -float(after) * 1.2 * size_pt
                 if captured is not None:
                     captured["runs"].append({"text": text, "size_pt": float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
                                              "bold": bool(bold), "italic": bool(italic), "color": color, "caps": bool(caps)})
                 sink.append(Run(
                     chars=chars, family=face,
-                    size_pt=float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
+                    size_pt=size_pt,
                     bold=bool(bold), color=color, align=str(align), ph_class=cls,
                     surface=surface, ref=f"{ref}/p[{pi}]/r[{ri}]", level=level,
                     italic=bool(italic), caps=bool(caps),
                     size_layer=("autofit" if scaled else size_layer), face_layer=face_layer, color_layer=color_layer,
                     line_spacing=lnspc if isinstance(lnspc, float) else None,
-                    space_before_pt=float(before), space_after_pt=float(after),
+                    space_before_pt=round(before_pt, 2), space_after_pt=round(after_pt, 2),
                     bullet=("char" if str(bullet).startswith("char:") else str(bullet)),
                     row_class=row_class, text_sample=text.strip()[:40],
                     words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
@@ -1090,8 +1101,13 @@ class SlideWalker:
                     for run in self.print.runs[runs_before:]:
                         col_align[ci][run.align] += run.chars
                         if style_text is not None:
-                            if run.size_layer == "default" and run.color_layer == "theme":
-                                c = self.chain.first_color(style_text.find(_a("fontRef")) if style_text.find(_a("fontRef")) is not None else None)
+                            if run.color_layer in ("theme", "presentation", "default", "master"):
+                                # a run with no colour of its own takes the table style's: tcTxStyle's
+                                # own colour child (schemeClr lt1 on the stock header row) outranks
+                                # the fontRef's prstClr black beside it, and both outrank the
+                                # presentation default the run otherwise falls to
+                                font_ref_el = style_text.find(_a("fontRef"))
+                                c = self.chain.first_color(style_text) or (self.chain.first_color(font_ref_el) if font_ref_el is not None else None)
                                 if c:
                                     run.color, run.color_layer = c, "table_style"
                             if style_text.get("b") == "on" and not run.bold:
@@ -1273,7 +1289,11 @@ class SlideWalker:
                         shape.text_inset_emu = tuple(int(bpr.get(k, d)) for k, d in (("lIns", "91440"), ("tIns", "45720"), ("rIns", "91440"), ("bIns", "45720")))  # type: ignore[assignment]
                     except ValueError:
                         shape.text_inset_emu = None
-                run_sink = self.print.runs if with_text else self.print.chrome_runs
+                # a date, footer or slide-number placeholder is furniture even on the slide
+                # layer: its runs never vote for a text role (a right-aligned page number once
+                # decided the alignment of every caption in a deck)
+                is_content = with_text and not (ph is not None and ph[0] in CHROME_TYPES)
+                run_sink = self.print.runs if is_content else self.print.chrome_runs
                 self._para_capture = [] if with_text else None
                 if bpr is not None and bpr.get("anchor"):
                     shape.text_anchor = bpr.get("anchor")
@@ -1495,6 +1515,16 @@ def pdf_triage(path: str, max_pages: int | None = None) -> dict:
     for p in pages:  # the same text on half the image pages is a stamp (a source line), not a slide
         if p["class"] == "vector" and p["image_cover"] >= 0.9 and digests[p["text_digest"]] >= max(2, 0.5 * len(pages)):
             p["class"] = "raster_wrapper"
+    # a filing with the deck bound in: the slide images are landscape, the running text
+    # around them is portrait (BMO: 139 letter-portrait pages of filing prose beside 104
+    # landscape slide images). A vector page whose orientation differs from the slide box
+    # the wrappers carry is filing text, not deck evidence, and it does not vote below.
+    wrapper_boxes = [p["slide_box_pt"] for p in pages if p["class"] == "raster_wrapper" and p.get("slide_box_pt")]
+    if wrapper_boxes:
+        bw = Counter((b[2] - b[0]) >= (b[3] - b[1]) for b in wrapper_boxes).most_common(1)[0][0]
+        for p in pages:
+            if p["class"] == "vector" and ((p["width_pt"] >= p["height_pt"]) != bw):
+                p["class"] = "filing_text"
     vector = sum(1 for p in pages if p["class"] == "vector")
     wrappers = [p for p in pages if p["class"] == "raster_wrapper"]
     if vector > len(wrappers):
@@ -1503,16 +1533,20 @@ def pdf_triage(path: str, max_pages: int | None = None) -> dict:
     counts = Counter(p["class"] for p in pages)
     evidence = [p["page"] for p in pages if p["class"] in ("vector", "vector_with_image")]
     raster_pages = [p for p in pages if p["class"] in ("raster_only", "raster_ocr", "raster_wrapper")]
+    # vector pages above a small count are mined whatever the raster share: the UF McKinsey
+    # set carries 237 vector slides behind 283 scanned ones
     if not pages:
         deck_class = "empty"
-    elif len(raster_pages) > len(evidence):
-        deck_class = "raster"
-    elif len(evidence) >= 3 and not raster_pages:
+    elif len(evidence) >= max(3, 0.1 * len(pages)) and not raster_pages:
         deck_class = "vector"
-    elif len(evidence) >= 3:
+    elif len(evidence) >= max(3, 0.1 * len(pages)):
         deck_class = "mixed"
+    elif raster_pages:
+        deck_class = "raster"
+    elif evidence:
+        deck_class = "vector"
     else:
-        deck_class = "raster" if raster_pages else "empty"
+        deck_class = "empty"
     # the slide box of a raster deck: the modal largest-image box (wrapper) or the page (raster_only)
     slide_box = None
     if raster_pages:

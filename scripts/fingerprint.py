@@ -59,6 +59,8 @@ class Features:
     counts: list[int] = field(default_factory=list)
     coverage: list[float] = field(default_factory=list)
     chrome_boxes: Counter = field(default_factory=Counter)
+    overlap: list[float] = field(default_factory=list)  # per slide: intersecting area among content shapes over their area
+    overflow: list[float] = field(default_factory=list)  # per slide: share of measured text shapes whose text outgrows the box
 
     def add(self, other: "Features") -> None:
         for name in ("families", "sizes", "title_sizes", "text_colors", "fills", "lines", "aligns", "kinds", "prsts", "backgrounds", "chrome_boxes"):
@@ -68,6 +70,104 @@ class Features:
         self.margins.extend(other.margins)
         self.counts.extend(other.counts)
         self.coverage.extend(other.coverage)
+        self.overlap.extend(other.overlap)
+        self.overflow.extend(other.overflow)
+
+
+_MEASURE: dict = {}
+
+
+def _measurer():
+    """The ruler and face index, built once: overflow is measured with the same ruler the
+    solver uses, so a page the solver fitted never reads as overflowing here."""
+    if not _MEASURE:
+        from textfit import default_index, default_ruler, measure_text
+        _MEASURE["ruler"], _MEASURE["index"], _MEASURE["measure"] = default_ruler(), default_index(), measure_text
+    return _MEASURE["ruler"], _MEASURE["index"], _MEASURE["measure"]
+
+
+CONTENT_KINDS = ("text_box", "text_shape", "table", "chart", "picture")
+
+
+def overlap_rate(s: SlidePrint, chrome_keys: set) -> float | None:
+    """Pairwise intersection area among content shapes over their summed area. Text over
+    text, text over a table or a chart, is a defect on every reference measured; a text
+    box inside a filled rectangle is one shape in this reader, so it does not count."""
+    boxes = []
+    for sh in s.shapes:
+        if sh.box and sh.kind in CONTENT_KINDS and sh.box[2] > 0 and sh.box[3] > 0 and (sh.kind, _quant(sh.box, s.width, s.height)) not in chrome_keys:
+            if sh.kind in ("text_box", "text_shape") and not sh.text_chars:
+                continue
+            boxes.append(sh.box)
+    if len(boxes) < 2:
+        return 0.0 if boxes else None
+    total = sum(b[2] * b[3] for b in boxes)
+    inter = 0
+    for i in range(len(boxes)):
+        a = boxes[i]
+        for j in range(i + 1, len(boxes)):
+            b = boxes[j]
+            w = min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0])
+            h = min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1])
+            if w > 0 and h > 0:
+                inter += w * h
+    return min(1.0, inter / total) if total else None
+
+
+def overflow_rate(s: SlidePrint) -> float | None:
+    """Share of text shapes whose paragraphs, wrapped at the box's inner width with the
+    solver's ruler, need more height than the box holds (half a line of slack). Shapes
+    under autofit are skipped: PowerPoint shrinks those on screen."""
+    ruler, index, measure = _measurer()
+    measured = overflowing = 0
+    for sh in s.shapes:
+        if not sh.box or sh.kind not in ("text_box", "text_shape") or not sh.paragraphs:
+            continue
+        if sh.ph_type in ("sldNum", "ftr", "dt"):
+            continue  # furniture in a box PowerPoint lets a line overhang; never content
+        runs = [r for p in sh.paragraphs for r in p["runs"] if not r.get("br")]
+        if not runs:
+            continue
+        lin, tin, rin, bin_ = sh.text_inset_emu or (91440, 45720, 91440, 45720)
+        width = sh.box[2] - lin - rin
+        budget = sh.box[3] - tin - bin_
+        if width <= 0 or budget <= 0:
+            continue
+        if any(r.size_layer == "autofit" for r in s.runs if r.ref.startswith(sh.ref)):
+            continue
+        needed = 0.0
+        pitch = 0.0
+        ok = True
+        for para in sh.paragraphs:
+            real = [r for r in para["runs"] if not r.get("br")]
+            if not real:
+                continue
+            lead = real[0]
+            text = "".join(r["text"] for r in para["runs"])
+            pitch = lead["size_pt"] * 1.2 * 12700
+            if not text.strip():
+                needed += pitch
+                continue
+            family = next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None) or "Arial"
+            try:
+                face = index.resolve(family, bold=bool(lead["bold"]), italic=bool(lead["italic"]))
+                # an explicit break starts a new line: each segment wraps on its own
+                count = 0
+                for segment in text.split("\n"):
+                    if not segment.strip():
+                        count += 1
+                        continue
+                    count += len(measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"]))
+            except Exception:  # noqa: BLE001 - an unmeasurable face says nothing about overflow
+                ok = False
+                break
+            needed += count * pitch
+        if not ok:
+            continue
+        measured += 1
+        if needed > budget + 0.5 * pitch:
+            overflowing += 1
+    return overflowing / measured if measured else None
 
 
 def slide_features(s: SlidePrint) -> Features:
@@ -113,6 +213,13 @@ def slide_features(s: SlidePrint) -> Features:
     if xs0:
         f.margins.append((min(xs0) / s.width, 1 - max(xs1) / s.width, min(ys0) / s.height, 1 - max(ys1) / s.height))
         f.coverage.append(min(1.0, area_union / (s.width * s.height)))
+    if not pdf:
+        ov = overlap_rate(s, chrome_keys)
+        if ov is not None:
+            f.overlap.append(ov)
+        of = overflow_rate(s)
+        if of is not None:
+            f.overflow.append(of)
     if not pdf:
         f.counts.append(n_shapes)
     if s.background:
@@ -203,7 +310,16 @@ def scalar_distance(a: list, b: list, span: float) -> float | None:
 COMPONENTS = (
     "families", "size_hist", "size_ladder", "title_size", "bold_ratio", "text_colors",
     "fills", "lines", "aligns", "kinds", "background", "margins", "coverage", "count",
+    "overlap", "overflow",
 )
+
+
+def excess(cand: list, house: list, span: float) -> float | None:
+    """How much worse the candidate's defect rate is than the house's own, over `span`.
+    A house is allowed its own rate; only the excess counts, and only upward."""
+    if not cand or not house:
+        return None
+    return min(1.0, max(0.0, sum(cand) / len(cand) - sum(house) / len(house)) / span)
 
 
 def distance(cand: Features, house: Features) -> dict[str, float | None]:
@@ -224,6 +340,8 @@ def distance(cand: Features, house: Features) -> dict[str, float | None]:
         "coverage": scalar_distance(cand.coverage, house.coverage, 0.5),
         "count": (min(1.0, abs(math.log((sum(cand.counts) / len(cand.counts) + 1) / (sum(house.counts) / len(house.counts) + 1))) / math.log(4))
                   if cand.counts and house.counts else None),
+        "overlap": excess(cand.overlap, house.overlap, 0.10),
+        "overflow": excess(cand.overflow, house.overflow, 0.25),
     }
     return out
 
@@ -233,6 +351,7 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "bold_ratio": 0.1354, "text_colors": 0.651, "fills": 0.7171, "lines": 0.7648,
     "aligns": 0.4386, "kinds": 0.5295, "background": 0.0823, "margins": 0.2668,
     "coverage": 0.0245, "count": 0.3295,
+    "overlap": 1.0, "overflow": 1.0,
 }
 """Per-component weight = that component's 1-NN accuracy above chance, FITTED on the
 even-numbered slides of an eight-house corpus (3 Mergers & Inquisitions pitch books,
@@ -240,7 +359,15 @@ even-numbered slides of an eight-house corpus (3 Mergers & Inquisitions pitch bo
 public PDFs, 25 pages each) and JUDGED on the odd-numbered slides: 147/161 correct
 against 122/161 with equal weights, chance bound 28. Re-fit with
 `fingerprint.py calibrate ... --fit-weights` when the corpus changes; never tune on
-the slides being judged."""
+the slides being judged.
+
+`overlap` and `overflow` are not fitted: every reference deck sits near zero on both,
+so a 1-NN fit finds no signal in them. They are ASSERTED at 1.0, above the largest
+fitted weight, because the review of 2026-10-20 built decks a rater calls wrong
+(keybank's shapes at random positions: 0.013; all stacked at one point: 0.044; nine
+random boxes per page: 0.122; every text box overflowing twelve times over: 0.192)
+and the fourteen style components filed every one under keybank. These two read what
+the style histograms cannot: whether the page is laid out at all."""
 
 
 def total(d: dict[str, float | None], weights: dict[str, float] | None = None) -> float:
@@ -278,13 +405,25 @@ def calibrate(houses: dict[str, list[str]], weights: dict[str, float] | None = N
     for house, decks in houses.items():
         for deck in decks:
             slides = fingerprint_deck(deck, max_pages)
-            key = Path(deck).stem if by_deck else house
+            # a deck class is keyed by house and path, never by file stem: four taste decks
+            # named slide1.pptx once collapsed into one class and a BCG page was filed under it
+            key = f"{house}/{Path(deck).as_posix()}" if by_deck else house
             prints.setdefault(key, {})[deck] = slides
     house_feats = {h: house_features([s for d in decks.values() for s in d]) for h, decks in prints.items()}
     n_classes = len(prints)
 
-    def scored(s: SlidePrint) -> bool:
-        return split is None or (s.index % 2 == 0) == (split == "even")
+    deck_rank: dict[str, int] = {}
+    for house, decks in prints.items():
+        for i, deck in enumerate(decks):
+            deck_rank[deck] = i
+
+    def scored(s: SlidePrint, deck: str = "", single: bool = False) -> bool:
+        # a single-slide deck has only slide 0: its parity is the deck's rank in the house,
+        # so a house of single-slide decks is split too (the taste house was never judged)
+        if split is None:
+            return True
+        parity = deck_rank.get(deck, 0) if single else s.index
+        return (parity % 2 == 0) == (split == "even")
 
     def predict(cand: Features, exclude_house: str, exclude: Features) -> tuple[str, dict[str, float]]:
         scores = {}
@@ -304,7 +443,7 @@ def calibrate(houses: dict[str, list[str]], weights: dict[str, float] | None = N
     for house, decks in prints.items():
         for deck, slides in decks.items():
             for s in slides:
-                if not scored(s):
+                if not scored(s, deck, len(slides) == 1):
                     continue
                 cf = slide_features(s)
                 pred, scores = predict(cf, house, cf)
@@ -345,12 +484,83 @@ def calibrate(houses: dict[str, list[str]], weights: dict[str, float] | None = N
         "weights": weights,
         "slide_loo_correct": correct,
         "slide_loo_accuracy": correct / n if n else None,
-        "chance_bound_k": binomial_bound(n, n_classes),
+        "n_houses_judged": len({r["house"] for r in per_slide}),
+        "chance_bound_k": binomial_bound(n, max(2, len({r["house"] for r in per_slide}))),
         "per_component_accuracy": {c: (per_component_correct[c] / per_component_n[c] if per_component_n[c] else None) for c in COMPONENTS},
         "confusion": {f"{a}->{b}": v for (a, b), v in sorted(confusion.items())},
         "leave_one_deck_out": lodo,
         "per_slide": per_slide,
     }
+
+
+DEFECT_GATE = 0.2
+"""A defect component past this share of its span fails the page outright: overlap over
+2% of the content area, or more than 5% of text shapes overflowing. Averaged into the
+distance these would still let a page of keybank's shapes at random positions (overlap
+1.0) sit at 0.134, nearer keybank than jazz; a gate is the only honest reading of a
+measurement that says the page is not laid out."""
+
+
+def layout_clean(components: dict) -> bool:
+    return all((components.get(k) or 0.0) < DEFECT_GATE for k in ("overlap", "overflow"))
+
+
+def house_spread(slides: list[SlidePrint]) -> dict | None:
+    """How far the reference's own slides sit from the rest of the reference (leave one
+    out). A candidate inside this spread is as much the house as the house's own pages;
+    one outside it is not, however near it sits to the other decks on the panel (a page
+    of keybank's shapes at random positions is nearer keybank than jazz and still wrong)."""
+    if len(slides) < 3:
+        return None
+    feats = [slide_features(s) for s in slides]
+    whole = Features()
+    for f in feats:
+        whole.add(f)
+    dists = []
+    for f in feats:
+        rest = Features()
+        rest.add(whole)
+        _subtract(rest, f)
+        dists.append(total(distance(f, rest)))
+    dists.sort()
+    n = len(dists)
+    return {"n": n, "min": round(dists[0], 3), "median": round(dists[n // 2], 3), "p90": round(dists[min(n - 1, int(0.9 * (n - 1)))], 3), "max": round(dists[-1], 3)}
+
+
+def panel(others: list[str], reference: str) -> list[str]:
+    """The comparison panel. Given explicitly, it is used as given; otherwise every deck
+    under refs/files (the public references refs/fetch.sh collects) except the reference
+    itself, because a pass against two alien decks and a fail against the reference's
+    sister decks is the same deck, and the agent must not be the one choosing."""
+    if others:
+        return list(others)
+    import hashlib
+    root = Path(__file__).resolve().parent.parent / "refs" / "files"
+    ref_sha = hashlib.sha256(Path(reference).read_bytes()).hexdigest()
+    found = []
+    for p in sorted(root.glob("*")):
+        if p.suffix.lower() not in (".pptx", ".pdf"):
+            continue
+        if hashlib.sha256(p.read_bytes()).hexdigest() == ref_sha:
+            continue  # the reference under another name is not another house
+        found.append(str(p))
+    return found
+
+
+def same_house(other: Features, reference: Features, spread: dict | None) -> bool:
+    """A panel deck that sits inside the reference's own spread is the same house in
+    another file (the three Mergers & Inquisitions books carry one fictional bank on one
+    master: keybank to netflix is 0.077 against keybank's own slides at 0.055 to 0.372).
+    It cannot be a rival in the nearest test; it is reported as the same house."""
+    if not spread:
+        return False
+    return total(distance(other, reference)) <= spread["p90"]
+
+
+def scorable(house: Features) -> bool:
+    """A house with no measured type (a scan, an empty deck) cannot be a neighbour: every
+    style component is None against it and the distance collapses to the few that remain."""
+    return house.chars > 0
 
 
 def _subtract(target: Features, part: Features) -> None:
@@ -370,6 +580,11 @@ def _subtract(target: Features, part: Features) -> None:
     for c in part.coverage:
         if c in target.coverage:
             target.coverage.remove(c)
+    for name in ("overlap", "overflow"):
+        tgt = getattr(target, name)
+        for c in getattr(part, name):
+            if c in tgt:
+                tgt.remove(c)
 
 
 def fit_weights(houses: dict[str, list[str]], max_pages: int | None, by_deck: bool) -> dict[str, float]:
@@ -440,11 +655,27 @@ def main(argv: list[str]) -> int:
         d = distance(cf, ref)
         report = {"candidate": args.candidate, "reference": args.reference, "components": d, "total": total(d)}
         others = {}
-        for o in args.others:
-            od = distance(cf, house_features(fingerprint_deck(o, args.max_pages)))
-            others[o] = total(od)
+        skipped = []
+        kin = {}
+        spread = house_spread(fingerprint_deck(args.reference, args.max_pages))
+        for o in panel(args.others, args.reference):
+            hf = house_features(fingerprint_deck(o, args.max_pages))
+            if not scorable(hf):
+                skipped.append(o)
+                continue
+            if same_house(hf, ref, spread):
+                kin[o] = total(distance(cf, hf))
+                continue
+            others[o] = total(distance(cf, hf))
+        if skipped:
+            report["panel_skipped"] = {"reason": "no measured type (a scan or an empty deck)", "files": skipped}
         report["others"] = others
+        report["same_house_on_panel"] = kin
         report["nearest_is_reference"] = all(report["total"] < v for v in others.values()) if others else None
+        report["reference_rank"] = 1 + sum(1 for v in others.values() if v <= report["total"]) if others else None
+        report["house_spread"] = spread
+        report["within_house_spread"] = report["total"] <= spread["p90"] if spread else None
+        report["layout_clean"] = layout_clean(d)
         per_slide = []
         for s in cand:
             sd = distance(slide_features(s), ref)

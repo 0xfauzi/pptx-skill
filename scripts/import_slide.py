@@ -109,13 +109,13 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int]], col
     para_style: dict[str, dict] = {}
     inverse = None
     for i, para in enumerate(sh.paragraphs or []):
-        runs = [r for r in para["runs"] if r["text"].strip()]
+        runs = [dict(r, text=r["text"].replace("\n", " ")) for r in para["runs"] if r["text"].strip() and not r.get("br")]
         if not runs:
             continue
         lead = runs[0]
         all_bold = all(r["bold"] for r in runs)
         role = bind_role(lead["size_pt"], all_bold, sh.ph_type == "title", roles)
-        text = "".join(r["text"] for r in runs)
+        text = " ".join("".join(r["text"] for r in runs).split())  # explicit breaks and runs of spaces collapse
         p = {"role": role, "text": text}
         if para["bullet"].startswith("char") or para["bullet"] == "auto":
             p["bullet_level"] = int(para["level"])

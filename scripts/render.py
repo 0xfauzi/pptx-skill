@@ -57,7 +57,7 @@ def declared_fonts(pptx: Path) -> set[str]:
                 root = etree.fromstring(z.read(member), etree.XMLParser(resolve_entities=False, no_network=True))
             except etree.XMLSyntaxError:
                 continue
-            for tag in ("latin", "ea", "cs"):
+            for tag in ("latin", "ea", "cs", "buFont"):  # a bullet font is a face too (Wingdings squares)
                 for el in root.iter(f"{{{A}}}{tag}"):
                     face = el.get("typeface")
                     if face and not face.startswith("+"):

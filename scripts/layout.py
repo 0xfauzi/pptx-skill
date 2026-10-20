@@ -179,6 +179,12 @@ def snap_baseline(scaled_emu: Fraction, baseline_emu: int) -> int:
         raise ValueError("snap_baseline requires a positive value")
     return max(1, round(scaled_emu / baseline_emu)) * baseline_emu
 
+def gap_emu(guide: "Guide", role: str | None, scale: Fraction, axis: str) -> int:
+    """A flex gap; `None` is zero, for rows whose weighted parts share one scale (a
+    component's bar split around a marker rule must not open a gap at the cut)."""
+    return space_emu(guide, role, scale, axis) if role else 0
+
+
 def space_emu(guide: Guide, role: str, scale: float | Fraction, axis: str) -> int:
     """One spacing role at `scale`: vertical values snap to the (unscaled)
     baseline grid when the guide has one, horizontal values quantize once."""
@@ -308,7 +314,7 @@ class Box:
 @dataclass(frozen=True)
 class Flex:
     direction: str
-    gap_role: str
+    gap_role: str | None  # None: no gap (a component's bar whose parts must touch)
     pad_role: str | None
     align: str
     justify: str
@@ -334,6 +340,7 @@ class Paragraph:
     role: str
     text: str
     bullet_level: int | None
+    emphasis: bool = False  # measured with the bold face: the emitter bolds emphasis runs, and a bold word is wider
 
 @dataclass(frozen=True)
 class Column:
@@ -349,6 +356,8 @@ class Table:
     header_role: str
     cell_role: str
     cell_padding_role: str | None
+    totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
+    emphasis_rows: frozenset = frozenset()  # data-row indices the emitter bolds (the subject deal on a comps page)
 
 @dataclass(frozen=True)
 class Element:
@@ -432,7 +441,7 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     paragraphs: tuple[Paragraph, ...] = ()
     table: Table | None = None
     if kind == "text":
-        paragraphs = tuple(Paragraph(p["role"], p["text"], p.get("bullet_level")) for p in raw.get("paragraphs", []))
+        paragraphs = tuple(Paragraph(p["role"], p["text"], p.get("bullet_level"), bool(p.get("emphasis"))) for p in raw.get("paragraphs", []))
         if not paragraphs or any(not p.text.strip(" ") for p in paragraphs):
             raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs")
     elif kind == "table":
@@ -446,7 +455,8 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         header_rows = int(t.get("header_rows", 1))
         if not 0 <= header_rows <= 4 or (not rows and not header_rows):
             raise LayoutContractError(f"table {node_id!r}: header_rows outside 0..4 or no rows at all")
-        table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"))
+        table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"),
+                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])))
     elif kind not in ("image", "chart", "rule"):
         raise LayoutContractError(f"element {node_id!r}: kind must be text, table, image, chart or rule")
     size = raw.get("size") or {}
@@ -676,7 +686,7 @@ def _flex_child_boxes(region: Region, layout: Flex, content: Box, guide: Guide, 
     (half-even is not translation-invariant)."""
     is_row = layout.direction == "row"
     extent, cross_extent = (content.width, content.height) if is_row else (content.height, content.width)
-    gap = space_emu(guide, layout.gap_role, s, "x" if is_row else "y")
+    gap = gap_emu(guide, layout.gap_role, s, "x" if is_row else "y")
     n = len(region.children)
     distributable = max(extent - gap * (n - 1), 0)
     mains = [(h.width_emu if is_row else h.height_emu) if (h := intr.get(c.id)) else None for c in region.children]
@@ -765,7 +775,7 @@ def validate(spec: Spec, guide: Guide, scale: Fraction, boxes: Mapping[str, Box]
                 out.append(Violation("containment", child.id, region.id, f"box {b.as_dict()} leaves {region.id}'s content box {content.as_dict()}", max(content.left - b.left, content.top - b.top, b.right - content.right, b.bottom - content.bottom), True))
         if isinstance(region.layout, Flex) and region.children:
             is_row = region.layout.direction == "row"
-            distributable = (content.width if is_row else content.height) - space_emu(guide, region.layout.gap_role, scale, "x" if is_row else "y") * (len(region.children) - 1)
+            distributable = (content.width if is_row else content.height) - gap_emu(guide, region.layout.gap_role, scale, "x" if is_row else "y") * (len(region.children) - 1)
             if distributable <= 0:
                 out.append(Violation("overcommit", region.id, None, f"gaps and padding leave {distributable} EMU for {len(region.children)} children", -distributable, False))
         elif isinstance(region.layout, Grid) and region.children:
@@ -843,7 +853,7 @@ def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -
     out: list[ParagraphMeasurement] = []
     for index, paragraph in enumerate(element.paragraphs):
         entry = ctx.entry(element, paragraph.role, scale)
-        face = ctx.face(entry)
+        face = ctx.index.resolve(entry.family, bold=True, italic=entry.italic) if paragraph.emphasis else ctx.face(entry)
         text = apply_case(paragraph.text, entry.case)
         indent = 0
         if paragraph.bullet_level is not None:
@@ -1014,6 +1024,8 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     else:
         padding = guide.cell_padding_emu if guide.cell_padding_emu is not None else DEFAULT_CELL_INSET_EMU
     cell = DrawnRole(e := ctx.entry(element, table.cell_role, scale), ctx.face(e).path)
+    # a totals row is written bold: measured bold too, or a cell that fits by a hair breaks a word
+    cell_bold = DrawnRole(e, ctx.index.resolve(e.family, bold=True, italic=e.italic).path)
     header = None
     if table.header_rows:
         header = DrawnRole(h := ctx.entry(element, table.header_role, scale), ctx.face(h).path)
@@ -1023,8 +1035,9 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     keys = [c.key for c in table.columns]
     charge = 2 * padding + ctx.ruler.fit_epsilon_emu
     natural, minimum = {}, {}
+    last = len(table.rows) - 1
     for ci, column in enumerate(table.columns):
-        texts = ([(labels[ci], header, False)] if header else []) + [(row[ci], cell, True) for row in table.rows]
+        texts = ([(labels[ci], header, False)] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows) else cell, True) for ri, row in enumerate(table.rows)]
         widest = widest_segment = widest_value = 0
         for text, kind, is_value in texts:
             if not text.strip():
@@ -1044,7 +1057,8 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     cell_lines: dict[tuple[int, str], tuple[str, ...]] = {}
     row_heights: list[int] = []
     for ri, texts in enumerate(grid):
-        kind = header if (ri < table.header_rows and header) else cell
+        data_ri = ri - table.header_rows
+        kind = header if (ri < table.header_rows and header) else (cell_bold if ((table.totals_last_row and ri == len(grid) - 1) or data_ri in table.emphasis_rows) else cell)
         counts = []
         for key, text in zip(keys, texts):
             lines = wrapped_lines(ctx, text, max(1, widths[key] - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
@@ -1080,7 +1094,7 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
     known = [h for h in child_heights if h is not None]
     pad = 2 * space_emu(guide, node.layout.pad_role, scale, "y") if node.layout.pad_role else 0
     if node.layout.direction == "column":
-        total = sum(known) + space_emu(guide, node.layout.gap_role, scale, "y") * (len(known) - 1) + pad
+        total = sum(known) + gap_emu(guide, node.layout.gap_role, scale, "y") * (len(known) - 1) + pad
     elif node.layout.align == "stretch":
         return None
     else:
@@ -1291,8 +1305,16 @@ def _print_outcome(ctx: Context, outcome: Outcome) -> None:
             print(f"  table {node_id}: {info['rows']} body rows, fitting_row_prefix (probe box) {info['fitting_row_prefix']}, rows_to_fit_slide {info['rows_to_fit_slide']}")
 
 def build_context(spec_path: str, guide_path: str) -> Context:
-    spec = parse_spec(json.loads(Path(spec_path).read_text(encoding="utf-8")))
-    guide = load_guide(json.loads(Path(guide_path).read_text(encoding="utf-8")))
+    raw = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+    raw_guide = json.loads(Path(guide_path).read_text(encoding="utf-8"))
+    # the CLI budgets the page the build enforces: the guide's page size, the chrome zones
+    # and the title band that build_deck injects, so a printed capacity is the real one
+    from build_deck import normalise, prepare_page
+    if "root" in raw:
+        raw["root"] = normalise(raw["root"], {})
+    prepare_page(raw, raw_guide)
+    spec = parse_spec(raw)
+    guide = load_guide(raw_guide)
     return Context(guide, default_ruler(), default_index(), spec)
 
 def main(argv: Sequence[str] | None = None) -> int:

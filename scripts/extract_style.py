@@ -371,7 +371,8 @@ class Extractor:
                         s.width, s.height = int(size_in[0] * EMU_PER_INCH), int(size_in[1] * EMU_PER_INCH)
             elif dropped:
                 self.slides = evidence or self.slides
-                self.notes.append(f"pages excluded from the evidence by triage ({self.triage['counts']}): {dropped}")
+                self.notes.append(f"pages excluded from the evidence by triage ({self.triage['counts']}): {dropped[:40]}{' ...' if len(dropped) > 40 else ''}; "
+                                  f"evidence pages: {self.triage['evidence_pages'][:12]}{' ...' if len(self.triage['evidence_pages']) > 12 else ''}")
         self.w = self.slides[0].width
         self.h = self.slides[0].height
         self.page_area = self.w * self.h
@@ -473,7 +474,9 @@ class Extractor:
             between = [i for i in range(len(levels)) if i not in assigned and levels[i].count >= MIN_LEVEL_OBSERVATIONS and body_idx < i < title_idx]
             for role, i in zip(("type.h1", "type.h2"), sorted(between, reverse=True)):
                 bind(role, i, "inferred")
-            below = [i for i in range(len(levels)) if i not in assigned and i < body_idx]
+            # a level under the product safety floor is not a role (4.5pt with two votes bound
+            # type.footnote on one reference and made every page with a source line unfittable)
+            below = [i for i in range(len(levels)) if i not in assigned and i < body_idx and levels[i].representative >= PRODUCT_SAFETY_FLOOR_PT["annotation"]]
             if below:
                 cap = max(below, key=lambda i: (levels[i].count, levels[i].master_count, levels[i].representative))
                 bind("type.caption", cap, "inferred")
@@ -665,6 +668,11 @@ class Extractor:
                     accent_area[sh.fill] += area
                 if sh.line and sh.line_w_emu and 0 < sh.line_w_emu <= RULE_LINE_MAX_WIDTH_EMU:
                     votes_rule.setdefault(sh.line, Votes()).add(f"{sid}#{sh.ref}", False)
+            for sh in s.chrome:
+                # the rules the layout draws on every page are the house's rules; without this
+                # vote five red highlight outlines on the slide layer won colour.rule on netflix
+                if sh.line and sh.line_w_emu and 0 < sh.line_w_emu <= RULE_LINE_MAX_WIDTH_EMU and (sh.kind == "line" or (sh.box and min(sh.box[2], sh.box[3]) <= RULE_LINE_MAX_WIDTH_EMU)):
+                    votes_rule.setdefault(sh.line, Votes()).add(f"{sid}#{sh.ref}", True)
             for r in s.runs:
                 if r.color and r.row_class is None:
                     votes_ink.setdefault(r.color, Votes()).add(f"{sid}#{r.ref}", r.color_layer in ("master", "layout", "presentation", "theme"))
@@ -733,6 +741,9 @@ class Extractor:
         else:
             self.open("/color/roles/color.surface", "no background or quarter-page box was observed")
             surface = None
+            inks_sorted = sorted(votes_ink, key=lambda h: (-votes_ink[h].count, -votes_ink[h].master, h))
+            for role, why in (("color.ink", "no ground to measure contrast against"), ("color.ink_muted", "no ground"), ("color.rule", "no ground")):
+                self.open(f"/color/roles/{role}", f"{why}: pick from the run inks and strokes", {"candidates": [{"hex": h, "count": votes_ink[h].count} for h in inks_sorted[:6]]})
         # accents: chart series order first, then votes, with area as the reported second signal
         taken = {roles[r]["hex"] for r in roles}
         order: list[str] = []
@@ -787,9 +798,23 @@ class Extractor:
         cols = th.get("colors", {}) if th else {}
         return [cols[k] for k in ("accent1", "accent2", "accent3", "accent4", "accent5", "accent6") if k in cols]
 
-    def role_of(self, hexv: str | None) -> str | None:
+    def role_of(self, hexv: str | None, use: str | None = None) -> str | None:
+        """The role holding this hex. One hex can hold several roles (white is the surface and
+        the inverse ink on most decks; the rule and accent1 share the navy on netflix), so `use`
+        says which family the caller means: "ink" prefers ink roles, "fill" prefers surface
+        and accent roles."""
         if hexv is None:
             return None
+        roles = self.guide.get("color", {}).get("roles", {})
+        holders = [name for name, spec in roles.items() if spec.get("hex") == hexv]
+        if use == "ink":
+            pref = [n for n in holders if n.startswith("color.ink")]
+        elif use == "fill":
+            pref = [n for n in holders if n.startswith(("color.surface", "color.accent"))]
+        else:
+            pref = []
+        if pref:
+            return pref[0]
         if hexv in self.color_roles:
             return self.color_roles[hexv]
         extra = self.guide.setdefault("extra_roles", {})
@@ -1155,8 +1180,8 @@ class Extractor:
                 col_align_by_type["numeric" if num >= 0.5 else "text"][{"l": "left", "ctr": "center", "r": "right", "just": "justify"}.get(a, a)] += 1
         self.guide["tables"] = {
             "count": len(obs),
-            "header_fill_role": self.role_of(header_fill), "header_fill_hex": header_fill,
-            "header_ink_role": self.role_of(modal([r.color for r in header_runs])) if header_runs else None,
+            "header_fill_role": self.role_of(header_fill, "fill"), "header_fill_hex": header_fill,
+            "header_ink_role": self.role_of(modal([r.color for r in header_runs]), "ink") if header_runs else None,
             "header_bold": (sum(1 for r in header_runs if r.bold) / len(header_runs)) > 0.5 if header_runs else None,
             "banding_role": self.role_of(band_fill) if band_fill and band_fill != data_fill else None, "banding_hex": band_fill if band_fill != data_fill else None,
             "data_fill_hex": data_fill,
@@ -1290,10 +1315,9 @@ class Extractor:
             spec["ink_role"] = self.role_of(spec.get("ink")) if spec.get("ink") else None
         for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
-                             ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits"),
-                             ("/gallery", "cropped renders of interesting components, with captions (gallery.py)"),
-                             ("/exemplars", "one whole-slide render per composition family (gallery.py)")):
+                             ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
             self.open(path, reason)
+        self.notes.append("gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide")
         text_layer = {"status": "typographic"}
         if self.is_pdf:
             sizes = [r.size_pt for r in self._runs]

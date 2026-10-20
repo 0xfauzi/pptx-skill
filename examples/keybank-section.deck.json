@@ -54,12 +54,12 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "The $11.40 offer implies 1.33x P / TBV against a 1.08x regional median; every method on the football field tops out below $12.50 except the most generous precedent set"
+           "text": "The $11.40 offer implies 1.33x P / TBV against a 1.08x regional median; every standalone method's midpoint ($9.30 to $11.25) is below the offer, and only analyst targets, the precedent set and the synergy case reach above $12.50"
           },
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Standalone DDM midpoint of $10.40 at a 9.25% cost of equity; the offer needs 40% cost synergies to be accretive by FY17"
+           "text": "Standalone DDM midpoint of $10.45 at a 9.25% cost of equity; the offer needs 40% cost synergies to be accretive by FY17"
           },
           {
            "role": "type.h2",
@@ -188,7 +188,7 @@
               {
                "role": "type.body",
                "ink_role": "color.ink_inverse",
-               "text": "Recommendation: decline; re-engage below $9.00 or with a synergy case the board can underwrite"
+               "text": "Recommendation: decline; re-engage at $10.50 to $11.30 with a synergy case the board can underwrite"
               }
              ]
             }
@@ -226,7 +226,7 @@
   {
    "id": "s2-comps",
    "layout": "Title and Content",
-   "notes": "The comps page: the offer sits at the top of the range on every multiple.",
+   "notes": "The comps page: the multiple is below the median, the synergy assumption at the top.",
    "spec": {
     "root": {
      "type": "region",
@@ -247,7 +247,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Precedent bank deals: the offer is at the top of the range"
+         "text": "Precedent bank deals: 1.33x is below the 1.58x median; the 40% synergy case is the top of the set"
         }
        ]
       },
@@ -435,7 +435,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Only City National and National Penn priced higher on tangible book, and both targets earned returns above 12%"
+           "text": "Five of nine precedents priced above 1.33x tangible book; only Astoria, OneWest and Hudson City priced lower"
           },
           {
            "role": "type.body",
@@ -445,7 +445,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Premium of 26% is in line with the median; the issue is the starting multiple, not the premium"
+           "text": "Premium of 26% is four points above the 22% median; the issue is the starting multiple, not the premium"
           }
          ]
         }
@@ -531,7 +531,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Valuation: $11.40 sits above every method's midpoint"
+         "text": "Valuation: $11.40 sits above every standalone midpoint"
         }
        ]
       },
@@ -623,7 +623,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Standalone methods centre on $10.00 to $10.50; the offer is only inside the ranges that already assume synergies or the top of the precedent set"
+           "text": "Standalone midpoints run from $9.30 to $11.25, all below the offer; the ranges that put $11.40 near their centre are the precedent set and the synergy DDM"
           },
           {
            "role": "type.body",
@@ -633,7 +633,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "A 20% synergy case supports $10.20 to $11.00, which is where re-engagement makes sense"
+           "text": "A re-engagement band of $10.50 to $11.30 sits inside the synergy DDM range, above every standalone midpoint and below the offer"
           },
           {
            "role": "type.caption",
@@ -682,7 +682,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Synergies: $400m is required, $250m is precedented"
+         "text": "Synergies: $400m is required, $295m is precedented at run-rate"
         }
        ]
       },
@@ -805,7 +805,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "The $105m gap between precedented and required synergies equals 7% of the purchase price"
+           "text": "The $105m gap between precedented and required synergies equals 3% of the $4.1bn purchase price"
           }
          ]
         }
