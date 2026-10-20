@@ -65,17 +65,20 @@ def declared_fonts(pptx: Path) -> set[str]:
     return names
 
 
-def codepoints_by_face(pptx: Path) -> dict[str, set[int]]:
+def codepoints_by_face(pptx: Path) -> tuple[dict[str, set[int]], set[str]]:
     """The codepoints each face is asked to draw: every run's text under the face
     ooxml.py resolves for it (run, list styles, layout, master, theme), every bullet
     glyph under its bullet font, and chart text under the chart part's own latin face
-    or, when it declares none, the theme's minor face."""
+    or, when it declares none, the theme's minor face. Second: the faces that set text
+    (a run or chart text resolves to them), as opposed to a bullet glyph only."""
     out: dict[str, set[int]] = {}
+    text_faces: set[str] = set()
     pkg = ooxml.Package(str(pptx))
     for slide_print in ooxml.fingerprint_deck(str(pptx)):
         for run in (*slide_print.runs, *slide_print.chrome_runs):
             if run.family:
                 out.setdefault(run.family, set()).update(map(ord, run.text))
+                text_faces.add(run.family)
             if run.bullet_glyph and (run.bullet_font or run.family):
                 out.setdefault(run.bullet_font or run.family or "", set()).update(map(ord, run.bullet_glyph))
     for part in pkg.slide_parts():
@@ -88,9 +91,10 @@ def codepoints_by_face(pptx: Path) -> dict[str, set[int]]:
             face = faces[0] if faces else (chain.theme.minor_latin if chain.theme else None)
             if not face:
                 continue
+            text_faces.add(face)
             for el in (*root.iter(f"{{{A}}}t"), *root.iter(f"{{{ooxml.C}}}v")):
                 out.setdefault(face, set()).update(map(ord, el.text or ""))
-    return out
+    return out, text_faces
 
 
 def charset_of(path: str, index: int = 0) -> list[tuple[int, int]]:
@@ -129,8 +133,11 @@ def uncovered(codepoints: set[int], charset: list[tuple[int, int]]) -> list[int]
 
 def font_report(faces: set[str], deck: Path | None = None) -> dict[str, dict[str, object]]:
     """Per face: what fontconfig draws it with, the fidelity verdict, and (given the
-    deck) the uncovered codepoints of the regular-style file fc-match picks."""
-    used = codepoints_by_face(deck) if deck is not None else {}
+    deck) the uncovered codepoints of the regular-style file fc-match picks, and
+    `bullets_only`: the face draws bullet glyphs and nothing else. A substitute for such
+    a face moves no text (the paragraph's marL and indent place the text, not the glyph's
+    advance), so it does not decide whether text extents in a render are evidence."""
+    used, text_faces = codepoints_by_face(deck) if deck is not None else ({}, set())
     out: dict[str, dict[str, object]] = {}
     for face in sorted(faces | set(used)):
         try:
@@ -152,6 +159,7 @@ def font_report(faces: set[str], deck: Path | None = None) -> dict[str, dict[str
             entry["codepoints_checked"] = len(points)
             entry["uncovered_count"] = len(missing)
             entry["uncovered_sample"] = [f"U+{p:04X}" for p in missing[:UNCOVERED_SAMPLE_MAX]]
+            entry["bullets_only"] = bool(points) and face not in text_faces
         out[face] = entry
     return out
 
@@ -265,7 +273,7 @@ def main(argv: list[str]) -> int:
         if args.grid:
             report["grid"] = str(grid(images, out / "grid.png"))
     print(json.dumps(report, indent=1))
-    substituted = [f for f, v in report.get("fonts", {}).items() if v["fidelity"] == "substituted"]  # type: ignore[union-attr]
+    substituted = [f for f, v in report.get("fonts", {}).items() if v["fidelity"] == "substituted" and not v.get("bullets_only")]  # type: ignore[union-attr]
     if substituted:
         print(f"WARNING: unrelated substitutes for {substituted}: do not read text fit off these renders", file=sys.stderr)
     tofu = uncovered_faces(report.get("fonts", {}))  # type: ignore[arg-type]

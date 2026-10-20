@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, pdf_triage  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -375,8 +375,8 @@ class Extractor:
                 lo, hi = pages
                 self.slides = [s for s in self.slides if lo <= s.index + 1 <= hi]
                 self.notes.append(f"pages restricted to {lo}-{hi} by --pages")
-            dropped = [s.index + 1 for s in self.slides if s.page_class not in ("vector", "vector_with_image")]
-            evidence = [s for s in self.slides if s.page_class in ("vector", "vector_with_image")]
+            dropped = [s.index + 1 for s in self.slides if not is_type_evidence(s)]
+            evidence = [s for s in self.slides if is_type_evidence(s)]
             if self.triage["deck_class"] == "raster" and pages is None:
                 # the text layer is a wrapper or OCR: nothing on these pages is type evidence
                 self.raster = True

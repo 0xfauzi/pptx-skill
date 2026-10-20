@@ -9,6 +9,8 @@ on its master and a deck that writes it on every run fingerprint the same.
     fingerprint.py print  deck.pptx                      # per-deck summary
     fingerprint.py compare cand.pptx --reference ref.pptx [--others a.pptx ...]
     fingerprint.py calibrate house1=a.pptx,b.pptx house2=c.pptx ...  [--json out]
+    fingerprint.py calibrate --houses-file oracles/calibration-houses.txt --corpus-root ../deckgen \
+                   --max-pages 25 --fit-weights        # the corpus DEFAULT_WEIGHTS was scored on
 
 `compare` prints every distance component, so a bad component names the defect
 (sizes off the reference ladder, a colour outside the palette, margins wrong).
@@ -31,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import SlidePrint, delta_e, fingerprint_deck  # noqa: E402
+from ooxml import SlidePrint, delta_e, fingerprint_deck, is_type_evidence  # noqa: E402
 
 
 
@@ -171,7 +173,11 @@ def overflow_rate(s: SlidePrint) -> float | None:
 
 
 def slide_features(s: SlidePrint) -> Features:
+    """A raster PDF page (ooxml.is_type_evidence) yields empty features: its text layer is
+    a wrapper or OCR, and its rects and lines are the print around the image."""
     f = Features()
+    if not is_type_evidence(s):
+        return f
     pdf = s.source == "pdf"
     for r in s.runs:
         w = r.chars
@@ -354,20 +360,27 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "overlap": 1.0, "overflow": 1.0,
 }
 """Per-component weight = that component's 1-NN accuracy above chance, FITTED on the
-even-numbered slides of an eight-house corpus (3 Mergers & Inquisitions pitch books,
-2 Apache POI test decks, 20 taste-spike slides, 6 McKinsey + 3 BCG + 1 Bain + 1 JPM
-public PDFs, 25 pages each) and JUDGED on the odd-numbered slides: 147/161 correct
-against 122/161 with equal weights, chance bound 28. Re-fit with
-`fingerprint.py calibrate ... --fit-weights` when the corpus changes; never tune on
-the slides being judged.
+even-numbered slides of the eight houses in ../oracles/calibration-houses.txt (gs: 3
+Mergers & Inquisitions pitch books; header and themes: the 2 Apache POI test decks, one
+house each; taste: 20 taste-spike slides; mckinsey: 6, bcg: 3, bain: 1, jpm: 1 public
+PDFs; 25 pages each, raster pages not scored) and JUDGED on the odd-numbered slides.
 
-`overlap` and `overflow` are not fitted: every reference deck sits near zero on both,
-so a 1-NN fit finds no signal in them. They are ASSERTED at 1.0, above the largest
-fitted weight, because the review of 2026-10-20 built decks a rater calls wrong
-(keybank's shapes at random positions: 0.013; all stacked at one point: 0.044; nine
-random boxes per page: 0.122; every text box overflowing twelve times over: 0.192)
-and the fourteen style components filed every one under keybank. These two read what
-the style histograms cannot: whether the page is laid out at all."""
+These shipped weights, re-scored on 2026-10-20 with the command in the module docstring:
+152/165 odd slides correct, against 132/165 with equal weights, chance bound 29. The
+same run re-fits weights on the even slides (families 0.4331, count 0.2083, ...: the
+`fitted_weights_on_even_slides` it prints) and those score 151/165, so the shipped set
+is kept. Before raster pages left the scoring (ooxml.is_type_evidence), 6 OCR pages were
+scored as type and the figures were 158/171 shipped, 157/171 fitted, 132/171 equal.
+Re-fit when the corpus changes; never tune on the slides being judged.
+
+`overlap` and `overflow` are not the fitted values: the same fit gives them 0.4083 and
+0.4464 (the reference decks differ a little in their own overlap and overflow rates).
+They are ASSERTED at 1.0, above the largest fitted weight, because the review of
+2026-10-20 built decks a rater calls wrong (keybank's shapes at random positions:
+0.013; all stacked at one point: 0.044; nine random boxes per page: 0.122; every text
+box overflowing twelve times over: 0.192) and the fourteen style components filed every
+one under keybank. Separating houses is not their job; reading whether the page is laid
+out at all is, and DEFECT_GATE holds that line on its own."""
 
 
 def total(d: dict[str, float | None], weights: dict[str, float] | None = None) -> float:
@@ -443,8 +456,8 @@ def calibrate(houses: dict[str, list[str]], weights: dict[str, float] | None = N
     for house, decks in prints.items():
         for deck, slides in decks.items():
             for s in slides:
-                if not scored(s, deck, len(slides) == 1):
-                    continue
+                if not scored(s, deck, len(slides) == 1) or not is_type_evidence(s):
+                    continue  # a raster page has no features to file: scoring it files a tie
                 cf = slide_features(s)
                 pred, scores = predict(cf, house, cf)
                 confusion[(house, pred)] += 1
@@ -474,6 +487,8 @@ def calibrate(houses: dict[str, list[str]], weights: dict[str, float] | None = N
             continue
         for deck, slides in decks.items():
             df = house_features(slides)
+            if not scorable(df):
+                continue
             pred, scores = predict(df, house, df)
             lodo.append({"house": house, "deck": deck, "pred": pred, "scores": scores})
     return {
@@ -510,6 +525,7 @@ def house_spread(slides: list[SlidePrint]) -> dict | None:
     out). A candidate inside this spread is as much the house as the house's own pages;
     one outside it is not, however near it sits to the other decks on the panel (a page
     of keybank's shapes at random positions is nearer keybank than jazz and still wrong)."""
+    slides = [s for s in slides if is_type_evidence(s)]
     if len(slides) < 3:
         return None
     feats = [slide_features(s) for s in slides]
@@ -599,6 +615,65 @@ def fit_weights(houses: dict[str, list[str]], max_pages: int | None, by_deck: bo
     return out
 
 
+# --- the judge -------------------------------------------------------------------------------
+
+PANEL_PAGES = 25
+"""Pages read per panel deck: PDF references run to hundreds of pages and the panel is a
+dozen decks; the reference and the candidate are read whole."""
+
+
+def judge(candidate: str, reference: str, others: list[str] | None = None, ref_slides: list[SlidePrint] | None = None,
+          max_pages: int | None = None) -> dict:
+    """The candidate's distance to the reference and to every panel deck, with the gates the
+    verdict needs (nearest, within the house's own spread, layout clean). A reference with
+    no type evidence (a scan, a browser print, an OCR layer: ooxml.is_type_evidence) cannot
+    be judged by this instrument, and the result says so instead of a distance: its only
+    "type" is the OCR layer, and every faithful deck would sit far from it."""
+    ref_slides = ref_slides if ref_slides is not None else fingerprint_deck(reference, max_pages)
+    ref = house_features(ref_slides)
+    out: dict = {"reference": reference}
+    if not scorable(ref):
+        raster = [s.index + 1 for s in ref_slides if not is_type_evidence(s)]
+        out["cannot_judge"] = (f"the reference carries no type evidence: {len(raster)} of {len(ref_slides)} pages are raster "
+                               "(ooxml.pdf_triage) and their text layer is a wrapper or OCR, not the house's type. "
+                               "Judge style against the raster evidence (raster_style.py) and the renders by eye.")
+        out["raster_pages"] = raster
+        return out
+    cand = fingerprint_deck(candidate, max_pages)
+    cf = house_features(cand)
+    d = distance(cf, ref)
+    out["total"] = round(total(d), 3)
+    out["components"] = {k: (round(v, 3) if v is not None else None) for k, v in d.items()}
+    per_slide = []
+    for s in cand:
+        sd = distance(slide_features(s), ref)
+        worst = sorted(((v, k) for k, v in sd.items() if v is not None), reverse=True)[:3]
+        per_slide.append({"slide": s.index + 1, "total": round(total(sd), 3), "worst": [(k, round(v, 3)) for v, k in worst]})
+    out["per_slide"] = per_slide
+    spread = house_spread(ref_slides)
+    out["house_spread"] = spread
+    rivals, kin, skipped = {}, {}, []
+    for o in panel(others or [], reference):
+        hf = house_features(fingerprint_deck(o, PANEL_PAGES))
+        if not scorable(hf):
+            skipped.append(o)
+            continue
+        if same_house(hf, ref, spread):
+            kin[o] = round(total(distance(cf, hf)), 3)
+            continue
+        rivals[o] = round(total(distance(cf, hf)), 3)
+    out["others"] = rivals
+    if skipped:
+        out["panel_skipped"] = {"reason": "no type evidence (a scan, a browser print or an empty deck)", "files": skipped}
+    out["same_house_on_panel"] = kin
+    out["panel"] = "given" if others else "refs/files (default)"
+    out["nearest_is_reference"] = all(out["total"] < v for v in rivals.values()) if rivals else None
+    out["reference_rank"] = 1 + sum(1 for v in rivals.values() if v <= out["total"]) if rivals else None
+    out["within_house_spread"] = out["total"] <= spread["p90"] if spread else None
+    out["layout_clean"] = layout_clean(d)
+    return out
+
+
 # --- cli -----------------------------------------------------------------------------------
 
 
@@ -634,7 +709,9 @@ def main(argv: list[str]) -> int:
     s_cmp.add_argument("--json")
     s_cmp.add_argument("--max-pages", type=int, default=None)
     s_cal = sub.add_parser("calibrate")
-    s_cal.add_argument("houses", nargs="+", help="name=deck1.pptx,deck2.pdf,...")
+    s_cal.add_argument("houses", nargs="*", help="name=deck1.pptx,deck2.pdf,...")
+    s_cal.add_argument("--houses-file", default=None, help="one name=deck,deck,... per line (# comments); paths under refs/ resolve against this repo, others against --corpus-root")
+    s_cal.add_argument("--corpus-root", default=".", help="where the relative corpus paths of --houses-file live (the deckgen checkout)")
     s_cal.add_argument("--json")
     s_cal.add_argument("--max-pages", type=int, default=None, help="cap pages read per file (PDF references can run to hundreds)")
     s_cal.add_argument("--by-deck", action="store_true", help="every deck is its own class")
@@ -649,39 +726,7 @@ def main(argv: list[str]) -> int:
                 print(json.dumps({"slide": s.index + 1, **summarise(slide_features(s))}))
         return 0
     if args.cmd == "compare":
-        cand = fingerprint_deck(args.candidate, args.max_pages)
-        ref = house_features(fingerprint_deck(args.reference, args.max_pages))
-        cf = house_features(cand)
-        d = distance(cf, ref)
-        report = {"candidate": args.candidate, "reference": args.reference, "components": d, "total": total(d)}
-        others = {}
-        skipped = []
-        kin = {}
-        spread = house_spread(fingerprint_deck(args.reference, args.max_pages))
-        for o in panel(args.others, args.reference):
-            hf = house_features(fingerprint_deck(o, args.max_pages))
-            if not scorable(hf):
-                skipped.append(o)
-                continue
-            if same_house(hf, ref, spread):
-                kin[o] = total(distance(cf, hf))
-                continue
-            others[o] = total(distance(cf, hf))
-        if skipped:
-            report["panel_skipped"] = {"reason": "no measured type (a scan or an empty deck)", "files": skipped}
-        report["others"] = others
-        report["same_house_on_panel"] = kin
-        report["nearest_is_reference"] = all(report["total"] < v for v in others.values()) if others else None
-        report["reference_rank"] = 1 + sum(1 for v in others.values() if v <= report["total"]) if others else None
-        report["house_spread"] = spread
-        report["within_house_spread"] = report["total"] <= spread["p90"] if spread else None
-        report["layout_clean"] = layout_clean(d)
-        per_slide = []
-        for s in cand:
-            sd = distance(slide_features(s), ref)
-            worst = sorted(((v, k) for k, v in sd.items() if v is not None), reverse=True)[:3]
-            per_slide.append({"slide": s.index + 1, "total": round(total(sd), 3), "worst": [(k, round(v, 3)) for v, k in worst]})
-        report["per_slide"] = per_slide
+        report = judge(args.candidate, args.reference, args.others, max_pages=args.max_pages)
         text = json.dumps(report, indent=1, default=str)
         print(text)
         if args.json:
@@ -689,17 +734,34 @@ def main(argv: list[str]) -> int:
         return 0
     if args.cmd == "calibrate":
         houses = {}
-        for spec in args.houses:
+        specs = list(args.houses)
+        if args.houses_file:
+            repo = Path(__file__).resolve().parent.parent
+            for line in Path(args.houses_file).read_text().splitlines():
+                line = line.split("#", 1)[0].strip()
+                if not line:
+                    continue
+                name, _, decks = line.partition("=")
+                paths = [str(repo / d) if d.startswith("refs/") else str(Path(args.corpus_root) / d) for d in decks.split(",")]
+                specs.append(f"{name}={','.join(paths)}")
+        if not specs:
+            raise SystemExit("calibrate: no houses (give name=decks or --houses-file)")
+        for spec in specs:
             name, _, decks = spec.partition("=")
             houses[name] = decks.split(",")
         if args.fit_weights:
             weights = fit_weights(houses, args.max_pages, args.by_deck)
             equal = calibrate(houses, {k: 1.0 for k in COMPONENTS}, args.max_pages, args.by_deck, split="odd")
             fitted = calibrate(houses, weights, args.max_pages, args.by_deck, split="odd")
+            shipped = calibrate(houses, DEFAULT_WEIGHTS, args.max_pages, args.by_deck, split="odd")
+            brief = ("n_slides", "n_houses", "slide_loo_correct", "slide_loo_accuracy", "chance_bound_k")
             result = {
+                "houses": {h: len(d) for h, d in houses.items()},
                 "fitted_weights_on_even_slides": weights,
-                "odd_slides_equal_weights": {k: v for k, v in equal.items() if k in ("n_slides", "n_houses", "slide_loo_correct", "slide_loo_accuracy", "chance_bound_k")},
-                "odd_slides_fitted_weights": {k: v for k, v in fitted.items() if k in ("n_slides", "n_houses", "slide_loo_correct", "slide_loo_accuracy", "chance_bound_k")},
+                "odd_slides_equal_weights": {k: v for k, v in equal.items() if k in brief},
+                "odd_slides_fitted_weights": {k: v for k, v in fitted.items() if k in brief},
+                # the weights the judge ships with, scored on the same odd slides: the figure the docs quote
+                "odd_slides_shipped_weights": {k: v for k, v in shipped.items() if k in brief},
                 "odd_confusion_fitted": fitted["confusion"],
                 "leave_one_deck_out_fitted": fitted["leave_one_deck_out"],
             }
