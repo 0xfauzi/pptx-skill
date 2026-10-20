@@ -61,9 +61,10 @@
     }
    },
    "contrast": {
-    "checked": 14,
+    "checked": 17,
     "violations": [],
     "warnings": [],
+    "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -77,8 +78,11 @@
      "threshold": 4.5,
      "size_pt": 10.0,
      "bold": false,
-     "backing": "color.surface"
-    }
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
    },
    "register": {
     "kind_counts": {
@@ -104,7 +108,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "table": {
       "value": 1,
@@ -112,7 +116,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "chart": {
       "value": 0,
@@ -137,7 +141,7 @@
       0.0,
       0.0
      ],
-     "verdict": "above"
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
     },
     "container_ratio": {
      "value": 0.0,
@@ -159,10 +163,18 @@
    "attempts": [
     {
      "scale": "1",
+     "result": "2 violation(s)"
+    },
+    {
+     "scale": "49/50",
      "result": "fit"
+    },
+    {
+     "scale": "99/100",
+     "result": "2 violation(s)"
     }
    ],
-   "scale": 1.0,
+   "scale": 0.98,
    "violations": [],
    "text_lines": {
     "title": 1,
@@ -172,23 +184,23 @@
    "tables": {
     "comps": {
      "rows": 11,
-     "height_emu": 3020314,
+     "height_emu": 3000206,
      "column_widths_emu": [
-      645583,
-      1682753,
-      1094025,
-      1313357,
-      654493,
-      865385,
-      777636,
-      1348768
+      646027,
+      1686966,
+      1096098,
+      1316228,
+      654969,
+      866627,
+      778559,
+      1351766
      ]
     }
    },
    "density": {
     "words": 188,
     "elements": 5,
-    "covered_area_fraction": 0.709,
+    "covered_area_fraction": 0.713,
     "words_per_slide": {
      "value": 188,
      "band": [
@@ -206,7 +218,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.709,
+     "value": 0.713,
      "band": [
       0.4116,
       0.7078
@@ -215,9 +227,10 @@
     }
    },
    "contrast": {
-    "checked": 13,
+    "checked": 16,
     "violations": [],
     "warnings": [],
+    "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -228,8 +241,11 @@
      "threshold": 4.5,
      "size_pt": 10.0,
      "bold": false,
-     "backing": "color.surface"
-    }
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
    },
    "register": {
     "kind_counts": {
@@ -263,7 +279,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "chart": {
       "value": 1,
@@ -271,7 +287,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "line": {
       "value": 0,
@@ -310,7 +326,9 @@
    "solver_status": "fit",
    "problems": [],
    "chart_defaults_taken": {
-    "chart": []
+    "chart": [
+     "plot_area: automatic: each renderer places the plot inside the frame itself"
+    ]
    }
   },
   {
@@ -380,9 +398,10 @@
     }
    },
    "contrast": {
-    "checked": 27,
+    "checked": 30,
     "violations": [],
     "warnings": [],
+    "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -396,8 +415,11 @@
      "threshold": 4.5,
      "size_pt": 10.0,
      "bold": false,
-     "backing": "color.surface"
-    }
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
    },
    "register": {
     "kind_counts": {
@@ -423,7 +445,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "table": {
       "value": 0,
@@ -447,7 +469,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      }
     },
     "decoration_count": {
@@ -456,7 +478,7 @@
       0.0,
       0.0
      ],
-     "verdict": "above"
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
     },
     "container_ratio": {
      "value": 0.0,
@@ -529,9 +551,10 @@
     }
    },
    "contrast": {
-    "checked": 14,
+    "checked": 17,
     "violations": [],
     "warnings": [],
+    "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -542,8 +565,11 @@
      "threshold": 4.5,
      "size_pt": 10.0,
      "bold": false,
-     "backing": "color.surface"
-    }
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
    },
    "register": {
     "kind_counts": {
@@ -577,7 +603,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "chart": {
       "value": 1,
@@ -585,7 +611,7 @@
        0.0,
        0.0
       ],
-      "verdict": "above"
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
      },
      "line": {
       "value": 0,
@@ -618,40 +644,45 @@
    "solver_status": "fit",
    "problems": [],
    "chart_defaults_taken": {
-    "chart": []
+    "chart": [
+     "plot_area: automatic: each renderer places the plot inside the frame itself"
+    ]
    }
   }
  ],
  "position_drift": {
-  "chart": {
-   "pages": [
-    2,
-    4
-   ],
-   "top_in": [
-    4.53,
-    1.02
-   ],
-   "drift_in": 3.51
+  "_ids_reused_across_arrangements": {
+   "chart": [
+    [
+     2
+    ],
+    [
+     4
+    ]
+   ]
   }
  },
  "repetition": {
   "threshold": 0.5,
+  "frame_left_out": [
+   "source",
+   "title"
+  ],
   "pairs": [
    {
     "pages": [
      1,
      2
     ],
-    "similarity": 0.551,
-    "similar": true
+    "similarity": 0.324,
+    "similar": false
    },
    {
     "pages": [
      2,
      3
     ],
-    "similarity": 0.055,
+    "similarity": 0.01,
     "similar": false
    },
    {
@@ -659,7 +690,7 @@
      3,
      4
     ],
-    "similarity": 0.055,
+    "similarity": 0.01,
     "similar": false
    }
   ],
@@ -667,6 +698,20 @@
   "runs_over_reference": []
  },
  "emitted_slides": 4,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [
+   "SLIDE_NUMBER"
+  ],
+  "slide_layer_entries": [],
+  "notes": [],
+  "drawn": [
+   [],
+   [],
+   [],
+   []
+  ]
+ },
  "validation": {
   "file": "(scratch)/section.pptx",
   "slides": 4,
@@ -682,7 +727,8 @@
     "fidelity": "metric_alias",
     "codepoints_checked": 72,
     "uncovered_count": 0,
-    "uncovered_sample": []
+    "uncovered_sample": [],
+    "bullets_only": false
    },
    "Calibri": {
     "rendered_with": "Carlito",
@@ -690,7 +736,8 @@
     "fidelity": "metric_alias",
     "codepoints_checked": 12,
     "uncovered_count": 0,
-    "uncovered_sample": []
+    "uncovered_sample": [],
+    "bullets_only": false
    },
    "Wingdings": {
     "rendered_with": "Inter",
@@ -698,19 +745,20 @@
     "fidelity": "substituted",
     "codepoints_checked": 1,
     "uncovered_count": 0,
-    "uncovered_sample": []
+    "uncovered_sample": [],
+    "bullets_only": true
    }
   },
   "pages": 4,
   "images": [
-   "(scratch)/r/slide-01.png",
-   "(scratch)/r/slide-02.png",
-   "(scratch)/r/slide-03.png",
-   "(scratch)/r/slide-04.png"
+   "(scratch)/renders/slide-01.png",
+   "(scratch)/renders/slide-02.png",
+   "(scratch)/renders/slide-03.png",
+   "(scratch)/renders/slide-04.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+  "reference": "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.086,
   "components": {
    "families": 0.0,
@@ -724,29 +772,87 @@
    "aligns": 0.107,
    "kinds": 0.412,
    "background": 0.0,
-   "margins": 0.363,
-   "coverage": 0.055,
+   "margins": 0.364,
+   "coverage": 0.057,
    "count": 0.401,
    "overlap": 0.0,
    "overflow": 0.0
   },
   "per_slide": [
-   0.06,
-   0.09,
-   0.12,
-   0.086
+   {
+    "slide": 1,
+    "total": 0.06,
+    "worst": [
+     [
+      "margins",
+      0.363
+     ],
+     [
+      "kinds",
+      0.276
+     ],
+     [
+      "coverage",
+      0.158
+     ]
+    ]
+   },
+   {
+    "slide": 2,
+    "total": 0.091,
+    "worst": [
+     [
+      "margins",
+      0.368
+     ],
+     [
+      "kinds",
+      0.333
+     ],
+     [
+      "aligns",
+      0.244
+     ]
+    ]
+   },
+   {
+    "slide": 3,
+    "total": 0.12,
+    "worst": [
+     [
+      "count",
+      1.0
+     ],
+     [
+      "kinds",
+      0.457
+     ],
+     [
+      "margins",
+      0.363
+     ]
+    ]
+   },
+   {
+    "slide": 4,
+    "total": 0.086,
+    "worst": [
+     [
+      "margins",
+      0.363
+     ],
+     [
+      "kinds",
+      0.333
+     ],
+     [
+      "bold_ratio",
+      0.302
+     ]
+    ]
+   }
   ],
-  "others": {
-   "/home/user/pptx-skill/refs/files/45541_Header.pptx": 0.503,
-   "/home/user/pptx-skill/refs/files/bmo_fairness_opinion_board.pdf": 0.518,
-   "/home/user/pptx-skill/refs/files/deutsche_bank_amtrust_pitchbook.pdf": 0.608,
-   "/home/user/pptx-skill/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.719,
-   "/home/user/pptx-skill/refs/files/goldman_airvana_why_goldman_2009.pdf": 0.612,
-   "/home/user/pptx-skill/refs/files/mckinsey_uf_road_ahead_2023.pdf": 0.67,
-   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.09,
-   "/home/user/pptx-skill/refs/files/perella_weinberg_pitch.pdf": 0.4,
-   "/home/user/pptx-skill/refs/files/themes.pptx": 0.488
-  },
+  "overflow_where": [],
   "house_spread": {
    "n": 12,
    "min": 0.055,
@@ -754,15 +860,26 @@
    "p90": 0.223,
    "max": 0.372
   },
+  "others": {
+   "refs/files/45541_Header.pptx": 0.503,
+   "refs/files/goldman_airvana_go_private_board_2009.pdf": 0.622,
+   "refs/files/themes.pptx": 0.488
+  },
   "panel_skipped": {
-   "reason": "no measured type (a scan or an empty deck)",
+   "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/refs/files/citigroup_tribune_restructuring_update.pdf"
+    "refs/files/bmo_fairness_opinion_board.pdf",
+    "refs/files/citigroup_tribune_restructuring_update.pdf",
+    "refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.075,
-   "/home/user/pptx-skill/refs/files/mi_netflix_financing_pitchbook.pptx": 0.091
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.07,
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.075,
+   "refs/files/mi_netflix_financing_pitchbook.pptx": 0.091
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,

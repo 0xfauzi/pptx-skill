@@ -470,8 +470,10 @@ python3 scripts/build_deck.py work/deck/deck.json --guide work/ref/guide.json --
 Leave `--others` alone: the judge's panel is every deck under `refs/files` (fetch them
 once with `refs/fetch.sh`), the reference's twin removed by hash, scans with no type
 skipped, and decks that sit inside the reference's own spread reported as the same
-house rather than as rivals. A pass against two alien decks and a fail against the
-sister decks is the same deck; the panel is not yours to choose.
+house rather than as rivals. A deck that is the reference or one of those same-house
+decks in another format (a PDF print of a sister pptx: their words overlap at 0.9 or
+more) goes with it, listed under `judge.renditions`. A pass against two alien decks and
+a fail against the sister decks is the same deck; the panel is not yours to choose.
 
 One command solves every page with measured fit, emits on the template, validates the
 package, renders every page, and judges the deck against the reference and the other
