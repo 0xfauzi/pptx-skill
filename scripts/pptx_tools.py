@@ -52,7 +52,8 @@ from pptx.util import Emu
 
 EMU_PER_INCH = 914400
 EMU_PER_PT = 12700
-ORIGIN_TAG_NAME = "pptx-skill"  # the emitter's origin tag; deckgen 2E-1 measured it surviving a PowerPoint save
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
 # 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
 RULE_WEIGHT_FLOOR_EMU = 6350
 # The product safety floor: 7.0pt on both render media (deckgen E45), the floor with no guide.

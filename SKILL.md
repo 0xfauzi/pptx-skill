@@ -62,6 +62,12 @@ render. A face marked `substituted` makes the render useless as evidence of fit.
   type). The digest's notes list them; when one is an off-style leftover, delete it
   from a copy with `pptx_tools.py delete` and extract again.
 
+Slides this skill generated carry a pptx-skill origin tag; `extract_style.py` and
+`gallery.py` skip them by default and say how many (`--include-generated` keeps them,
+only when you mean to treat your own output as evidence). `/shape_language/corner_radii`
+is observed from the file (the modal roundRect radius and the share of rounded shapes):
+never complete it from renders.
+
 ### 2.2 PDF references
 
 Most public pitch books are PDF and most of those are not vector exports: of the 19
@@ -109,6 +115,15 @@ the solver refuses rather than measure another face under that name. Record a st
 under `typography.families.substitutes` in the completion (`{"Georgia": "DejaVu Serif"}`):
 the file names the real face for PowerPoint, measurement uses the stand-in, and the
 report says so.
+
+`render.py` and the solver read metric aliases from one table (`textfit.py`, fontconfig's
+17 binding="same" classes). Helvetica is not an alias of Liberation Sans: without Nimbus
+Sans or TeX Gyre Heros installed, a Helvetica deck reports `substituted`, and its renders
+are not evidence of fit. `fonts.json` lists per face `uncovered_count` and up to ten
+`uncovered_sample` codepoints, characters the deck sets in that face which the rendered
+font file cannot draw; the gallery refuses with `uncoverable_characters` when any face
+has one, even if LibreOffice drew the glyph from a fallback face, because a crop in
+another face teaches the wrong letterforms. Install a face that covers the script first.
 
 ## 3. Complete the guide
 
@@ -256,6 +271,17 @@ Conventions the build enforces:
   at the paragraph's regular weight; keep them short or give the box slack.
 - Bullet indents come from the reference's own bullets; a reference without bullets gets
   the spacing scale's progression (sm, md, lg).
+
+Before writing each page, look at the reference's nearest pages for that intent:
+
+```bash
+python3 scripts/gallery.py pick work/ref/gallery --intent "two column comparison table beside commentary"
+```
+
+It prints the two exemplars and three crops whose words overlap the intent most, with
+their skeleton lines. Overlap 0 everywhere means the gallery has nothing for that intent
+(keybank's tables are pasted images, so a table intent finds none): design from the
+guide and the doctrines, not from a near miss.
 
 A bridge is a native chart: `"chart_kind": "waterfall"` with `categories`,
 `deltas` (signed steps) and `totals` (the indices that draw from zero; each must equal

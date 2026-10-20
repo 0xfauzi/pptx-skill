@@ -44,7 +44,7 @@ CORE_ROLES = ("/typography/roles/type.title", "/typography/roles/type.body", "/c
 CORE_ANNOTATION = ("/typography/roles/type.caption", "/typography/roles/type.footnote", "/typography/roles/type.source_line")
 # whole-section paths the apply step knows how to write; each is writable only when open
 SECTION_PATHS = {"/description", "/derivation_rules", "/continuation", "/tables", "/charts", "/imagery", "/shape_language/icon_style",
-                 "/shape_language/corner_radii", "/color/accent_stepping", "/gallery", "/exemplars", "/spacing/baseline_emu",
+                 "/color/accent_stepping", "/gallery", "/exemplars", "/spacing/baseline_emu",
                  "/typography/scale_ratio", "/density_bands/table_rows_per_inch", "/typography/families/substitutes"}
 TYPE_MEMBERS = {"size_pt", "weight", "italic", "family", "alignment", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", "case", "ink_role"}
 FLOOR_FAMILY = {}
