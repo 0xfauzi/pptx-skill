@@ -40,6 +40,39 @@ def _size_pt(guide: dict, role: str) -> float:
     return float(spec["size_pt"])
 
 
+def _measurer(guide: dict):
+    """width(role, text) -> int EMU that holds `text` on one line in `role` at scale 1.00.
+
+    With guide["_api"] (build_deck and component.py always pass it) this is the solver's
+    own measurement plus its fit epsilon. Without it (expand called by hand, outside
+    both) it falls back to 0.6 em per character plus one character, an ESTIMATE that
+    was the only figure before the API existed and is not measured; a box sized by it
+    can still wrap, and component.py check is what catches that."""
+    api = guide.get("_api")
+    if api:
+        eps = int(api["fit_epsilon_emu"])
+        return lambda role, text: int(api["text_width_emu"](guide, role, text)) + eps
+    return lambda role, text: int((len(text) + 1) * 0.6 * _size_pt(guide, role) * EMU_PER_PT)
+
+
+def _line_pitch(guide: dict, role: str) -> int:
+    api = guide.get("_api")
+    return int(api["line_pitch_emu"](guide, role)) if api else _pitch(guide, role)
+
+
+def _wrapped_lines(width, role: str, text: str, budget: int) -> int:
+    """Lines `text` takes at `budget` EMU, breaking at spaces, each candidate line
+    measured whole (never a sum of word widths: kerning)."""
+    lines, line = 1, ""
+    for word in text.split(" "):
+        candidate = f"{line} {word}" if line else word
+        if line and width(role, candidate) > budget:
+            lines, line = lines + 1, word
+        else:
+            line = candidate
+    return lines
+
+
 def _spacer(nid: str, weight: float) -> dict | None:
     return {"type": "element", "id": nid, "kind": "image", "weight": weight, "_spacer": True} if weight > 0 else None
 
@@ -82,19 +115,30 @@ def expand(data: dict, box: dict, guide: dict) -> dict:
     marker_role = _role(guide, "type.data_label", "type.emphasis", "type.caption")
     band_role = "color.accent2" if "color.accent2" in guide.get("color", {}).get("roles", {}) else "color.accent1"
     marker_fill = "color.accent1"
-    roomy_row = max(_pitch(guide, "type.body"), sm) + xs
-    needed = roomy_row * n + _pitch(guide, marker_role) + _pitch(guide, caption) + 3 * xs
-    em = _size_pt(guide, caption) * EMU_PER_PT
-    # the value column is sized to its longest figure (0.6 em per character plus one),
-    # never a weight share: "$8.2 to $12.4" wrapped to two lines at 18% of a half page
-    value_w = int((max(len(f"{fmt(float(r['low']))} to {fmt(float(r['high']))}") for r in rows) + 1) * 0.6 * em)
-    compact = box["height_emu"] < needed or box["width_emu"] < 3_000_000 or value_w > 0.25 * box["width_emu"]
+    width = _measurer(guide)
+    # the value column is sized to its longest figure as the solver measures it, never a
+    # weight share: "$8.2 to $12.4" wrapped to two lines at 18% of a half page
+    value_w = max(width(caption, f"{fmt(float(r['low']))} to {fmt(float(r['high']))}") for r in rows)
+    # the wide variant's label column, and how many lines each label takes in it (greedy
+    # word wrap over whole measured candidate lines). Wide needs every label in at most
+    # two lines and the measured rows, marker, axis and ticks inside the box height; a
+    # value column over a quarter of the box, or a box under 3,000,000 EMU wide, is
+    # compact too. The two-line cap, the quarter and the 3,000,000 are design choices,
+    # not measurements.
+    label_col = int(0.42 * (box["width_emu"] - value_w - 2 * xs))
+    body_pitch = _line_pitch(guide, "type.body")
+    label_lines = [_wrapped_lines(width, "type.body", str(r["label"]), label_col) for r in rows]
+    needed = sum(max(k * body_pitch, sm) + xs for k in label_lines) + _line_pitch(guide, marker_role) + _line_pitch(guide, caption) + 3 * xs
+    compact = (box["height_emu"] < needed or box["width_emu"] < 3_000_000 or value_w > 0.25 * box["width_emu"]
+               or max(label_lines) > 2)
     label_role = caption if compact else "type.body"
     bar_h = xs if compact else sm
     m = data.get("marker")
     mv = float(m["value"]) if m else None
     marker_in_axis = mv is not None and lo <= mv <= hi
-    track_w = box["width_emu"] if compact else box["width_emu"] - value_w - int(0.42 / 1.0 * box["width_emu"]) - 2 * xs
+    # wide rows are label (weight 0.42), track (0.58), value (fixed) with two xs gaps; the
+    # flex row shares what the value and gaps leave by weight
+    track_w = box["width_emu"] if compact else int(0.58 * (box["width_emu"] - value_w - 2 * xs))
     track_w = max(1, track_w)
 
     def marker(nid: str, height: int | None) -> dict:
@@ -134,10 +178,11 @@ def expand(data: dict, box: dict, guide: dict) -> dict:
     children = []
     if m and marker_in_axis:
         label_h = _pitch(guide, marker_role)
-        mlabel_w = (len(m["label"]) + 2) * 0.6 * _size_pt(guide, marker_role) * EMU_PER_PT
+        # the leading space is the gap between rule and label, so it is measured with it
+        mlabel_w = width(marker_role, f" {m['label']}")
         units_per_emu = (hi - lo) / track_w
         need_units = mlabel_w * units_per_emu
-        label = {"type": "element", "id": f"{pid}-mlabel", "kind": "text", "size": {"width_emu": int(mlabel_w), "height_emu": None},
+        label = {"type": "element", "id": f"{pid}-mlabel", "kind": "text", "size": {"width_emu": mlabel_w, "height_emu": None},
                  "paragraphs": [{"role": marker_role, "text": f" {m['label']}"}]}
         if hi - mv >= need_units:
             # the label reads to the right of the rule
@@ -178,11 +223,12 @@ def expand(data: dict, box: dict, guide: dict) -> dict:
     for k in range(len(ticks) - 1):
         span = max(0.0001, ticks[k + 1] - ticks[k])
         last = k == len(ticks) - 2
-        label_units = (len(fmt(ticks[k])) + 1) * 0.6 * em * units_per_emu
+        # a tick label needs its measured width plus space.xs, so neighbours never touch
+        label_units = (width(caption, fmt(ticks[k])) + xs) * units_per_emu
         if last:
             # the final tick is the axis maximum and always drawn: it takes the units its
             # label needs (right-aligned); the tick before it is kept only if room remains
-            end_units = min(span, max(span / 2, (len(fmt(ticks[k + 1])) + 1) * 0.6 * em * units_per_emu))
+            end_units = min(span, max(span / 2, (width(caption, fmt(ticks[k + 1])) + xs) * units_per_emu))
             rest = span - end_units
             if rest >= label_units:
                 tick_cells.append({"type": "element", "id": f"{pid}-tk{k}", "kind": "text", "weight": rest,

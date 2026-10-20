@@ -1,0 +1,455 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/03-company-profile.json",
+ "slides": [
+  {
+   "id": "03-company-profile",
+   "layout": "Title and Content",
+   "notes": "Give a reader who has never seen Calder everything needed to follow the rest of the deck, on one page.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "A century-old flow control franchise with an aftermarket annuity attached"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "col-facts",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-facts-head",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "The company"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-facts",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "field",
+              "label": "Field",
+              "value_kind": "label"
+             },
+             {
+              "key": "value",
+              "label": "Value",
+              "value_kind": "text"
+             }
+            ],
+            "rows": [
+             [
+              "Founded",
+              "1946, Sheffield"
+             ],
+             [
+              "Headquarters",
+              "Leeds, United Kingdom"
+             ],
+             [
+              "Employees",
+              "6,400 across eleven countries"
+             ],
+             [
+              "Listing",
+              "London, FTSE 250 constituent"
+             ],
+             [
+              "Segments",
+              "Flow Control, Process Instruments, Aftermarket"
+             ],
+             [
+              "Installed base",
+              "Approximately 310,000 units under service contract"
+             ]
+            ],
+            "header_rows": 0
+           }
+          }
+         ],
+         "weight": 4.0
+        },
+        {
+         "type": "region",
+         "id": "col-story",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-story-head",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "What it sells"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-story-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Calder makes control valves, actuators and process instruments for refining, chemicals and water utilities."
+            },
+            {
+             "role": "type.body",
+             "text": "Original equipment wins the installed base; the installed base then buys spares, service and retrofits at roughly twice the margin for the life of the plant."
+            },
+            {
+             "role": "type.body",
+             "text": "That second revenue stream is what a strategic buyer is paying for, and it is the part of the model that does not move with the capital cycle."
+            },
+            {
+             "role": "type.body",
+             "text": "The installed base is the moat: a valve replaced under contract is replaced with the same maker's part, and the switching cost is a plant shutdown rather than a purchase order."
+            },
+            {
+             "role": "type.body",
+             "text": "Two thirds of aftermarket revenue is booked under multi-year service agreements, which is why the segment's margin does not move with the capital cycle."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        },
+        {
+         "type": "region",
+         "id": "col-numbers",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-numbers-head",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "What it earns"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-numbers-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.emphasis",
+             "text": "Revenue $1,842m"
+            },
+            {
+             "role": "type.body",
+             "text": "EBITDA $331m at a margin of 18.0%"
+            },
+            {
+             "role": "type.body",
+             "text": "Net debt $629m, or 1.9x of last year's EBITDA"
+            },
+            {
+             "role": "type.body",
+             "text": "84.6m shares outstanding at $38.95"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-segments",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "segment",
+              "label": "Segment",
+              "value_kind": "label"
+             },
+             {
+              "key": "segment_usdm",
+              "label": "Segment revenue",
+              "value_kind": "currency"
+             },
+             {
+              "key": "segment_share",
+              "label": "Share of group",
+              "value_kind": "percent"
+             }
+            ],
+            "rows": [
+             [
+              "Flow Control",
+              "$884m",
+              "48%"
+             ],
+             [
+              "Process Instruments",
+              "$588m",
+              "32%"
+             ],
+             [
+              "Aftermarket",
+              "$370m",
+              "20%"
+             ]
+            ],
+            "header_rows": 1
+           }
+          },
+          {
+           "type": "element",
+           "id": "el-numbers-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          },
+          {
+           "type": "element",
+           "id": "el-numbers-note",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Figures as reported for the year ended 31 December 2025; the share price is the close on the last trading day before this pack."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        }
+       ],
+       "weight": 3.2
+      },
+      {
+       "type": "region",
+       "id": "band-history",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-history-head",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Seven years of it"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "el-history",
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "period",
+            "label": "Period",
+            "value_kind": "label"
+           },
+           {
+            "key": "revenue",
+            "label": "Revenue",
+            "value_kind": "currency"
+           },
+           {
+            "key": "ebitda",
+            "label": "EBITDA",
+            "value_kind": "currency"
+           },
+           {
+            "key": "gross_margin",
+            "label": "Gross margin (%)",
+            "value_kind": "percent"
+           },
+           {
+            "key": "ebitda_margin",
+            "label": "EBITDA margin (%)",
+            "value_kind": "percent"
+           }
+          ],
+          "rows": [
+           [
+            "FY21A",
+            "$1,468m",
+            "$207m",
+            "31.2",
+            "14.1"
+           ],
+           [
+            "FY22A",
+            "$1,539m",
+            "$209m",
+            "30.4",
+            "13.6"
+           ],
+           [
+            "FY23A",
+            "$1,622m",
+            "$250m",
+            "32.1",
+            "15.4"
+           ],
+           [
+            "FY24A",
+            "$1,731m",
+            "$291m",
+            "33.6",
+            "16.8"
+           ],
+           [
+            "FY25A",
+            "$1,842m",
+            "$331m",
+            "34.8",
+            "18.0"
+           ],
+           [
+            "FY26E",
+            "$1,958m",
+            "$374m",
+            "35.6",
+            "19.1"
+           ],
+           [
+            "FY27E",
+            "$2,074m",
+            "$411m",
+            "36.2",
+            "19.8"
+           ]
+          ],
+          "header_rows": 1
+         }
+        }
+       ],
+       "weight": 1.7
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Calder Industrial Group Annual Report 2025, p. 31; Calder operating model, Segments!B5:J14, Summary!D22:K24; Deal team, Management estimates"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-numbers-body": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Revenue $1,842m",
+         "emphasis": true
+        }
+       ]
+      }
+     }
+    },
+    "el-numbers-note": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    }
+   },
+   "rules": {
+    "el-numbers-rule": {
+     "line_role": "color.rule"
+    }
+   }
+  }
+ ]
+}

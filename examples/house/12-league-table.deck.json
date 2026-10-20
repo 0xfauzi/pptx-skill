@@ -1,0 +1,486 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/12-league-table.json",
+ "slides": [
+  {
+   "id": "12-league-table",
+   "layout": "Title and Content",
+   "notes": "Show that the adviser the board is being asked to appoint leads the sector on the measure that matters.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "space_between"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Bellhaven has advised on more flow control value than the next two houses together"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-body",
+       "layout": {
+        "kind": "grid",
+        "rows": 3,
+        "cols": 12,
+        "areas": [
+         {
+          "child_id": "el-share-chart",
+          "row": 0,
+          "col": 0,
+          "row_span": 1,
+          "col_span": 12
+         },
+         {
+          "child_id": "el-league",
+          "row": 1,
+          "col": 0,
+          "row_span": 2,
+          "col_span": 8
+         },
+         {
+          "child_id": "el-league-note",
+          "row": 1,
+          "col": 8,
+          "row_span": 1,
+          "col_span": 4
+         }
+        ],
+        "gutter_role": "space.gutter",
+        "pad_role": null
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-league",
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "rank",
+            "label": "Rank",
+            "value_kind": "label"
+           },
+           {
+            "key": "adviser",
+            "label": "Adviser",
+            "value_kind": "label"
+           },
+           {
+            "key": "value_usdbn",
+            "label": "Announced value ($bn)",
+            "value_kind": "currency"
+           },
+           {
+            "key": "deals",
+            "label": "Deals",
+            "value_kind": "number"
+           },
+           {
+            "key": "share",
+            "label": "Share (%)",
+            "value_kind": "percent"
+           }
+          ],
+          "rows": [
+           [
+            "1",
+            "Bellhaven Partners",
+            "18.4",
+            "21",
+            "20.2"
+           ],
+           [
+            "2",
+            "Coreham & Co.",
+            "15.9",
+            "17",
+            "17.5"
+           ],
+           [
+            "3",
+            "Ashgrove Securities",
+            "12.6",
+            "24",
+            "13.8"
+           ],
+           [
+            "4",
+            "Ravensworth Advisory",
+            "9.8",
+            "11",
+            "10.8"
+           ],
+           [
+            "5",
+            "Lindhurst Capital",
+            "8.1",
+            "15",
+            "8.9"
+           ],
+           [
+            "6",
+            "Penhale Group",
+            "6.4",
+            "9",
+            "7.0"
+           ],
+           [
+            "7",
+            "Marlbrook Partners",
+            "5.2",
+            "12",
+            "5.7"
+           ],
+           [
+            "\u2013",
+            "Other advisers",
+            "14.7",
+            "63",
+            "16.1"
+           ],
+           [
+            "\u2013",
+            "Total",
+            "91.1",
+            "172",
+            "100.0"
+           ]
+          ],
+          "header_rows": 1
+         }
+        },
+        {
+         "type": "element",
+         "id": "el-share-chart",
+         "kind": "chart"
+        },
+        {
+         "type": "element",
+         "id": "el-league-note",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.footnote",
+           "text": "Announced flow control transactions over the twelve months to the pack date; credit to all advisers named on the announcement."
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-reading",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-league-0",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-league-0-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-league-0-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "Position is not the argument"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-league-0-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-league-0-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "A league table says who has done the work, not what the asset is worth. It is here because a seller asks, and it is one page."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        },
+        {
+         "type": "region",
+         "id": "grp-league-1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-league-1-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-league-1-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "Deal count is the wrong measure"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-league-1-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-league-1-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Ashgrove ran more processes than anyone and advised on two thirds of the value Bellhaven did; this market pays for the large ones."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        },
+        {
+         "type": "region",
+         "id": "grp-league-2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-league-2-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-league-2-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "Four of the seven were sell-side"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-league-2-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-league-2-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "The houses above are the ones a buyer expects to meet, which is what makes the outreach list on the previous page credible."
+            }
+           ]
+          }
+         ],
+         "weight": 4.0
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Flow control transaction log, League!A3:F12"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-league": {
+     "totals_last_row": true
+    },
+    "el-league-note": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-league-0-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-league-1-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-league-2-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    }
+   },
+   "charts": {
+    "el-share-chart": {
+     "chart_kind": "column",
+     "categories": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7"
+     ],
+     "series": [
+      {
+       "name": "Share (%)",
+       "values": [
+        20.2,
+        17.5,
+        13.8,
+        10.8,
+        8.9,
+        7.0,
+        5.7
+       ]
+      }
+     ],
+     "number_format": "#,##0.0",
+     "data_labels": true
+    }
+   },
+   "rules": {
+    "grp-league-0-head-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-league-1-head-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-league-2-head-rule": {
+     "line_role": "color.rule"
+    }
+   }
+  }
+ ]
+}

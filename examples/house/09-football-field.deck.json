@@ -1,0 +1,332 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/09-football-field.json",
+ "slides": [
+  {
+   "id": "09-football-field",
+   "layout": "Title and Content",
+   "notes": "Put every valuation method on one axis so the board can see where the ranges overlap and where they do not.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Five of six methods overlap between the high thirties and the low forties"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-body",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-overlap",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "grp-overlap-head",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "grp-overlap-title",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "Where they agree"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "grp-overlap-head-rule",
+             "kind": "rule",
+             "size": {
+              "width_emu": null,
+              "height_emu": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-overlap-body",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Trading comparables, precedent transactions and the broker targets all close between the high thirties and the low forties, which is where a negotiated deal would land."
+            },
+            {
+             "role": "type.body",
+             "text": "Only the discounted cash flow reaches higher, and only on a terminal growth assumption a buyer will not underwrite."
+            },
+            {
+             "role": "type.body",
+             "text": "The leveraged buy-out floor is below every strategic method, which is why a sponsor does not win this asset."
+            }
+           ]
+          }
+         ],
+         "weight": 1.9
+        },
+        {
+         "type": "component",
+         "id": "el-range-chart",
+         "kind": "football_field",
+         "data": {
+          "axis": {
+           "min": 30,
+           "max": 55,
+           "format": "${:,.2f}",
+           "ticks": [
+            30,
+            35,
+            40,
+            45,
+            50,
+            55
+           ]
+          },
+          "rows": [
+           {
+            "label": "52-week trading range",
+            "low": 31.2,
+            "high": 44.8
+           },
+           {
+            "label": "Broker price targets",
+            "low": 38.0,
+            "high": 50.0
+           },
+           {
+            "label": "Trading comparables",
+            "low": 34.56,
+            "high": 43.4
+           },
+           {
+            "label": "Precedent transactions",
+            "low": 35.6,
+            "high": 43.43
+           },
+           {
+            "label": "Discounted cash flow",
+            "low": 41.1,
+            "high": 52.3
+           },
+           {
+            "label": "Leveraged buy-out",
+            "low": 33.8,
+            "high": 39.9
+           }
+          ]
+         },
+         "weight": 3.6
+        },
+        {
+         "type": "element",
+         "id": "el-method-table",
+         "weight": 3.0,
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "method",
+            "label": "Methodology",
+            "value_kind": "label"
+           },
+           {
+            "key": "low_usd",
+            "label": "Low ($)",
+            "value_kind": "currency"
+           },
+           {
+            "key": "high_usd",
+            "label": "High ($)",
+            "value_kind": "currency"
+           },
+           {
+            "key": "basis",
+            "label": "Basis",
+            "value_kind": "text"
+           }
+          ],
+          "rows": [
+           [
+            "52-week trading range",
+            "31.20",
+            "44.80",
+            "Daily closing prices to 14 August 2026"
+           ],
+           [
+            "Broker price targets",
+            "38.00",
+            "50.00",
+            "Twelve published targets, median $43.50"
+           ],
+           [
+            "Trading comparables",
+            "34.56",
+            "43.40",
+            "9.5x - 11.5x CY26E EBITDA"
+           ],
+           [
+            "Precedent transactions",
+            "35.60",
+            "43.43",
+            "11.0x - 13.0x LTM EBITDA"
+           ],
+           [
+            "Discounted cash flow",
+            "41.10",
+            "52.30",
+            "WACC 8.5% - 9.5%, terminal growth 2.0% - 2.5%"
+           ],
+           [
+            "Leveraged buy-out",
+            "33.80",
+            "39.90",
+            "20% IRR, 5.5x opening leverage"
+           ]
+          ],
+          "header_rows": 1
+         }
+        },
+        {
+         "type": "region",
+         "id": "band-note",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": "space.sm",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-range-note",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.emphasis",
+             "text": "All ranges are per share and undiscounted; the market close on the pack date is $38.95, below every method except the leveraged buy-out floor."
+            }
+           ]
+          }
+         ],
+         "weight": 0.8
+        }
+       ],
+       "weight": 4.6
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Calder operating model, Valuation!B6:H28; Deal team, Management estimates"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-overlap-body": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      },
+      "1": {
+       "ink_role": "color.ink_muted"
+      },
+      "2": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-range-note": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "All ranges are per share and undiscounted; the market close on the pack date is $38.95, below every method except the leveraged buy-out floor.",
+         "emphasis": true
+        }
+       ]
+      }
+     }
+    },
+    "band-note": {
+     "fill_role": "color.surface_alt"
+    }
+   },
+   "rules": {
+    "grp-overlap-head-rule": {
+     "line_role": "color.rule"
+    }
+   }
+  }
+ ]
+}

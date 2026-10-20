@@ -1,0 +1,513 @@
+{
+ "source": "deckgen fixtures/default_house_style/specimen/slides/04-headline-metrics.json",
+ "slides": [
+  {
+   "id": "04-headline-metrics",
+   "layout": "Title and Content",
+   "notes": "Establish the operating facts the rest of the deck argues from, with revenue as the anchor and the other four as its context.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Calder turns a growing backlog into widening margin"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "el-kicker",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Project Halyard"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "band-figures",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "grp-kpi-0",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-kpi-0-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "$1,842m"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-0-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "FY25A revenue, on a backlog that grew faster"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-0-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 3.2
+        },
+        {
+         "type": "region",
+         "id": "grp-kpi-1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-kpi-1-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "18.0%"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-1-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "FY25A EBITDA margin"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-1-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 2.2
+        },
+        {
+         "type": "region",
+         "id": "grp-kpi-2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-kpi-2-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "78%"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-2-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Free cash flow conversion"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-2-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 2.2
+        },
+        {
+         "type": "region",
+         "id": "grp-kpi-3",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-kpi-3-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "1.9x"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-3-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Net debt to EBITDA"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-3-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 2.2
+        },
+        {
+         "type": "region",
+         "id": "grp-kpi-4",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "grp-kpi-4-figure",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "$2,240m"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-4-label",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Closing backlog"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "grp-kpi-4-rule",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 1
+           }
+          }
+         ],
+         "weight": 2.2
+        }
+       ],
+       "weight": 0.75
+      },
+      {
+       "type": "region",
+       "id": "band-exhibit",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "el-segment-chart",
+         "weight": 7.6,
+         "kind": "chart"
+        },
+        {
+         "type": "region",
+         "id": "col-exhibit-reading",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "el-exhibit-note",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Where the revenue is"
+            },
+            {
+             "role": "type.body",
+             "text": "Flow control is the majority of the group and the whole of its aftermarket pull; a buyer is buying that installed base."
+            },
+            {
+             "role": "type.body",
+             "text": "Process instruments and aftermarket are held for the margin they add rather than for the revenue they carry."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "el-segment-table",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "segment",
+              "label": "Segment",
+              "value_kind": "label"
+             },
+             {
+              "key": "segment_usdm",
+              "label": "Segment revenue",
+              "value_kind": "currency"
+             },
+             {
+              "key": "segment_share",
+              "label": "Share of group",
+              "value_kind": "percent"
+             },
+             {
+              "key": "europe",
+              "label": "Europe (%)",
+              "value_kind": "percent"
+             },
+             {
+              "key": "asia_pacific",
+              "label": "Asia Pacific (%)",
+              "value_kind": "percent"
+             }
+            ],
+            "rows": [
+             [
+              "Flow Control",
+              "$884m",
+              "48%",
+              "45.5",
+              "18.6"
+             ],
+             [
+              "Process Instruments",
+              "$588m",
+              "32%",
+              "41.8",
+              "21.8"
+             ],
+             [
+              "Aftermarket",
+              "$370m",
+              "20%",
+              "50.8",
+              "16.2"
+             ]
+            ],
+            "header_rows": 1
+           }
+          }
+         ],
+         "weight": 4.4
+        }
+       ],
+       "weight": 3.4
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Calder operating model, Segments!B5:J14; Deal team, Management estimates"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "el-kicker": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-kpi-0-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-kpi-1-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-kpi-2-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-kpi-3-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "grp-kpi-4-label": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    },
+    "el-exhibit-note": {
+     "paragraphs": {
+      "0": {
+       "ink_role": "color.ink_muted"
+      },
+      "1": {
+       "ink_role": "color.ink_muted"
+      },
+      "2": {
+       "ink_role": "color.ink_muted"
+      }
+     }
+    }
+   },
+   "charts": {
+    "el-segment-chart": {
+     "chart_kind": "column",
+     "categories": [
+      "Flow Control",
+      "Process Instruments",
+      "Aftermarket"
+     ],
+     "series": [
+      {
+       "name": "Segment revenue",
+       "values": [
+        884.0,
+        588.0,
+        370.0
+       ]
+      }
+     ],
+     "number_format": "#,##0",
+     "data_labels": true
+    }
+   },
+   "rules": {
+    "grp-kpi-0-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-kpi-1-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-kpi-2-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-kpi-3-rule": {
+     "line_role": "color.rule"
+    },
+    "grp-kpi-4-rule": {
+     "line_role": "color.rule"
+    }
+   }
+  }
+ ]
+}
