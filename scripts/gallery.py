@@ -3,7 +3,13 @@
 interesting components, one whole-slide render per composition family, and a
 text-free skeleton of each exemplar.
 
-    gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json]
+    gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json] [--include-generated]
+    gallery.py pick DIR --intent "two column comparison table beside commentary"
+
+Slides carrying the pptx-skill origin tag (emit_pptx.py's output) are rendered but
+yield no crop or exemplar unless --include-generated. The gallery is refused when
+any rendered face cannot draw a character the deck sets in it (render.py's
+uncovered_count). pick prints the top 2 exemplars and top 3 crops for an intent.
 
 Writes DIR/pages/slide-NN.png + fonts.json (render.py's output), then
 DIR/crops/crop-NN.png, DIR/exemplars/ex-NN.png + ex-NN.skeleton.json,
@@ -36,6 +42,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import shutil
 import sys
 import tempfile
@@ -126,6 +133,7 @@ class Slide:
     surface: str
     hidden: bool
     leaves: tuple[Leaf, ...]  # document (z) order
+    generated: bool = False  # emit_pptx's origin tag: rendered (the page sequence needs it), never a crop or exemplar
 
 
 @dataclass(frozen=True)
@@ -232,7 +240,7 @@ def join_deck(path: Path) -> Deck:
                     ink_emu=reach,
                 )
             )
-        slides.append(Slide(print_.index, print_.part, root.get("show") == "0", tuple(leaves)))
+        slides.append(Slide(print_.index, print_.part, root.get("show") == "0", tuple(leaves), print_.generated))
     if prints[0].width <= 0 or prints[0].height <= 0:
         raise GalleryRefused("no_page_size", "the deck declares no usable p:sldSz")
     return Deck(path, prints[0].width, prints[0].height, tuple(slides))
@@ -654,8 +662,17 @@ def component_gap_emu(gutter_emu: int | None) -> int:
 
 def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], dict[str, dict[str, object]]]:
     out.mkdir(parents=True, exist_ok=True)
-    fonts = render.font_report(render.declared_fonts(deck_path))
+    fonts = render.font_report(render.declared_fonts(deck_path), deck_path)
     (out / "fonts.json").write_text(json.dumps(fonts, indent=1))
+    # Tofu refuses; a substitution does not (deckgen style/gallery.py:1310-1331, S1B3 part 5).
+    # Nothing reads geometry off these images, so a different letterform or extent misleads
+    # no consumer; a crop of empty boxes teaches nothing, and no family-name comparison can
+    # see it, because fc-match answers with a family for any name.
+    tofu = render.uncovered_faces(fonts)
+    if tofu:
+        detail = "; ".join(f"{face} drawn with {e['rendered_with']}: {e['uncovered_count']} uncovered ({' '.join(e['uncovered_sample'])})"  # type: ignore[arg-type]
+                           for face, e in tofu.items())
+        raise GalleryRefused("uncoverable_characters", f"{detail}: every crop of those runs would show empty boxes or another face")
     with tempfile.TemporaryDirectory(prefix="gallery-render-") as tmp:
         pdf = render.to_pdf(deck_path, Path(tmp))
         count = render.page_count(pdf)
@@ -686,6 +703,7 @@ def build(
     guide_path: Path | None,
     pool_max: int = GALLERY_POOL_MAX,
     exemplar_max: int = EXEMPLAR_POOL_MAX,
+    include_generated: bool = False,
 ) -> dict[str, object]:
     deck = join_deck(deck_path)
     gutter, evidence = read_guide(guide_path) if guide_path else (None, {})
@@ -693,7 +711,13 @@ def build(
     # Plain LibreOffice export omits hidden slides, so the page sequence is the
     # visible slides in sldIdLst order, and the count must agree exactly.
     shown = [slide for slide in deck.slides if not slide.hidden]
-    pair_count = sum(len(content_leaves(s)) * (len(content_leaves(s)) - 1) // 2 for s in shown)
+    # Generated slides are still rendered (they hold places in the page sequence) but are
+    # this skill's own output, so by default they yield no crop and no exemplar.
+    skipped = [slide.index + 1 for slide in shown if slide.generated and not include_generated]
+    sources = [slide for slide in shown if include_generated or not slide.generated]
+    if not sources:
+        raise GalleryRefused("only_generated", f"all {len(shown)} visible slides carry the pptx-skill origin tag; --include-generated reads them")
+    pair_count = sum(len(content_leaves(s)) * (len(content_leaves(s)) - 1) // 2 for s in sources)
     if pair_count > MAX_SHAPE_PAIRS:
         raise GalleryRefused("too_many_shape_pairs", f"{pair_count} shape pairs to group against {MAX_SHAPE_PAIRS}")
 
@@ -709,7 +733,7 @@ def build(
     emu_per_px = deck.width_emu / raster_w
     pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
 
-    found = components(deck, shown, gap_emu)
+    found = components(deck, sources, gap_emu)
     if not found:
         raise GalleryRefused("no_components", "the deck declares no content shapes to crop")
     if len(found) > MAX_COMPONENTS:
@@ -755,7 +779,7 @@ def build(
         )
     exemplars: list[dict[str, object]] = []
     exemplar_rows: list[str] = []
-    for family_index, slide, family_size in select_exemplars(shown, exemplar_max):
+    for family_index, slide, family_size in select_exemplars(sources, exemplar_max):
         exemplar_id = f"ex-{family_index + 1:02d}"
         png = out / "exemplars" / f"{exemplar_id}.png"
         shutil.copyfile(page_of[slide.index], png)
@@ -777,11 +801,12 @@ def build(
     totals = {
         "slides": len(deck.slides),
         "hidden_slides": len(deck.slides) - len(shown),
+        "generated_slides_skipped": len(skipped),
         "components": len(found),
         "candidates": sum(survives),
         "clusters": len(clusters),
         "crops": len(crops),
-        "families": len(slide_families(shown)),
+        "families": len(slide_families(sources)),
         "exemplars": len(exemplars),
     }
     # No wall-clock timestamp: a rebuild that changed nothing is an empty diff.
@@ -803,8 +828,10 @@ def build(
             "exemplar_pool_max": exemplar_max,
             "guide": str(guide_path) if guide_path else None,
             "mined_gutter_emu": gutter,
+            "include_generated": include_generated,
         },
         "totals": totals,
+        "generated_slides_skipped": skipped,
         "component_gap_emu_used": gap_emu,
         "crops_per_slide": dict(sorted(Counter(c.component.slide.index + 1 for c in chosen).items())),
         "crops": crops,
@@ -828,6 +855,7 @@ def manifest_markdown(
         ("reference sha256", f"`{manifest['reference_sha256']}`"),
         ("render fidelity", f"`{fidelity}`"),
         ("slides / hidden", f"{totals['slides']} / {totals['hidden_slides']}"),
+        ("generated slides skipped (pptx-skill origin tag)", f"{totals['generated_slides_skipped']} {manifest['generated_slides_skipped'] or ''}".strip()),
         ("components", str(totals["components"])),
         ("candidates after the two filters", str(totals["candidates"])),
         ("clusters / crops", f"{totals['clusters']} / {totals['crops']}"),
@@ -847,9 +875,10 @@ def manifest_markdown(
         "",
         FIDELITY_NOTES[fidelity],
         "",
-        "| declared font | rendered with | fidelity |",
-        "|---|---|---|",
-        *(f"| {face} | {entry['rendered_with']} | {entry['fidelity']} |" for face, entry in fonts.items()),
+        "| declared font | rendered with | fidelity | codepoints checked | uncovered |",
+        "|---|---|---|---|---|",
+        *(f"| {face} | {entry['rendered_with']} | {entry['fidelity']} | {entry.get('codepoints_checked')} | {entry.get('uncovered_count')} |"
+          for face, entry in fonts.items()),
         "",
         "## Crops",
         "",
@@ -871,7 +900,71 @@ def manifest_markdown(
     return "\n".join(lines)
 
 
+# --- pick: the images a page's design call carries ---------------------------------------------
+
+EXEMPLAR_PICK = 2  # deckgen content/design_prompt.py EXEMPLAR_BUDGET
+CROP_PICK = 3  # deckgen JUDGE_IMAGE_BUDGET_PER_CALL (5, provisional) less the two exemplars
+_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z]+|[a-z]+|\d+")  # deckgen component_generator/images.py:56
+
+
+def words(text: str) -> frozenset[str]:
+    return frozenset(match.group(0).lower() for match in _WORD.finditer(text))
+
+
+def skeleton_leaves(payload: dict[str, object]) -> list[tuple[str, str]]:
+    """(label, line) per leaf, deckgen design_prompt.py skeleton_lines/_leaf_line: the
+    label (kind and role) is what the ranking reads, the line is what a prompt prints.
+    A leaf with no placeholder role carries no role word, as in deckgen."""
+    shapes = payload.get("shapes")
+    if not isinstance(shapes, list):
+        raise SystemExit(f"skeleton carries no 'shapes' list: keys {sorted(payload)}")
+    out = []
+    for shape in shapes:
+        role = "" if shape.get("role") in (None, "none") else str(shape["role"])
+        label = f"{shape.get('kind', '?')} {role}".rstrip()
+        b = shape["box"]
+        out.append((label, f"{label} {b['width_emu'] / EMU_PER_INCH:.2f}x{b['height_emu'] / EMU_PER_INCH:.2f} in at "
+                           f"({b['x_emu'] / EMU_PER_INCH:.2f},{b['y_emu'] / EMU_PER_INCH:.2f}) in"))
+    return out
+
+
+def pick(gallery_dir: Path, intent_text: str) -> str:
+    """deckgen select_design_images (content/design_prompt.py:252-291): exemplars by
+    overlap of the intent's words with family, id and skeleton vocabulary, crops by
+    overlap with the caption's words; ties break on id. Printed in the shape of its
+    _exemplars_block and _gallery_block (600-632)."""
+    manifest = json.loads((gallery_dir / "manifest.json").read_text())
+    intent = words(intent_text)
+    leaves = {e["exemplar_id"]: skeleton_leaves(json.loads((gallery_dir / e["skeleton_file"]).read_text())) for e in manifest["exemplars"]}
+
+    def exemplar_overlap(e: dict) -> int:
+        vocabulary = words(e["slide_family"]) | words(e["exemplar_id"]) | frozenset().union(*(words(label) for label, _ in leaves[e["exemplar_id"]]))
+        return len(vocabulary & intent)
+
+    exemplars = sorted(manifest["exemplars"], key=lambda e: (-exemplar_overlap(e), e["exemplar_id"]))[:EXEMPLAR_PICK]
+    crops = sorted(manifest["crops"], key=lambda c: (-len(words(c["caption"]) & intent), c["gallery_id"]))[:CROP_PICK]
+    lines = [f"intent words: {' '.join(sorted(intent))}",
+             "Exemplars ranked by overlap of the intent with each exemplar's family, id and skeleton vocabulary; ties on exemplar id."]
+    for e in exemplars:
+        lines.append(f"exemplar {e['exemplar_id']} family {e['slide_family']} overlap {exemplar_overlap(e)} slide {e['source_slide_index'] + 1}: "
+                     f"{(gallery_dir / e['render_file']).resolve()}")
+        lines.append("  skeleton (kind role size at position):")
+        lines.extend(f"    {line}" for _, line in leaves[e["exemplar_id"]])
+    lines.append("Crops ranked by caption overlap with the same words; ties on gallery id.")
+    for c in crops:
+        lines.append(f"crop {c['gallery_id']} overlap {len(words(c['caption']) & intent)}: {c['caption']}")
+        lines.append(f"  {(gallery_dir / c['file']).resolve()} (cut from {(gallery_dir / c['slide_render_file']).resolve()})")
+    return "\n".join(lines)
+
+
 def main(argv: list[str]) -> int:
+    if argv[:1] == ["pick"]:
+        ap = argparse.ArgumentParser(prog="gallery.py pick", description="the top exemplars and crops for a page's composition intent")
+        ap.add_argument("gallery_dir")
+        ap.add_argument("--intent", required=True, help="the page's composition intent in words")
+        args = ap.parse_args(argv[1:])
+        print(pick(Path(args.gallery_dir), args.intent))
+        return 0
     for a in argv:
         head = b""
         try:
@@ -888,12 +981,14 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--guide", default=None, help="extract_style.py guide JSON: mined gutter and token evidence")
     ap.add_argument("--pool-max", type=int, default=GALLERY_POOL_MAX)
     ap.add_argument("--exemplar-max", type=int, default=EXEMPLAR_POOL_MAX)
+    ap.add_argument("--include-generated", action="store_true", help="let slides carrying the pptx-skill origin tag yield crops and exemplars")
     args = ap.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     try:
         manifest = build(
-            Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.pool_max, args.exemplar_max
+            Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.pool_max, args.exemplar_max,
+            args.include_generated,
         )
     except GalleryRefused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)

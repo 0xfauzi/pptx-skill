@@ -16,6 +16,10 @@ completes those while looking at the renders, and never overwrites an observed
 value. No house value enters a reference guide.
 
 The report (--report) is the evidence digest the model reads before completing.
+
+Slides carrying the pptx-skill origin tag (emit_pptx.py write_origin_tag) are this
+skill's own output and are skipped unless --include-generated; the count is in the
+notes and on stdout.
 """
 
 from __future__ import annotations
@@ -343,15 +347,26 @@ def modal(values: list, default=None):
 
 
 class Extractor:
-    def __init__(self, path: str, max_pages: int | None = None, pages: tuple[int, int] | None = None) -> None:
+    def __init__(self, path: str, max_pages: int | None = None, pages: tuple[int, int] | None = None,
+                 include_generated: bool = False) -> None:
         self.path = path
         self.slides: list[SlidePrint] = fingerprint_deck(path, max_pages)
+        self.notes: list[str] = []
+        generated = [s.index + 1 for s in self.slides if s.generated]
+        self.generated_skipped = 0 if include_generated else len(generated)
+        if generated and include_generated:
+            self.notes.append(f"{len(generated)} generated slides (pptx-skill origin tag) counted as evidence by --include-generated: {generated}")
+        elif generated:
+            self.slides = [s for s in self.slides if not s.generated]
+            self.notes.append(f"{len(generated)} generated slides (pptx-skill origin tag) skipped, they are this skill's output, not the reference: {generated}; "
+                              "--include-generated counts them")
+            if not self.slides:
+                raise SystemExit(f"{path}: every slide is generated ({len(generated)}); pass --include-generated to read them anyway")
         if not self.slides:
             raise SystemExit(f"{path}: no slides")
         self.is_pdf = self.slides[0].source == "pdf"
         self.unresolved: list[dict] = []
         self.guide: dict = {}
-        self.notes: list[str] = []
         self.triage: dict | None = None
         self.raster = False
         if self.is_pdf:
@@ -1225,6 +1240,37 @@ class Extractor:
                                 "provenance": observed([c.ref for c in obs], len(obs), False, 1.0)}
 
     # ---- shape language, imagery, floors ----
+    def corner_radii(self) -> None:
+        """Votes the drawn roundRect radius over every slide-layer shape (deckgen
+        style/tokens.py: shape language is measured usage, so layout and master shapes,
+        which walk whether or not a slide shows them, do not vote). Opened only when no
+        slide-layer shape declares a preset, the one case the file cannot answer."""
+        preset = [(s, sh) for s in self.slides for sh in s.shapes if sh.prst]
+        if not preset:
+            self.open("/shape_language/corner_radii", "no slide-layer shape declares a preset geometry, so the file says nothing about corners; read them off the renders")
+            return
+        rounded = [(s, sh) for s, sh in preset if sh.prst == "roundRect"]
+        pool: dict[float, Votes] = {}
+        unreadable = 0
+        for s, sh in rounded:
+            if sh.corner_radius_emu is None:
+                unreadable += 1
+                continue
+            pool.setdefault(float(sh.corner_radius_emu), Votes()).add(f"{s.part}#{sh.ref}", False)
+        modal = winner(pool) if pool else None
+        votes = sum(v.count for v in pool.values())
+        self.guide["shape_language"]["corner_radii"] = {
+            "modal_radius_emu": int(modal) if modal is not None else None,
+            "modal_radius_pt": round(modal / EMU_PER_PT, 2) if modal is not None else None,
+            "rounded_share": round(len(rounded) / len(preset), 4),
+            "rounded_shapes": len(rounded),
+            "preset_shapes": len(preset),
+            "unreadable_adj": unreadable,
+            "radii_emu": [(int(r), pool[r].count) for r in sorted(pool, key=lambda k: (-pool[k].count, k))[:6]],
+            "provenance": observed(pool[modal].evidence if modal is not None else [], votes if modal is not None else len(preset), False,
+                                   pool[modal].count / votes if modal is not None else 1.0),
+        }
+
     def shapes_and_imagery(self) -> None:
         shapes = [sh for s in self.slides for sh in self.content_boxes(s)]
         prst = Counter(sh.prst for sh in shapes if sh.prst)
@@ -1241,8 +1287,7 @@ class Extractor:
             "icon_style": None,
         }
         self.open("/shape_language/icon_style", "icon style is read from renders, not OOXML")
-        self.open("/shape_language/corner_radii", "roundRect adjustment values are not read by this port; measure on the renders if rounded shapes recur",
-                  {"round_rect_count": prst.get("roundRect", 0)})
+        self.corner_radii()
         classes = Counter()
         for p in pics:
             area = p.box[2] * p.box[3] / self.page_area  # type: ignore[index]
@@ -1514,12 +1559,13 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--report", default=None, help="evidence digest markdown (default: alongside the JSON)")
     ap.add_argument("--max-pages", type=int, default=None)
     ap.add_argument("--pages", default=None, help="PDF page range to treat as the deck, 1-based inclusive, e.g. 7-60 (after reading the triage)")
+    ap.add_argument("--include-generated", action="store_true", help="count slides carrying the pptx-skill origin tag as evidence (skipped by default)")
     args = ap.parse_args(argv)
     pages = None
     if args.pages:
         lo, hi = args.pages.split("-")
         pages = (int(lo), int(hi))
-    ex = Extractor(args.reference, args.max_pages, pages)
+    ex = Extractor(args.reference, args.max_pages, pages, args.include_generated)
     guide = ex.run()
     out = Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json")
     out.write_text(json.dumps(guide, indent=1, default=str))
@@ -1527,6 +1573,7 @@ def main(argv: list[str]) -> int:
     rep.write_text(report(guide))
     roles = guide.get("typography", {}).get("roles", {})
     print(json.dumps({"guide": str(out), "report": str(rep), "slides": guide["reference"]["slides"],
+                      "generated_slides_skipped": ex.generated_skipped,
                       "type_roles": {r: roles[r]["size_pt"] for r in roles},
                       "color_roles": {r: v["hex"] for r, v in guide.get("color", {}).get("roles", {}).items()},
                       "spacing": {k: v["emu"] for k, v in guide.get("spacing", {}).get("steps", {}).items()},

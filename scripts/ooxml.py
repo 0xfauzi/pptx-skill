@@ -25,6 +25,9 @@ from pathlib import Path
 
 from lxml import etree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from emit_pptx import ORIGIN_TAG_NAME, ORIGIN_TAG_VALUE  # noqa: E402  the producer of the tag this reader reads
+
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -36,6 +39,10 @@ REL_MASTER = "http://schemas.openxmlformats.org/officeDocument/2006/relationship
 REL_THEME = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"
 REL_SLIDE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide"
 REL_CHART = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"
+REL_TAGS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/tags"
+# roundRect's own guide value when the shape declares no adj (ECMA-376 presetShapeDefinitions;
+# deckgen style/tokens.py DEFAULT_ROUND_RECT_ADJ): the radius it draws is a format fact.
+DEFAULT_ROUND_RECT_ADJ = 16_667
 
 DEFAULT_CLR_MAP = {
     "bg1": "lt1", "tx1": "dk1", "bg2": "lt2", "tx2": "dk2",
@@ -336,6 +343,7 @@ class Run:
     bullet_font: str | None = None
     mar_l_emu: int | None = None  # paragraph left margin as resolved, bullets hang inside it
     indent_emu: int | None = None
+    text: str = ""  # the whole run, for the renderer's glyph-coverage check only
 
 
 @dataclass
@@ -359,6 +367,7 @@ class Shape:
     text: str | None = None  # PDF text lines only: the line's text, for chrome detection (footers, page numbers)
     paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, runs: [{text, size_pt, bold, italic, color}]}] for import
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
+    corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
 
 
 @dataclass
@@ -420,6 +429,7 @@ class SlidePrint:
     hidden: bool = False  # p:sld show="0"; walked as evidence (deckgen rule), flagged so the agent can exclude it
     page_class: str = "vector"  # pdf triage: vector | vector_with_image | raster_only | raster_ocr | raster_wrapper | other_size | blank
     image_cover: float = 0.0  # pdf: union area of page images over page area
+    generated: bool = False  # carries emit_pptx's origin tag: this skill made it, so it is not reference evidence
 
 
 class Chain:
@@ -543,6 +553,35 @@ def xfrm_rotation(sp: etree._Element) -> int:
     return 0
 
 
+def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:
+    """The corner radius a roundRect draws: adj / 100000 x min(w, h), adj pinned to
+    [0, 50000] as the preset definition pins it (deckgen style/tokens.py:5575-5600). An
+    absent adj draws the default; an adj that is not "val N" is unreadable, so None."""
+    adj = DEFAULT_ROUND_RECT_ADJ
+    for gd in prst_geom.iterfind(f"{_a('avLst')}/{_a('gd')}"):
+        if gd.get("name") != "adj":
+            continue
+        m = re.fullmatch(r"\s*val\s+(-?\d+)\s*", gd.get("fmla") or "")
+        if m is None:
+            return None
+        adj = min(50_000, max(0, int(m.group(1))))
+    return round(adj / 100_000 * min(box[2], box[3]))
+
+
+def slide_generated(pkg: Package, slide_part: str) -> bool:
+    """The slide carries emit_pptx's origin tag (write_origin_tag) in one of its tags parts."""
+    for kind, target in pkg.rels(slide_part).values():
+        if kind != REL_TAGS or target not in pkg.names:
+            continue
+        try:
+            root = pkg.root(target)
+        except etree.XMLSyntaxError:
+            continue
+        if any(t.get("name") == ORIGIN_TAG_NAME and t.get("val") == ORIGIN_TAG_VALUE for t in root.iter(_p("tag"))):
+            return True
+    return False
+
+
 def _shape_kind(sp: etree._Element) -> str:
     local = _local(sp)
     if local == "pic":
@@ -588,6 +627,7 @@ class SlideWalker:
             csld = pkg.root(self.chain.layout).find(_p("cSld"))
             self.print.layout_name = csld.get("name", "") if csld is not None else ""
         self.print.hidden = pkg.root(slide_part).get("show") == "0"
+        self.print.generated = slide_generated(pkg, slide_part)
         self._table_styles: dict[str, etree._Element] | None = None
         self._para_capture: list | None = None
 
@@ -841,6 +881,7 @@ class SlideWalker:
                     words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
                     bullet_font=(str(bufont) if bufont else None),
                     mar_l_emu=mar_l if isinstance(mar_l, int) else None, indent_emu=indent if isinstance(indent, int) else None,
+                    text=text,
                 ))
                 ri += 1
         return total_chars
@@ -1279,6 +1320,8 @@ class SlideWalker:
                 has_effects=self._has_effects(sp, ph, layer) if local in ("sp", "pic", "cxnSp") else False,
                 rotation=xfrm_rotation(sp), dash=dash, in_group=transform is not None,
             )
+            if shape.prst == "roundRect" and box is not None:
+                shape.corner_radius_emu = round_rect_radius(prst_el, box)
             sink.append(shape)
             cls = ph_class(ph[0]) if ph else "none"
             tx = sp.find(_p("txBody"))
