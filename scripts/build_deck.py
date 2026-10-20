@@ -1093,57 +1093,64 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
     emitted: list[dict] = []  # the report entry of every emitted page, in emit order
     for number, slide in enumerate(deck["slides"], 1):
-        spec_raw = json.loads(json.dumps(slide["spec"]))
-        spec_raw["root"] = normalise(spec_raw["root"], slide)
-        mark_measured_weights(spec_raw["root"], slide, guide)
-        prepare_page(spec_raw, guide, chrome)
-        # components: probe once with placeholders to learn their boxes, then expand at those boxes
-        tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
-        if pending:
-            # the probe measures the text around the placeholder first, so the component gets
-            # the space the text leaves and not an equal share with a one-line source
-            probe_spec = L.parse_spec({**spec_raw, "root": tree})
-            attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
-            probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
-            tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
-        spec_raw["root"] = tree
-        mark_measured_weights(tree, slide, guide)  # a component's tables too
-        spec = L.parse_spec(spec_raw)
-        ctx = L.Context(lg, ruler, index, spec)
-        outcome = L.descend(ctx)
-        entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
-        if slide.get("component_notes"):
-            entry["component_notes"] = sorted(set(slide["component_notes"]))
-        if outcome.resolved is None:
-            entry["reason"] = outcome.reason
-            entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
-            report["slides"].append(entry)
+        try:
+            spec_raw = json.loads(json.dumps(slide["spec"]))
+            spec_raw["root"] = normalise(spec_raw["root"], slide)
+            mark_measured_weights(spec_raw["root"], slide, guide)
+            prepare_page(spec_raw, guide, chrome)
+            # components: probe once with placeholders to learn their boxes, then expand at those boxes
+            tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
+            if pending:
+                # the probe measures the text around the placeholder first, so the component gets
+                # the space the text leaves and not an equal share with a one-line source
+                probe_spec = L.parse_spec({**spec_raw, "root": tree})
+                attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
+                probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
+                tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
+            spec_raw["root"] = tree
+            mark_measured_weights(tree, slide, guide)  # a component's tables too
+            spec = L.parse_spec(spec_raw)
+            ctx = L.Context(lg, ruler, index, spec)
+            outcome = L.descend(ctx)
+            entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
+            if slide.get("component_notes"):
+                entry["component_notes"] = sorted(set(slide["component_notes"]))
+            if outcome.resolved is None:
+                entry["reason"] = outcome.reason
+                entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
+                report["slides"].append(entry)
+                continue
+            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get("title", []))
+            if outcome.status != "fit" and title_lines > 1 and title_band_emu(guide):
+                # the first cause named first: every other violation on the page follows from a
+                # title that pushed the content down
+                entry["reason"] = f"title needs {title_lines} lines; the band above the top rule holds 1. Shorten the title before anything else."
+            resolved = L.resolved_json(ctx, outcome.resolved)
+            entry["scale"] = resolved["scale_float"]
+            entry["violations"] = resolved["violations"]
+            entry["text_lines"] = {k: v["lines"] for k, v in resolved["elements"].items() if v.get("kind") == "text"}
+            # the fitter's overflow flag is relative to the PROBE box; after the intrinsic pass the
+            # containment check is the verdict, so the flag is only reported when the slide did not fit
+            entry["tables"] = {k: {"rows": len(v["tr_h"]), "height_emu": v["total_height_emu"], "column_widths_emu": v["gridCol_w"],
+                                   **({"fitting_row_prefix": v["fitting_row_prefix"], "width_deficit_emu": v["width_deficit_emu"], "column_deficits_emu": v["column_deficits_emu"]} if outcome.status != "fit" or resolved["violations"] else {})}
+                               for k, v in resolved["elements"].items() if v.get("kind") == "table"}
+            if outcome.status == "unfittable":
+                entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
+            elements = flatten(slide, resolved, spec_raw)
+            entry["density"] = density_of(elements, resolved, guide, spec_raw)
+            breaks, unread = chart_label_breaks(elements, ctx)
+            if breaks or unread:
+                entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread}
+            entry["problems"] = page_problems(entry, elements, resolved, guide, [
+                {"kind": "chart label breaks mid-word", "severity": "refusal",
+                 "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
+                for b in breaks], chrome, precedent)
+        except L.FaceRefused as error:
+            # the guide's faces cannot measure this page as the renderer draws it: the page is
+            # refused by name in the report, not solved in another face and not a traceback
+            report["slides"].append({"id": slide.get("id"), "status": "unfittable", "solver_status": None, "reason": "font refused",
+                                     "problems": [{"kind": "font refused", "severity": "refusal", "detail": str(error)}]})
             continue
-        title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get("title", []))
-        if outcome.status != "fit" and title_lines > 1 and title_band_emu(guide):
-            # the first cause named first: every other violation on the page follows from a
-            # title that pushed the content down
-            entry["reason"] = f"title needs {title_lines} lines; the band above the top rule holds 1. Shorten the title before anything else."
-        resolved = L.resolved_json(ctx, outcome.resolved)
-        entry["scale"] = resolved["scale_float"]
-        entry["violations"] = resolved["violations"]
-        entry["text_lines"] = {k: v["lines"] for k, v in resolved["elements"].items() if v.get("kind") == "text"}
-        # the fitter's overflow flag is relative to the PROBE box; after the intrinsic pass the
-        # containment check is the verdict, so the flag is only reported when the slide did not fit
-        entry["tables"] = {k: {"rows": len(v["tr_h"]), "height_emu": v["total_height_emu"], "column_widths_emu": v["gridCol_w"],
-                               **({"fitting_row_prefix": v["fitting_row_prefix"], "width_deficit_emu": v["width_deficit_emu"], "column_deficits_emu": v["column_deficits_emu"]} if outcome.status != "fit" or resolved["violations"] else {})}
-                           for k, v in resolved["elements"].items() if v.get("kind") == "table"}
-        if outcome.status == "unfittable":
-            entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
-        elements = flatten(slide, resolved, spec_raw)
-        entry["density"] = density_of(elements, resolved, guide, spec_raw)
-        breaks, unread = chart_label_breaks(elements, ctx)
-        if breaks or unread:
-            entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread}
-        entry["problems"] = page_problems(entry, elements, resolved, guide, [
-            {"kind": "chart label breaks mid-word", "severity": "refusal",
-             "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
-            for b in breaks], chrome, precedent)
         pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)

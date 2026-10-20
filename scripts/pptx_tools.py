@@ -54,6 +54,7 @@ EMU_PER_INCH = 914400
 EMU_PER_PT = 12700
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
+from ooxml import visual_extent  # noqa: E402  the area a rotated shape covers, one definition
 # 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
 RULE_WEIGHT_FLOOR_EMU = 6350
 # The product safety floor: 7.0pt on both render media (deckgen E45), the floor with no guide.
@@ -657,11 +658,15 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
                             sz = pres.find(qn("p:sldSz"))
                             if sz is not None and ext is not None:
                                 w, h = int(sz.get("cx")), int(sz.get("cy"))
-                                x, y = int(off.get("x", "0")), int(off.get("y", "0"))
+                                # the page area the shape covers: off and ext are the box before
+                                # xfrm/@rot turns it about its centre (a label up the page edge
+                                # declares a box that runs off the slide and draws inside it)
+                                x, y, cx, cy = visual_extent((int(off.get("x", "0")), int(off.get("y", "0")), int(ext.get("cx", "0")), int(ext.get("cy", "0"))),
+                                                             int(xfrm.get("rot") or 0))
                                 # a title box a tenth of an inch above the slide is how three of five
                                 # real references are built; it is a warning, not a broken package
                                 tol = 91440 if el.find(qn("p:txBody")) is not None else 9525
-                                if x + int(ext.get("cx", "0")) > w + tol or y + int(ext.get("cy", "0")) > h + tol or x < -tol or y < -tol:
+                                if x + cx > w + tol or y + cy > h + tol or x < -tol or y < -tol:
                                     problems.append(f"{sp}: shape {el.find('.//' + qn('p:cNvPr')).get('id') if el.find('.//' + qn('p:cNvPr')) is not None else '?'} extends past the slide")
             for gf in root.iter(qn("p:graphicFrame")):
                 for ch in gf.iter(qn("c:chart")):

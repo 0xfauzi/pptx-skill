@@ -142,6 +142,11 @@ class LayoutContractError(ValueError):
 class UnknownTokenRoleError(LayoutContractError):
     """A role the guide does not define. Never a default value."""
 
+class FaceRefused(LayoutContractError):
+    """No face measures a role as the renderer draws it: the family is missing with no
+    stand-in named, or the guide's stand-in is not fc-match's answer. A property of the
+    guide, so every page that sets the family is refused, never measured in another face."""
+
 class CandidateRefused(ValueError):
     """One scale candidate cannot be honestly measured (tracked overrun, lines
     that moved under the final solve, a table width that moved)."""
@@ -905,8 +910,8 @@ class Context:
         try:
             return resolve_measured(self.index, entry.family, bold=entry.bold if bold is None else bold, italic=entry.italic,
                                     substitute=self.guide.substitutes.get(entry.family))
-        except SubstituteMismatchError as error:
-            raise LayoutContractError(str(error)) from None
+        except (SubstituteMismatchError, UnknownFamilyError) as error:
+            raise FaceRefused(str(error)) from None
 
 def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -> list[ParagraphMeasurement]:
     """Wrapped at allowance - FIT_EPSILON, charged at the full allowance."""

@@ -506,6 +506,15 @@ class Extractor:
             return (q[0], q[1]) in getattr(self, "pdf_label_keys", {})
         return False
 
+    def _inset(self, box: tuple[int, int, int, int], side: str) -> int:
+        x, y, w, h = box
+        return {"left": x, "right": self.w - x - w, "top": y, "bottom": self.h - y - h}[side]
+
+    def _bleeds(self, sh: Shape, side: str) -> bool:
+        """A textless band, picture or rule that reaches the page edge on `side` (within
+        half a position diameter, 3pt) or runs past it."""
+        return not sh.text_chars and sh.kind in ("shape", "picture", "line") and self._inset(sh.box, side) <= POSITION_DIAMETER_EMU // 2  # type: ignore[arg-type]
+
     def content_boxes(self, s: SlidePrint) -> list[Shape]:
         """The slide's content shapes, each with the page area it covers as its box (a
         rotated shape's declared box is its pre-rotation box, which can lie off the page)."""
@@ -942,7 +951,8 @@ class Extractor:
         tops: list[int] = []
         bottoms: list[int] = []
         for s in self.slides:
-            boxes = [(sh.ref, sh.box) for sh in self.content_boxes(s)]
+            content = self.content_boxes(s)
+            boxes = [(sh.ref, sh.box) for sh in content]
             if not boxes:
                 continue
             sid = s.part or f"page{s.index + 1}"
@@ -972,10 +982,13 @@ class Extractor:
                     for inset in m:
                         if 0 < inset < 2 * EMU_PER_INCH:
                             pool.setdefault(float(inset), Votes()).add(f"{sid}#{t.ref}/tcPr", False)
-            lefts.append(min(b[1][0] for b in boxes))
-            rights.append(self.w - max(b[1][0] + b[1][2] for b in boxes))
-            tops.append(min(b[1][1] for b in boxes))
-            bottoms.append(self.h - max(b[1][1] + b[1][3] for b in boxes))
+            # a margin is where the content stops short of the page edge: a band, picture or
+            # rule that runs to an edge (a full-page ground, a half-page photo) bleeds and says
+            # nothing about that side's margin, so it is not a vote of 0 for it
+            for side, sink in (("left", lefts), ("right", rights), ("top", tops), ("bottom", bottoms)):
+                inset = [self._inset(sh.box, side) for sh in content if not self._bleeds(sh, side)]  # type: ignore[arg-type]
+                if inset:
+                    sink.append(min(inset))
         levels = [lv for lv in cluster_levels(pool, GAP_LEVEL_RATIO, None) if lv.count >= MIN_LEVEL_OBSERVATIONS]
         by_freq = sorted(levels, key=lambda lv: (-lv.count, -lv.master_count))
         chosen = sorted(by_freq[:5], key=lambda lv: lv.representative)
@@ -1418,17 +1431,28 @@ class Extractor:
         role_sizes = {r: spec["size_pt"] for r, spec in self._roles.items() if spec.get("size_pt")}
         fam_of_role = {role: fam for fam, roles in FLOOR_FAMILIES.items() for role in roles}
         samples: dict[str, list[float]] = defaultdict(list)
+        pages_at: dict[str, dict[float, set[int]]] = defaultdict(lambda: defaultdict(set))  # family -> size -> pages that set it
+        # text turned off the horizontal (a copyright up the page edge, overprinted glyph by
+        # glyph on bcg) is furniture in the margin, not a size the house sets content in
+        turned_refs = {(s.index, sh.ref) for s in self.slides for sh in s.shapes if sh.rotation and sh.text_chars}
+        page_of = {id(r): s.index for s in self.slides for r in s.runs}
+        turned = 0
         for r in self._runs:
+            page = page_of.get(id(r), -1)
+            if (page, r.ref.split("/", 1)[0]) in turned_refs:
+                turned += 1
+                continue
             if r.ph_class == "title":
-                samples["display"].append(r.size_pt)
+                fam = "display"
+            elif r.row_class is not None:
+                fam = "body"
+            elif not role_sizes:
                 continue
-            if r.row_class is not None:
-                samples["body"].append(r.size_pt)
-                continue
-            if not role_sizes:
-                continue
-            nearest = min(role_sizes, key=lambda role: abs(math.log(r.size_pt / role_sizes[role])))
-            samples[fam_of_role.get(nearest, "body")].append(r.size_pt)
+            else:
+                nearest = min(role_sizes, key=lambda role: abs(math.log(r.size_pt / role_sizes[role])))
+                fam = fam_of_role.get(nearest, "body")
+            samples[fam].append(r.size_pt)
+            pages_at[fam][r.size_pt].add(page)
         for s in self.slides:
             for c in s.charts:
                 if c.text_size_pt:
@@ -1442,12 +1466,17 @@ class Extractor:
                 continue
             q1, q3 = percentile(vals, 0.25), percentile(vals, 0.75)
             fence = q1 - 1.5 * (q3 - q1)
-            kept = [v for v in vals if v >= fence]
+            # the fence trims a stray size, never one the reference sets again and again: a
+            # size on MIN_LEVEL_OBSERVATIONS pages or more is the house's own (mckinsey's 8pt
+            # source lines are 10 of 44 annotation runs on 9 pages, under a 9pt fence)
+            kept = [v for v in vals if v >= fence or len(pages_at[fam][v]) >= MIN_LEVEL_OBSERVATIONS]
             floors[fam] = {"roles": list(roles), "floor_pt": min(kept), "trimmed_outlier_count": len(vals) - len(kept), "sample_size": len(vals),
                            "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam],
                            "provenance": observed([], len(vals), False, 1.0)}
         self.guide["floors"] = floors
-        self.guide["floors_note"] = "absolute_floor_pt: product safety floor measured in deckgen E45 (7.0pt, both render media); never generate below max(floor_pt, absolute_floor_pt)"
+        self.guide["floors_note"] = ("absolute_floor_pt: product safety floor measured in deckgen E45 (7.0pt, both render media); never generate below max(floor_pt, absolute_floor_pt). "
+                                     f"floor_pt is the smallest size the reference sets that is inside the Tukey lower fence or recurs on {MIN_LEVEL_OBSERVATIONS} or more pages; "
+                                     f"{turned} runs in turned text (rotated shapes or blocks) are not samples")
         # an inferred role below its own family's measured floor cannot be emitted (the solver
         # refuses it), so it is unbound here and reopened with the floor as its constraint
         for role, fam in (("type.caption", "annotation"), ("type.footnote", "annotation"), ("type.source_line", "annotation"), ("type.kicker", "annotation")):
