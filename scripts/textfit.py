@@ -52,19 +52,30 @@ MAX_WRAPPED_LINES = 2_000
 DEFAULT_FONT_ROOTS = ("/usr/share/fonts", "/usr/local/share/fonts")
 FONT_SUFFIXES = frozenset({".ttf", ".otf", ".ttc"})
 
-#: fontconfig's own `binding="same"` metric aliases, normalized; deckgen
-#: render/tuning.py:170, derived in docs/measurements/S1B3-decision.md.
+#: fontconfig's own `binding="same"` metric aliases, normalized with normalize_family:
+#: the 17 classes (84 family-to-family edges) deckgen read from the 72 binding="same"
+#: alias elements of /etc/fonts/conf.d/30-metric-aliases.conf (deckgen render/tuning.py:170,
+#: docs/measurements/S1B3-decision.md part 1). The file's weak generic aliases (Arial to
+#: Helvetica) are not binding="same", so arial and helvetica are separate classes.
+#: The one table: render.py's fidelity verdict imports it.
 METRIC_ALIAS_CLASSES: tuple[frozenset[str], ...] = (
     frozenset({"albany", "albanyamt", "arial", "arimo", "liberationsans"}),
     frozenset({"arialnarrow", "liberationsansnarrow"}),
+    frozenset({"avantgarde", "itcavantgardegothic", "texgyreadventor", "urwgothic", "urwgothicl"}),
+    frozenset({"bookman", "bookmanoldstyle", "bookmanurw", "itcbookman", "texgyrebonum", "urwbookman", "urwbookmanl"}),
+    frozenset({"c059", "centuryschoolbook", "centuryschoolbookl", "centuryschoolbookurw", "newcenturyschoolbook", "texgyreschola"}),
     frozenset({"caladea", "cambria"}),
     frozenset({"calibri", "carlito"}),
+    frozenset({"chanceryurw", "itczapfchancery", "texgyrechorus", "urwchanceryl", "z003", "zapfchancery"}),
+    frozenset({"courier", "courierstd", "nimbusmono", "nimbusmonol", "nimbusmonops", "texgyrecursor"}),
     frozenset({"couriernew", "cousine", "cumberland", "cumberlandamt", "liberationmono"}),
     frozenset({"gelasio", "georgia"}),
     frozenset({"helvetica", "nimbussans", "nimbussansl", "texgyreheros"}),
+    frozenset({"helveticanarrow", "nimbussansnarrow", "texgyreheroscn"}),
     frozenset({"liberationserif", "thorndale", "thorndaleamt", "timesnewroman", "tinos"}),
     frozenset({"nimbusroman", "nimbusromanno9l", "texgyretermes", "times"}),
-    frozenset({"p052", "palatino", "palatinolinotype", "palladiourw", "texgyrepagella"}),
+    frozenset({"p052", "palatino", "palatinolinotype", "palladiourw", "texgyrepagella", "urwpalladiol"}),
+    frozenset({"symbol", "symbolneu"}),
 )
 
 #: What a font's own name table may call each style (deckgen measure/faces.py:93).
@@ -92,6 +103,11 @@ class WrappedTooManyLinesError(ValueError):
 def normalize_family(name: str) -> str:
     base = _SUBSET_PREFIX.sub("", name).split("-")[0]
     return "".join(ch for ch in base.lower() if ch.isalnum())
+
+def metric_alias(declared: str, rendered: str) -> bool:
+    """fontconfig's binding="same" table puts the two families in one class."""
+    a, b = normalize_family(declared), normalize_family(rendered)
+    return a != b and any(a in cls and b in cls for cls in METRIC_ALIAS_CLASSES)
 
 @dataclass(frozen=True)
 class Face:
