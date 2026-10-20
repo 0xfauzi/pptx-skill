@@ -835,12 +835,15 @@ class ParagraphMeasurement:
 
 @dataclass
 class Context:
-    """One solve's instruments: the guide, the ruler and the face index."""
+    """One solve's instruments: the guide, the ruler and the face index. `spec` is
+    None for a measuring-only context (component_api.py): one_line_width and the
+    cell measurers read the ruler alone, and nothing else is reachable without a
+    tree to solve."""
 
     guide: Guide
     ruler: Ruler
     index: FaceIndex
-    spec: Spec
+    spec: Spec | None = None
 
     def entry(self, element: Element, role: str, scale: Fraction) -> TypeEntry:
         return resolve_type_entry(self.guide, role, Fraction(1) if element.scale_class == "fixed" else scale)
