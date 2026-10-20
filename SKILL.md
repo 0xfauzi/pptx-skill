@@ -111,10 +111,13 @@ python3 scripts/raster_style.py ref.pdf --out work/ref/raster [--dpi 100]
 
 The solver measures with the font files it has (`fc-list`). If the reference's face has
 no metric alias here (Arial, Calibri, Cambria, Times New Roman and Courier New have one),
-the solver refuses rather than measure another face under that name. Record a stand-in
-under `typography.families.substitutes` in the completion (`{"Georgia": "DejaVu Serif"}`):
-the file names the real face for PowerPoint, measurement uses the stand-in, and the
-report says so.
+the solver refuses rather than measure another face under that name. The refusal names
+the face LibreOffice draws it with (`fc-match <family>`); record exactly that face under
+`typography.families.substitutes` in the completion (`{"Verdana": "Inter"}` here): the
+file names the real face for PowerPoint, measurement uses the stand-in, and the render
+shows the same stand-in. A stand-in other than fc-match's answer is refused, because the
+solver would then fit text in one face while the render draws another (Verdana measured
+as DejaVu Sans and drawn as Inter put a table row on one line that the build had wrapped).
 
 `render.py` and the solver read metric aliases from one table (`textfit.py`, fontconfig's
 17 binding="same" classes). Helvetica is not an alias of Liberation Sans: without Nimbus
@@ -279,6 +282,17 @@ Conventions the build enforces:
   footer rule. Pass `page.reserved_zones` yourself only to override.
 - A region may carry `fill_role` and `pad_role`: it becomes a filled box with padded
   children (a takeaway panel). Text inside takes `ink_role` on its paragraph.
+- Height: a region is as tall as its content (a column sums its children, a row takes
+  its tallest) unless it is flexible. A region is flexible when it holds a chart, image
+  or rule with no height of its own, or when it carries a `weight` inside a column; a
+  flexible region shares the spare height by weight and never gets less than its own
+  content. A row's `align` places its children across the row (`stretch` makes them as
+  tall as the row) and does not make the row flexible: to fill the page, give the
+  region a weight in its column.
+- Every measured element is checked against its own box: text that needs more height
+  than its box (`overflow`), a table whose fitted rows outgrow its box (`overflow`), and
+  a word wider than its line (`word_split`, naming the word: the file would break it
+  between characters) are violations a smaller scale may fix.
 - Emphasis runs (`styling.<id>.paragraphs.<n>.runs` with `emphasis: true`) are measured
   at the paragraph's regular weight; keep them short or give the box slack.
 - Bullet indents come from the reference's own bullets; a reference without bullets gets
@@ -370,7 +384,8 @@ houses. Read `work/out/deck.build.json`:
   (`house_spread.p90`, the leave-one-out distance of the reference's own pages), layout
   clean (no measured overlap between content shapes, no text shape whose paragraphs
   outgrow it: `overlap` and `overflow` in the components, each a gate at 0.2 of its
-  span), and every page fit and the package valid. `judge.total` and `judge.others` are
+  span), and every page fit and the package valid. `judge.overflow_where` names each
+  shape behind `overflow`: page, shape name, the height it needs and the box it has. `judge.total` and `judge.others` are
   the distances; `same_house_on_panel` lists the decks the judge recognises as the
   reference's own house. `judge.components` names what is off: `size_hist` and
   `size_ladder` (sizes off the reference's histogram), `fills` and `text_colors`
@@ -378,8 +393,8 @@ houses. Read `work/out/deck.build.json`:
   where it draws none).
 - `density` per page: words, elements and covered area against the reference's bands,
   each marked `below`, `in band` or `above`. A page that fits and reads `below` on
-  covered area ends half-way down the canvas: give the body region weight and its rows
-  `align: stretch` so they share the content height, or add content.
+  covered area ends half-way down the canvas: give the body region a weight in its
+  column so it takes the spare height, or add content.
 - `position_drift`: an element id present on several pages whose top moves by more
   than one spacing step, with its positions. A source line at 5.5 in on one page and
   6.7 in on the next reads as two different pages.
@@ -391,7 +406,9 @@ houses. Read `work/out/deck.build.json`:
   reads the theme's line style, and they differ`). None of these is the house's style.
   Write each one into the spec and build again until the list is empty or every entry
   left is one you meant.
-- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
+- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas; `chart label breaks mid-word`; `emitted text overflows`); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
+- The file is written at the sizes the solver fitted: at scale 0.89 a 12pt cell is written at 10.5pt, with the scaled line pitch, paragraph spacing, tracking and cell inset. After the emit the build reads the written file back and measures it against the solved boxes: every text element's written lines at the width the solver wrapped at, its height at the written pitch and spacing, and every table's rows re-wrapped at the written column widths, insets and sizes. Any shape that outgrows its box refuses the page as `emitted text overflows`, naming the shape; a page that fit in the solver and overflows in the file is a defect between the two, not a page to accept.
+- `chart_label_breaks` per page with a bar or column chart: words a renderer must break between characters, measured with the solver's ruler at the chart text's size. A column chart's category label wraps to its slot (at most the chart's width over the category count); a centred data label wraps to the bar's thickness (at most the slot less `gap_width`, shared by the series when clustered). Both are upper bounds, so a word over one breaks for certain (`Standalo / ne`, `Remaini / ng`) and refuses the page as `chart label breaks mid-word`; a word under one may still break in a crowded plot, so read the render. `unmeasured` lists labels whose text the check cannot form (a number format it does not read). XY labels and labels outside the bar are not measured.
 - `contrast` per page: every text run, every table row class and every chart text (data labels per series and per overriding point, axis labels, legend) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
 - `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`. Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
 - `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.

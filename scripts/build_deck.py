@@ -114,6 +114,9 @@ def title_band_emu(guide: dict) -> int | None:
     return int(rule_top - top_margin)
 
 
+#: What the emitter writes from the solver's resolved entry (layout._entry_hints), the one
+#: source of a written size: the page's fitted scale, not the guide's scale-1 sizes.
+FIT_KEYS = ("sz", "b", "lnSpc_spcPts", "spcBef", "spcAft", "spc")
 PRESENTATION_KEYS = ("fill_role", "line_role", "pad_role", "prst", "line_width_emu", "anchor", "ink_role", "dash", "_spacer")
 
 
@@ -561,7 +564,7 @@ def source_line_missing(elements: list[dict]) -> bool:
     return exhibit and not sourced
 
 
-def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict) -> list[dict]:
+def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, no source line). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
@@ -580,6 +583,7 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
         problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})"})
     entry["bridge_ties"] = bridge_ties(elements)
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in entry["bridge_ties"])
+    problems.extend(measured or [])
     if source_line_missing(elements):
         problems.append({"kind": "no source line", "severity": "refusal", "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote"})
     refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
@@ -587,6 +591,155 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
     if refusals and entry["status"] == "fit":
         entry["status"], entry["reason"] = "unfittable", "; ".join(refusals)
     return problems
+
+
+# --- measured fit of what the file carries --------------------------------------------------
+
+
+def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: dict, ctx: L.Context) -> list[list[dict]]:
+    """The written file read back and measured against the solver's boxes, per emitted
+    page: every text shape through fingerprint.text_overflows in strict mode (the file's
+    own sizes, breaks, pitch, spacing and marL, at the width the solver wrapped at), and
+    every table's rows re-wrapped at the file's column widths, cell margins and run sizes
+    with the fitter's own functions, summed against the table's solved box. A page the
+    solver fitted but the file overflows is a defect in the path between them, and the
+    page is refused by name."""
+    from fingerprint import fingerprint_deck, text_overflows
+    from pptx import Presentation
+    from pptx.oxml.ns import qn as pqn
+    prints = fingerprint_deck(out)
+    slides = list(Presentation(out).slides)
+    offset = len(slides) - len(emitted)
+    substitutes = ((guide.get("typography") or {}).get("families") or {}).get("substitutes") or {}
+    per_page: list[list[dict]] = []
+    for i, page in enumerate(emit_pages):
+        found: list[dict] = []
+        # the solver's text elements only: chrome is drawn in the reference's own boxes
+        solved = {el["id"] for el in page["elements"] if el["kind"] == "text"}
+        findings, unmeasured, _ = text_overflows(prints[offset + i], strict=True, substitutes=substitutes)
+        findings = [f for f in findings if f["shape"] in solved]
+        unmeasured = [u for u in unmeasured if u["shape"] in solved]
+        for f in findings:
+            found.append({"shape": f["shape"], "detail": f"the file's text needs {f['needed_emu']} EMU in a {f['budget_emu']} EMU box"
+                          + (f"; written line(s) {f['rewrapped_lines']} re-wrap at the box width" if f.get("rewrapped_lines") else "")})
+        for u in unmeasured:
+            found.append({"shape": u["shape"], "detail": f"not measurable from the file: {u['why']}"})
+        boxes = {el["id"]: el["box"] for el in page["elements"] if el["kind"] == "table"}
+        for shape in slides[offset + i].shapes:
+            if not shape.has_table or shape.name not in boxes:
+                continue
+            total, grown = 0, []
+            for ri, row in enumerate(shape.table.rows):
+                counts, size_h = [], 0
+                for ci, cell in enumerate(row.cells):
+                    runs = [r for p in cell.text_frame.paragraphs for r in p.runs]
+                    text = "".join(r.text for r in runs)
+                    if not runs:
+                        counts.append(1)
+                        continue
+                    rpr = runs[0]._r.find(pqn("a:rPr"))
+                    sz = int(rpr.get("sz")) if rpr is not None and rpr.get("sz") else None
+                    latin = rpr.find(pqn("a:latin")) if rpr is not None else None
+                    if sz is None or latin is None:
+                        found.append({"shape": shape.name, "detail": "a table run carries no size or face; nothing in the file says what it draws"})
+                        continue
+                    bold = rpr.get("b") == "1"
+                    entry = L.TypeEntry("file", sz / 100, 0.0, 0.0, int(rpr.get("spc") or 0) / 100, 1.2, latin.get("typeface"), bold, rpr.get("i") == "1", "as_typed", 700 if bold else 400)
+                    kind = L.DrawnRole(entry, ctx.face(entry).path)
+                    budget = max(1, shape.table.columns[ci].width - (cell.margin_left or 0) - (cell.margin_right or 0) - ctx.ruler.fit_epsilon_emu)
+                    counts.append(len(L.wrapped_lines(ctx, text, budget, kind)))
+                    size_h = max(size_h, sz)
+                margins = (row.cells[0].margin_top or 0) + (row.cells[0].margin_bottom or 0)
+                drawn = max(counts, default=1) * L.required_line_box_emu(size_h, None) + margins
+                if drawn > int(row.height):
+                    grown.append(f"row {ri} wraps to {max(counts)} line(s) and draws {drawn} EMU over its written {int(row.height)}")
+                total += max(int(row.height), drawn)
+            if total > boxes[shape.name][3] + L.EMIT_SLACK_EMU:
+                found.append({"shape": shape.name, "detail": f"the file's rows draw {total} EMU in the table's {boxes[shape.name][3]} EMU box" + (f" ({'; '.join(grown[:3])})" if grown else "")})
+        per_page.append(found)
+    return per_page
+
+
+_NUMBER_FORMAT = re.compile(r'^(?P<pre>(?:"[^"]*")*)(?P<int>[#,]*0)(?:\.(?P<dec>0+))?(?P<pct>%?)(?P<post>(?:"[^"]*"|x|%)*)$')
+
+
+def label_text(value: float, number_format: str | None) -> str | None:
+    """A value label as the file's number format writes it, for the formats the chart
+    recipes use (0, 0.0, #,##0, 0%, quoted literals); None for anything else, which the
+    check reports as unmeasured rather than guess."""
+    if number_format in (None, "General"):
+        return f"{value:g}"
+    m = _NUMBER_FORMAT.match(number_format)
+    if not m:
+        return None
+    v = value * (100 if m["pct"] else 1)
+    body = f"{v:{',' if ',' in m['int'] else ''}.{len(m['dec'] or '')}f}"
+    lit = lambda part: re.sub(r'"([^"]*)"', r"\1", part or "")  # noqa: E731
+    return lit(m["pre"]) + body + m["pct"] + lit(m["post"])
+
+
+def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict], list[dict]]:
+    """Chart text a renderer must break between characters, measured with the solver's
+    ruler and faces at the size the emitter writes (the guide role, scale 1). A bar or
+    column chart's category slot is at most the chart box's extent along the category
+    axis over the category count; a column chart's tick label wraps to its slot, and a
+    centred data label wraps to the bar's thickness, at most the slot less the gap
+    (gap_width, else none) and, clustered, shared by the series (overlap, else full).
+    Both are upper bounds, since the plot is smaller than the box: a word wider than the
+    bound breaks for certain, one under it may still break. Observed in LibreOffice
+    renders: a centred label wraps to the bar's thickness on a horizontal bar too (bain
+    build 3: 'Remaini / ng' in a bar 0.75 in tall), while an inside_base label wider
+    than its 0.47 in bar stayed on one line (bain page 5), so only centred labels are
+    held to the thickness. Returns (findings, unmeasured)."""
+    findings: list[dict] = []
+    unmeasured: list[dict] = []
+    for el in elements:
+        if el["kind"] != "chart" or not str(el.get("type", "")).startswith(("COLUMN_", "BAR_")):
+            continue
+        cats = el.get("categories") or []
+        if not cats:
+            continue
+        horizontal = str(el["type"]).startswith("BAR_")
+        extent = el["box"][3] if horizontal else el["box"][2]
+        slot = extent / len(cats)
+        gap = float(el.get("gap_width", 0)) / 100
+        k = len(el["series"])
+        overlap = float(el.get("overlap", 100)) / 100
+        bar = slot / (1 + gap) if "STACKED" in el["type"] else slot / (k - (k - 1) * overlap + gap)
+
+        def words_over(text: str, role: str | None, limit: float, part: str) -> None:
+            role = role or (el.get("text") or {}).get("role")
+            if not role:
+                unmeasured.append({"chart": el["id"], "part": part, "why": "no type role: the theme sets the size"})
+                return
+            entry = L.resolve_type_entry(ctx.guide, role, L.Fraction(1))
+            face = ctx.face(entry)
+            for word in str(text).split():
+                width = L.advance_emu(ctx.ruler, word, face.path, entry.size_pt)
+                if width > limit:
+                    findings.append({"chart": el["id"], "part": part, "word": word, "width_emu": width, "limit_emu": round(limit), "size_pt": entry.size_pt})
+
+        cat_axis = (el.get("axes") or {}).get("category") or {}
+        if not horizontal and cat_axis.get("visible", True) and (cat_axis.get("labels") or {}).get("show", True):
+            for c in cats:
+                words_over(c, (cat_axis.get("labels") or {}).get("role"), slot, f"category {c!r}")
+        for si, s in enumerate(el["series"]):
+            labels = s.get("labels") or {}
+            points = {p["index"]: p for p in s.get("points") or []}
+            for pi, value in enumerate(s["values"]):
+                own = points.get(pi, {}).get("label")
+                merged = {**labels, **(own or {})}
+                shown = merged.get("show", True) if own is not None else bool(labels) and labels.get("show", True)
+                if not shown or merged.get("position") != "center":
+                    continue
+                text = merged.get("text")
+                if text is None:
+                    text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
+                if text is None:
+                    unmeasured.append({"chart": el["id"], "part": f"series[{si}] point {pi} label", "why": f"number format {merged.get('number_format')!r} not read here"})
+                    continue
+                words_over(text, merged.get("role"), bar, f"series[{si}] {s.get('name')!r} point {pi} label")
+    return findings, unmeasured
 
 
 def prepare_page(spec_raw: dict, guide: dict) -> None:
@@ -722,6 +875,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
             for i, (p_spec, p_meas) in enumerate(zip(node["paragraphs"], measured)):
                 ps = para_style.get(str(i), {})
                 para = {"role": p_spec["role"], "bullet_level": p_spec.get("bullet_level"), "lines": p_meas["lines"], "indent_emu": p_meas.get("marL", 0),
+                        "fit": {k: p_meas[k] for k in FIT_KEYS},
                         "runs": ps.get("runs") or [{"text": p_spec["text"]}], "ink_role": ps.get("ink_role") or p_spec.get("ink_role"), "align": ps.get("align") or p_spec.get("align")}
                 paragraphs.append(para)
             out.append({"id": nid, "kind": "text", "box": b, "paragraphs": paragraphs, **extra})
@@ -729,7 +883,9 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
             t = node["table"]
             r = resolved["elements"][nid]
             out.append({"id": nid, "kind": "table", "box": b, "columns": t["columns"], "rows": t["rows"], "header_rows": t.get("header_rows", 1),
-                        "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"], **extra})
+                        "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"],
+                        "fit_header": {k: r["header"][k] for k in FIT_KEYS} if r.get("header") else None, "fit_cell": {k: r["cell"][k] for k in FIT_KEYS},
+                        "fit_padding_emu": r["cell_margins_emu"]["marL"], **extra})
         elif kind == "chart":
             c = charts.get(nid)
             if not c:
@@ -805,7 +961,13 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
         elements = flatten(slide, resolved, spec_raw)
         entry["density"] = density_of(elements, resolved, guide, spec_raw)
-        entry["problems"] = page_problems(entry, elements, resolved, guide)
+        breaks, unread = chart_label_breaks(elements, ctx)
+        if breaks or unread:
+            entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread}
+        entry["problems"] = page_problems(entry, elements, resolved, guide, [
+            {"kind": "chart label breaks mid-word", "severity": "refusal",
+             "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
+            for b in breaks])
         pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)
@@ -814,6 +976,13 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     report["repetition"] = repetition_of(pages, guide)
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
+    # the file as written, measured against the boxes it was solved for
+    for entry, found in zip(emitted, emitted_fit(out, emitted, emit_spec["slides"], guide, L.Context(lg, ruler, index))):
+        if not found:
+            continue
+        entry["problems"].extend({"kind": "emitted text overflows", "severity": "refusal", "detail": f"{f['shape']}: {f['detail']}"} for f in found)
+        if entry["status"] == "fit":
+            entry["status"], entry["reason"] = "unfittable", "emitted text overflows"
     for entry, page in zip(emitted, emit_report["slides"]):
         if page.get("charts"):
             # every chart choice the spec left out, with the value written for it
@@ -829,13 +998,15 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         except json.JSONDecodeError:
             report["renders"] = {"error": completed.stderr[-500:]}
     if reference:
-        from fingerprint import distance, fingerprint_deck, house_features, house_spread, layout_clean, panel, same_house, scorable, slide_features, total
+        from fingerprint import distance, fingerprint_deck, house_features, house_spread, layout_clean, panel, same_house, scorable, slide_features, text_overflows, total
         ref_slides = fingerprint_deck(reference)
         ref = house_features(ref_slides)
         cand = fingerprint_deck(out)
         d = distance(house_features(cand), ref)
         judge = {"reference": reference, "total": round(total(d), 3), "components": {k: (round(v, 3) if v is not None else None) for k, v in d.items()},
-                 "per_slide": [round(total(distance(slide_features(s), ref)), 3) for s in cand], "others": {}}
+                 "per_slide": [round(total(distance(slide_features(s), ref)), 3) for s in cand], "others": {},
+                 # the shapes behind the overflow component, by page and shape name
+                 "overflow_where": [f for s in cand for f in text_overflows(s)[0]]}
         chosen = panel(others, reference)
         skipped = []
         kin = {}

@@ -114,12 +114,41 @@ def overlap_rate(s: SlidePrint, chrome_keys: set) -> float | None:
     return min(1.0, inter / total) if total else None
 
 
-def overflow_rate(s: SlidePrint) -> float | None:
-    """Share of text shapes whose paragraphs, wrapped at the box's inner width with the
-    solver's ruler, need more height than the box holds (half a line of slack). Shapes
-    under autofit are skipped: PowerPoint shrinks those on screen."""
+#: The build's emitted-file check forgives what the solver's own emit gate forgives
+#: between two measurements of the same text (layout.EMIT_SLACK_EMU, deckgen tolerance.py).
+STRICT_SLACK_EMU = 13
+
+
+def _pitch_emu(para: dict, size_pt: float) -> float:
+    """The line pitch the file draws: lnSpc spcPts as written (negative from the reader),
+    spcPct as a share of single spacing (1.2 x size, E16), else single spacing."""
+    ls = para.get("line_spacing")
+    if ls is None:
+        return size_pt * 1.2 * 12700
+    return (-ls if ls < 0 else ls * 1.2 * size_pt) * 12700
+
+
+def _spacing_emu(value: float, size_pt: float) -> float:
+    return (value if value >= 0 else -value * 1.2 * size_pt) * 12700
+
+
+def text_overflows(s: SlidePrint, *, strict: bool = False, substitutes: dict | None = None) -> tuple[list[dict], list[dict], int]:
+    """Every text shape on the slide whose paragraphs, wrapped at the box's inner width
+    (less marL) with the solver's ruler, need more height than the box holds. Height is
+    what the file draws: lines at the paragraph's own pitch plus its spcBef and spcAft,
+    as the solver charges them. Returns (findings, unmeasured, measured count); each
+    finding names the slide, the shape and its lines, so a rate is never the only answer.
+
+    strict (the build's check of its own file): a written line must stay one line at the
+    width less the ruler's fit epsilon (the solver wrapped at exactly that), the slack is
+    the emit gate's, and a face is measured as the guide's substitute for it. Not strict
+    (the judge, on any deck): half a line of slack and the renderer's face for a family the
+    sandbox lacks. Shapes under autofit and furniture placeholders are skipped in both."""
     ruler, index, measure = _measurer()
-    measured = overflowing = 0
+    from textfit import resolve_measured
+    findings: list[dict] = []
+    unmeasured: list[dict] = []
+    measured = 0
     for sh in s.shapes:
         if not sh.box or sh.kind not in ("text_box", "text_shape") or not sh.paragraphs:
             continue
@@ -129,45 +158,64 @@ def overflow_rate(s: SlidePrint) -> float | None:
         if not runs:
             continue
         lin, tin, rin, bin_ = sh.text_inset_emu or (91440, 45720, 91440, 45720)
-        width = sh.box[2] - lin - rin
+        width = sh.box[2] - lin - rin - (ruler.fit_epsilon_emu if strict else 0)
         budget = sh.box[3] - tin - bin_
+        where = {"slide": s.index + 1, "shape": sh.name, "ref": sh.ref}
         if width <= 0 or budget <= 0:
+            unmeasured.append({**where, "why": f"inner box {width} x {budget} EMU"})
             continue
         if any(r.size_layer == "autofit" for r in s.runs if r.ref.startswith(sh.ref)):
             continue
         needed = 0.0
         pitch = 0.0
-        ok = True
-        for para in sh.paragraphs:
+        lines: list[str] = []
+        rewrapped: list[str] = []
+        why = None
+        drawn = [para for para in sh.paragraphs if any(not r.get("br") for r in para["runs"])]
+        for pi, para in enumerate(drawn):
             real = [r for r in para["runs"] if not r.get("br")]
-            if not real:
-                continue
             lead = real[0]
             text = "".join(r["text"] for r in para["runs"])
-            pitch = lead["size_pt"] * 1.2 * 12700
+            pitch = _pitch_emu(para, lead["size_pt"])
+            if strict:  # what the solver charges: every spcBef and spcAft
+                needed += _spacing_emu(para.get("space_before") or 0.0, lead["size_pt"]) + _spacing_emu(para.get("space_after") or 0.0, lead["size_pt"])
             if not text.strip():
                 needed += pitch
                 continue
-            family = next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None) or "Arial"
-            try:
-                face = index.resolve(family, bold=bool(lead["bold"]), italic=bool(lead["italic"]))
-                # an explicit break starts a new line: each segment wraps on its own
-                count = 0
-                for segment in text.split("\n"):
-                    if not segment.strip():
-                        count += 1
-                        continue
-                    count += len(measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"]))
-            except Exception:  # noqa: BLE001 - an unmeasurable face says nothing about overflow
-                ok = False
+            family = lead.get("family") or next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None)
+            if not family:
+                why = "no face declared or inherited"
                 break
-            needed += count * pitch
-        if not ok:
+            try:
+                face = resolve_measured(index, family, bold=bool(lead["bold"]), italic=bool(lead["italic"]),
+                                        substitute=(substitutes or {}).get(family), renderer_ok=not strict)
+            except LookupError as error:
+                why = str(error)
+                break
+            for segment in text.split("\n"):
+                if not segment.strip():
+                    needed += pitch
+                    continue
+                got = measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"])
+                if strict and len(got) > 1:
+                    rewrapped.append(segment)
+                lines.extend(ln.text for ln in got)
+                needed += len(got) * pitch
+        if why is not None:
+            unmeasured.append({**where, "why": why})
             continue
         measured += 1
-        if needed > budget + 0.5 * pitch:
-            overflowing += 1
-    return overflowing / measured if measured else None
+        slack = STRICT_SLACK_EMU if strict else 0.5 * pitch
+        if needed > budget + slack or rewrapped:
+            findings.append({**where, "needed_emu": round(needed), "budget_emu": budget, "lines": lines,
+                             **({"rewrapped_lines": rewrapped} if rewrapped else {})})
+    return findings, unmeasured, measured
+
+
+def overflow_rate(s: SlidePrint) -> float | None:
+    """Share of measured text shapes text_overflows finds outgrowing their box."""
+    findings, _, measured = text_overflows(s)
+    return len(findings) / measured if measured else None
 
 
 def slide_features(s: SlidePrint) -> Features:

@@ -365,7 +365,8 @@ class Shape:
     in_group: bool = False
     text_inset_emu: tuple[int, int, int, int] | None = None  # lIns, tIns, rIns, bIns as declared, else None
     text: str | None = None  # PDF text lines only: the line's text, for chrome detection (footers, page numbers)
-    paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, runs: [{text, size_pt, bold, italic, color}]}] for import
+    paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, mar_l_emu, line_spacing, space_before, space_after, runs: [{text, size_pt, bold, italic, color, family}]}]
+    name: str | None = None  # p:cNvPr/@name: the emitter writes the element id there, so a finding can name it
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
 
@@ -491,6 +492,14 @@ def shape_ref(sp: etree._Element) -> str:
         if cnv is not None:
             return f"{_local(sp)}[id={cnv.get('id', '?')}]"
     return f"{_local(sp)}[?]"
+
+
+def shape_name(sp: etree._Element) -> str | None:
+    for wrapper in ("nvSpPr", "nvPicPr", "nvGraphicFramePr", "nvGrpSpPr", "nvCxnSpPr"):
+        cnv = sp.find(f"{_p(wrapper)}/{_p('cNvPr')}")
+        if cnv is not None:
+            return cnv.get("name")
+    return None
 
 
 def ph_class(ph_type: str | None) -> str:
@@ -823,7 +832,11 @@ class SlideWalker:
             indent = self._resolve_para(ppr, holders, level, g_attr_int("indent"))
             captured: dict | None = None
             if self._para_capture is not None:
-                captured = {"level": level, "bullet": str(bullet), "align": str(align), "mar_l_emu": mar_l if isinstance(mar_l, int) else 0, "runs": []}
+                # line_spacing and the spacings as _resolve_para returns them (negative: points
+                # for lnSpc, a multiple of the size for spcBef/spcAft), so a reader can charge
+                # the pitch and the spacing the file draws
+                captured = {"level": level, "bullet": str(bullet), "align": str(align), "mar_l_emu": mar_l if isinstance(mar_l, int) else 0,
+                            "line_spacing": lnspc if isinstance(lnspc, float) else None, "space_before": float(before), "space_after": float(after), "runs": []}
                 self._para_capture.append(captured)
             ri = 0
             for r in para:
@@ -866,7 +879,7 @@ class SlideWalker:
                 after_pt = float(after) if after >= 0 else -float(after) * 1.2 * size_pt
                 if captured is not None:
                     captured["runs"].append({"text": text, "size_pt": float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
-                                             "bold": bool(bold), "italic": bool(italic), "color": color, "caps": bool(caps)})
+                                             "bold": bool(bold), "italic": bool(italic), "color": color, "caps": bool(caps), "family": face})
                 sink.append(Run(
                     chars=chars, family=face,
                     size_pt=size_pt,
@@ -1318,7 +1331,7 @@ class SlideWalker:
                 prst=prst_el.get("prst") if prst_el is not None else None,
                 is_placeholder=ph is not None, ph_type=ph[0] if ph else None, layer=layer, ref=ref,
                 has_effects=self._has_effects(sp, ph, layer) if local in ("sp", "pic", "cxnSp") else False,
-                rotation=xfrm_rotation(sp), dash=dash, in_group=transform is not None,
+                rotation=xfrm_rotation(sp), dash=dash, in_group=transform is not None, name=shape_name(sp),
             )
             if shape.prst == "roundRect" and box is not None:
                 shape.corner_radius_emu = round_rect_radius(prst_el, box)

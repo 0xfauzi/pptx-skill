@@ -13,14 +13,16 @@ Line pitch is never read from font tables (wrong by up to 20 percent, E16).
 Faces: exact family from the file's own name table, then fontconfig's metric-alias
 classes (Arial -> Liberation Sans, Calibri -> Carlito, Cambria -> Caladea, Times New
 Roman -> Liberation Serif, Courier New -> Liberation Mono). An unknown family is
-REFUSED and bold is never synthesised (measured cost of a wrong face: 52/120 break
-agreement, lines off by three).
+REFUSED unless the guide names a stand-in, and the stand-in must be the face fc-match
+returns, the one LibreOffice draws (resolve_measured); bold is never synthesised
+(measured cost of a wrong face: 52/120 break agreement, lines off by three).
 """
 
 from __future__ import annotations
 
 import os
 import re
+import subprocess
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -175,6 +177,45 @@ def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
 @lru_cache(maxsize=1)
 def default_index() -> FaceIndex:
     return build_index()
+
+# --- the renderer's substitute: the one place a stand-in face is chosen ----------------
+
+class SubstituteMismatchError(LookupError):
+    """The guide names a stand-in the renderer does not draw: the solver would measure
+    one face while the render shows another, so neither is evidence of fit."""
+
+@lru_cache(maxsize=256)
+def fc_match(family: str, bold: bool = False, italic: bool = False) -> tuple[str, str, int]:
+    """(family, file, face index) fontconfig picks for `family`: what LibreOffice draws a
+    face the sandbox lacks with. render.py reports it; resolve_measured measures with it."""
+    pattern = family + (":bold" if bold else "") + (":italic" if italic else "")
+    try:
+        out = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{index}", pattern], capture_output=True, text=True, timeout=20).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        out = ""
+    name, _, rest = out.partition("\t")
+    path, _, index = rest.partition("\t")
+    return name.split(",")[0].strip(), path, int(index) if index.isdigit() else 0
+
+def resolve_measured(index: FaceIndex, family: str, *, bold: bool = False, italic: bool = False,
+                     substitute: str | None = None, renderer_ok: bool = False) -> Face:
+    """The face a run in `family` is measured with: the family itself or a metric alias
+    (FaceIndex.resolve); else the face fontconfig draws it with, which a guide must name
+    under typography.families.substitutes (`substitute`) and which must be fc-match's
+    answer, so measurement and render are one face. `renderer_ok` takes fc-match's face
+    unnamed: the judge reads decks no guide describes."""
+    try:
+        return index.resolve(family, bold=bold, italic=italic)
+    except UnknownFamilyError:
+        drawn = fc_match(family)[0]
+        if substitute is None and not renderer_ok:
+            raise UnknownFamilyError(f"no face for family {family!r} here and no metric-compatible clone; the renderer draws it as {drawn!r} (fc-match): "
+                                     f"name {drawn!r} under typography.families.substitutes to measure what the render shows") from None
+        if substitute is not None and normalize_family(substitute) != normalize_family(drawn):
+            raise SubstituteMismatchError(f"the guide substitutes {substitute!r} for {family!r}, but the renderer draws {family!r} as {drawn!r} (fc-match); "
+                                          f"measuring {substitute!r} would fit text the render does not show: name {drawn!r}") from None
+        found = index.resolve(drawn, bold=bold, italic=italic)
+        return Face(family, found.family, found.style, found.path, "renderer_substitute")
 
 # --- the decided wrap rule (docs/measurements/E16-decision.md) ------------------
 
