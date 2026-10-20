@@ -1128,7 +1128,7 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     header = None
     if table.header_rows:
         h = ctx.entry(element, table.header_role, scale)
-        header = DrawnRole(h, ctx.index.resolve(h.family, bold=True, italic=h.italic).path if table.header_bold else ctx.face(h).path)
+        header = DrawnRole(h, ctx.face(h, bold=True).path if table.header_bold else ctx.face(h).path)
     labels = [apply_case(c.label, header.entry.case) if header else c.label for c in table.columns]
     grid: list[list[str]] = [labels if i == 0 else [""] * len(table.columns) for i in range(table.header_rows)]
     grid.extend(list(row) for row in table.rows)
