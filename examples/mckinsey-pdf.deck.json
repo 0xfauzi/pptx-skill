@@ -54,12 +54,12 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "The $11.40 offer implies 1.33x P / TBV against a 1.08x regional median; every method on the football field tops out below $12.50 except the most generous precedent set"
+           "text": "The $11.40 offer implies 1.33x P / TBV against a 1.08x regional median; every standalone method's midpoint ($9.30 to $11.25) is below the offer, and only analyst targets, the precedent set and the synergy case reach above $12.50"
           },
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Standalone DDM midpoint of $10.40 at a 9.25% cost of equity; the offer needs 40% cost synergies to be accretive by FY17"
+           "text": "Standalone DDM midpoint of $10.45 at a 9.25% cost of equity; the offer needs 40% cost synergies to be accretive by FY17"
           },
           {
            "role": "type.h2",
@@ -188,7 +188,7 @@
               {
                "role": "type.body",
                "ink_role": "color.ink_inverse",
-               "text": "Recommendation: decline; re-engage below $9.00 or with a synergy case the board can underwrite"
+               "text": "Recommendation: decline; re-engage at $10.50 to $11.30 with a synergy case the board can underwrite"
               }
              ]
             }

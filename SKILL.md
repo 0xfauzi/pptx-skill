@@ -343,12 +343,13 @@ once blanked sixteen bullets on a page that validated and judged clean. Then:
    `references/design/deliberate_composition.md`: card grids, equal tiles, KPI tiles,
    rounded everything, centred text, three of everything, uniform spacing. Fix, rebuild.
 3. Read `judge` in the build report. A deck nearer another house than its reference is
-   not done; the component list says where. Real case: the McKinsey PDF pages scored
-   0.360 against 0.378 for the nearest other house, with `size_hist` 0.718 and `fills`
-   0.977 carrying the distance. The reference writes at 11, 16 and 18pt while the
-   pages sat on the 12pt body role, and it paints navy bands the specs never asked
-   for. The fix is in the specs (use the levels the histogram shows, add the band),
-   not in the guide.
+   not done; the component list says where. Real case: the McKinsey PDF pages score
+   0.335 against a house whose own pages sit at 0.12 to 0.30: not filed, with `size_hist`
+   0.72 and `fills` 0.86 carrying the distance and the exec page `below` the band on
+   covered area. The reference writes at 12, 14, 16 and 18pt (levels with 62 to 95 votes
+   each) while the pages sit on the 12pt body role, and the page ends half-way down the
+   canvas. The fix is in the specs (add roles at the levels the histogram shows, which
+   the completion now allows, and give the body rows weight), not in the guide.
 4. Compare pages with each other, not only each with itself: same title position, same
    chart text, same source line treatment.
 

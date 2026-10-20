@@ -32,7 +32,7 @@ from pathlib import Path
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 SECTION_PATHS = {"/description", "/derivation_rules", "/continuation", "/tables", "/charts", "/imagery", "/shape_language/icon_style",
                  "/shape_language/corner_radii", "/color/accent_stepping", "/gallery", "/exemplars", "/spacing/baseline_emu",
-                 "/typography/scale_ratio", "/density_bands/table_rows_per_inch"}
+                 "/typography/scale_ratio", "/density_bands/table_rows_per_inch", "/typography/families/substitutes"}
 TYPE_MEMBERS = {"size_pt", "weight", "italic", "family", "alignment", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", "case", "ink_role"}
 FLOOR_FAMILY = {}
 for fam, roles in {"body": ("type.body", "type.emphasis", "type.h1", "type.h2", "type.table_header", "type.table_cell"),
@@ -90,7 +90,16 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
     ordered = sorted(patch.items(), key=lambda kv: (0 if kv[0].startswith("/color/roles/") or kv[0].startswith("/extra_roles/") else 1, kv[0]))
     for path, value in ordered:
         if path not in open_paths and path not in SECTION_PATHS and not path.startswith("/extra_roles/") and not path.startswith("/notes"):
-            raise PatchError(f"{path}: not an open path; observed and inferred values are never overwritten (open: {sorted(open_paths)[:12]} ...)")
+            # a NEW text role may be added at a size the reference actually writes: the
+            # levels table had 14, 16, 18 and 20pt with 270 votes and no role on one deck,
+            # and "use the levels the histogram shows" could not be followed without this
+            parts_ = [q for q in path.split("/") if q]
+            levels = {float(lv.get("size_pt")) for lv in guide.get("typography", {}).get("levels", []) if lv.get("size_pt")}
+            is_new_role = (len(parts_) == 3 and parts_[0] == "typography" and parts_[1] == "roles" and parts_[2] not in guide["typography"]["roles"]
+                           and isinstance(value, dict) and value.get("size_pt") is not None and float(value["size_pt"]) in levels)
+            if not is_new_role:
+                raise PatchError(f"{path}: not an open path; observed and inferred values are never overwritten, and a new role needs a size the "
+                                 f"reference writes (levels: {sorted(levels)}) (open: {sorted(open_paths)[:12]} ...)")
         parts = [p for p in path.split("/") if p]
         if parts[0] == "color" and parts[1] == "roles":
             role = parts[2]
@@ -140,7 +149,10 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
                 for k in ("header_fill_role", "header_ink_role", "banding_role"):
                     value.setdefault(k, None)
                 value.setdefault("provenance", model_prov("completion"))
-            if path == "/typography/scale_ratio":
+            if path == "/typography/families/substitutes":
+                # stand-in faces for measurement only: the file names the real face
+                guide["typography"].setdefault("families", {})["substitutes"] = dict(value)
+            elif path == "/typography/scale_ratio":
                 guide["typography"]["scale_ratio"] = float(value)
             elif path == "/spacing/baseline_emu":
                 guide["spacing"]["baseline_emu"] = int(value) if value is not None else None

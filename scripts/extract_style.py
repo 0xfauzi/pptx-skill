@@ -1312,7 +1312,7 @@ class Extractor:
                     b[dst] = b.get("indent_role")
         # bind role inks and chrome colours to roles (after colour roles exist)
         for role, spec in self._roles.items():
-            spec["ink_role"] = self.role_of(spec.get("ink")) if spec.get("ink") else None
+            spec["ink_role"] = self.role_of(spec.get("ink"), "ink") if spec.get("ink") else None
         for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
                              ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
