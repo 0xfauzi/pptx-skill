@@ -3,8 +3,16 @@
 interesting components, one whole-slide render per composition family, and a
 text-free skeleton of each exemplar.
 
-    gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json] [--include-generated]
+    gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json] [--include-generated] [--pages 1-40]
+    gallery.py ref.pdf --out DIR --guide draft.json [--pages 30-70]
     gallery.py pick DIR --intent "two column comparison table beside commentary"
+
+A PDF is read through ooxml.py's PDF reader (text blocks, rectangles, rules and image
+regions are the leaves) and needs --guide: it has no placeholders, so its footer and page
+number are known only from the chrome the guide mined. Only triage's evidence pages are
+cropped, and only the pages a crop or an exemplar is cut from are rendered (pdftoppm, the
+file's own fonts). --pages limits the slides or pages read when a long deck exceeds the
+component cap.
 
 Slides carrying the pptx-skill origin tag (emit_pptx.py's output) are rendered but
 yield no crop or exemplar unless --include-generated. The gallery is refused when
@@ -58,7 +66,7 @@ from PIL import Image
 
 import ooxml
 import render
-from extract_style import hungarian_max
+from extract_style import POSITION_DIAMETER_EMU, slide_similarity as _slide_similarity
 
 Box = tuple[int, int, int, int]  # x, y, width, height in EMU
 
@@ -246,6 +254,61 @@ def join_deck(path: Path) -> Deck:
     return Deck(path, prints[0].width, prints[0].height, tuple(slides))
 
 
+PDF_LEAF_KIND = {"picture": "image", "line": "connector"}  # ooxml's PDF shapes: text_box, shape, line, picture
+
+
+def is_pdf(path: Path) -> bool:
+    try:
+        head = path.read_bytes()[:4] if path.is_file() else b""
+    except OSError:
+        head = b""
+    return path.suffix.lower() == ".pdf" or head.startswith(b"%PDF")
+
+
+def guide_chrome(path: Path) -> list[Box]:
+    """The chrome boxes extract_style.py mined, in EMU."""
+    guide = json.loads(path.read_text())
+    out = []
+    for c in guide.get("chrome") or [] if isinstance(guide, dict) else []:
+        box = c.get("box_in") if isinstance(c, dict) else None
+        if isinstance(box, list) and len(box) == 4:
+            out.append(tuple(int(float(v) * EMU_PER_INCH) for v in box))
+    return out  # type: ignore[return-value]
+
+
+def join_pdf(path: Path, chrome: Sequence[Box]) -> tuple[Deck, list[int]]:
+    """A PDF reference as leaves: ooxml.py's text blocks, rectangles, rules and image
+    regions, one leaf each, in the reader's order. A PDF has no placeholders, so chrome is
+    where the guide mined it: a text leaf whose left and top edges, or any other leaf
+    whose four edges, lie within POSITION_DIAMETER_EMU of a chrome box. Returns the deck
+    and the indexes of its evidence pages (triage vector and vector_with_image)."""
+    prints = ooxml.fingerprint_deck(str(path))
+    if not prints:
+        raise GalleryRefused("no_slides", "the PDF has no pages")
+    tol = POSITION_DIAMETER_EMU
+
+    def chrome_at(shape: ooxml.Shape) -> bool:
+        if shape.box is None:
+            return False
+        x, y, w, h = shape.box
+        text = shape.kind == "text_box"
+        return any(abs(x - cx) <= tol and abs(y - cy) <= tol and (text or (abs(w - cw) <= tol and abs(h - ch) <= tol))
+                   for cx, cy, cw, ch in chrome)
+
+    slides = []
+    for p in prints:
+        leaves = tuple(
+            Leaf(ref=f"page{p.index + 1}/{sh.ref}", shape_ref=sh.ref, kind=PDF_LEAF_KIND.get(sh.kind, "shape"),
+                 role="title" if sh.ph_type == "title" else "none", chrome=chrome_at(sh), bounds=sh.box, rotation=sh.rotation,
+                 runs=sum(len(para["runs"]) for para in sh.paragraphs or []), filled=sh.fill is not None, lined=sh.line is not None,
+                 ink_emu=(sh.line_w_emu or 0) // 2 if sh.line else 0)
+            for sh in p.shapes
+        )
+        slides.append(Slide(p.index, f"page{p.index + 1}", False, leaves))
+    evidence = [p.index for p in prints if p.page_class in ("vector", "vector_with_image")]
+    return Deck(path, prints[0].width, prints[0].height, tuple(slides)), evidence
+
+
 def content_leaves(slide: Slide) -> list[Leaf]:
     """Leaves with geometry, chrome dropped, sorted by ref: deckgen's shape join
     sorts its keys, and that order fixes which member names a component."""
@@ -292,19 +355,15 @@ def iou(a: Box, b: Box) -> float:
 
 
 def slide_similarity(
-    a: Sequence[Box], b: Sequence[Box], labels_a: Sequence[str] | None = None, labels_b: Sequence[str] | None = None
+    a: Sequence[Box], b: Sequence[Box], labels_a: Sequence[str] | None = None, labels_b: Sequence[str] | None = None,
+    at_least: float | None = None,
 ) -> float:
     """Hungarian optimal assignment on pairwise IoU, scored over the larger set;
-    role-wise when labelled (a mismatched pair scores 0 and cannot be assigned)."""
-    if not a and not b:
-        return 1.0
-    if not a or not b:
-        return 0.0
-    matrix = [
-        [iou(x, y) if labels_a is None or labels_b is None or labels_a[i] == labels_b[j] else 0.0 for j, y in enumerate(b)]
-        for i, x in enumerate(a)
-    ]
-    return hungarian_max(matrix) / max(len(a), len(b))
+    role-wise when labelled (a mismatched pair scores 0 and cannot be assigned).
+    extract_style.slide_similarity with this module's IoU: one assignment, solved per
+    connected component of overlapping boxes, exact (a PDF page holds hundreds of boxes)."""
+    return _slide_similarity(list(a), list(b), None if labels_a is None else list(labels_a), None if labels_b is None else list(labels_b),
+                             at_least, iou)
 
 
 def leader_clusters(
@@ -315,7 +374,7 @@ def leader_clusters(
     for index, group in enumerate(groups):
         for anchor, members in clusters:
             la, lb = (None, None) if labels is None else (labels[anchor], labels[index])
-            if slide_similarity(groups[anchor], group, la, lb) >= threshold:
+            if slide_similarity(groups[anchor], group, la, lb, at_least=threshold) >= threshold:
                 members.append(index)
                 break
         else:
@@ -639,7 +698,7 @@ def read_guide(path: Path) -> tuple[int | None, EvidenceIndex]:
             if isinstance(provenance, dict) and isinstance(provenance.get("evidence"), list):
                 for item in provenance["evidence"]:
                     part, _, ref = str(item).partition("#")
-                    if "/slides/" in part and ref:
+                    if ("/slides/" in part or re.fullmatch(r"page\d+", part)) and ref:  # a PDF page is page<N>
                         index.setdefault((part, ref.split("/", 1)[0]), set()).add(pointer)
             for key, child in node.items():
                 walk(child, f"{pointer}/{key}")
@@ -704,8 +763,17 @@ def build(
     pool_max: int = GALLERY_POOL_MAX,
     exemplar_max: int = EXEMPLAR_POOL_MAX,
     include_generated: bool = False,
+    pages: tuple[int, int] | None = None,
 ) -> dict[str, object]:
-    deck = join_deck(deck_path)
+    pdf = is_pdf(deck_path)
+    excluded: list[int] = []
+    if pdf:
+        if guide_path is None:
+            raise GalleryRefused("pdf_needs_guide", "a PDF has no placeholders, so its chrome is known only from extract_style.py's guide: pass --guide")
+        deck, evidence_pages = join_pdf(deck_path, guide_chrome(guide_path))
+        excluded = [slide.index + 1 for slide in deck.slides if slide.index not in set(evidence_pages)]
+    else:
+        deck = join_deck(deck_path)
     gutter, evidence = read_guide(guide_path) if guide_path else (None, {})
     gap_emu = component_gap_emu(gutter)
     # Plain LibreOffice export omits hidden slides, so the page sequence is the
@@ -714,20 +782,33 @@ def build(
     # Generated slides are still rendered (they hold places in the page sequence) but are
     # this skill's own output, so by default they yield no crop and no exemplar.
     skipped = [slide.index + 1 for slide in shown if slide.generated and not include_generated]
-    sources = [slide for slide in shown if include_generated or not slide.generated]
+    # a PDF page triage excluded (a scan, a wrapper, a bound memo) is no evidence either, nor a
+    # page outside --pages
+    if pages is not None:
+        excluded = sorted(set(excluded) | {s.index + 1 for s in deck.slides if not pages[0] <= s.index + 1 <= pages[1]})
+    sources = [slide for slide in shown if (include_generated or not slide.generated) and slide.index + 1 not in excluded]
     if not sources:
-        raise GalleryRefused("only_generated", f"all {len(shown)} visible slides carry the pptx-skill origin tag; --include-generated reads them")
+        raise GalleryRefused("only_generated", f"all {len(shown)} visible slides carry the pptx-skill origin tag or are not evidence pages; --include-generated reads generated ones")
     pair_count = sum(len(content_leaves(s)) * (len(content_leaves(s)) - 1) // 2 for s in sources)
     if pair_count > MAX_SHAPE_PAIRS:
         raise GalleryRefused("too_many_shape_pairs", f"{pair_count} shape pairs to group against {MAX_SHAPE_PAIRS}")
 
-    pages, fonts = render_pages(deck_path, out / "pages", width)
-    if len(pages) != len(shown):
-        raise GalleryRefused("page_count_mismatch", f"{len(pages)} rendered pages against {len(shown)} visible slides")
-    page_of = {slide.index: page for slide, page in zip(shown, pages, strict=True)}
+    page_of: dict[int, Path] = {}
+    if pdf:
+        # pdftoppm draws the pages straight from the file; only the pages a crop or an
+        # exemplar is cut from are rendered, after selection (a 205-page reference)
+        fonts = render.pdf_font_report(deck_path)
+        (out / "pages").mkdir(parents=True, exist_ok=True)
+        (out / "pages" / "fonts.json").write_text(json.dumps(fonts, indent=1))
+        raster_w, raster_h = width, round(width * deck.height_emu / deck.width_emu)
+    else:
+        pages, fonts = render_pages(deck_path, out / "pages", width)
+        if len(pages) != len(shown):
+            raise GalleryRefused("page_count_mismatch", f"{len(pages)} rendered pages against {len(shown)} visible slides")
+        page_of = {slide.index: page for slide, page in zip(shown, pages, strict=True)}
+        with Image.open(pages[0]) as first:
+            raster_w, raster_h = first.size
     fidelity = render_fidelity(fonts)
-    with Image.open(pages[0]) as first:
-        raster_w, raster_h = first.size
     # The raster preserves the page aspect and a pixel is square, so one scale
     # serves both axes; the floor and the pad are judged on the image actually sent.
     emu_per_px = deck.width_emu / raster_w
@@ -737,7 +818,7 @@ def build(
     if not found:
         raise GalleryRefused("no_components", "the deck declares no content shapes to crop")
     if len(found) > MAX_COMPONENTS:
-        raise GalleryRefused("too_many_components", f"{len(found)} components against {MAX_COMPONENTS}")
+        raise GalleryRefused("too_many_components", f"{len(found)} components against {MAX_COMPONENTS}: pass --pages to read a range of the deck")
     groups = [normalized_members(c) for c in found]
     labels = [member_labels(c) for c in found]
     boxes = [crop_box(c, pad_floor, deck) for c in found]
@@ -747,6 +828,11 @@ def build(
     if not chosen:
         raise GalleryRefused("no_crops", f"{len(found)} components, none both substantive and {MIN_CROP_AREA_PX} px in area")
 
+    exemplar_picks = select_exemplars(sources, exemplar_max)
+    if pdf:
+        need = sorted({c.component.slide.index for c in chosen} | {slide.index for _, slide, _ in exemplar_picks})
+        rendered = render.rasterize(deck_path, out / "pages", 110, [i + 1 for i in need], width)
+        page_of = dict(zip(need, rendered, strict=True))
     for generated in ("crops", "exemplars"):
         shutil.rmtree(out / generated, ignore_errors=True)
         (out / generated).mkdir(parents=True)
@@ -779,7 +865,7 @@ def build(
         )
     exemplars: list[dict[str, object]] = []
     exemplar_rows: list[str] = []
-    for family_index, slide, family_size in select_exemplars(sources, exemplar_max):
+    for family_index, slide, family_size in exemplar_picks:
         exemplar_id = f"ex-{family_index + 1:02d}"
         png = out / "exemplars" / f"{exemplar_id}.png"
         shutil.copyfile(page_of[slide.index], png)
@@ -802,6 +888,7 @@ def build(
         "slides": len(deck.slides),
         "hidden_slides": len(deck.slides) - len(shown),
         "generated_slides_skipped": len(skipped),
+        "pages_not_read": len(excluded),
         "components": len(found),
         "candidates": sum(survives),
         "clusters": len(clusters),
@@ -856,6 +943,7 @@ def manifest_markdown(
         ("render fidelity", f"`{fidelity}`"),
         ("slides / hidden", f"{totals['slides']} / {totals['hidden_slides']}"),
         ("generated slides skipped (pptx-skill origin tag)", f"{totals['generated_slides_skipped']} {manifest['generated_slides_skipped'] or ''}".strip()),
+        ("pages not read (PDF triage excluded them, or outside --pages)", str(totals.get("pages_not_read", 0))),
         ("components", str(totals["components"])),
         ("candidates after the two filters", str(totals["candidates"])),
         ("clusters / crops", f"{totals['clusters']} / {totals['crops']}"),
@@ -965,15 +1053,6 @@ def main(argv: list[str]) -> int:
         args = ap.parse_args(argv[1:])
         print(pick(Path(args.gallery_dir), args.intent))
         return 0
-    for a in argv:
-        head = b""
-        try:
-            head = Path(a).read_bytes()[:4] if Path(a).is_file() else b""
-        except OSError:
-            head = b""
-        if a.lower().endswith(".pdf") or head.startswith(b"%PDF"):
-            print("gallery.py reads .pptx only: for a PDF reference look at the page renders (render.py) and the triage table (ooxml.py triage); the crops a PDF could give are its pages")
-            return 2
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("deck")
     ap.add_argument("--out", required=True)
@@ -982,13 +1061,14 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--pool-max", type=int, default=GALLERY_POOL_MAX)
     ap.add_argument("--exemplar-max", type=int, default=EXEMPLAR_POOL_MAX)
     ap.add_argument("--include-generated", action="store_true", help="let slides carrying the pptx-skill origin tag yield crops and exemplars")
+    ap.add_argument("--pages", default=None, help="1-based inclusive range of pages or slides to crop from, e.g. 40-90 (a long deck exceeds the component cap)")
     args = ap.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     try:
         manifest = build(
             Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.pool_max, args.exemplar_max,
-            args.include_generated,
+            args.include_generated, tuple(int(v) for v in args.pages.split("-", 1)) if args.pages else None,  # type: ignore[arg-type]
         )
     except GalleryRefused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)

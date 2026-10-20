@@ -25,6 +25,7 @@ notes and on stdout.
 from __future__ import annotations
 
 import argparse
+import bisect
 import colorsys
 import hashlib
 import json
@@ -32,12 +33,13 @@ import math
 import re
 import statistics
 import sys
+import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, Run, Shape, SlidePrint, fingerprint_deck, pdf_triage  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -57,7 +59,7 @@ POSITIVE_HUE = (90, 165)  # deckgen tokens.py:242; asserted hue bands
 NEGATIVE_HUE = (345, 15)
 POSITION_DIAMETER_EMU = 76_200  # 6pt; deckgen shapes.py:34
 ARCHETYPE_IOU_THRESHOLD = 0.5  # PASCAL VOC match criterion; deckgen shapes.py:38
-MOTIF_RECURRENCE_FLOOR = 0.5  # deckgen tokens.py:5754
+MOTIF_RECURRENCE_FLOOR = RECURRENCE_FLOOR  # deckgen tokens.py:5754, defined once in ooxml.py (the PDF title slot reads it too)
 MOTIF_FULL_SPAN = 0.9  # deckgen tokens.py:5761
 MOTIF_RULE_ASPECT = 20  # deckgen tokens.py:5767
 ALIGNMENT_EDGE_MIN_MEMBERS = 3
@@ -272,22 +274,72 @@ def hungarian_max(matrix: list[list[float]]) -> float:
     return total
 
 
-def slide_similarity(a: list[tuple], b: list[tuple], la: list[str] | None = None, lb: list[str] | None = None) -> float:
+def slide_similarity(a: list[tuple], b: list[tuple], la: list[str] | None = None, lb: list[str] | None = None,
+                     at_least: float | None = None, overlap=None) -> float:
     """Hungarian optimal assignment on pairwise IoU, scored over the larger set; role-wise when labelled.
-    deckgen shapes.py:432."""
+    deckgen shapes.py:432. With `at_least`, a pair an upper bound proves to fall below it
+    returns that bound instead of the exact score (leader clustering only compares).
+    `overlap` scores a box pair (default iou; gallery.py passes its own, which scores two
+    identical zero-area boxes 1, so x-ranges that only touch are still scored).
+
+    Exact, and fast on PDF pages of a hundred boxes: only boxes whose x-ranges meet get a score,
+    and the optimum is the sum of the optima of the connected components of the
+    positive-IoU graph (a pair across components scores 0 and adds nothing), so one O(n^3)
+    assignment becomes many small ones. On bain (205 pages) composition took 95 of the
+    extraction's 118 s on its first 40 pages under cProfile before this."""
     if not a and not b:
         return 1.0
     if not a or not b:
         return 0.0
-    matrix = [[iou(x, y) if (la is None or lb is None or la[i] == lb[j]) else 0.0 for j, y in enumerate(b)] for i, x in enumerate(a)]
-    return hungarian_max(matrix) / max(len(a), len(b))
+    big = max(len(a), len(b))
+    if at_least is not None and min(len(a), len(b)) / big < at_least:
+        return min(len(a), len(b)) / big  # every matched pair scores at most 1
+    order = sorted(range(len(b)), key=lambda j: b[j][0])
+    starts = [b[j][0] for j in order]
+    edges: dict[int, dict[int, float]] = {}
+    for i, x in enumerate(a):
+        for j in order[:bisect.bisect_right(starts, x[0] + x[2])]:
+            y = b[j]
+            if y[0] + y[2] < x[0] or (la is not None and lb is not None and la[i] != lb[j]):
+                continue
+            v = (overlap or iou)(x, y)
+            if v > 0:
+                edges.setdefault(i, {})[j] = v
+    if at_least is not None:
+        rows = sum(max(r.values()) for r in edges.values())
+        cols: dict[int, float] = {}
+        for r in edges.values():
+            for j, v in r.items():
+                cols[j] = max(cols.get(j, 0.0), v)
+        bound = min(rows, sum(cols.values())) / big  # an assignment takes at most one entry per row and per column
+        if bound < at_least:
+            return bound
+    parent = list(range(len(a) + len(b)))
+
+    def find(k: int) -> int:
+        while parent[k] != k:
+            parent[k] = parent[parent[k]]
+            k = parent[k]
+        return k
+
+    for i, r in edges.items():
+        for j in r:
+            parent[find(i)] = find(len(a) + j)
+    comps: dict[int, tuple[list[int], list[int]]] = {}
+    for i in edges:
+        comps.setdefault(find(i), ([], []))[0].append(i)
+    for j in {j for r in edges.values() for j in r}:
+        comps[find(len(a) + j)][1].append(j)
+    total = sum(hungarian_max([[edges[i].get(j, 0.0) for j in cs] for i in rs]) for rs, cs in comps.values())
+    return total / big
 
 
 def leader_clusters(groups: list[list[tuple]], labels: list[list[str]] | None = None, threshold: float = ARCHETYPE_IOU_THRESHOLD) -> list[tuple[int, list[int]]]:
     clusters: list[tuple[int, list[int]]] = []
     for index, group in enumerate(groups):
         for anchor, members in clusters:
-            if slide_similarity(groups[anchor], group, None if labels is None else labels[anchor], None if labels is None else labels[index]) >= threshold:
+            if slide_similarity(groups[anchor], group, None if labels is None else labels[anchor], None if labels is None else labels[index],
+                                at_least=threshold) >= threshold:
                 members.append(index)
                 break
         else:
@@ -350,7 +402,10 @@ class Extractor:
     def __init__(self, path: str, max_pages: int | None = None, pages: tuple[int, int] | None = None,
                  include_generated: bool = False) -> None:
         self.path = path
+        self._clock = time.monotonic()
+        self.timings: dict[str, float] = {}
         self.slides: list[SlidePrint] = fingerprint_deck(path, max_pages)
+        self._stage("read", f"{len(self.slides)} slides")
         self.notes: list[str] = []
         generated = [s.index + 1 for s in self.slides if s.generated]
         self.generated_skipped = 0 if include_generated else len(generated)
@@ -371,6 +426,17 @@ class Extractor:
         self.raster = False
         if self.is_pdf:
             self.triage = pdf_triage(path, max_pages)
+            unread = sum(s.unread_glyphs for s in self.slides)
+            if unread:
+                self.notes.append(f"{unread} glyphs are set at an angle that is neither upright nor a quarter turn: no type size can be read along "
+                                  "them, so they are left out of the runs")
+            slot = self.triage.get("title_slot") or {}
+            if slot.get("pages"):
+                self.notes.append(f"title evidence: a block sits at the recurring title position on {slot.get('marked', 0)} of {slot.get('pages', 0)} "
+                                  f"vector pages (at least {slot.get('needed', 0)} needed); those blocks are the title runs"
+                                  if slot.get("marked") else
+                                  f"title evidence: no position holds a top block on {slot.get('needed', 0)} of {slot.get('pages', 0)} vector pages, "
+                                  "so no block is a title and type.title stays open")
             if pages is not None:
                 lo, hi = pages
                 self.slides = [s for s in self.slides if lo <= s.index + 1 <= hi]
@@ -437,7 +503,16 @@ class Extractor:
     def content_boxes(self, s: SlidePrint) -> list[Shape]:
         return [sh for sh in s.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and not self.is_chrome(sh)]
 
+    def _stage(self, name: str, detail: str = "") -> None:
+        """One progress line per stage on stderr, so a long reference never runs silent."""
+        now = time.monotonic()
+        self.timings[name] = round(now - self._clock, 2)
+        self._clock = now
+        print(f"extract_style: {name} {self.timings[name]:.1f}s{(' (' + detail + ')') if detail else ''}", file=sys.stderr, flush=True)
+
     def open(self, path: str, reason: str, constraints: dict | None = None, candidates: list | None = None) -> None:
+        if any(u["path"] == path for u in self.unresolved):
+            return  # the first reason given for an address is the specific one
         self.unresolved.append({"path": path, "reason": reason, "constraints": constraints or {}, "candidates": candidates or []})
 
     # ---- typography ----
@@ -471,13 +546,24 @@ class Extractor:
             roles[role] = spec
             assigned[idx] = role
 
-        # title: the level with the most title-placeholder runs; else the largest level, inferred
+        # title: the level holding most of the title runs (a title placeholder in a pptx, the
+        # recurring title slot in a PDF, ooxml._pdf_title_slot). Size alone is no evidence:
+        # the largest level was a 44pt numeral on one reference whose titles are 25pt. With
+        # no title run, or when no level holds RECURRENCE_FLOOR of them, the role stays open
+        # with the levels the title runs did reach as candidates.
         title_votes = [sum(1 for m in lm if m.ph_class == "title") for lm in level_members]
         if levels:
-            if max(title_votes) > 0:
-                bind("type.title", max(range(len(levels)), key=lambda i: (title_votes[i], levels[i].representative)), "assigned")
+            top = max(range(len(levels)), key=lambda i: (title_votes[i], levels[i].representative))
+            total = sum(title_votes)
+            if total and title_votes[top] >= RECURRENCE_FLOOR * total:
+                bind("type.title", top, "assigned" if not self.is_pdf else "inferred")
             else:
-                bind("type.title", len(levels) - 1, "inferred")
+                held = sorted(((levels[i].representative, title_votes[i]) for i in range(len(levels)) if title_votes[i]), key=lambda t: -t[1])
+                self.open("/typography/roles/type.title",
+                          ("no title placeholder and no recurring title position: the largest size is not evidence of the title" if not total else
+                           f"the title runs split across levels, none holding {RECURRENCE_FLOOR:.0%} of them"),
+                          {"title_run_levels_pt_votes": held, "ladder_sizes_pt": sorted(lv.representative for lv in levels)},
+                          [{"size_pt": s, "title_runs": n} for s, n in held])
         title_idx = next((i for i, r in assigned.items() if r == "type.title"), None)
         # body: most frequent remaining level with >= 2 votes or a body-placeholder anchor; smaller size breaks ties
         body_candidates = [i for i in range(len(levels)) if i not in assigned and (levels[i].count >= MIN_LEVEL_OBSERVATIONS or any(m.ph_class == "body" for m in level_members[i]))]
@@ -1247,7 +1333,10 @@ class Extractor:
         slide-layer shape declares a preset, the one case the file cannot answer."""
         preset = [(s, sh) for s in self.slides for sh in s.shapes if sh.prst]
         if not preset:
-            self.open("/shape_language/corner_radii", "no slide-layer shape declares a preset geometry, so the file says nothing about corners; read them off the renders")
+            self.open("/shape_language/corner_radii", "no slide-layer shape declares a preset geometry (a PDF never does), so the file says nothing about "
+                      "corners; read them off the renders, in the shape the file would have given",
+                      {"value_shape": {"modal_radius_emu": "int, 0 for square corners", "rounded_share": "share of boxes with rounded corners, 0..1",
+                                       "why": "the pages and boxes you read it from"}})
             return
         rounded = [(s, sh) for s, sh in preset if sh.prst == "roundRect"]
         pool: dict[float, Votes] = {}
@@ -1350,14 +1439,10 @@ class Extractor:
             self.notes.append(f"hidden slides counted as evidence (delete them from a copy with pptx_tools.py delete to exclude): {hidden}")
         if self.raster:
             return self.run_raster()
-        self.typography()
-        self.color()
-        self.spacing()
-        self.composition()
-        self.chrome_and_motifs()
-        self.tables()
-        self.charts()
-        self.shapes_and_imagery()
+        for stage in (self.typography, self.color, self.spacing, self.composition, self.chrome_and_motifs, self.tables, self.charts,
+                      self.shapes_and_imagery):
+            stage()
+            self._stage(stage.__name__)
         # bullet indents bind to the nearest spacing step (the solver and emitter read roles, never EMU)
         steps = self.guide.get("spacing", {}).get("steps", {})
         for lvl, b in self._bullets.items():
@@ -1406,6 +1491,7 @@ RASTER_OPEN = (
     ("/typography/roles/type.caption", "chart and table labels"),
     ("/typography/roles/type.footnote", "source lines and notes"),
     ("/typography/families", "the faces in use (the raster carries letterforms, not names: match by eye with fc-match candidates)"),
+    ("/typography/bullets", "the bullet per level as the pages draw it, {\"0\": {\"glyph\": \"<the glyph>\", \"font\": \"<its face>\", \"indent_role\": \"space.<step>\", \"hanging_indent_role\": \"space.<step>\"}}; the indent roles are required by the solver"),
     ("/color/roles/color.surface", "page ground"),
     ("/color/roles/color.ink", "primary text colour"),
     ("/color/roles/color.ink_muted", "secondary text colour"),

@@ -25,7 +25,7 @@ All commands are relative to this skill's directory. Work in a directory of your
 | Situation | Path |
 |---|---|
 | A .pptx reference is given | Full path: 2 to 8 below. The deck is emitted on the reference's own master and layouts. |
-| A PDF reference is given | Same path. Extraction reads less (no shape kinds, no layouts); chrome is mined from recurring lines; the template is constructed; chrome is drawn. Section 2.3. |
+| A PDF reference is given | Same path. Extraction reads less (no shape kinds, no layouts): text blocks stand in for text boxes, the title is the block at the position titles recur at, chrome is mined from recurring lines; the template is constructed; chrome is drawn. Section 2.2. |
 | The reference is a scanned PDF | The extractor flags `reference.text_layer.status: suspect`. Tokens from it are not evidence: complete the guide from the renders, say so in the report, and ask for the native deck. |
 | Add pages to an existing deck in its own style | Extract from that deck, then `pptx_tools.py template --keep` to carry the pages you keep, and build the new ones (section 8). |
 | Read, split, duplicate, validate a .pptx | `pptx_tools.py` (section 8). |
@@ -47,7 +47,17 @@ name something the digest cannot (a recurring banner, a composite, a chart treat
 
 Read `work/ref/renders/fonts.json`. A face rendered as a `metric_alias` (Arial as
 Liberation Sans) is layout-faithful and visually not: never copy letterforms from such a
-render. A face marked `substituted` makes the render useless as evidence of fit.
+render. A face marked `substituted` makes the render useless as evidence of fit. For a
+PDF the list is the file's own fonts (pdffonts): an embedded face renders `exact` from
+the file's glyphs, a face the file only names is matched like a pptx face.
+
+The same three commands take a PDF. `gallery.py` needs `--guide` for one (a PDF has no
+placeholders, so the footer and page number are known only from the chrome the draft
+mined), crops only triage's evidence pages, and renders only the pages it cuts from. A
+long deck can exceed the gallery's component cap (1,000, deckgen's): bain's 205 pages
+hold 3,838 components and are refused with the count; `--pages 30-70` reads a range.
+`extract_style.py` prints one progress line per stage on stderr (bain's 205 pages: 48 to 50 s over three runs,
+32 to 34 s of it reading the PDF).
 
 ### 2.1 What the digest cannot see
 
@@ -65,8 +75,11 @@ render. A face marked `substituted` makes the render useless as evidence of fit.
 Slides this skill generated carry a pptx-skill origin tag; `extract_style.py` and
 `gallery.py` skip them by default and say how many (`--include-generated` keeps them,
 only when you mean to treat your own output as evidence). `/shape_language/corner_radii`
-is observed from the file (the modal roundRect radius and the share of rounded shapes):
-never complete it from renders.
+is observed from the file (the modal roundRect radius and the share of rounded shapes)
+whenever the slides declare preset geometry, and then it is never completed. A PDF never
+declares one, nor does a pptx drawn without presets: the draft then lists the address
+open and you read it off the renders, in the shape the file would have given
+(`{"modal_radius_emu": 0, "rounded_share": 0.0, "why": "..."}`).
 
 ### 2.2 PDF references
 
@@ -82,8 +95,17 @@ python3 scripts/ooxml.py triage ref.pdf          # the per-page table, before an
 ```
 
 - `vector` and `vector_with_image` pages carry real type: the extractor mines them as it
-  mines a pptx, minus placeholders, bullets, layouts, chart parts and table rules, which
-  it lists as open. A slide-shaped page with a pasted chart image is still a vector page.
+  mines a pptx, minus placeholders, layouts, chart parts and table rules, which it lists
+  as open. A slide-shaped page with a pasted chart image is still a vector page. The
+  reader rebuilds what a pptx states: glyphs join into lines, lines into text blocks (one
+  block is one element, as one text box is), blocks into paragraphs with their bullets
+  and measured indents. A glyph turned a quarter (a copyright line up the margin) is read
+  at its true size; one at any other angle is left out and counted in the notes. There is
+  no title placeholder, so the title is the block at the position titles recur at (left
+  edge, and top or bottom edge, on at least half the pages; the digest's notes give the
+  count). Size never picks the title: with no recurring position, or with title runs
+  split across levels, `type.title` is left open with the levels the title runs reached.
+  A wrong size in the draft is a reader defect to report, never a value to patch over.
 - `raster_wrapper`, `raster_ocr` and `raster_only` pages are images: nothing on them is
   type evidence. When they are the majority (`deck_class: raster`) the draft opens every
   text-derived address, sets the page size from the image box (a letter-ratio image is a
@@ -103,7 +125,11 @@ python3 scripts/raster_style.py ref.pdf --out work/ref/raster [--dpi 100]
   pixel measurement carries. Faces cannot be read from pixels: look at the page images
   next to fc-match candidates and name the family yourself. Sizes come from the run
   heights table and your eyes; the raster body estimate was within 0.3pt of the truth on
-  a deck rendered and re-measured, and within the stated band on a 104 dpi scan.
+  a deck rendered and re-measured, and within the stated band on a 104 dpi scan. A raster
+  draft has no levels table, so a type role beyond the five it opens (table cells, data
+  labels, a source line) is written with `"provenance": "raster_inference"` in its value,
+  and the open `/typography/bullets` takes the glyph, face and indent roles per level as
+  the pages draw them (the draft's reason gives the shape; the solver needs the indents).
 - `other_size` pages (a memo or filing text bound in front of the deck) are excluded;
   `--pages 7-60` restricts the extraction to a range you choose from the triage table.
 
@@ -141,7 +167,8 @@ Rules the finalizer enforces, and the ones only you can keep:
 - Answer open paths only. A key outside `unresolved` is refused. The only exceptions,
   always writable, are `/description`, `/derivation_rules`, `/continuation`,
   `/typography/families/substitutes`, `/notes/*`, a new `/extra_roles/<name>`, and a new
-  type role at a size the levels table shows. A key whose target is observed or
+  type role at a size the levels table shows (on a raster reference, one whose value
+  carries `"provenance": "raster_inference"`). A key whose target is observed or
   deterministically inferred is refused with its provenance and evidence; a whole
   section such as `/tables` is no exception when the deck has one. If you think an
   observed value is wrong, say so in the report and fix it upstream, never by patching
@@ -158,6 +185,20 @@ Rules the finalizer enforces, and the ones only you can keep:
   deck gets a chart language derived from its palette and register, not a stock one.
 - Colours enter only under `/color/roles/<role>` or `/extra_roles/<name>` as hex, with a
   `why`. Everything else refers to roles. A new size may not sit below the family floor.
+- Value shapes for the addresses every draft opens (`null` is an answer where shown,
+  and it closes the address; a left-out key never does):
+
+  | address | value |
+  |---|---|
+  | `/color/roles/<role>`, `/extra_roles/<name>` | `{"hex": "RRGGBB", "why": "..."}` (a bare `"RRGGBB"` also applies) |
+  | `/typography/roles/<role>` | `{"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}` |
+  | `/typography/roles/<role>/members` | the members the ladder left open, same keys without `size_pt` |
+  | `/typography/roles/<role>/line_spacing` | a multiple of the size, or `null`: single spacing, which the renderer draws at 1.2 x size |
+  | `/typography/scale_ratio` | a number, or `null` when the levels are not a geometric ladder (the draft says so) |
+  | `/spacing/baseline_emu` | an integer, or `null`: no baseline grid |
+  | `/density_bands/table_rows_per_inch` | `{"metric", "low", "high", "median", "n"}`, or `null` with no table to measure |
+  | `/shape_language/corner_radii` | `{"modal_radius_emu", "rounded_share", "why"}` |
+  | `/floors/<family>/floor_pt` | a number, never below `absolute_floor_pt` |
 - Renders are a camera for colour, proportion and position. They are not evidence for
   text fit, line spacing, padding or rule weight: those are measured or they are open.
 - Write `/description` (summary, typography, color, layout, tables, imagery, motifs,
@@ -204,6 +245,13 @@ python3 scripts/import_slide.py ref.pptx --slide 3 --guide work/ref/guide.json -
 python3 scripts/build_deck.py work/ref/rt3.deck.json --guide work/ref/guide.json --template work/ref/template.pptx \
         -o work/ref/rt3.pptx --reference ref.pptx --others <two other decks> --renders work/ref/rt3-renders
 ```
+
+A PDF page imports the same way (`--slide` is the page number) and builds with
+`--chrome draw` on the blank template: the reader's text blocks become elements, the
+filled rectangle under a block becomes its `fill_role`, text at a position where the
+guide mined chrome (the footer, the page number) is left to the chrome, and text turned
+a quarter is left out; the notes name each. On McKinsey page 13 the round trip carries
+title, bullets and inks and lands at 0.092 against a house spread of 0.082 to 0.355.
 
 The distance must sit inside the house's own spread (the leave-one-out distance of
 each reference slide to the rest; `fingerprint.py calibrate` prints it, keybank's is
@@ -488,7 +536,10 @@ elsewhere. Run it before handing a deck over.
    covered area. The reference writes at 12, 14, 16 and 18pt (levels with 62 to 95 votes
    each) while the pages sit on the 12pt body role, and the page ends half-way down the
    canvas. The fix is in the specs (add roles at the levels the histogram shows, which
-   the completion now allows, and give the body rows weight), not in the guide.
+   the completion now allows, and give the body rows weight), not in the guide. (Those
+   figures predate the PDF text-block reader; the same two pages now read 0.346 and
+   0.299 against a house spread of 0.082 to 0.355, with `size_hist` 0.70 and `fills`
+   0.86 still carrying the distance: still not filed.)
 4. Compare pages with each other, not only each with itself: same title position, same
    chart text, same source line treatment.
 

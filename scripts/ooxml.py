@@ -364,7 +364,7 @@ class Shape:
     dash: str | None = None
     in_group: bool = False
     text_inset_emu: tuple[int, int, int, int] | None = None  # lIns, tIns, rIns, bIns as declared, else None
-    text: str | None = None  # PDF text lines only: the line's text, for chrome detection (footers, page numbers)
+    text: str | None = None  # PDF text blocks only: the first 80 characters, for chrome and title detection
     paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, runs: [{text, size_pt, bold, italic, color}]}] for import
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
@@ -430,6 +430,7 @@ class SlidePrint:
     page_class: str = "vector"  # pdf triage: vector | vector_with_image | raster_only | raster_ocr | raster_wrapper | other_size | blank
     image_cover: float = 0.0  # pdf: union area of page images over page area
     generated: bool = False  # carries emit_pptx's origin tag: this skill made it, so it is not reference evidence
+    unread_glyphs: int = 0  # pdf: glyphs set at an angle no type size can be read along, left out of the runs
 
 
 class Chain:
@@ -1465,10 +1466,48 @@ def _union_cover(boxes: list[tuple[float, float, float, float]], w: float, h: fl
     return sum(grid) / (n * n)
 
 
+def _image_regions(boxes: list[tuple[float, float, float, float]], w: float, h: float) -> list[tuple[float, float, float, float]]:
+    """Touching images as one picture each: a producer that tiles one picture into strips
+    (bain p52 draws 15,554 image objects) paints one element, not thousands. Tiles join
+    when they mark adjacent cells of the 200 x 200 page grid _union_cover uses."""
+    if len(boxes) <= 1:
+        return list(boxes)
+    n = 200
+    label = [-1] * (n * n)
+    cells_of: list[list[int]] = []
+    for x0, t, x1, b in boxes:
+        c0, c1 = max(0, int(x0 / w * n)), min(n, int(x1 / w * n) + 1)
+        r0, r1 = max(0, int(t / h * n)), min(n, int(b / h * n) + 1)
+        cells_of.append([r * n + c for r in range(r0, r1) for c in range(c0, c1)])
+    occupied = {cell for cells in cells_of for cell in cells}
+    region = 0
+    for start in sorted(occupied):
+        if label[start] >= 0:
+            continue
+        stack = [start]
+        label[start] = region
+        while stack:
+            cell = stack.pop()
+            r, c = divmod(cell, n)
+            for nr, nc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
+                k = nr * n + nc
+                if 0 <= nr < n and 0 <= nc < n and k in occupied and label[k] < 0:
+                    label[k] = region
+                    stack.append(k)
+        region += 1
+    merged: dict[int, list[float]] = {}
+    for (x0, t, x1, b), cells in zip(boxes, cells_of):
+        if not cells:
+            continue
+        m = merged.setdefault(label[cells[0]], [x0, t, x1, b])
+        m[0], m[1], m[2], m[3] = min(m[0], x0), min(m[1], t), max(m[2], x1), max(m[3], b)
+    return [tuple(v) for _, v in sorted(merged.items())]  # type: ignore[misc]
+
+
 _TRIAGE_CACHE: dict[tuple[str, int | None], dict] = {}
 
 
-def pdf_triage(path: str, max_pages: int | None = None) -> dict:
+def pdf_triage(path: str, max_pages: int | None = None, pdf=None) -> dict:
     """Per-page evidence class for a PDF reference, before anything is mined from it.
 
     vector: real type (>= 4pt, a real font) that is not merely a frame around an image.
@@ -1488,66 +1527,70 @@ def pdf_triage(path: str, max_pages: int | None = None) -> dict:
     cache_key = (str(Path(path).resolve()), max_pages)
     if cache_key in _TRIAGE_CACHE:
         return _TRIAGE_CACHE[cache_key]
+    if pdf is None:
+        with pdfplumber.open(path) as handle:
+            return pdf_triage(path, max_pages, handle)
+    # an open handle is passed by fingerprint_pdf: pdfplumber caches each page's parsed
+    # objects on it, so the triage and the reader parse every page once, not twice
     pages: list[dict] = []
-    with pdfplumber.open(path) as pdf:
-        total = len(pdf.pages)
-        for i, page in enumerate(pdf.pages):
-            if max_pages is not None and i >= max_pages:
-                break
-            w, h = float(page.width), float(page.height)
-            imgs = []
-            src_px: dict[tuple[float, float, float, float], tuple[int, int]] = {}
-            for im in page.images:
-                x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
-                t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
-                if x1 > x0 and b > t:
-                    imgs.append((x0, t, x1, b))
-                    size = im.get("srcsize")
-                    if size and len(size) == 2:
-                        src_px[(x0, t, x1, b)] = (int(size[0]), int(size[1]))
-            cover = _union_cover(imgs, w, h)
-            chars = page.chars
-            real = 0
-            ocr = 0
-            inside = 0
-            for ch in chars:
-                if not str(ch.get("text", "")).strip():
-                    continue
-                size = float(ch.get("size", 0) or 0)
-                font = str(ch.get("fontname", "") or "")
-                if "GlyphLessFont" in font or size < 2.0:
-                    ocr += 1
-                    continue
-                if size < PDF_TRIAGE_MIN_TEXT_PT:
-                    continue
-                real += 1
-                cx, cy = float(ch.get("x0", 0)), float(ch.get("top", 0))
-                if any(x0 <= cx <= x1 and t <= cy <= b for x0, t, x1, b in imgs):
-                    inside += 1
-            seen = real + ocr
-            # the largest image is the slide when the page is a wrapper around one
-            big = max(imgs, key=lambda b: (b[2] - b[0]) * (b[3] - b[1])) if imgs else None
-            if big is not None and (big[2] - big[0]) * (big[3] - big[1]) < 0.35 * w * h:
-                # a scan tiled into strips (the UF McKinsey pages carry 8 images): the page is the slide
-                big = (0.0, 0.0, w, h) if cover >= 0.9 else None
-            text_digest = hashlib.sha256("".join(str(ch.get("text", "")) for ch in chars if str(ch.get("text", "")).strip()).encode()).hexdigest()[:16]
-            if seen == 0:
-                cls = "raster_only" if cover >= PDF_TRIAGE_IMAGE_COVER else "blank"
-            elif ocr / seen >= 0.5 and cover >= PDF_TRIAGE_IMAGE_COVER:
-                cls = "raster_ocr"
-            elif cover >= PDF_TRIAGE_IMAGE_COVER and real and inside / real < 0.2:
-                # a slide-shaped page with a pasted chart image is a slide; a letter or A4 page
-                # around an image is a print of a slide (every EDGAR wrapper in the corpus is
-                # 612x792 or 792x612, every pasted-image slide page is 4:3 or 16:9)
-                cls = "vector_with_image" if _slide_shaped(w, h) else "raster_wrapper"
-            else:
-                cls = "vector"
-            px = src_px.get(big) if big else None
-            eff_dpi = round(px[0] / ((big[2] - big[0]) / 72.0)) if (px and big and big[2] > big[0]) else None
-            pages.append({"page": i + 1, "width_pt": round(w, 1), "height_pt": round(h, 1), "chars_real": real, "chars_ocr": ocr,
-                          "in_image_share": round(inside / real, 3) if real else None, "image_cover": round(cover, 3), "class": cls,
-                          "slide_box_pt": [round(v, 1) for v in big] if big else None, "image_px": list(px) if px else None,
-                          "effective_dpi": eff_dpi, "text_digest": text_digest})
+    total = len(pdf.pages)
+    for i, page in enumerate(pdf.pages):
+        if max_pages is not None and i >= max_pages:
+            break
+        w, h = float(page.width), float(page.height)
+        imgs = []
+        src_px: dict[tuple[float, float, float, float], tuple[int, int]] = {}
+        for im in page.images:
+            x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
+            t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
+            if x1 > x0 and b > t:
+                imgs.append((x0, t, x1, b))
+                size = im.get("srcsize")
+                if size and len(size) == 2:
+                    src_px[(x0, t, x1, b)] = (int(size[0]), int(size[1]))
+        cover = _union_cover(imgs, w, h)
+        chars = page.chars
+        real = 0
+        ocr = 0
+        inside = 0
+        for ch in chars:
+            if not str(ch.get("text", "")).strip():
+                continue
+            size = float(ch.get("size", 0) or 0)
+            font = str(ch.get("fontname", "") or "")
+            if "GlyphLessFont" in font or size < 2.0:
+                ocr += 1
+                continue
+            if size < PDF_TRIAGE_MIN_TEXT_PT:
+                continue
+            real += 1
+            cx, cy = float(ch.get("x0", 0)), float(ch.get("top", 0))
+            if any(x0 <= cx <= x1 and t <= cy <= b for x0, t, x1, b in imgs):
+                inside += 1
+        seen = real + ocr
+        # the largest image is the slide when the page is a wrapper around one
+        big = max(imgs, key=lambda b: (b[2] - b[0]) * (b[3] - b[1])) if imgs else None
+        if big is not None and (big[2] - big[0]) * (big[3] - big[1]) < 0.35 * w * h:
+            # a scan tiled into strips (the UF McKinsey pages carry 8 images): the page is the slide
+            big = (0.0, 0.0, w, h) if cover >= 0.9 else None
+        text_digest = hashlib.sha256("".join(str(ch.get("text", "")) for ch in chars if str(ch.get("text", "")).strip()).encode()).hexdigest()[:16]
+        if seen == 0:
+            cls = "raster_only" if cover >= PDF_TRIAGE_IMAGE_COVER else "blank"
+        elif ocr / seen >= 0.5 and cover >= PDF_TRIAGE_IMAGE_COVER:
+            cls = "raster_ocr"
+        elif cover >= PDF_TRIAGE_IMAGE_COVER and real and inside / real < 0.2:
+            # a slide-shaped page with a pasted chart image is a slide; a letter or A4 page
+            # around an image is a print of a slide (every EDGAR wrapper in the corpus is
+            # 612x792 or 792x612, every pasted-image slide page is 4:3 or 16:9)
+            cls = "vector_with_image" if _slide_shaped(w, h) else "raster_wrapper"
+        else:
+            cls = "vector"
+        px = src_px.get(big) if big else None
+        eff_dpi = round(px[0] / ((big[2] - big[0]) / 72.0)) if (px and big and big[2] > big[0]) else None
+        pages.append({"page": i + 1, "width_pt": round(w, 1), "height_pt": round(h, 1), "chars_real": real, "chars_ocr": ocr,
+                      "in_image_share": round(inside / real, 3) if real else None, "image_cover": round(cover, 3), "class": cls,
+                      "slide_box_pt": [round(v, 1) for v in big] if big else None, "image_px": list(px) if px else None,
+                      "effective_dpi": eff_dpi, "text_digest": text_digest})
     # deck-level rules, in order: modal page size; a stamp repeated on image pages; wrapper vs pasted image
     sizes = Counter((p["width_pt"], p["height_pt"]) for p in pages)
     modal = sizes.most_common(1)[0][0] if sizes else None
@@ -1624,16 +1667,437 @@ def pdf_triage(path: str, max_pages: int | None = None) -> dict:
     return result
 
 
+# --- pdf text: glyphs -> line segments -> blocks of paragraphs -------------------------
+
+PDF_COLUMN_GAP_ADVANCES = 3.0
+"""A gap wider than three average character advances on one baseline is a column break: a
+source line and a footer on one baseline are two lines, not one."""
+PDF_WORD_GAP_EM = 0.2
+PDF_BLOCK_GAP_EM = 1.0
+PDF_PARAGRAPH_GAP_EM = 0.5
+PDF_BLOCK_SIZE_RATIO = 1.25
+PDF_INDENT_EM = 4.0
+"""The five grouping thresholds above are ASSERTED (a word space, a blank line, half a
+line of paragraph spacing, a size step past the 1.10 level ratio, a four-em hanging
+indent), then checked on the one reference this repo holds as both pptx and PDF (jazz,
+20 slides, 2026-10-20): 192 blocks against the pptx's 149 text shapes (median 1.29 per
+slide: the house name the pptx keeps on its layout is one more block on every PDF page,
+and a table's cells are blocks, slide 19 reads 17 against 3), 1,326 words against 1,263
+(pdfplumber's own word split reads 1,369), 191 paragraphs against 198. Not tuned to that
+deck."""
+QUARTER_TURN_TOLERANCE = 0.02
+"""A glyph matrix whose off-axis terms are under 2% of its scale is upright or a quarter
+turn; anything else (skewed, arbitrary angle) has no axis to read a size along."""
+BULLET_GLYPHS = frozenset("\u2022\u25e6\u25aa\u25ab\u25a0\u25a1\u25cf\u25cb\u2023\u2043\u2013\u2014\u00bb\u203a\u27a2\u27a4\u2713\u2714\u00b7-*>")
+MID_LINE_PUNCTUATION = frozenset("-*>\u2013\u2014\u00b7\u00bb\u203a")
+"""Bullet glyphs that also sit inside sentences ("3/16 - 4/19"): they open an item only at
+the start of a line."""
+SYMBOL_FACES = ("wingdings", "symbol", "zapf", "webdings", "dingbats")
+
+
+@dataclass
+class _Glyph:
+    text: str
+    family: str | None
+    bold: bool
+    italic: bool
+    color: str | None
+    em: float  # the type size: the glyph's extent across its own baseline
+    u0: float  # along the line, in reading order
+    u1: float
+    v0: float  # across the line, increasing from one line to the next
+    v1: float
+
+    @property
+    def space(self) -> bool:
+        return not self.text.strip()
+
+
+@dataclass
+class _Segment:
+    direction: str
+    glyphs: list[_Glyph]
+    bullet: _Glyph | None = None
+    ground: int = -1  # the smallest filled rectangle under the line (-1: the page itself)
+
+    @property
+    def ink(self) -> list[_Glyph]:
+        return [g for g in self.glyphs if not g.space]
+
+    @property
+    def u0(self) -> float:
+        return min(g.u0 for g in self.ink)
+
+    @property
+    def u1(self) -> float:
+        return max(g.u1 for g in self.ink)
+
+    @property
+    def v0(self) -> float:
+        return min(g.v0 for g in self.ink)
+
+    @property
+    def v1(self) -> float:
+        return max(g.v1 for g in self.ink)
+
+    @property
+    def em(self) -> float:
+        sizes = Counter(round(g.em * 2) / 2 for g in self.ink)
+        return sizes.most_common(1)[0][0]
+
+    @property
+    def lead_u0(self) -> float:
+        return self.bullet.u0 if self.bullet is not None else self.u0
+
+    def style(self) -> tuple[float, bool]:
+        ink = self.ink
+        return self.em, all(g.bold for g in ink)
+
+
+def _pdf_glyph(ch: dict, w: float, h: float) -> tuple[str, _Glyph] | None:
+    """(direction, glyph), or None for a glyph set at an angle no type size can be read
+    along. pdfplumber's `size` is the glyph box's height on the page, which is the type
+    size only for upright text: a quarter-turned glyph's height is its advance (bcg's
+    rotated copyright line read as 2 to 4pt one glyph at a time), and its size is the box
+    width."""
+    matrix = ch.get("matrix") or (1, 0, 0, 1, 0, 0)
+    a, b, c, d = (float(v) for v in matrix[:4])
+    scale = max(math.hypot(a, b), math.hypot(c, d))
+    if scale <= 0:
+        return None
+    tol = QUARTER_TURN_TOLERANCE * scale
+    x0, x1, top, bottom = float(ch["x0"]), float(ch["x1"]), float(ch["top"]), float(ch["bottom"])
+    family, bold = _pdf_family(ch.get("fontname"))
+    name = str(ch.get("fontname") or "").lower()
+    italic = "italic" in name or "oblique" in name
+    color = _pdf_color(ch.get("non_stroking_color"))
+    text = str(ch.get("text", ""))
+    if abs(b) <= tol and abs(c) <= tol and a > 0 and d > 0:
+        return "ltr", _Glyph(text, family, bold, italic, color, float(ch.get("size", bottom - top)), x0, x1, top, bottom)
+    if abs(a) <= tol and abs(d) <= tol:
+        if b > 0:  # the baseline runs up the page: lines follow one another to the right
+            return "btt", _Glyph(text, family, bold, italic, color, x1 - x0, h - bottom, h - top, x0, x1)
+        return "ttb", _Glyph(text, family, bold, italic, color, x1 - x0, top, bottom, w - x1, w - x0)
+    return None
+
+
+def _pdf_segments(direction: str, glyphs: list[_Glyph]) -> list[_Segment]:
+    """Glyphs sharing a baseline band, in reading order, cut at column gaps. A glyph joins
+    the line whose tallest glyph's band holds its centre, so a superscript or a larger
+    first word stays on its line."""
+    lines: list[list[_Glyph]] = []
+    band: tuple[float, float, float] | None = None  # v0, v1, em of the line's tallest glyph
+    for g in sorted((g for g in glyphs if not g.space), key=lambda g: ((g.v0 + g.v1) / 2, g.u0)):
+        mid = (g.v0 + g.v1) / 2
+        if band is not None and band[0] <= mid <= band[1]:
+            lines[-1].append(g)
+            if g.em > band[2]:
+                band = (g.v0, g.v1, g.em)
+        else:
+            lines.append([g])
+            band = (g.v0, g.v1, g.em)
+    spaces = sorted((g for g in glyphs if g.space), key=lambda g: g.u0)
+    out: list[_Segment] = []
+    for line in lines:
+        line.sort(key=lambda g: g.u0)
+        lv0, lv1 = min(g.v0 for g in line), max(g.v1 for g in line)
+        segs: list[list[_Glyph]] = [[line[0]]]
+        for k, (prev, g) in enumerate(zip(line, line[1:]), 1):
+            seg = segs[-1]
+            adv = (seg[-1].u1 - seg[0].u0) / len(seg)
+            gap = g.u0 - prev.u1
+            # a bullet after a word space opens the next column's item ("Disciplined process
+            # . For each initiative" on bain p135 is a row label beside a bullet list)
+            nxt = line[k + 1] if k + 1 < len(line) else None
+            bullet_mid = (g.text in BULLET_GLYPHS and nxt is not None and gap > PDF_WORD_GAP_EM * min(g.em, prev.em)
+                          and nxt.u0 - g.u1 > PDF_WORD_GAP_EM * min(g.em, nxt.em) and g.text not in MID_LINE_PUNCTUATION)
+            if gap > PDF_COLUMN_GAP_ADVANCES * max(adv, 2.0) or bullet_mid:
+                segs.append([g])
+            else:
+                seg.append(g)
+        for seg in segs:
+            s0, s1 = seg[0].u0, seg[-1].u1
+            # the file's own space glyphs inside the segment mark word breaks too
+            inner = [sp for sp in spaces if s0 < (sp.u0 + sp.u1) / 2 < s1 and lv0 <= (sp.v0 + sp.v1) / 2 <= lv1]
+            glyphs_in = sorted(seg + inner, key=lambda g: g.u0)
+            segment = _Segment(direction, glyphs_in)
+            first = segment.ink[0]
+            rest = segment.ink[1:]
+            symbol = (first.family or "").lower().startswith(SYMBOL_FACES)
+            if rest and (first.text in BULLET_GLYPHS or symbol) and len(first.text) == 1:
+                follows_gap = rest[0].u0 - first.u1 > PDF_WORD_GAP_EM * min(first.em, rest[0].em)
+                if follows_gap or symbol:
+                    segment.bullet = first
+                    segment.glyphs = [x for x in glyphs_in if x is not first]
+                    while segment.glyphs and segment.glyphs[0].space:
+                        segment.glyphs.pop(0)
+            out.append(segment)
+    return out
+
+
+def _segment_runs(seg: _Segment) -> list[dict]:
+    """Consecutive glyphs of one face, weight, slant, size and ink, with word spaces put
+    back where the file has a space glyph or a gap wider than PDF_WORD_GAP_EM."""
+    runs: list[dict] = []
+    prev: _Glyph | None = None
+    pending = False
+    for g in seg.glyphs:
+        if g.space:
+            pending = prev is not None
+            continue
+        gap = prev is not None and g.u0 - prev.u1 > PDF_WORD_GAP_EM * min(g.em, prev.em)
+        key = (g.family, g.bold, g.italic, round(g.em * 2) / 2, g.color)
+        sep = " " if (pending or gap) else ""
+        if runs and runs[-1]["key"] == key:
+            runs[-1]["text"] += sep + g.text
+        else:
+            if runs and sep:
+                runs[-1]["text"] += sep
+            runs.append({"key": key, "text": g.text})
+        prev, pending = g, False
+    return runs
+
+
+def _pdf_blocks(segments: list[_Segment]) -> list[list[_Segment]]:
+    """Line segments stacked into text blocks, the PDF's stand-in for a text box: the next
+    line of a block lies within PDF_BLOCK_GAP_EM of the line above, overlaps it across the
+    page, shares its left edge (or its centre, or its right edge), and is set at a size
+    within PDF_BLOCK_SIZE_RATIO."""
+    blocks: list[list[_Segment]] = []
+    for s in sorted(segments, key=lambda s: (s.direction, s.v0, s.lead_u0)):
+        best: tuple[float, list[_Segment]] | None = None
+        for blk in blocks:
+            last = blk[-1]
+            if last.direction != s.direction or last.ground != s.ground:  # a fill edge between two lines parts two boxes
+                continue
+            em = min(last.em, s.em)
+            gap = s.v0 - last.v1
+            if gap < -0.5 * em or gap > PDF_BLOCK_GAP_EM * em:
+                continue
+            if max(last.em, s.em) > PDF_BLOCK_SIZE_RATIO * em:
+                continue
+            if min(last.u1, s.u1) <= max(last.lead_u0, s.lead_u0):
+                continue
+            left = min(x.lead_u0 for x in blk)
+            aligned = (left - em <= s.lead_u0 <= left + PDF_INDENT_EM * em
+                       or abs((s.u0 + s.u1) / 2 - (last.u0 + last.u1) / 2) <= em or abs(s.u1 - last.u1) <= em)
+            if aligned and (best is None or gap < best[0]):
+                best = (gap, blk)
+        if best is None:
+            blocks.append([s])
+        else:
+            best[1].append(s)
+    return blocks
+
+
+def _block_paragraphs(blk: list[_Segment]) -> list[dict]:
+    """A block's lines joined into paragraphs: a bullet, a change of size or of whole-line
+    weight, or a gap wider than PDF_PARAGRAPH_GAP_EM starts a new one; a wrapped line does
+    not. Alignment is read off the lines' edges, and is unknown ("?") for a one-line block."""
+    groups: list[list[_Segment]] = []
+    for k, s in enumerate(blk):
+        if k == 0:
+            groups.append([s])
+            continue
+        prev = blk[k - 1]
+        gap = s.v0 - prev.v1
+        head = groups[-1][0]
+        # a line hanging under a bullet's text continues that item whatever its weight
+        # ("Senior-level leadership ... are / critical for driving action", bain p135)
+        hanging = head.bullet is not None and abs(s.u0 - head.u0) <= 0.5 * s.em and s.em == prev.em
+        restyled = s.style() != prev.style() and not hanging
+        if s.bullet is not None or restyled or gap > PDF_PARAGRAPH_GAP_EM * min(s.em, prev.em):
+            groups.append([s])
+        else:
+            groups[-1].append(s)
+    left, right = min(s.u0 for s in blk), max(s.u1 for s in blk)
+    bullet_lefts: list[float] = []
+    for s in blk:
+        if s.bullet is not None and not any(abs(s.bullet.u0 - b) <= 0.5 * s.em for b in bullet_lefts):
+            bullet_lefts.append(s.bullet.u0)
+    bullet_lefts.sort()
+    paras = []
+    for group in groups:
+        em = group[0].em
+        tol = 0.5 * em
+        if len(blk) == 1:
+            align = "?"
+        elif group[0].bullet is not None and len(group) == 1:
+            align = "l"  # a bullet hangs from the left edge whatever its line's length
+        elif len(group) == 1:
+            s = group[0]
+            align = ("l" if abs(s.u0 - left) <= tol else "r" if abs(s.u1 - right) <= tol
+                     else "ctr" if abs((s.u0 + s.u1) / 2 - (left + right) / 2) <= tol else "l")
+        else:
+            g0 = group[0]
+            same_left = all(abs(s.u0 - g0.u0) <= tol for s in group[1:])
+            full_right = all(abs(s.u1 - g0.u1) <= tol for s in group[1:-1]) and len(group) > 2
+            same_right = all(abs(s.u1 - g0.u1) <= tol for s in group[1:])
+            same_mid = all(abs((s.u0 + s.u1) / 2 - (g0.u0 + g0.u1) / 2) <= tol for s in group[1:])
+            align = ("just" if same_left and full_right and not same_right else "l" if same_left else "r" if same_right
+                     else "ctr" if same_mid else "l")
+        runs: list[dict] = []
+        for li, s in enumerate(group):
+            for ri, r in enumerate(_segment_runs(s)):
+                if li and not ri and runs and not runs[-1]["text"].endswith(" "):
+                    runs[-1]["text"] += " "  # a wrapped line ends a word
+                if runs and runs[-1]["key"] == r["key"]:
+                    runs[-1]["text"] += r["text"]
+                else:
+                    runs.append(r)
+        bullet = group[0].bullet
+        level = next((i for i, b in enumerate(bullet_lefts) if abs(bullet.u0 - b) <= 0.5 * em), 0) if bullet is not None else 0
+        # the indents a pptx declares, measured: marL is the text's distance from the block's
+        # left edge, and the (negative) indent puts the bullet back where it was drawn
+        block_left = min(s.lead_u0 for s in blk)
+        mar_l = round((group[0].u0 - block_left) * EMU_PER_PT) if bullet is not None else 0
+        indent = round((bullet.u0 - group[0].u0) * EMU_PER_PT) if bullet is not None else None
+        paras.append({"level": level, "bullet": f"char:{bullet.text}" if bullet is not None else "none", "align": align, "mar_l_emu": mar_l,
+                      "indent_emu": indent,
+                      # a symbol face whose glyph the file maps to a Unicode bullet: the Unicode
+                      # is the meaning, and Wingdings has no glyph at U+2022 to draw it with
+                      "bullet_font": (None if bullet is None or ((bullet.family or "").lower().startswith(SYMBOL_FACES) and ord(bullet.text) < 0xE000)
+                                      else bullet.family),
+                      "runs": [{"text": r["text"].rstrip() if i == len(runs) - 1 else r["text"], "size_pt": r["key"][3], "bold": r["key"][1],
+                                "italic": r["key"][2], "color": r["key"][4], "caps": False, "family": r["key"][0]} for i, r in enumerate(runs)]})
+    return paras
+
+
+def _block_box(blk: list[_Segment], w: float, h: float) -> tuple[tuple[float, float, float, float], int]:
+    """(x, y, width, height) in points before rotation, and the OOXML rotation in 60000ths."""
+    u0, u1 = min(s.u0 if s.bullet is None else s.bullet.u0 for s in blk), max(s.u1 for s in blk)
+    v0, v1 = min(s.v0 for s in blk), max(s.v1 for s in blk)
+    direction = blk[0].direction
+    if direction == "ltr":
+        return (u0, v0, u1 - u0, v1 - v0), 0
+    # visual box on the page, then the unrotated box about the same centre
+    if direction == "btt":
+        vx0, vx1, vy0, vy1 = v0, v1, h - u1, h - u0
+        rotation = 16_200_000
+    else:
+        vx0, vx1, vy0, vy1 = w - v1, w - v0, u0, u1
+        rotation = 5_400_000
+    cx, cy = (vx0 + vx1) / 2, (vy0 + vy1) / 2
+    bw, bh = u1 - u0, v1 - v0
+    return (cx - bw / 2, cy - bh / 2, bw, bh), rotation
+
+
+def _pdf_text(page, sp: SlidePrint, scale: float) -> None:
+    """Runs and text blocks of one page: the PDF's runs carry their words and text, and
+    one block is one element, as one text box is in a pptx."""
+    w, h = float(page.width), float(page.height)
+    by_dir: dict[str, list[_Glyph]] = {}
+    unread = 0
+    for ch in page.chars:
+        got = _pdf_glyph(ch, w, h)
+        if got is None:
+            unread += 1 if str(ch.get("text", "")).strip() else 0
+            continue
+        by_dir.setdefault(got[0], []).append(got[1])
+    sp.unread_glyphs = unread
+    segments = [s for direction, glyphs in sorted(by_dir.items()) for s in _pdf_segments(direction, glyphs) if s.ink]
+    grounds = sorted(((float(r["x0"]), float(r["top"]), float(r["x1"]), float(r["bottom"])) for r in page.rects
+                      if r.get("fill") and float(r.get("width", 0)) > 2.0 and float(r.get("height", 0)) > 2.0
+                      and float(r.get("width", 0)) * float(r.get("height", 0)) < 0.98 * w * h),
+                     key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+    for s in segments:
+        mu, mv = (s.u0 + s.u1) / 2, (s.v0 + s.v1) / 2
+        cx, cy = {"ltr": (mu, mv), "btt": (mv, h - mu), "ttb": (w - mv, mu)}[s.direction]
+        s.ground = next((k for k, (x0, t, x1, b) in enumerate(grounds) if x0 <= cx <= x1 and t <= cy <= b), -1)
+    surface = f"page{sp.index + 1}"
+    for bi, blk in enumerate(_pdf_blocks(segments)):
+        ref = f"t{bi}"
+        paras = _block_paragraphs(blk)
+        (x, y, bw, bh), rotation = _block_box(blk, w, h)
+        chars = 0
+        for pi, para in enumerate(paras):
+            bullet = para["bullet"]
+            for ri, r in enumerate(para["runs"]):
+                n = sum(1 for c in r["text"] if not c.isspace())
+                chars += n
+                sp.runs.append(Run(n, r["family"], r["size_pt"], r["bold"], r["color"], para["align"], "none", surface=surface,
+                                   ref=f"{ref}/p[{pi}]/r[{ri}]", level=para["level"], italic=r["italic"],
+                                   bullet="char" if bullet.startswith("char:") else "none", text_sample=r["text"].strip()[:40],
+                                   words=len(r["text"].split()), bullet_glyph=bullet[5:] if bullet.startswith("char:") else None,
+                                   bullet_font=para["bullet_font"], text=r["text"],
+                                   mar_l_emu=para["mar_l_emu"] if bullet.startswith("char:") else None, indent_emu=para["indent_emu"]))
+        text = " ".join("".join(r["text"] for r in p["runs"]) for p in paras)
+        sp.shapes.append(Shape("text_box", (int(x * scale), int(y * scale), int(bw * scale), int(bh * scale)), None, None, None, None, False,
+                               None, "slide", ref=ref, rotation=rotation, text_chars=chars, text=text[:80], paragraphs=paras))
+
+
+RECURRENCE_FLOOR = 0.5
+"""A position or a text is the deck's own when it recurs on at least half its pages
+(deckgen tokens.py:5754, MOTIF_RECURRENCE_FLOOR there; extract_style.py reads it from here)."""
+TITLE_SLOT_DEPTH = 3
+"""How many of a page's topmost text blocks may be its title: a disclaimer line or a
+section tag above the title (bcg pages 20 and 30) pushes it to second place."""
+
+
+def _pdf_title_slot(prints: list[SlidePrint]) -> dict:
+    """Mark the title of each page from position evidence, the only evidence a PDF has
+    for it. The TITLE_SLOT_DEPTH topmost text blocks of a page are candidates (text
+    repeated on half the pages is chrome and a bare number is a page number: neither is
+    one). Candidates share a slot when their left edges, and their top or bottom edges,
+    lie within the smaller of their type sizes of each other; a slot holding a candidate on at
+    least RECURRENCE_FLOOR of the pages recurs, and the topmost recurring slot holds the
+    titles. Size plays no part, so a large numeral never outvotes the page titles. With no
+    recurring slot nothing is marked, and type.title stays open for completion."""
+    pages = [sp for sp in prints if sp.page_class in ("vector", "vector_with_image")]
+    repeated = Counter(t for sp in pages for t in {sh.text for sh in sp.shapes if sh.kind == "text_box" and sh.text})
+    chrome_text = {t for t, n in repeated.items() if n >= max(2, RECURRENCE_FLOOR * len(pages))}
+    candidates: list[tuple[SlidePrint, Shape, float]] = []
+    for sp in pages:
+        blocks = [sh for sh in sp.shapes if sh.kind == "text_box" and not sh.rotation and sh.box and sh.paragraphs
+                  and sh.text not in chrome_text and not re.fullmatch(r"\d+", (sh.text or "").strip())]
+        for sh in sorted(blocks, key=lambda sh: (sh.box[1], sh.box[0]))[:TITLE_SLOT_DEPTH]:  # type: ignore[index]
+            candidates.append((sp, sh, float(sh.paragraphs[0]["runs"][0]["size_pt"]) * EMU_PER_PT))  # type: ignore[index]
+
+    def same_slot(a: Shape, b: Shape, em: float) -> bool:
+        ax, ay, _, ah = a.box  # type: ignore[misc]
+        bx, by, _, bh = b.box  # type: ignore[misc]
+        return abs(ax - bx) <= em and (abs(ay - by) <= em or abs((ay + ah) - (by + bh)) <= em)
+
+    need = max(2, RECURRENCE_FLOOR * len(pages))
+    best: list[tuple[SlidePrint, Shape]] = []
+    best_top = math.inf
+    for _, shape, em in candidates:
+        members: dict[int, tuple[SlidePrint, Shape]] = {}
+        for sp, sh, em2 in candidates:
+            if same_slot(shape, sh, min(em, em2)) and (sp.index not in members or sh.box[1] < members[sp.index][1].box[1]):  # type: ignore[index]
+                members[sp.index] = (sp, sh)  # one title per page: the slot's topmost block on it
+        if len(members) < need:
+            continue
+        tops = sorted(sh.box[1] for _, sh in members.values())  # type: ignore[index]
+        median_top = tops[len(tops) // 2]
+        if median_top < best_top or (median_top == best_top and len(members) > len(best)):
+            best, best_top = list(members.values()), median_top
+    if not best:
+        return {"pages": len(pages), "candidates": len(candidates), "needed": need, "marked": 0}
+    for sp, sh in best:
+        sh.ph_type = "title"
+        for r in sp.runs:
+            if r.ref.startswith(sh.ref + "/"):
+                r.ph_class = "title"
+    return {"pages": len(pages), "candidates": len(candidates), "needed": need, "marked": len(best)}
+
+
+PDF_PROGRESS_EVERY = 50  # pages between progress lines on stderr; a 205-page reference reads for about half a minute
+
+
 def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]:
     import pdfplumber  # optional dependency: only PDF references need it
 
     name = Path(path).stem
     out: list[SlidePrint] = []
-    triage = pdf_triage(path, max_pages)
     with pdfplumber.open(path) as pdf:
+        triage = pdf_triage(path, max_pages, pdf)
+        total = triage["pages_triaged"]
         for i, page in enumerate(pdf.pages):
             if max_pages is not None and i >= max_pages:
                 break
+            if total > PDF_PROGRESS_EVERY and i % PDF_PROGRESS_EVERY == 0:
+                print(f"ooxml: reading page {i + 1} of {total}", file=sys.stderr, flush=True)
             w, h = float(page.width), float(page.height)
             scale = 12700.0  # pt -> EMU so margins and areas share the pptx arithmetic
             try:
@@ -1644,23 +2108,9 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
             if i < len(triage["pages"]):
                 sp.page_class = triage["pages"][i]["class"]
                 sp.image_cover = triage["pages"][i]["image_cover"]
-            # runs: consecutive chars sharing font, size and colour on one line
-            key = None
-            buf = 0
-            for ch in page.chars:
-                if not str(ch.get("text", "")).strip():
-                    continue
-                family, bold = _pdf_family(ch.get("fontname"))
-                k = (family, bold, round(float(ch.get("size", 0)) * 2) / 2, _pdf_color(ch.get("non_stroking_color")), round(float(ch.get("top", 0))))
-                if k != key:
-                    if key is not None and buf:
-                        sp.runs.append(Run(buf, key[0], key[2], key[1], key[3], "?", "none"))
-                    key, buf = k, 0
-                buf += 1
-            if key is not None and buf:
-                sp.runs.append(Run(buf, key[0], key[2], key[1], key[3], "?", "none"))
+            _pdf_text(page, sp, scale)
             page_area = w * h
-            for rect in page.rects:
+            for k, rect in enumerate(page.rects):
                 rw, rh = float(rect.get("width", 0)), float(rect.get("height", 0))
                 if rw <= 0 or rh <= 0:
                     continue
@@ -1674,49 +2124,28 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 lw = float(rect.get("linewidth") or 0) if stroke else None
                 sp.shapes.append(Shape("line" if thin else "shape", box, None if thin else fill,
                                        (fill if thin and fill else stroke), int((lw if lw else min(rw, rh)) * scale) if (thin or stroke) else None,
-                                       None, False, None, "slide"))
-            for line in page.lines:
+                                       None, False, None, "slide", ref=f"r{k}"))
+            for k, line in enumerate(page.lines):
                 lw = float(line.get("linewidth") or 1.0)
                 color = _pdf_color(line.get("stroking_color"))
                 box = (int(float(line["x0"]) * scale), int(float(line["top"]) * scale),
                        int(max(1.0, float(line["x1"]) - float(line["x0"])) * scale), int(max(lw, float(line["bottom"]) - float(line["top"])) * scale))
-                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide"))
+                sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide", ref=f"l{k}"))
+            boxes = []
+            for im in page.images:
+                x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
+                t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
+                # an image under the whole page is its ground, as a page-sized rect is
+                if x1 > x0 and b > t and (x1 - x0) * (b - t) < 0.98 * page_area:
+                    boxes.append((x0, t, x1, b))
+            for k, (x0, t, x1, b) in enumerate(_image_regions(boxes, w, h)):
+                sp.shapes.append(Shape("picture", (int(x0 * scale), int(t * scale), int((x1 - x0) * scale), int((b - t) * scale)),
+                                       None, None, None, None, False, None, "slide", ref=f"img{k}"))
             if sp.background is None:
                 sp.background = "FFFFFF"
-            # text extents feed the margins: a PDF has no text boxes, so words stand in for them
-            try:
-                words = page.extract_words()
-            except Exception:  # noqa: BLE001 - a malformed page still has rects
-                words = []
-            # words grouped into lines (same top within 2pt) carry their text, so a footer or a
-            # page number repeated at one position on most pages can be recognised as chrome
-            lines_by_top: dict[int, list[dict]] = {}
-            for wd in words:
-                lines_by_top.setdefault(int(round(float(wd["top"]) / 2.0)), []).append(wd)
-            for _, line_words in sorted(lines_by_top.items()):
-                line_words.sort(key=lambda d: float(d["x0"]))
-                # a gap wider than three average character advances is a column break: a source
-                # line and a footer on one baseline are two lines, not one
-                segments: list[list[dict]] = [[line_words[0]]]
-                for prev, wd in zip(line_words, line_words[1:]):
-                    chars = max(1, len(str(prev["text"])))
-                    avg = (float(prev["x1"]) - float(prev["x0"])) / chars
-                    if float(wd["x0"]) - float(prev["x1"]) > 3.0 * max(avg, 2.0):
-                        segments.append([wd])
-                    else:
-                        segments[-1].append(wd)
-                for seg in segments:
-                    x0 = min(float(d["x0"]) for d in seg)
-                    x1 = max(float(d["x1"]) for d in seg)
-                    top = min(float(d["top"]) for d in seg)
-                    bottom = max(float(d["bottom"]) for d in seg)
-                    text = " ".join(str(d["text"]) for d in seg)
-                    box = (int(x0 * scale), int(top * scale), int((x1 - x0) * scale), int((bottom - top) * scale))
-                    sp.shapes.append(Shape("text_box", box, None, None, None, None, False, None, "slide", text_chars=len(text), text=text[:80]))
             out.append(sp)
+    triage["title_slot"] = _pdf_title_slot(out)
     return out
-
-
 
 
 def main(argv: list[str]) -> int:
