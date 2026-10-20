@@ -1,0 +1,7 @@
+[pillow_x128] face /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf (same as oracle: True)
+  exact-break agreement 89/90; same line count 90/90
+  per-line width difference on agreeing cases (223 lines): p50 322 EMU, p95 12884 EMU, max 140155 EMU on 'AVAWAY kerning pairs To Ta Te Yo Wa LT AV AW: whol'; max whole-sentence advance difference: 139733 EMU
+  differs: ('UPPERCASE KICKER TEXT WITH TRACKING EXPE', 5000000, 2, 2)
+[harfbuzz] face /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf (same as oracle: True)
+  exact-break agreement 90/90; same line count 90/90
+  per-line width difference on agreeing cases (225 lines): p50 0 EMU, p95 0 EMU, max 0 EMU on None; max whole-sentence advance difference: 0 EMU
