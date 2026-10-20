@@ -614,6 +614,9 @@ def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None, 
             note = admission_note(node["kind"], guide)
             if note:
                 slide.setdefault("component_notes", []).append(note)
+            if box["width"] <= 0 or box["height"] <= 0:
+                # the page left the component no room; expanding into nothing emits debris
+                raise SystemExit(f"component {node['id']}: the page leaves it a {box['width']} x {box['height']} EMU box; cut or split the page before the component")
             sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide_for_components)
             sub = normalise(sub, slide)
             sub["weight"] = node.get("weight")
@@ -661,7 +664,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
             for i, (p_spec, p_meas) in enumerate(zip(node["paragraphs"], measured)):
                 ps = para_style.get(str(i), {})
                 para = {"role": p_spec["role"], "bullet_level": p_spec.get("bullet_level"), "lines": p_meas["lines"], "indent_emu": p_meas.get("marL", 0),
-                        "runs": ps.get("runs") or [{"text": p_spec["text"]}], "ink_role": ps.get("ink_role"), "align": ps.get("align")}
+                        "runs": ps.get("runs") or [{"text": p_spec["text"]}], "ink_role": ps.get("ink_role") or p_spec.get("ink_role"), "align": ps.get("align") or p_spec.get("align")}
                 paragraphs.append(para)
             out.append({"id": nid, "kind": "text", "box": b, "paragraphs": paragraphs, **extra})
         elif kind == "table":

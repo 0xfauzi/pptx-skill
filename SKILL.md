@@ -235,6 +235,17 @@ where two midpoints were above it, and "the offer is at the top of the range" ov
 table where its multiple was below the median; the build cannot catch a false sentence,
 only you can, and a managing director will.
 
+### 5.2 Seed a page from the house specimen
+
+`examples/house/` holds deckgen's 14 house specimen pages as deck specs (comps, football
+field, waterfall, Mekko, KPI band, timeline, credentials, league table, agenda, profile,
+framework matrix, arithmetic chain, section divider, text plus chart); `COVERAGE.md`
+names each page's family and elements. Copy the page of the family you need, replace the
+content, and write a title that fits the reference's band. They were composed for a 16:9
+page: on keybank's 4:3 page at 12pt only 2 of 14 fit as written (the bridge fits with its
+chart crushed to 0.29 in, which is not a pass you should accept), so cut an exhibit or
+split before you build, and read the unfittable report rather than forcing the scale.
+
 ## 6. Write the page specs
 
 A page is a tree. Regions lay out children with `flex` (direction, gap role, pad role,
@@ -384,6 +395,22 @@ that must never wrap; the check fails a box where one of them did ("$1" over "4"
 defect the solver's fit verdict does not see).
 
 `check` first runs each test's `expand` twice in separate interpreters under PYTHONHASHSEED=0 and PYTHONHASHSEED=1 and compares the trees with keys sorted: a dict whose key order moved is not a difference, a list whose order moved is. Any difference fails the check and names the first differing path (`$.children[0].paragraphs[0].text: ...`); a set iterated into children is the usual cause. The check also fails a box with a contrast violation; the harness page's missing source line is not the component's fault. `kind` may be a path to a component directory under development, so a draft can be checked before it enters `components/`.
+
+The library, each admitted on keybank (three shown boxes, one held-out box with other
+data, two hash seeds, single-line figures, contrast, and a package that validates):
+
+- `football_field`: valuation ranges on one shared axis, the marker drawn through every
+  bar; wide or compact by measured label wrap.
+- `title_block`: optional kicker, the claim, a closing hairline; the data picks the variant.
+- `bullet_stack`: co-equal points in the writer's order; two columns filled down then
+  across when `width // 2 >= height`.
+- `kpi_row`: ranked figures, never tiles; the lead takes the first accent that reads on
+  the surface at 3:1 (on keybank that is the second accent, the deep blue). Horizontal
+  when every figure measures onto one line in its column, else label-left rows.
+
+A component's ids carry `data["_id"]` as prefix, and paragraph `ink_role` and `align`
+written in its tree reach the file. A component the page leaves no room for is refused
+by name, never expanded into a zero-size box.
 
 Never estimate a text width in a component (`0.6 em per character` wrapped "$8.2 to $12.4" onto two lines). `expand` receives the guide with `guide["_api"]`, the solver's own instruments: `api["text_width_emu"](guide, role, text)` is the width the whole string draws in that role at scale 1.00 (cased, tracked, bold when the role is), `api["line_pitch_emu"](guide, role)` the baseline advance, `api["paragraph_spacing_emu"]` the role's spcBef plus spcAft, `api["fit_epsilon_emu"]` the ruler's wrap margin. A text element sized to `text_width_emu + fit_epsilon_emu` stays on one line; add your own padding. `python3 scripts/component_api.py guide.json type.caption '$12.4 to $13.9'` prints the figures by hand. The functions raise on a role the guide lacks, as the solver would; do not catch and guess.
 

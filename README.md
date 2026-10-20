@@ -108,7 +108,9 @@ scripts/
   component.py           check and admit a component on held-out data
   import_slide.py        a reference slide into a spec of roles: the round trip, and a seed
   pptx_tools.py          template surgery, delete, duplicate, clean, validate, blank
-components/              admitted components (expand.py, spec.json, data, admitted.json)
+components/              four admitted components: football field, title block, bullet stack, KPI row
+examples/house/          deckgen's 14 house specimen pages as deck specs, with COVERAGE.md
+oracles/                 the scripts behind every 'Checked by' in PORT_AUDIT.md
 references/design/       the nine design doctrines
 examples/                worked completions and page specs for a pptx and a PDF reference
 refs/                    manifest and fetch script for the public reference decks (files git-ignored)

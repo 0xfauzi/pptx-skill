@@ -52,6 +52,30 @@ def _figure_role(i: int) -> str:
     return "type.emphasis" if i == LEAD_INDEX else "type.body"
 
 
+
+def _luminance(hex_color: str) -> float:
+    def channel(c: int) -> float:
+        v = c / 255
+        return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+
+def _lead_ink(guide: dict) -> str:
+    """The first accent that reads on the page ground (WCAG 3:1, the build's refusal line).
+    Accent numbering is the extractor's, by usage: on keybank accent1 is a light grey panel
+    fill at 1.5:1 on white, and the deep blue is accent2. With no accent that reads, the
+    lead keeps the body ink and its weight alone leads."""
+    roles = guide.get("color", {}).get("roles", {})
+    ground = (roles.get("color.surface") or {}).get("hex") or "FFFFFF"
+    for name in ("color.accent1", "color.accent2", "color.accent3", "color.accent4"):
+        hex_color = (roles.get(name) or {}).get("hex")
+        if hex_color:
+            a, b = sorted((_luminance(hex_color), _luminance(ground)))
+            if (b + 0.05) / (a + 0.05) >= 3.0:
+                return name
+    return "color.ink"
+
 def expand(data: dict, box: dict, guide: dict) -> dict:
     pid = data.get("_id", "kpi")
     metrics = [(str(m["label"]), str(m["value"])) for m in data["metrics"]]
@@ -76,7 +100,7 @@ def expand(data: dict, box: dict, guide: dict) -> dict:
     def figure(i: int, value: str, width: int | None) -> dict:
         para = {"role": _figure_role(i), "text": value}
         if i == LEAD_INDEX:
-            para["ink_role"] = "color.accent1"
+            para["ink_role"] = _lead_ink(guide)
         node = {"type": "element", "id": f"{pid}-figure{i}", "kind": "text", "paragraphs": [para]}
         if width is not None:
             node["size"] = {"width_emu": width, "height_emu": None}

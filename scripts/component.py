@@ -138,7 +138,8 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
     if images:
         from render import grid
         sheet = str(grid([Path(p) for p in images], Path(out) / f"{name}.sheet.png", cols=2, cell_w=700))
-    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict), "tests": verdict, "pptx": pptx, "sheet": sheet, **guide_ref,
+    # a package that fails validation (a shape past the slide) is not admitted, whatever the boxes say
+    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict) and bool(report.get("validation", {}).get("ok")), "tests": verdict, "pptx": pptx, "sheet": sheet, **guide_ref,
               "determinism": stable, "judge": report.get("judge"), "validation_ok": report.get("validation", {}).get("ok")}
     (Path(out) / f"{name}.check.json").write_text(json.dumps(result, indent=1, default=str))
     return result
