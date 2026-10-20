@@ -1,29 +1,172 @@
 {
- "/color/roles/color.rule": {"hex": "113D63", "why": "the full-width top rule on every layout and the left block are this deep blue (chrome-3, chrome-4 in the digest)"},
- "/color/roles/color.ink_muted": {"hex": "595959", "why": "no muted ink is observed; a neutral between the black ink and the grey accent, for source lines and axis labels"},
- "/color/roles/color.surface_alt": {"hex": "CCD1D7", "why": "the light grey panel fill covers 31% of painted area (sensitivity table bands on slides 4 and 10)"},
- "/color/roles/color.accent3": {"hex": "5E7C9E", "why": "the master carries the house palette as swatch rectangles: 17-61-99 (accent1), 204-209-215 (accent2), 94-124-158, 72-80-89"},
+ "/color/roles/color.ink_muted": {
+  "hex": "595959",
+  "why": "no muted ink is observed; a neutral between the black ink and the grey accent, for source lines and axis labels"
+ },
+ "/color/roles/color.surface_alt": {
+  "hex": "CCD1D7",
+  "why": "the light grey panel fill covers 31% of painted area (sensitivity table bands on slides 4 and 10)"
+ },
+ "/color/roles/color.accent3": {
+  "hex": "5E7C9E",
+  "why": "the master carries the house palette as swatch rectangles: 17-61-99, 204-209-215 (observed as accent1), 94-124-158, 72-80-89"
+ },
  "/extra_roles/color.slate": "485059",
- "/typography/roles/type.h1/members": {"weight": 400, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink"},
- "/typography/roles/type.h2/members": {"weight": 700, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink"},
- "/typography/roles/type.kicker": {"size_pt": 10, "weight": 700, "italic": false, "family": "major", "alignment": "left", "case": "upper", "ink_role": "color.accent1", "why": "section labels above exhibits; caption size, bold, caps, in the house blue"},
- "/typography/roles/type.footnote": {"size_pt": 10, "weight": 400, "italic": false, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink", "why": "the reference's smallest text is its 10pt notes; the annotation floor is 10"},
- "/typography/roles/type.source_line": {"size_pt": 10, "weight": 400, "italic": false, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink_muted", "why": "same size as the 10pt captions the reference uses for notes"},
- "/typography/roles/type.table_header": {"size_pt": 12, "weight": 700, "italic": false, "family": "major", "alignment": "center", "case": "as_typed", "ink_role": "color.ink_inverse", "why": "the label boxes on slide 3 are white bold text on the deep blue"},
- "/typography/roles/type.table_cell": {"size_pt": 12, "weight": 400, "italic": false, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink", "why": "body size; the body floor is 12"},
- "/typography/roles/type.axis_label": {"size_pt": 10, "weight": 400, "italic": false, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink_muted"},
- "/typography/roles/type.data_label": {"size_pt": 10, "weight": 400, "italic": false, "family": "major", "alignment": "center", "case": "as_typed", "ink_role": "color.ink"},
+ "/typography/roles/type.h1/members": {
+  "weight": 400,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.h2/members": {
+  "weight": 700,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.kicker": {
+  "size_pt": 10,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.accent2",
+  "why": "section labels above exhibits; caption size, bold, caps, in the house blue"
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "the reference's smallest text is its 10pt notes; the annotation floor is 10"
+ },
+ "/typography/roles/type.source_line": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "same size as the 10pt captions the reference uses for notes"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 12,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "center",
+  "case": "as_typed",
+  "ink_role": "color.ink_inverse",
+  "why": "the label boxes on slide 3 are white bold text on the deep blue"
+ },
+ "/typography/roles/type.table_cell": {
+  "size_pt": 12,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "body size; the body floor is 12"
+ },
+ "/typography/roles/type.axis_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted"
+ },
+ "/typography/roles/type.data_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "center",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
  "/floors/chart/floor_pt": 10,
  "/tables": {
-  "header_fill_role": "color.accent1", "header_ink_role": "color.ink_inverse", "header_bold": true, "banding_role": null,
-  "edge_rules": {"table_top": {"none": true}, "header_bottom": {"width_pt": 0.75, "color_role": "color.rule"}, "row_interior": {"width_pt": 0.5, "color_role": "color.accent2"},
-                 "table_bottom": {"width_pt": 0.75, "color_role": "color.rule"}, "table_left": {"none": true}, "table_right": {"none": true}, "column_interior": {"none": true}},
-  "cell_padding_role": "space.xs", "alignment_by_column_type": {"numeric": "right", "text": "left"}, "totals_rule": true, "merged_cell_convention": "span_labels",
-  "why": "no table in the reference; the slide 3 label boxes (blue fill, white bold text) and the slide 4 sensitivity grids (grey bands, thin rules) set the pattern"},
- "/charts": {"series_color_roles": ["color.accent1", "color.accent2", "color.accent3", "color.slate"],
-             "per_kind": {"column": {"gridlines_major": 0.0, "data_labels": 1.0, "legend_position": "b"}, "bar": {"gridlines_major": 0.0, "data_labels": 1.0, "legend_position": "b"}, "line": {"gridlines_major": 0.0, "data_labels": 0.0, "legend_position": "b"}},
-             "source_line_required": true, "why": "no native chart in the reference; flat register, no gridlines, labels on bars like the sensitivity figures"},
- "/continuation": {"header_repeat": "full", "contd_mark": " (cont'd)", "takeaway_policy": "repeat"},
+  "header_fill_role": "color.accent2",
+  "header_ink_role": "color.ink_inverse",
+  "header_bold": true,
+  "banding_role": null,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.rule"
+   },
+   "row_interior": {
+    "width_pt": 0.5,
+    "color_role": "color.accent1"
+   },
+   "table_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.rule"
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "none": true
+   }
+  },
+  "cell_padding_role": "space.xs",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": true,
+  "merged_cell_convention": "span_labels",
+  "why": "no table in the reference; the slide 3 label boxes (blue fill, white bold text) and the slide 4 sensitivity grids (grey bands, thin rules) set the pattern"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent2",
+   "color.accent1",
+   "color.accent3",
+   "color.slate"
+  ],
+  "per_kind": {
+   "column": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "b"
+   },
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "b"
+   },
+   "line": {
+    "gridlines_major": 0.0,
+    "data_labels": 0.0,
+    "legend_position": "b"
+   }
+  },
+  "source_line_required": true,
+  "why": "no native chart in the reference; flat register, no gridlines, labels on bars like the sensitivity figures"
+ },
+ "/continuation": {
+  "header_repeat": "full",
+  "contd_mark": " (cont'd)",
+  "takeaway_policy": "repeat"
+ },
  "/shape_language/icon_style": "none",
  "/imagery/register_kind": "screenshots and logos, wide crops, no frames",
  "/description": {
@@ -34,12 +177,23 @@
   "tables": "Flat grids: blue header band with white bold text, thin grey interior rules, no outer border, figures right-aligned, labels left.",
   "imagery": "Pasted exhibits (screenshots of models) spanning the content width, no frames or shadows.",
   "motifs": "The top rule and the left block are the page signature; label boxes are solid blue rectangles with white text; nothing is rounded, nothing has an effect.",
-  "never_does": ["rounded corners", "shadows or gradients", "colour bars that are not the top rule or left block", "centred body text", "icons", "text smaller than 10pt"],
+  "never_does": [
+   "rounded corners",
+   "shadows or gradients",
+   "colour bars that are not the top rule or left block",
+   "centred body text",
+   "icons",
+   "text smaller than 10pt"
+  ],
   "tone": "direct, analytical, restrained"
  },
  "/derivation_rules": [
   "Extend the palette by stepping the deep blue towards the grey: 113D63 -> 5E7C9E -> CCD1D7; never introduce a new hue.",
   "New text roles take a size from the ladder 10 / 12 / 15 / 19 / 24; weight 700 only for emphasis, h2 and table headers.",
   "Any new component is drawn flat with rect geometry, blue header treatment and grey panels, ruled with 0.5pt grey lines."
- ]
+ ],
+ "/color/roles/color.accent2": {
+  "hex": "113D63",
+  "why": "the deep-blue house swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
+ }
 }

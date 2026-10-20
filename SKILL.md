@@ -112,19 +112,33 @@ report says so.
 
 ## 3. Complete the guide
 
-The draft's `unresolved` list is exactly what you answer. Write `work/ref/completion.json`
-as `{"<open path>": value, ...}` and fold it in:
+The draft's `unresolved` list is exactly what you answer: every address in it, and no
+other. An address you leave out is as wrong as one you invent. Write
+`work/ref/completion.json` as `{"<open path>": value, ...}` and fold it in:
 
 ```bash
-python3 scripts/complete_guide.py work/ref/draft.json --check          # what is open
+python3 scripts/complete_guide.py work/ref/draft.json --check          # what is open, and which core addresses
 python3 scripts/complete_guide.py work/ref/draft.json work/ref/completion.json -o work/ref/guide.json
 ```
 
 Rules the finalizer enforces, and the ones only you can keep:
 
-- Answer open paths only. An observed or inferred value is never overwritten; if you
-  think one is wrong, say so in the report and fix it upstream (the reference, or the
-  extractor), never by patching over it.
+- Answer open paths only. A key outside `unresolved` is refused. The only exceptions,
+  always writable, are `/description`, `/derivation_rules`, `/continuation`,
+  `/typography/families/substitutes`, `/notes/*`, a new `/extra_roles/<name>`, and a new
+  type role at a size the levels table shows. A key whose target is observed or
+  deterministically inferred is refused with its provenance and evidence; a whole
+  section such as `/tables` is no exception when the deck has one. If you think an
+  observed value is wrong, say so in the report and fix it upstream, never by patching
+  over it.
+- The core must close: type.title, type.body, color.surface, color.ink, color.accent1,
+  and at least one of type.caption / type.footnote / type.source_line. If any is still
+  open after the patch the guide is refused; `--allow-partial` writes it and lists the
+  open core under `completion.core_open`, for inspection only.
+- Role names are the extractor's, not yours: on keybank `color.accent1` is the observed
+  light grey and the deep blue is the second accent. Bind fills and inks by what the
+  draft observed, then let the build's contrast gate confirm it (white on accent1 there
+  reads 1.54:1 and is refused).
 - Every value comes from THIS reference. Low confidence beats convention: a chartless
   deck gets a chart language derived from its palette and register, not a stock one.
 - Colours enter only under `/color/roles/<role>` or `/extra_roles/<name>` as hex, with a

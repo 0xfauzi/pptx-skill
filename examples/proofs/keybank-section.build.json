@@ -38,8 +38,8 @@
     "words_per_slide": {
      "value": 208,
      "band": [
-      33.8,
-      160.3
+      32.8,
+      159.3
      ],
      "verdict": "above"
     },
@@ -191,8 +191,8 @@
     "words_per_slide": {
      "value": 188,
      "band": [
-      33.8,
-      160.3
+      32.8,
+      159.3
      ],
      "verdict": "above"
     },
@@ -352,8 +352,8 @@
     "words_per_slide": {
      "value": 161,
      "band": [
-      33.8,
-      160.3
+      32.8,
+      159.3
      ],
      "verdict": "above"
     },
@@ -500,8 +500,8 @@
     "words_per_slide": {
      "value": 106,
      "band": [
-      33.8,
-      160.3
+      32.8,
+      159.3
      ],
      "verdict": "in band"
     },
@@ -695,14 +695,14 @@
   ],
   "others": {
    "/home/user/pptx-skill/refs/files/45541_Header.pptx": 0.502,
-   "/home/user/pptx-skill/refs/files/bmo_fairness_opinion_board.pdf": 0.454,
+   "/home/user/pptx-skill/refs/files/bmo_fairness_opinion_board.pdf": 0.519,
    "/home/user/pptx-skill/refs/files/deutsche_bank_amtrust_pitchbook.pdf": 0.608,
-   "/home/user/pptx-skill/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.623,
+   "/home/user/pptx-skill/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.719,
    "/home/user/pptx-skill/refs/files/goldman_airvana_why_goldman_2009.pdf": 0.612,
    "/home/user/pptx-skill/refs/files/mckinsey_uf_road_ahead_2023.pdf": 0.67,
    "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.09,
    "/home/user/pptx-skill/refs/files/perella_weinberg_pitch.pdf": 0.4,
-   "/home/user/pptx-skill/refs/files/themes.pptx": 0.502
+   "/home/user/pptx-skill/refs/files/themes.pptx": 0.49
   },
   "house_spread": {
    "n": 12,

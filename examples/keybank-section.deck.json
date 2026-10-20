@@ -170,7 +170,7 @@
           {
            "type": "region",
            "id": "takeaway-box",
-           "fill_role": "color.accent1",
+           "fill_role": "color.accent2",
            "layout": {
             "kind": "flex",
             "direction": "column",
