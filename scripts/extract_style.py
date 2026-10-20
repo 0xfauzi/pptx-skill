@@ -984,7 +984,16 @@ class Extractor:
             return {"metric": name, "low": round(percentile(values, 0.1), 4), "high": round(percentile(values, 0.9), 4),
                     "median": round(percentile(values, 0.5), 4), "n": len(values)} if values else {"metric": name, "low": None, "high": None, "n": 0}
 
+        # the text container the house draws by hand: a text box (txBox="1") or a plain shape.
+        # The judge counts the two apart, and a deck of text boxes on a house of shapes is a tell.
+        containers: Counter = Counter()
+        for s in self.slides:
+            for sh in s.shapes:
+                if sh.layer == "slide" and not sh.is_placeholder and sh.text_chars and sh.kind in ("text_box", "text_shape"):
+                    containers[sh.kind] += 1
         self.guide["register_stats"] = {
+            "text_container": (containers.most_common(1)[0][0] if containers else "text_shape"),
+            "text_container_counts": dict(containers),
             "kind_counts": {k: band(v, "kind_count") for k, v in per_kind.items()},
             "kind_cooccurrence": [{"kinds": list(k), "slides": n} for k, n in cooccur.most_common(8)],
             "decoration_counts": band(decoration, "decoration_count"),

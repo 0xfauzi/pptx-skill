@@ -1,0 +1,72 @@
+{
+ "out": "(scratch)",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "import-3",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "e1": 1,
+    "e2": 1,
+    "e3": 2,
+    "e4": 1,
+    "e5": 1,
+    "e6": 1,
+    "e7": 1,
+    "e8": 1,
+    "e9": 1,
+    "e10": 1,
+    "e11": 1,
+    "e12": 1,
+    "e13": 1,
+    "e14": 2
+   },
+   "tables": {}
+  }
+ ],
+ "emitted_slides": 1,
+ "validation": {
+  "file": "(scratch)",
+  "slides": 1,
+  "problems": [],
+  "ok": true
+ },
+ "judge": {
+  "reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+  "total": 0.093,
+  "components": {
+   "families": 0.0,
+   "size_hist": 0.026,
+   "size_ladder": 0,
+   "title_size": null,
+   "bold_ratio": 0.024,
+   "text_colors": 0.0,
+   "fills": 0.0,
+   "lines": null,
+   "aligns": 0.194,
+   "kinds": 0.152,
+   "background": 0.0,
+   "margins": 0.396,
+   "coverage": 0.001,
+   "count": 0.401
+  },
+  "per_slide": [
+   0.093
+  ],
+  "others": {
+   "/home/user/deckgen/fixtures/corpus/exhibits.pptx": 0.49,
+   "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf": 0.328,
+   "refs/files/45541_Header.pptx": 0.657
+  },
+  "nearest_is_reference": true
+ }
+}

@@ -161,6 +161,26 @@ For a PDF reference the template is blank at the reference's page size, and
 `build_deck.py --chrome draw` paints the guide's chrome (rules, bands, footer labels, a
 page-number field) and the surface colour on every slide.
 
+## 4.1 Prove the chain on the house's own page
+
+Before writing a page of your own, round-trip one of the reference's: import a slide
+into a spec of roles and weights (no coordinates survive), build it on the template,
+and read the judge.
+
+```bash
+python3 scripts/import_slide.py ref.pptx --slide 3 --guide work/ref/guide.json -o work/ref/rt3.deck.json
+python3 scripts/build_deck.py work/ref/rt3.deck.json --guide work/ref/guide.json --template work/ref/template.pptx \
+        -o work/ref/rt3.pptx --reference ref.pptx --others <two other decks> --renders work/ref/rt3-renders
+```
+
+The distance must sit inside the house's own spread (the leave-one-out distance of
+each reference slide to the rest; `fingerprint.py calibrate` prints it, keybank's is
+0.08 to 0.13). Then LOOK at the render next to the reference slide: on keybank the
+judge said 0.083 while the labels were still black and left-aligned, because the
+reader had missed the shape-style text colour on both sides. The render caught it; the
+number did not. The imported spec is also your seed: a page that starts from the
+exemplar of its composition family begins inside the house's bands and columns.
+
 ## 5. Plan the deck
 
 Read `references/design/storyline_logic.md` and `title_and_message_writing.md` first.
@@ -359,10 +379,11 @@ first, content second.
 | `scripts/emit_pptx.py` | resolved pages to slides on the template |
 | `scripts/build_deck.py` | solve, emit, validate, render, judge, in one command |
 | `scripts/component.py` | component contract check and admission |
+| `scripts/import_slide.py` | a reference slide into a spec of roles, for the round trip and as a seed |
 | `scripts/fingerprint.py` | the style judge: distance to a house, calibration |
 | `scripts/pptx_tools.py` | text, layouts, template, blank, duplicate, delete, clean, validate |
 | `components/` | the contract and admitted components |
 | `references/design/` | nine doctrines, reference-agnostic (the reference always wins) |
-| `examples/` | a complete four-page deck spec, two completions, a PDF deck spec |
+| `examples/` | a four-page deck spec, two completions, a PDF deck spec, a round-trip spec, and `proofs/` with the build reports and raster reports behind the numbers in this file |
 | `refs/MANIFEST.md`, `refs/fetch.sh` | eleven public bank and consulting decks for calibration |
 | `PORT_AUDIT.md` | every piece ported from deckgen, its assumption, and how it was checked |

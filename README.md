@@ -49,7 +49,8 @@ session that built the skill. None is estimated.
 | The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback the sandbox has |
 | The gallery port is deckgen's gallery | Component, candidate, cluster, crop and exemplar counts equal deckgen's recorded manifests on three decks; every exemplar skeleton byte-identical |
 | The extractor reproduces deckgen's draft | Role sizes, surfaces, inks, floors, margins and content bands equal on jazz, keybank, netflix and exhibits; deviations listed in `PORT_AUDIT.md` |
-| New pages read as the house | keybank: 4 generated pages with a novel football-field component, judge distance 0.191 against 0.353 to 0.677 for five other houses. McKinsey PDF: 2 generated pages, 0.360 against 0.378 for the nearest other house |
+| New pages read as the house | keybank: 4 generated pages with a novel football-field component, judge distance 0.126 against 0.353 to 0.662 for five other houses (the house's own slides sit at 0.08 to 0.13). McKinsey PDF: 2 generated pages, 0.360 against 0.378 for the nearest other house |
+| The chain reproduces the house's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.093, inside the house's own spread; the render matches the original to the eye |
 | PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders |
 | The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and accent exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.08 in, the top and bottom rules at the walk's positions, body 11.7pt from a 14.4pt pitch against 12pt in the file |
 
@@ -91,6 +92,7 @@ scripts/
   emit_pptx.py           write a solved page into a template with house values on every run
   build_deck.py          spec -> solve -> emit -> validate -> render -> judge
   component.py           check and admit a component on held-out data
+  import_slide.py        a reference slide into a spec of roles: the round trip, and a seed
   pptx_tools.py          template surgery, delete, duplicate, clean, validate, blank
 components/              admitted components (expand.py, spec.json, data, admitted.json)
 references/design/       the nine design doctrines

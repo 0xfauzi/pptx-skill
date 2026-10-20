@@ -1,0 +1,433 @@
+{
+ "slides": [
+  {
+   "id": "import-3",
+   "layout": "Title and Content",
+   "notes": "round trip of keybank.pptx slide 3: roles and weights only, no coordinates",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Valuation: Summary of Dividend Discount Model Assumptions"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "row1",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Total Asset Growth Rate"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Between 1% and 2%; declines to 1.5% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row2",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Risk-Weighted Assets % Total Assets"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e4",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "73-74% over the 12 years in the explicit forecast period (FY 15 \u2013 FY 26) ",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row3",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e5",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Targeted CET 1 Ratio"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e6",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "9.0% (Slightly above company\u2019s current target of 8.5%) ",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row4",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e7",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Return on Average Assets"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e8",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "0.60% increasing to 0.83% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row5",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e9",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Dividend Payout Ratio"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e10",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "65-70% increasing to 80% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row6",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e11",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Cost of Equity"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e12",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "8.97% in all periods (2.1% RFR, 5.8% ERP, and 1.19 Levered Beta)",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row7",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e13",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Terminal P / TBV Multiple"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e14",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "1.33x based on 1.6% NI to Common Growth, 11.42% ROTCE, and 8.97% Cost of Equity; implied Terminal P / E multiple of 11.8x",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        }
+       ]
+      }
+     ]
+    },
+    "splittable_groups": []
+   },
+   "styling": {
+    "e1": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e2": {
+     "anchor": "m"
+    },
+    "e3": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e4": {
+     "anchor": "m"
+    },
+    "e5": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e6": {
+     "anchor": "m"
+    },
+    "e7": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e8": {
+     "anchor": "m"
+    },
+    "e9": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e10": {
+     "anchor": "m"
+    },
+    "e11": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e12": {
+     "anchor": "m"
+    },
+    "e13": {
+     "anchor": "m",
+     "fill_role": "color.accent1",
+     "pad_role": "space.xs",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e14": {
+     "anchor": "m"
+    }
+   },
+   "import_notes": []
+  }
+ ]
+}

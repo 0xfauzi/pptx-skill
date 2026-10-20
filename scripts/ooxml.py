@@ -357,6 +357,8 @@ class Shape:
     in_group: bool = False
     text_inset_emu: tuple[int, int, int, int] | None = None  # lIns, tIns, rIns, bIns as declared, else None
     text: str | None = None  # PDF text lines only: the line's text, for chrome detection (footers, page numbers)
+    paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, runs: [{text, size_pt, bold, italic, color}]}] for import
+    text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
 
 
 @dataclass
@@ -587,6 +589,7 @@ class SlideWalker:
             self.print.layout_name = csld.get("name", "") if csld is not None else ""
         self.print.hidden = pkg.root(slide_part).get("show") == "0"
         self._table_styles: dict[str, etree._Element] | None = None
+        self._para_capture: list | None = None
 
     # text chain ------------------------------------------------------------------
     def _level_holders(self, sp: etree._Element, layer: str, ph: tuple[str | None, int | None] | None) -> list[tuple[etree._Element | None, str]]:
@@ -657,7 +660,8 @@ class SlideWalker:
         return None
 
     def _walk_text(self, tx: etree._Element, holders: list[tuple[etree._Element | None, str]], cls: str, ph_type: str | None,
-                   sink: list[Run], surface: str, ref: str, own_layer: str, row_class: str | None = None) -> int:
+                   sink: list[Run], surface: str, ref: str, own_layer: str, row_class: str | None = None,
+                   style_color: str | None = None) -> int:
         theme = self.chain.theme
         total_chars = 0
 
@@ -777,6 +781,10 @@ class SlideWalker:
             bufont = self._resolve_para(ppr, holders, level, g_bufont)
             mar_l = self._resolve_para(ppr, holders, level, g_attr_int("marL"))
             indent = self._resolve_para(ppr, holders, level, g_attr_int("indent"))
+            captured: dict | None = None
+            if self._para_capture is not None:
+                captured = {"level": level, "bullet": str(bullet), "align": str(align), "runs": []}
+                self._para_capture.append(captured)
             ri = 0
             for r in para:
                 if _local(r) not in ("r", "fld"):
@@ -795,11 +803,19 @@ class SlideWalker:
                 if face in ("+mj-lt", "+mn-lt", None) and theme:
                     face = theme.major_latin if (face == "+mj-lt" or (face is None and ph_type in TITLE_TYPES)) else theme.minor_latin
                     face_layer = "theme" if face_layer == "default" else face_layer
+                if style_color is not None and (color is None or color_layer in ("master", "presentation")):
+                    # p:style/a:fontRef is the shape's own default text colour: it sits above the
+                    # master's otherStyle and the presentation default, below the run and the
+                    # shape's lstStyle (white labels on a filled rectangle read as black without it)
+                    color, color_layer = style_color, "shape_style"
                 if color is None:
                     color = self.chain.tx1()
                     color_layer = "theme"
                 chars = len(text.strip())
                 total_chars += chars
+                if captured is not None:
+                    captured["runs"].append({"text": text, "size_pt": float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
+                                             "bold": bool(bold), "italic": bool(italic), "color": color, "caps": bool(caps)})
                 sink.append(Run(
                     chars=chars, family=face,
                     size_pt=float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
@@ -1258,8 +1274,16 @@ class SlideWalker:
                     except ValueError:
                         shape.text_inset_emu = None
                 run_sink = self.print.runs if with_text else self.print.chrome_runs
+                self._para_capture = [] if with_text else None
+                if bpr is not None and bpr.get("anchor"):
+                    shape.text_anchor = bpr.get("anchor")
+                style_el = sp.find(_p("style"))
+                font_ref = style_el.find(_a("fontRef")) if style_el is not None else None
+                style_color = self.chain.first_color(font_ref) if font_ref is not None else None
                 shape.text_chars = self._walk_text(tx, self._level_holders(sp, layer, ph), cls if with_text else "chrome",
-                                                   ph[0] if ph else None, run_sink, surface, ref, layer)
+                                                   ph[0] if ph else None, run_sink, surface, ref, layer, style_color=style_color)
+                shape.paragraphs = self._para_capture
+                self._para_capture = None
             if local == "graphicFrame" and with_text:
                 kind = shape.kind
                 if kind == "table":

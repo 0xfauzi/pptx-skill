@@ -1,0 +1,170 @@
+{
+ "out": "(scratch)",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "s1-exec",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "left": 17,
+    "takeaway": 2,
+    "source": 1
+   },
+   "tables": {
+    "kpis": {
+     "rows": 7,
+     "height_emu": 3020822,
+     "column_widths_emu": [
+      1043828,
+      1029038,
+      749439,
+      1003737
+     ]
+    }
+   }
+  },
+  {
+   "id": "s2-comps",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "read": 9,
+    "source": 1
+   },
+   "tables": {
+    "comps": {
+     "rows": 11,
+     "height_emu": 3020314,
+     "column_widths_emu": [
+      621378,
+      1688018,
+      1097448,
+      1317466,
+      656541,
+      868093,
+      780069,
+      1352987
+     ]
+    }
+   }
+  },
+  {
+   "id": "s3-football",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "ff-mlabel": 1,
+    "ff-lbl0": 1,
+    "ff-lbl1": 1,
+    "ff-lbl2": 1,
+    "ff-lbl3": 1,
+    "ff-lbl4": 1,
+    "ff-lbl5": 1,
+    "ff-lbl6": 1,
+    "ff-tk0": 1,
+    "ff-tk1": 1,
+    "ff-tk2": 1,
+    "ff-tk3": 1,
+    "ff-tk4": 1,
+    "ff-tk5": 1,
+    "commentary": 13,
+    "source": 1
+   },
+   "tables": {}
+  },
+  {
+   "id": "s4-synergies",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "risks": 7,
+    "source": 1
+   },
+   "tables": {
+    "walk": {
+     "rows": 7,
+     "height_emu": 2288286,
+     "column_widths_emu": [
+      1930023,
+      935871,
+      1172706
+     ]
+    }
+   }
+  }
+ ],
+ "emitted_slides": 4,
+ "validation": {
+  "file": "(scratch)",
+  "slides": 4,
+  "problems": [],
+  "ok": true
+ },
+ "judge": {
+  "reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+  "total": 0.126,
+  "components": {
+   "families": 0.0,
+   "size_hist": 0.208,
+   "size_ladder": 0.024,
+   "title_size": null,
+   "bold_ratio": 0.144,
+   "text_colors": 0.076,
+   "fills": 0.0,
+   "lines": null,
+   "aligns": 0.111,
+   "kinds": 0.302,
+   "background": 0.0,
+   "margins": 0.554,
+   "coverage": 0.088,
+   "count": 0.165
+  },
+  "per_slide": [
+   0.118,
+   0.161,
+   0.216,
+   0.15
+  ],
+  "others": {
+   "/home/user/deckgen/fixtures/corpus/exhibits.pptx": 0.45,
+   "refs/files/45541_Header.pptx": 0.662,
+   "refs/files/themes.pptx": 0.603,
+   "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf": 0.353,
+   "/home/user/deckgen/fixtures/corpus/consulting/bcg-nystate-covid-impact-2020.pdf": 0.459
+  },
+  "nearest_is_reference": true
+ }
+}

@@ -79,6 +79,7 @@ class Guide:
         self.spacing = data.get("spacing", {}).get("steps", {})
         self.tables = data.get("tables") or {}
         self.charts = data.get("charts") or {}
+        self.text_container = (data.get("register_stats") or {}).get("text_container", "text_shape")
 
     def hex(self, role: str | None, *, where: str) -> str | None:
         if role is None:
@@ -242,6 +243,12 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
     x, y, w, h = box
     shape = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(w), Emu(h))
     shape.name = el.get("id", "text")
+    if guide.text_container != "text_box":
+        # the house draws text in plain shapes (keybank: 16 of 16 on its label page); a text box
+        # is what python-pptx writes by default and what the judge counts as a different kind
+        cnv = shape._element.find(f"{qn('p:nvSpPr')}/{qn('p:cNvSpPr')}")
+        if cnv is not None and cnv.get("txBox") is not None:
+            del cnv.attrib["txBox"]
     sp_pr = shape._element.spPr
     fill_hex = guide.hex(el.get("fill_role"), where=el.get("id", "text"))
     if fill_hex:
