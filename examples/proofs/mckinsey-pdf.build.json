@@ -1,16 +1,51 @@
 {
- "out": "(scratch)",
+ "out": "(scratch)/out/deck.pptx",
  "ruler": "pillow_x128",
  "slides": [
   {
    "id": "s1-exec",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "fit"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Decline the $11.40 offer",
+    "register_stated": null,
+    "length": {
+     "chars": {
+      "value": 24,
+      "house": {
+       "median": 52.0,
+       "p90": 86.0,
+       "max": 110,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 4,
+      "house": {
+       "median": 7.0,
+       "p90": 14.0,
+       "max": 16,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 2.0,
+       "max": 3,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "verdict": "not stated: the page spec names no title.register"
     }
-   ],
+   },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
@@ -22,61 +57,186 @@
    "tables": {
     "kpis": {
      "rows": 7,
-     "height_emu": 2177588,
+     "height_emu": 2523542,
      "column_widths_emu": [
-      1926976,
-      1213159,
-      894827,
-      1184354
+      1901256,
+      1216949,
+      911776,
+      1189335
      ]
     }
    },
    "density": {
-    "words": 196,
+    "words": 206,
     "elements": 6,
-    "covered_area_fraction": 0.513,
+    "covered_area_fraction": 0.485,
     "words_per_slide": {
-     "value": 196,
+     "value": 206,
      "band": [
-      0.0,
-      0.0
+      26.4,
+      200.8
      ],
      "verdict": "above"
     },
     "elements_per_slide": {
      "value": 6,
      "band": [
-      8.0,
-      59.6
+      5.0,
+      39.4
      ],
-     "verdict": "below"
+     "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.513,
+     "value": 0.485,
      "band": [
-      0.0998,
-      0.4591
+      0.1595,
+      0.8255
      ],
-     "verdict": "above"
+     "verdict": "in band"
     }
-   }
+   },
+   "contrast": {
+    "checked": 16,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "takeaway",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.body",
+     "ink": "color.ink_inverse",
+     "text": "Recommendation: decline; re-engage at $1",
+     "ratio": 7.98,
+     "threshold": 4.5,
+     "size_pt": 12.0,
+     "bold": false,
+     "backing": "color.accent1 of takeaway-box-fill",
+     "ink_hex": "000000",
+     "backing_hex": "00A9F4"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 4,
+      "band": [
+       3.6,
+       22.4
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       4.8
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 1,
+      "band": [
+       0.0,
+       1.4
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "chart": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       5.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 1,
+     "band": [
+      0.0,
+      6.2
+     ],
+     "verdict": "in band"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": []
   },
   {
    "id": "s3-football",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "fit"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Every standalone midpoint sits below the offer",
+    "register_stated": null,
+    "length": {
+     "chars": {
+      "value": 46,
+      "house": {
+       "median": 52.0,
+       "p90": 86.0,
+       "max": 110,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 7,
+      "house": {
+       "median": 7.0,
+       "p90": 14.0,
+       "max": 16,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 2.0,
+       "max": 3,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "verdict": "not stated: the page spec names no title.register"
     }
-   ],
-   "component_notes": [
-    "component 'football_field' was admitted against another reference (/home/user/deckgen/fixtures/corpus/keybank.pptx); run component.py check with this guide before trusting its fit"
-   ],
+   },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
-    "title": 2,
+    "title": 1,
     "ff-mlabel": 1,
     "ff-lbl0": 1,
     "ff-val0": 1,
@@ -96,120 +256,414 @@
     "ff-tk1": 1,
     "ff-tk2": 1,
     "ff-tk3": 1,
+    "ff-tk4": 1,
     "ff-tk5": 1,
-    "commentary": 9,
+    "commentary": 12,
     "source": 1
    },
    "tables": {},
    "density": {
-    "words": 154,
-    "elements": 43,
-    "covered_area_fraction": 0.387,
+    "words": 161,
+    "elements": 44,
+    "covered_area_fraction": 0.296,
     "words_per_slide": {
-     "value": 154,
+     "value": 161,
+     "band": [
+      26.4,
+      200.8
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 44,
+     "band": [
+      5.0,
+      39.4
+     ],
+     "verdict": "above"
+    },
+    "content_area_fraction": {
+     "value": 0.296,
+     "band": [
+      0.1595,
+      0.8255
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 30,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "chrome-1",
+     "part": "chrome text",
+     "text": "McKinsey & Company",
+     "ink": "observed ink FFFFFF of chrome-1",
+     "ratio": 17.37,
+     "threshold": 4.5,
+     "size_pt": 9.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "FFFFFF",
+     "backing_hex": "051C2C"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 24,
+      "band": [
+       3.6,
+       22.4
+      ],
+      "verdict": "above"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       4.8
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 20,
+      "band": [
+       0.0,
+       1.4
+      ],
+      "verdict": "above"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "line": {
+      "value": 1,
+      "band": [
+       0.0,
+       5.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 21,
+     "band": [
+      0.0,
+      6.2
+     ],
+     "verdict": "above"
+    },
+    "container_ratio": {
+     "value": 0.0,
      "band": [
       0.0,
       0.0
      ],
-     "verdict": "above"
-    },
-    "elements_per_slide": {
-     "value": 43,
-     "band": [
-      8.0,
-      59.6
-     ],
-     "verdict": "in band"
-    },
-    "content_area_fraction": {
-     "value": 0.387,
-     "band": [
-      0.0998,
-      0.4591
-     ],
      "verdict": "in band"
     }
-   }
+   },
+   "tieouts": [],
+   "component_notes": [
+    "component 'football_field' was admitted against another reference (/home/user/deckgen/fixtures/corpus/keybank.pptx); run component.py check with this guide before trusting its fit"
+   ]
   }
  ],
- "position_drift": {
-  "source": {
-   "pages": [
-    1,
-    2
+ "position_drift": {},
+ "repetition": {
+  "threshold": 0.5,
+  "frame_left_out": [
+   "source",
+   "title"
+  ],
+  "pairs": [
+   {
+    "pages": [
+     1,
+     2
+    ],
+    "similarity": 0.017,
+    "similar": false
+   }
+  ],
+  "realised": [
+   {
+    "page": 1,
+    "composition": "b1"
+   },
+   {
+    "page": 2,
+    "composition": "b2"
+   }
+  ],
+  "measure": {
+   "deck": "built",
+   "content_pages": 2,
+   "segments": [
+    [
+     1,
+     2
+    ]
    ],
-   "top_in": [
-    4.93,
-    6.76
+   "pairs": 1,
+   "status": "no evidence",
+   "why": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house": {
+   "decks": [
+    {
+     "deck": "mckinsey-calstrs-future-of-boards-2024.pdf",
+     "status": "measured",
+     "content_pages": 14,
+     "composition": {
+      "V": 1.0,
+      "changed": 12,
+      "pairs": 12
+     },
+     "longest_run": 1
+    }
    ],
-   "drift_in": 1.83
+   "pooled": {
+    "status": "measured",
+    "decks": 1,
+    "decks_without_evidence": [],
+    "composition": {
+     "V": 1.0,
+     "changed": 12,
+     "pairs": 12,
+     "p10_deck_V": 1.0,
+     "deck_V": [
+      1.0
+     ],
+     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
+    },
+    "exhibits": {
+     "V": 0.917,
+     "changed": 11,
+     "pairs": 12,
+     "p10_deck_V": 0.917,
+     "deck_V": [
+      0.917
+     ],
+     "decks_unread": []
+    },
+    "classes": {
+     "V": 0.75,
+     "changed": 9,
+     "pairs": 12,
+     "p10_deck_V": 0.75,
+     "deck_V": [
+      0.75
+     ],
+     "decks_unread": []
+    },
+    "distinct_per_page": {
+     "mckinsey-calstrs-future-of-boards-2024.pdf": 1.0
+    },
+    "longest_run": 1,
+    "sequences": [
+     [
+      "arch-3",
+      "arch-4",
+      "arch-5",
+      "arch-6",
+      "arch-7",
+      "arch-8",
+      "arch-9",
+      "arch-10",
+      "arch-11",
+      "arch-12",
+      "arch-13",
+      "arch-14",
+      "arch-15"
+     ],
+     [
+      "arch-16"
+     ]
+    ]
+   }
+  },
+  "against_house": {
+   "built": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house_longest_run": 1,
+  "runs_over_reference": [],
+  "warnings": [],
+  "plan": {
+   "check": {
+    "status": "pass",
+    "refusals": [],
+    "warnings": []
+   },
+   "measure": {
+    "deck": "plan",
+    "content_pages": 2,
+    "segments": [
+     [
+      1,
+      2
+     ]
+    ],
+    "pairs": 1,
+    "status": "no evidence",
+    "why": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+   },
+   "composition_V": {
+    "planned": null,
+    "realised": null
+   },
+   "exhibits_V": {
+    "planned": null,
+    "realised": "not measured: the build knows element kinds, not exhibit types; the plan's exhibit types are declared"
+   },
+   "classes_V": {
+    "planned": "not declared: the plan declares exhibit types, not classes: the build measures the classes it realises",
+    "realised": null
+   },
+   "pages_differing_from_plan": []
   }
  },
- "emitted_slides": 2,
- "validation": {
-  "file": "(scratch)",
-  "slides": 2,
-  "problems": [],
-  "ok": true
- },
+ "validation_ok": true,
+ "problems": [],
  "judge": {
   "reference": "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf",
-  "total": 0.335,
+  "total": 0.313,
   "components": {
-   "families": 0.03,
-   "size_hist": 0.719,
+   "families": 0.054,
+   "size_hist": 0.699,
    "size_ladder": 0,
    "title_size": null,
-   "bold_ratio": 0.54,
+   "bold_ratio": 0.538,
    "text_colors": 0.0,
-   "fills": 0.861,
+   "fills": 0.855,
    "lines": null,
    "aligns": null,
    "kinds": null,
    "background": 0.0,
-   "margins": 0.443,
-   "coverage": 0.365,
+   "margins": 0.196,
+   "coverage": 0.185,
    "count": null,
    "overlap": null,
    "overflow": null
   },
   "per_slide": [
-   0.366,
-   0.318
+   {
+    "slide": 1,
+    "total": 0.346,
+    "worst": [
+     [
+      "fills",
+      1.0
+     ],
+     [
+      "size_hist",
+      0.708
+     ],
+     [
+      "bold_ratio",
+      0.526
+     ]
+    ]
+   },
+   {
+    "slide": 2,
+    "total": 0.296,
+    "worst": [
+     [
+      "fills",
+      0.783
+     ],
+     [
+      "size_hist",
+      0.692
+     ],
+     [
+      "bold_ratio",
+      0.553
+     ]
+    ]
+   }
   ],
-  "others": {
-   "/home/user/pptx-skill/refs/files/45541_Header.pptx": 0.546,
-   "/home/user/pptx-skill/refs/files/bmo_fairness_opinion_board.pdf": 0.516,
-   "/home/user/pptx-skill/refs/files/deutsche_bank_amtrust_pitchbook.pdf": 0.714,
-   "/home/user/pptx-skill/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.845,
-   "/home/user/pptx-skill/refs/files/goldman_airvana_why_goldman_2009.pdf": 0.724,
-   "/home/user/pptx-skill/refs/files/mckinsey_uf_road_ahead_2023.pdf": 0.915,
-   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.283,
-   "/home/user/pptx-skill/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.265,
-   "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.29,
-   "/home/user/pptx-skill/refs/files/mi_netflix_financing_pitchbook.pptx": 0.294,
-   "/home/user/pptx-skill/refs/files/perella_weinberg_pitch.pdf": 0.543,
-   "/home/user/pptx-skill/refs/files/themes.pptx": 0.489
-  },
+  "overflow_where": [
+   {
+    "slide": 1,
+    "shape": "chrome-1",
+    "ref": "sp[id=8]",
+    "needed_emu": 274320,
+    "budget_emu": 152400,
+    "lines": [
+     "McKinsey &",
+     "Company"
+    ]
+   },
+   {
+    "slide": 2,
+    "shape": "chrome-1",
+    "ref": "sp[id=47]",
+    "needed_emu": 274320,
+    "budget_emu": 152400,
+    "lines": [
+     "McKinsey &",
+     "Company"
+    ]
+   }
+  ],
   "house_spread": {
    "n": 17,
-   "min": 0.118,
-   "median": 0.204,
-   "p90": 0.292,
-   "max": 0.298
+   "min": 0.082,
+   "median": 0.143,
+   "p90": 0.277,
+   "max": 0.355
+  },
+  "others": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/45541_Header.pptx": 0.612,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.348,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.352,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/themes.pptx": 0.551
   },
   "panel_skipped": {
-   "reason": "no measured type (a scan or an empty deck)",
+   "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/refs/files/citigroup_tribune_restructuring_update.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
-  "same_house_on_panel": {},
+  "same_house_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.796,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.273,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.324
+  },
   "panel": "refs/files (default)",
-  "nearest_is_reference": false,
-  "reference_rank": 5,
+  "nearest_is_reference": true,
+  "reference_rank": 1,
   "within_house_spread": false,
   "layout_clean": true,
   "filed_under_reference": false
- }
+ },
+ "renders": [
+  "(scratch)/out/renders/slide-01.png",
+  "(scratch)/out/renders/slide-02.png"
+ ]
 }

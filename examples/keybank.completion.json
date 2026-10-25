@@ -138,17 +138,17 @@
  "/charts": {
   "series_color_roles": [
    "color.accent2",
-   "color.accent1",
    "color.accent3",
+   "color.accent1",
    "color.slate"
   ],
   "per_kind": {
-   "column": {
+   "bar": {
     "gridlines_major": 0.0,
     "data_labels": 1.0,
-    "legend_position": "b"
+    "legend_position": "none"
    },
-   "bar": {
+   "column": {
     "gridlines_major": 0.0,
     "data_labels": 1.0,
     "legend_position": "b"
@@ -160,7 +160,7 @@
    }
   },
   "source_line_required": true,
-  "why": "no native chart in the reference; flat register, no gridlines, labels on bars like the sensitivity figures"
+  "why": "no native chart; the pasted exhibits on slides 7 (clustered columns, deep blue against a second series, legend below, no gridlines) and 9 (horizontal deep-blue bars, value labels at the bar end, no value axis, no gridlines, 'Source:' line under) set the language"
  },
  "/continuation": {
   "header_repeat": "full",
@@ -185,7 +185,8 @@
    "icons",
    "text smaller than 10pt"
   ],
-  "tone": "direct, analytical, restrained"
+  "tone": "direct, analytical, restrained",
+  "charts": "Flat deep-blue bars with the figure at the bar end, no gridlines, no value axis where labels carry the figures; source line under the exhibit (slide 9)."
  },
  "/derivation_rules": [
   "Extend the palette by stepping the deep blue towards the grey: 113D63 -> 5E7C9E -> CCD1D7; never introduce a new hue.",
@@ -196,21 +197,82 @@
   "hex": "113D63",
   "why": "the deep-blue house swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
  },
+ "/typography/scale_ratio": 1.25,
+ "/typography/roles/type.title/line_spacing": 1.2,
+ "/typography/roles/type.body/line_spacing": 1.2,
+ "/typography/roles/type.caption/line_spacing": 1.2,
+ "/typography/roles/type.emphasis/line_spacing": 1.2,
+ "/typography/roles/type.h2/line_spacing": 1.2,
+ "/typography/roles/type.h1/line_spacing": 1.2,
  "/color/roles/color.positive": {
   "hex": "113D63",
-  "why": "no green appears anywhere in the deck and it never colours a figure as favourable; a positive figure takes the house deep blue (the observed color.rule) so it reads in the house palette"
+  "why": "the house marks the favourable case in its own deep blue (slide 12 recommendation chevrons); no green is ever used, so positive takes the structural blue"
  },
  "/color/roles/color.negative": {
   "hex": "FF0000",
-  "why": "the only saturated non-blue in the deck: the red outline that flags the adverse figure (one rule vote in the draft's usage pools)"
+  "why": "the only saturated non-blue in the deck: the red highlight outline on slides 7, 8 and 10 that flags the adverse figure"
  },
- "/typography/scale_ratio": null,
- "/typography/roles/type.title/line_spacing": null,
- "/typography/roles/type.body/line_spacing": null,
- "/typography/roles/type.caption/line_spacing": null,
- "/typography/roles/type.emphasis/line_spacing": null,
- "/typography/roles/type.h1/line_spacing": null,
- "/typography/roles/type.h2/line_spacing": null,
  "/spacing/baseline_emu": null,
- "/density_bands/table_rows_per_inch": null
+ "/density_bands/table_rows_per_inch": {
+  "metric": "table_rows_per_inch",
+  "low": null,
+  "high": null,
+  "n": 0
+ },
+ "/variety/content_pages": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "/titles/register": {
+  "per_title": {
+   "2": "topic",
+   "3": "topic",
+   "4": "topic",
+   "5": "topic",
+   "6": "topic",
+   "7": "topic",
+   "8": "question",
+   "9": "question",
+   "10": "topic",
+   "11": "question",
+   "12": "topic"
+  },
+  "companions": {
+   "3": {
+    "below": "other"
+   },
+   "4": {
+    "below": "units_line"
+   },
+   "5": {
+    "below": "units_line"
+   },
+   "7": {
+    "below": "units_line"
+   },
+   "10": {
+    "below": "other"
+   }
+  },
+  "claims_elsewhere": {
+   "2": "the first bullet: we recommend against the acquisition",
+   "3": null,
+   "4": "a lead-in bullet above the sensitivity tables",
+   "5": "a lead-in bullet ending in a colon above the comps table",
+   "6": null,
+   "7": "a lead-in bullet ending in a colon above the accretion table",
+   "10": null,
+   "12": "the labels of four numbered rows"
+  },
+  "why": "Read off the renders: titles are short topic phrases or questions; slide 3's below-block is the first label cell of the assumptions column and slide 10's is a column header, not companions of the title; slides 4, 5 and 7 carry a units line under the title. The claim sits in a lead-in bullet on argument pages and in numbered row labels on the summary."
+ }
 }

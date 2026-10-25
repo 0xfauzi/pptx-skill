@@ -185,5 +185,57 @@
  "/typography/roles/type.emphasis/line_spacing": null,
  "/typography/roles/type.footnote/line_spacing": null,
  "/typography/roles/type.h1/line_spacing": null,
- "/typography/roles/type.h2/line_spacing": null
+ "/typography/roles/type.h2/line_spacing": null,
+ "/variety/content_pages": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  17
+ ],
+ "/titles/register": {
+  "per_title": {
+   "4": "claim",
+   "5": "topic",
+   "6": "claim",
+   "7": "topic",
+   "8": "claim",
+   "9": "claim",
+   "11": "topic",
+   "13": "topic",
+   "14": "topic",
+   "15": "topic",
+   "17": "topic"
+  },
+  "companions": {
+   "4": {
+    "below": "other"
+   },
+   "6": {
+    "below": "other"
+   },
+   "7": {
+    "below": "other"
+   }
+  },
+  "claims_elsewhere": {
+   "5": null,
+   "7": null,
+   "11": null,
+   "13": null,
+   "14": null,
+   "15": null,
+   "17": null
+  },
+  "why": "Read off the renders: claim sentences where the page argues (4, 6, 8, 9), topic phrases on frameworks, reference and detail pages; the blocks found below titles 4 and 6 are the timeline's first label and the first big number, and 7's is a 'Not Exhaustive' tag, none a companion of the title. Pages 2, 3, 10 and 12 carry titles the position reader did not find."
+ }
 }

@@ -1,16 +1,59 @@
 {
- "out": "(scratch)",
+ "out": "(scratch)/out/deck.pptx",
  "ruler": "pillow_x128",
  "slides": [
   {
    "id": "s1-exec",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "fit"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Executive Summary",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 17,
+      "house": {
+       "median": 35.0,
+       "p90": 40.0,
+       "max": 57,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 2,
+      "house": {
+       "median": 5.0,
+       "p90": 6.0,
+       "max": 7,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 2,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 8,
+      "claim": 0,
+      "question": 3
+     },
+     "share": 0.727,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
     }
-   ],
+   },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
@@ -32,11 +75,11 @@
     }
    },
    "density": {
-    "words": 208,
+    "words": 204,
     "elements": 6,
     "covered_area_fraction": 0.681,
     "words_per_slide": {
-     "value": 208,
+     "value": 204,
      "band": [
       32.8,
       159.3
@@ -152,28 +195,60 @@
      "verdict": "in band"
     }
    },
-   "tieouts": [],
-   "bridge_ties": [],
-   "solver_status": "fit",
-   "problems": []
+   "tieouts": []
   },
   {
    "id": "s2-comps",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "2 violation(s)"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Precedent Transactions",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 22,
+      "house": {
+       "median": 35.0,
+       "p90": 40.0,
+       "max": 57,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 2,
+      "house": {
+       "median": 5.0,
+       "p90": 6.0,
+       "max": 7,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 2,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
     },
-    {
-     "scale": "49/50",
-     "result": "fit"
-    },
-    {
-     "scale": "99/100",
-     "result": "2 violation(s)"
+    "register": {
+     "house_counts": {
+      "topic": 8,
+      "claim": 0,
+      "question": 3
+     },
+     "share": 0.727,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
     }
-   ],
+   },
    "scale": 0.98,
    "violations": [],
    "text_lines": {
@@ -198,11 +273,11 @@
     }
    },
    "density": {
-    "words": 188,
+    "words": 182,
     "elements": 5,
     "covered_area_fraction": 0.713,
     "words_per_slide": {
-     "value": 188,
+     "value": 182,
      "band": [
       32.8,
       159.3
@@ -322,9 +397,6 @@
      "note": "totals row 'Median' is a statistic over the column, not its sum"
     }
    ],
-   "bridge_ties": [],
-   "solver_status": "fit",
-   "problems": [],
    "chart_defaults_taken": {
     "chart": [
      "plot_area: automatic: each renderer places the plot inside the frame itself"
@@ -334,12 +406,55 @@
   {
    "id": "s3-football",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "fit"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Valuation Summary",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 17,
+      "house": {
+       "median": 35.0,
+       "p90": 40.0,
+       "max": 57,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 2,
+      "house": {
+       "median": 5.0,
+       "p90": 6.0,
+       "max": 7,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 2,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 8,
+      "claim": 0,
+      "question": 3
+     },
+     "share": 0.727,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
     }
-   ],
+   },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
@@ -369,16 +484,16 @@
    },
    "tables": {},
    "density": {
-    "words": 164,
+    "words": 157,
     "elements": 43,
     "covered_area_fraction": 0.436,
     "words_per_slide": {
-     "value": 164,
+     "value": 157,
      "band": [
       32.8,
       159.3
      ],
-     "verdict": "above"
+     "verdict": "in band"
     },
     "elements_per_slide": {
      "value": 43,
@@ -489,20 +604,60 @@
      "verdict": "in band"
     }
    },
-   "tieouts": [],
-   "bridge_ties": [],
-   "solver_status": "fit",
-   "problems": []
+   "tieouts": []
   },
   {
    "id": "s4-synergies",
    "status": "fit",
-   "attempts": [
-    {
-     "scale": "1",
-     "result": "fit"
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Cost Synergies",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 14,
+      "house": {
+       "median": 35.0,
+       "p90": 40.0,
+       "max": 57,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 2,
+      "house": {
+       "median": 5.0,
+       "p90": 6.0,
+       "max": 7,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 2,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 8,
+      "claim": 0,
+      "question": 3
+     },
+     "share": 0.727,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
     }
-   ],
+   },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
@@ -522,11 +677,11 @@
     }
    },
    "density": {
-    "words": 106,
+    "words": 104,
     "elements": 5,
     "covered_area_fraction": 0.698,
     "words_per_slide": {
-     "value": 106,
+     "value": 104,
      "band": [
       32.8,
       159.3
@@ -640,9 +795,6 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
-   "solver_status": "fit",
-   "problems": [],
    "chart_defaults_taken": {
     "chart": [
      "plot_area: automatic: each renderer places the plot inside the frame itself"
@@ -694,82 +846,250 @@
     "similar": false
    }
   ],
-  "reference_consecutive_max": 2,
-  "runs_over_reference": []
- },
- "emitted_slides": 4,
- "chrome": {
-  "mode": "auto",
-  "placeholders_copied": [
-   "SLIDE_NUMBER"
+  "realised": [
+   {
+    "page": 1,
+    "composition": "b1"
+   },
+   {
+    "page": 2,
+    "composition": "b2"
+   },
+   {
+    "page": 3,
+    "composition": "b3"
+   },
+   {
+    "page": 4,
+    "composition": "b1"
+   }
   ],
-  "slide_layer_entries": [],
-  "notes": [],
-  "drawn": [
-   [],
-   [],
-   [],
-   []
-  ]
- },
- "validation": {
-  "file": "(scratch)/section.pptx",
-  "slides": 4,
-  "problems": [],
-  "ok": true
- },
- "renders": {
-  "source": "(scratch)/section.pptx",
-  "fonts": {
-   "Arial": {
-    "rendered_with": "Liberation Sans",
-    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-    "fidelity": "metric_alias",
-    "codepoints_checked": 72,
-    "uncovered_count": 0,
-    "uncovered_sample": [],
-    "bullets_only": false
+  "measure": {
+   "deck": "built",
+   "content_pages": 4,
+   "segments": [
+    [
+     1,
+     2,
+     3,
+     4
+    ]
+   ],
+   "pairs": 3,
+   "status": "measured",
+   "composition": {
+    "V": 1.0,
+    "changed": 3,
+    "pairs": 3
    },
-   "Calibri": {
-    "rendered_with": "Carlito",
-    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
-    "fidelity": "metric_alias",
-    "codepoints_checked": 12,
-    "uncovered_count": 0,
-    "uncovered_sample": [],
-    "bullets_only": false
+   "exhibits": {
+    "status": "no evidence",
+    "why": "exhibits not read on 4 of 4 content pages (the build knows element kinds, not exhibit types; the plan's exhibit types are declared)"
    },
-   "Wingdings": {
-    "rendered_with": "Inter",
-    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
-    "fidelity": "substituted",
-    "codepoints_checked": 1,
-    "uncovered_count": 0,
-    "uncovered_sample": [],
-    "bullets_only": true
+   "classes": {
+    "V": 1.0,
+    "changed": 1,
+    "pairs": 1,
+    "pages_unread": [
+     3
+    ]
+   },
+   "distinct": {
+    "compositions": 3,
+    "pages": 4,
+    "per_page": 0.75
+   },
+   "longest_run": 1,
+   "runs": [],
+   "sequences": [
+    [
+     "b1",
+     "b2",
+     "b3",
+     "b1"
+    ]
+   ]
+  },
+  "house": {
+   "decks": [
+    {
+     "deck": "mi_keybank_first_niagara_fig_ma.pptx",
+     "status": "measured",
+     "content_pages": 11,
+     "composition": {
+      "V": 0.9,
+      "changed": 9,
+      "pairs": 10
+     },
+     "longest_run": 2
+    }
+   ],
+   "pooled": {
+    "status": "measured",
+    "decks": 1,
+    "decks_without_evidence": [],
+    "composition": {
+     "V": 0.9,
+     "changed": 9,
+     "pairs": 10,
+     "p10_deck_V": 0.9,
+     "deck_V": [
+      0.9
+     ],
+     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
+    },
+    "exhibits": {
+     "V": 1.0,
+     "changed": 10,
+     "pairs": 10,
+     "p10_deck_V": 1.0,
+     "deck_V": [
+      1.0
+     ],
+     "decks_unread": []
+    },
+    "classes": {
+     "V": 0.9,
+     "changed": 9,
+     "pairs": 10,
+     "p10_deck_V": 0.9,
+     "deck_V": [
+      0.9
+     ],
+     "decks_unread": []
+    },
+    "distinct_per_page": {
+     "mi_keybank_first_niagara_fig_ma.pptx": 0.636
+    },
+    "longest_run": 2,
+    "sequences": [
+     [
+      "arch-2",
+      "arch-3",
+      "arch-4",
+      "arch-4",
+      "arch-3",
+      "arch-4",
+      "arch-5",
+      "arch-6",
+      "arch-7",
+      "arch-2",
+      "arch-8"
+     ]
+    ]
    }
   },
-  "pages": 4,
-  "images": [
-   "(scratch)/renders/slide-01.png",
-   "(scratch)/renders/slide-02.png",
-   "(scratch)/renders/slide-03.png",
-   "(scratch)/renders/slide-04.png"
-  ]
+  "against_house": {
+   "composition_V": {
+    "value": 1.0,
+    "house_pooled": 0.9,
+    "house_p10_deck": 0.9,
+    "verdict": "at or above the house's 10th percentile deck",
+    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+   },
+   "classes_V": {
+    "value": 1.0,
+    "house_pooled": 0.9,
+    "house_p10_deck": 0.9,
+    "verdict": "at or above the house's 10th percentile deck",
+    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+   },
+   "distinct_per_page": {
+    "value": 0.75,
+    "house_p10_window": 0.5,
+    "windows": 8,
+    "window_pages": 4,
+    "verdict": "at or above the house's 10th percentile window",
+    "threshold": "unmeasured: the 10th percentile window is a choice"
+   },
+   "longest_run": {
+    "built": 1,
+    "house": 2
+   }
+  },
+  "house_longest_run": 2,
+  "runs_over_reference": [],
+  "warnings": [],
+  "plan": {
+   "check": {
+    "status": "pass",
+    "refusals": [],
+    "warnings": []
+   },
+   "measure": {
+    "deck": "plan",
+    "content_pages": 4,
+    "segments": [
+     [
+      1,
+      2,
+      3,
+      4
+     ]
+    ],
+    "pairs": 3,
+    "status": "measured",
+    "composition": {
+     "V": 1.0,
+     "changed": 3,
+     "pairs": 3
+    },
+    "exhibits": {
+     "V": 1.0,
+     "changed": 3,
+     "pairs": 3,
+     "pages_unread": []
+    },
+    "classes": {
+     "status": "no evidence",
+     "why": "classes not read on 4 of 4 content pages (the plan declares exhibit types, not classes: the build measures the classes it realises)"
+    },
+    "distinct": {
+     "compositions": 4,
+     "pages": 4,
+     "per_page": 1.0
+    },
+    "longest_run": 1,
+    "runs": [],
+    "sequences": [
+     [
+      "new:sections-beside-table",
+      "new:table-over-chart-beside-reading",
+      "new:field-beside-commentary",
+      "new:bridge-over-table-beside-risks"
+     ]
+    ]
+   },
+   "composition_V": {
+    "planned": 1.0,
+    "realised": 1.0
+   },
+   "exhibits_V": {
+    "planned": 1.0,
+    "realised": "not measured: the build knows element kinds, not exhibit types; the plan's exhibit types are declared"
+   },
+   "classes_V": {
+    "planned": "not declared: the plan declares exhibit types, not classes: the build measures the classes it realises",
+    "realised": 1.0
+   },
+   "pages_differing_from_plan": []
+  }
  },
+ "validation_ok": true,
+ "problems": [],
  "judge": {
-  "reference": "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
-  "total": 0.086,
+  "reference": "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "total": 0.09,
   "components": {
    "families": 0.0,
-   "size_hist": 0.155,
-   "size_ladder": 0.023,
+   "size_hist": 0.178,
+   "size_ladder": 0.042,
    "title_size": 0,
-   "bold_ratio": 0.144,
-   "text_colors": 0.073,
+   "bold_ratio": 0.185,
+   "text_colors": 0.075,
    "fills": 0.0,
    "lines": null,
-   "aligns": 0.107,
+   "aligns": 0.124,
    "kinds": 0.412,
    "background": 0.0,
    "margins": 0.364,
@@ -781,7 +1101,7 @@
   "per_slide": [
    {
     "slide": 1,
-    "total": 0.06,
+    "total": 0.061,
     "worst": [
      [
       "margins",
@@ -799,7 +1119,7 @@
    },
    {
     "slide": 2,
-    "total": 0.091,
+    "total": 0.094,
     "worst": [
      [
       "margins",
@@ -811,13 +1131,13 @@
      ],
      [
       "aligns",
-      0.244
+      0.245
      ]
     ]
    },
    {
     "slide": 3,
-    "total": 0.12,
+    "total": 0.127,
     "worst": [
      [
       "count",
@@ -835,8 +1155,12 @@
    },
    {
     "slide": 4,
-    "total": 0.086,
+    "total": 0.094,
     "worst": [
+     [
+      "bold_ratio",
+      0.394
+     ],
      [
       "margins",
       0.363
@@ -844,10 +1168,6 @@
      [
       "kinds",
       0.333
-     ],
-     [
-      "bold_ratio",
-      0.302
      ]
     ]
    }
@@ -861,25 +1181,25 @@
    "max": 0.372
   },
   "others": {
-   "refs/files/45541_Header.pptx": 0.503,
-   "refs/files/goldman_airvana_go_private_board_2009.pdf": 0.622,
-   "refs/files/themes.pptx": 0.488
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/45541_Header.pptx": 0.507,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.62,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/themes.pptx": 0.492
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "refs/files/bmo_fairness_opinion_board.pdf",
-    "refs/files/citigroup_tribune_restructuring_update.pdf",
-    "refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.07,
-   "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.075,
-   "refs/files/mi_netflix_financing_pitchbook.pptx": 0.091
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.076,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.08,
+   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.096
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -887,5 +1207,11 @@
   "within_house_spread": true,
   "layout_clean": true,
   "filed_under_reference": true
- }
+ },
+ "renders": [
+  "(scratch)/out/renders/slide-01.png",
+  "(scratch)/out/renders/slide-02.png",
+  "(scratch)/out/renders/slide-03.png",
+  "(scratch)/out/renders/slide-04.png"
+ ]
 }

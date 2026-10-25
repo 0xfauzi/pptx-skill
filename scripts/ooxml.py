@@ -2348,6 +2348,10 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 1
     if argv[0] == "triage":
+        with open(argv[1], "rb") as fh:
+            if fh.read(5) != b"%PDF-":
+                print(f"triage: {argv[1]} is not a PDF (no %PDF- header); a .pptx needs no triage: run extract_style.py on it", file=sys.stderr)
+                return 2
         max_pages = int(argv[2]) if len(argv) > 2 else None
         print(json.dumps(pdf_triage(argv[1], max_pages), indent=1))
         return 0

@@ -323,14 +323,16 @@ def _copy_part(prs, part):
         if candidate not in existing:
             break
         n += 1
-    new = Part(PackURI(candidate), part.content_type, copy.deepcopy(part.blob) if isinstance(part.blob, bytes) else part.blob, prs.part.package)
+    new = Part(PackURI(candidate), part.content_type, prs.part.package, copy.deepcopy(part.blob))
     if hasattr(part, "_element"):
         new._blob = etree.tostring(part._element, xml_declaration=True, encoding="UTF-8", standalone=True)
     for rel in part.rels.values():
         if rel.is_external:
             new.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref)
         else:
-            new.relate_to(rel.target_part, rel.reltype)
+            # the chart's workbook, colours and style are its own: a shared workbook would
+            # make an edit of one chart's data in PowerPoint rewrite the other's
+            new.relate_to(_copy_part(prs, rel.target_part), rel.reltype)
     return new
 
 

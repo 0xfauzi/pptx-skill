@@ -247,7 +247,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Every method prices below the offer"
+         "text": "Every standalone midpoint sits below the offer"
         }
        ]
       },
@@ -339,7 +339,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "Standalone methods centre on $10.00 to $10.50; the offer is only inside the ranges that already assume synergies or the top of the precedent set"
+           "text": "Standalone midpoints run from $9.30 (P / TBV comps) to $11.25 (analyst targets); only the precedent set ($11.60) and the synergy DDM ($12.05) centre above the offer"
           },
           {
            "role": "type.body",
@@ -349,7 +349,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "A 20% synergy case supports $10.20 to $11.00, which is where re-engagement makes sense"
+           "text": "A re-engagement band of $10.50 to $11.30 sits inside the synergy DDM range and below the offer"
           },
           {
            "role": "type.caption",

@@ -24,7 +24,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Executive summary: decline the $11.40 offer"
+         "text": "Executive Summary"
         }
        ]
       },
@@ -221,6 +221,9 @@
      }
     },
     "kpis": {}
+   },
+   "title": {
+    "register": "topic"
    }
   },
   {
@@ -247,7 +250,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Precedent deals: 1.33x is below the 1.58x median multiple"
+         "text": "Precedent Transactions"
         }
        ]
       },
@@ -430,7 +433,7 @@
          "paragraphs": [
           {
            "role": "type.h2",
-           "text": "How to read it"
+           "text": "1.33x, below the 1.58x median:"
           },
           {
            "role": "type.body",
@@ -547,6 +550,9 @@
      "plot_fill_role": "none",
      "title": "none"
     }
+   },
+   "title": {
+    "register": "topic"
    }
   },
   {
@@ -573,7 +579,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Valuation: $11.40 sits above every standalone midpoint"
+         "text": "Valuation Summary"
         }
        ]
       },
@@ -660,7 +666,7 @@
          "paragraphs": [
           {
            "role": "type.h2",
-           "text": "What the field says"
+           "text": "$11.40 sits above every standalone midpoint:"
           },
           {
            "role": "type.body",
@@ -675,7 +681,7 @@
           {
            "role": "type.body",
            "bullet_level": 0,
-           "text": "A re-engagement band of $10.50 to $11.30 sits inside the synergy DDM range, above every standalone midpoint and below the offer"
+           "text": "A re-engagement band of $10.50 to $11.30 sits inside the synergy DDM range and below the offer"
           },
           {
            "role": "type.caption",
@@ -698,6 +704,9 @@
       }
      ]
     }
+   },
+   "title": {
+    "register": "topic"
    }
   },
   {
@@ -724,7 +733,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Synergies: $400m required, $295m precedented at run-rate"
+         "text": "Cost Synergies"
         }
        ]
       },
@@ -832,7 +841,7 @@
          "paragraphs": [
           {
            "role": "type.h2",
-           "text": "Execution risk"
+           "text": "$400m required against $295m precedented:"
           },
           {
            "role": "type.body",
@@ -953,6 +962,9 @@
      "plot_fill_role": "none",
      "title": "none"
     }
+   },
+   "title": {
+    "register": "topic"
    }
   }
  ]

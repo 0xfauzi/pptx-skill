@@ -1,0 +1,12 @@
+{
+ "schema": "pptx-skill section plan v1",
+ "reference_sha256": "027980b216c18c6ed36e816f3b9d5bd986f6cffda1b842e8c53970fccf92937c",
+ "pages": [
+  {"id": "s1-exec", "intent": "the answer first", "message": "Decline the $11.40 offer",
+   "composition": "new:sections-beside-table", "exhibit_types": ["text_or_data_table", "structured_text"],
+   "data_shapes": ["comps_or_benchmark_table"], "title_register": "claim", "deliberate_parallel": null},
+  {"id": "s3-football", "intent": "standalone value against the offer", "message": "Every standalone midpoint sits below the offer",
+   "composition": "new:field-beside-commentary", "exhibit_types": ["football_field_or_range_bars"],
+   "data_shapes": ["football_field_or_ranges"], "title_register": "claim", "deliberate_parallel": null}
+ ]
+}

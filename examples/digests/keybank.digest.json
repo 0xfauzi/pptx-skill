@@ -1,0 +1,689 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "mi_keybank_first_niagara_fig_ma.pptx",
+ "reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad",
+ "render_fidelity": "metric_substituted",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1800,
+  "px_per_pt": 3.33
+ },
+ "vocabulary": "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/references/page_craft_vocabulary.json",
+ "sample_policy": "every evidence page",
+ "pages_not_read": [],
+ "generated_slides_skipped": [],
+ "record_template": {
+  "candidate": "<a candidate id on this page, or null>",
+  "class": "exhibit_class",
+  "type": "exhibit_type",
+  "data_shape": "data_shape",
+  "message": "<the one message, in words>",
+  "message_kind": "message_kind",
+  "annotation_moves": [
+   {
+    "move": "annotation_move",
+    "anchor": "<what it points at>"
+   }
+  ],
+  "emphasis_devices": [
+   "emphasis_device"
+  ],
+  "number_formats": [
+   "number_format"
+  ],
+  "legend": "legend",
+  "data_labels": "data_labels",
+  "colour_logic": "colour_logic",
+  "why": "<optional>"
+ },
+ "pages": [
+  {
+   "slide": 1,
+   "page_png": "pages/slide-01.png",
+   "content_crop": {
+    "file": "crops/p001-content.png",
+    "pixel_size": [
+     2184,
+     468
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": []
+  },
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     2164,
+     1286
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": []
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2164,
+     1336
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "The dividend discount model's assumptions, one labelled row each",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "percent_suffix",
+      "x_suffix_multiples"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     2184,
+     1424
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      2184,
+      1324
+     ],
+     "box_in": [
+      0.41,
+      1.41,
+      9.1,
+      5.52
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p004-c1",
+     "class": "table",
+     "type": "sensitivity_grid",
+     "data_shape": "sensitivity_grid",
+     "message": "Implied price by terminal P / TBV and discount rate sits below the $11.40 offer",
+     "message_kind": "valuation_range",
+     "annotation_moves": [
+      {
+       "move": "column_spanners",
+       "anchor": "the discount rate header"
+      }
+     ],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "currency_first_and_total_rows",
+      "percent_suffix",
+      "x_suffix_multiples"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    },
+    {
+     "candidate": "p004-c1",
+     "class": "table",
+     "type": "sensitivity_grid",
+     "data_shape": "sensitivity_grid",
+     "message": "Implied price by CET 1 target and discount rate sits below the offer",
+     "message_kind": "valuation_range",
+     "annotation_moves": [
+      {
+       "move": "column_spanners",
+       "anchor": "the discount rate header"
+      }
+     ],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "currency_first_and_total_rows",
+      "percent_suffix"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2164,
+     1383
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p005-c1",
+     "file": "crops/p005-c1.png",
+     "pixel_size": [
+      2164,
+      1283
+     ],
+     "box_in": [
+      0.41,
+      1.41,
+      9.02,
+      5.35
+     ],
+     "kinds": {
+      "image": 2,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p005-c1",
+     "class": "table",
+     "type": "comps_or_benchmark_table",
+     "data_shape": "comps_or_benchmark_table",
+     "message": "First Niagara trades in line with peers on P / E and P / TBV",
+     "message_kind": "subject_vs_peers",
+     "annotation_moves": [
+      {
+       "move": "statistic_row_emphasis",
+       "anchor": "the median row"
+      },
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the First Niagara row"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure",
+      "shaded_key_rows"
+     ],
+     "number_formats": [
+      "units_line",
+      "currency_first_and_total_rows",
+      "x_suffix_multiples",
+      "percent_suffix"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    },
+    {
+     "candidate": "p005-c1",
+     "class": "table",
+     "type": "comps_or_benchmark_table",
+     "data_shape": "comps_or_benchmark_table",
+     "message": "The offer's forward P / E is above the public comps",
+     "message_kind": "subject_vs_peers",
+     "annotation_moves": [
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the forward P / E rows"
+      },
+      {
+       "move": "nm_na_markers",
+       "anchor": "the public comps column"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure"
+     ],
+     "number_formats": [
+      "x_suffix_multiples",
+      "nm_na_written"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "monochrome"
+    }
+   ]
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2164,
+     1336
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "The merger model's assumptions, one labelled row each",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "percent_suffix",
+      "currency_every_figure"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 7,
+   "page_png": "pages/slide-07.png",
+   "content_crop": {
+    "file": "crops/p007-content.png",
+    "pixel_size": [
+     2164,
+     1424
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p007-c1",
+     "file": "crops/p007-c1.png",
+     "pixel_size": [
+      2164,
+      1344
+     ],
+     "box_in": [
+      0.41,
+      1.33,
+      9.02,
+      5.6
+     ],
+     "kinds": {
+      "image": 2,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p007-c1",
+     "class": "table",
+     "type": "sensitivity_grid",
+     "data_shape": "sensitivity_grid",
+     "message": "EPS accretion by purchase premium and cost savings falls to 0-5% at 10-20% savings",
+     "message_kind": "estimate_or_scenario",
+     "annotation_moves": [
+      {
+       "move": "column_spanners",
+       "anchor": "the cost synergies header"
+      }
+     ],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "percent_suffix",
+      "parentheses_negatives"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    },
+    {
+     "candidate": "p007-c1",
+     "class": "data_chart",
+     "type": "column",
+     "data_shape": "column",
+     "message": "The offer is justified only where full cost synergies are credited to the seller",
+     "message_kind": "valuation_range",
+     "annotation_moves": [
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the full-synergy columns"
+      },
+      {
+       "move": "data_labels_all",
+       "anchor": "every column"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure"
+     ],
+     "number_formats": [
+      "currency_every_figure"
+     ],
+     "legend": "legend_box",
+     "data_labels": "all",
+     "colour_logic": "categorical"
+    }
+   ]
+  },
+  {
+   "slide": 8,
+   "page_png": "pages/slide-08.png",
+   "content_crop": {
+    "file": "crops/p008-content.png",
+    "pixel_size": [
+     2379,
+     1302
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p008-c1",
+     "file": "crops/p008-c1.png",
+     "pixel_size": [
+      2379,
+      339
+     ],
+     "box_in": [
+      0.0,
+      2.0,
+      9.91,
+      1.41
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p008-c2",
+     "file": "crops/p008-c2.png",
+     "pixel_size": [
+      1671,
+      249
+     ],
+     "box_in": [
+      1.48,
+      3.59,
+      6.96,
+      1.04
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p008-c3",
+     "file": "crops/p008-c3.png",
+     "pixel_size": [
+      1348,
+      467
+     ],
+     "box_in": [
+      2.15,
+      4.81,
+      5.62,
+      1.95
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p008-c1",
+     "class": "image_wall",
+     "type": "image_logo_or_evidence_wall",
+     "data_shape": "no_data_shape",
+     "message": "Recent deals projected cost savings of about 30 percent, well under 40",
+     "message_kind": "subject_vs_peers",
+     "annotation_moves": [
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the percent of expenses phrases"
+      },
+      {
+       "move": "callout_to_insight",
+       "anchor": "the 5% of expenses note"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure",
+      "arrow_connectors",
+      "semantic_text_colour"
+     ],
+     "number_formats": [
+      "percent_suffix",
+      "currency_every_figure"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "semantic"
+    }
+   ]
+  },
+  {
+   "slide": 9,
+   "page_png": "pages/slide-09.png",
+   "content_crop": {
+    "file": "crops/p009-content.png",
+    "pixel_size": [
+     2184,
+     1291
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p009-c1",
+     "file": "crops/p009-c1.png",
+     "pixel_size": [
+      941,
+      1213
+     ],
+     "box_in": [
+      5.59,
+      1.33,
+      3.92,
+      5.05
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p009-c2",
+     "file": "crops/p009-c2.png",
+     "pixel_size": [
+      1204,
+      1291
+     ],
+     "box_in": [
+      0.41,
+      1.33,
+      5.02,
+      5.38
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p009-c2",
+     "class": "data_chart",
+     "type": "horizontal_bar",
+     "data_shape": "horizontal_bar_ranking",
+     "message": "Bank deals announced synergy run rates averaging 25.7%",
+     "message_kind": "ranking",
+     "annotation_moves": [
+      {
+       "move": "data_labels_all",
+       "anchor": "every bar"
+      },
+      {
+       "move": "sorted_order",
+       "anchor": "the bars"
+      },
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the average"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure",
+      "bold_or_coloured_lead_in"
+     ],
+     "number_formats": [
+      "percent_suffix"
+     ],
+     "legend": "none_needed",
+     "data_labels": "all",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 10,
+   "page_png": "pages/slide-10.png",
+   "content_crop": {
+    "file": "crops/p010-content.png",
+    "pixel_size": [
+     2186,
+     1377
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p010-c1",
+     "file": "crops/p010-c1.png",
+     "pixel_size": [
+      1486,
+      568
+     ],
+     "box_in": [
+      3.32,
+      2.75,
+      6.19,
+      2.37
+     ],
+     "kinds": {
+      "shape": 7
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p010-c1",
+     "class": "table",
+     "type": "text_or_data_table",
+     "data_shape": "text_or_data_table",
+     "message": "Our estimates of cash efficiency and EPS accretion are well above KeyBank's",
+     "message_kind": "subject_vs_peers",
+     "annotation_moves": [
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the three rows that differ"
+      }
+     ],
+     "emphasis_devices": [
+      "boxed_or_circled_figure",
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "percent_suffix"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "semantic"
+    }
+   ]
+  },
+  {
+   "slide": 11,
+   "page_png": "pages/slide-11.png",
+   "content_crop": {
+    "file": "crops/p011-content.png",
+    "pixel_size": [
+     2164,
+     1286
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": []
+  },
+  {
+   "slide": 12,
+   "page_png": "pages/slide-12.png",
+   "content_crop": {
+    "file": "crops/p012-content.png",
+    "pixel_size": [
+     2184,
+     1162
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "Four numbered recommendations against the deal",
+     "message_kind": "choice_or_recommendation",
+     "annotation_moves": [
+      {
+       "move": "numbered_keys",
+       "anchor": "each recommendation row"
+      }
+     ],
+     "emphasis_devices": [
+      "dark_label_cells_or_banners",
+      "numbered_markers"
+     ],
+     "number_formats": [
+      "percent_suffix",
+      "currency_every_figure"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  }
+ ]
+}

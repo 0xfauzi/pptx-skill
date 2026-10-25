@@ -1,0 +1,994 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "mckinsey-calstrs-future-of-boards-2024.pdf",
+ "reference_sha256": "027980b216c18c6ed36e816f3b9d5bd986f6cffda1b842e8c53970fccf92937c",
+ "render_fidelity": "unknown_substitution",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1350,
+  "px_per_pt": 2.5
+ },
+ "vocabulary": "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/references/page_craft_vocabulary.json",
+ "sample_policy": "every evidence page",
+ "pages_not_read": [],
+ "generated_slides_skipped": [],
+ "record_template": {
+  "candidate": "<a candidate id on this page, or null>",
+  "class": "exhibit_class",
+  "type": "exhibit_type",
+  "data_shape": "data_shape",
+  "message": "<the one message, in words>",
+  "message_kind": "message_kind",
+  "annotation_moves": [
+   {
+    "move": "annotation_move",
+    "anchor": "<what it points at>"
+   }
+  ],
+  "emphasis_devices": [
+   "emphasis_device"
+  ],
+  "number_formats": [
+   "number_format"
+  ],
+  "legend": "legend",
+  "data_labels": "data_labels",
+  "colour_logic": "colour_logic",
+  "why": "<optional>"
+ },
+ "pages": [
+  {
+   "slide": 1,
+   "page_png": "pages/slide-01.png",
+   "content_crop": {
+    "file": "crops/p001-content.png",
+    "pixel_size": [
+     2293,
+     1350
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p001-c1",
+     "file": "crops/p001-c1.png",
+     "pixel_size": [
+      2293,
+      1350
+     ],
+     "box_in": [
+      0.59,
+      0.0,
+      12.74,
+      7.5
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": []
+  },
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     1985,
+     695
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": []
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2029,
+     695
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "Boards face four pressures at once",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "icons"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     2186,
+     1120
+    ],
+    "also_draws": [
+     {
+      "ref": "page4/t0",
+      "as": "title"
+     },
+     {
+      "ref": "page4/t14",
+      "as": "chrome"
+     },
+     {
+      "ref": "page4/t15",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      496,
+      274
+     ],
+     "box_in": [
+      0.6,
+      5.42,
+      2.75,
+      1.52
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p004-c2",
+     "file": "crops/p004-c2.png",
+     "pixel_size": [
+      496,
+      274
+     ],
+     "box_in": [
+      3.72,
+      5.42,
+      2.76,
+      1.52
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p004-c3",
+     "file": "crops/p004-c3.png",
+     "pixel_size": [
+      496,
+      274
+     ],
+     "box_in": [
+      6.85,
+      5.42,
+      2.76,
+      1.52
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p004-c4",
+     "file": "crops/p004-c4.png",
+     "pixel_size": [
+      495,
+      273
+     ],
+     "box_in": [
+      9.98,
+      5.43,
+      2.75,
+      1.52
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "diagram_or_process",
+     "type": "process_timeline_or_plan",
+     "data_shape": "process_or_timeline",
+     "message": "The board's role has moved from complacent to catalyst over 20 years",
+     "message_kind": "change_over_time",
+     "annotation_moves": [
+      {
+       "move": "event_markers",
+       "anchor": "five board eras placed on a rising line"
+      }
+     ],
+     "emphasis_devices": [
+      "photos_or_logos"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2185,
+     965
+    ],
+    "also_draws": [
+     {
+      "ref": "page5/t25",
+      "as": "chrome"
+     },
+     {
+      "ref": "page5/t26",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "diagram_or_process",
+     "type": "diagram_or_framework",
+     "data_shape": "diagram_or_framework",
+     "message": "Fifteen elements in three groups make an effective board",
+     "message_kind": "other",
+     "annotation_moves": [
+      {
+       "move": "numbered_keys",
+       "anchor": "fifteen numbered elements"
+      },
+      {
+       "move": "connectors_between_marks",
+       "anchor": "arrows from platform to activities to levers"
+      }
+     ],
+     "emphasis_devices": [
+      "numbered_markers",
+      "photos_or_logos",
+      "arrow_connectors"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2181,
+     996
+    ],
+    "also_draws": [
+     {
+      "ref": "page6/t10",
+      "as": "chrome"
+     },
+     {
+      "ref": "page6/t11",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "big_numbers",
+     "type": "big_numbers_or_kpi",
+     "data_shape": "no_data_shape",
+     "message": "Boards are strongest on setting strategy and weakest on reducing bias",
+     "message_kind": "ranking",
+     "annotation_moves": [
+      {
+       "move": "sorted_order",
+       "anchor": "four figures stepping down from 70% to 36%"
+      }
+     ],
+     "emphasis_devices": [
+      "big_numbers"
+     ],
+     "number_formats": [
+      "percent_suffix"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 7,
+   "page_png": "pages/slide-07.png",
+   "content_crop": {
+    "file": "crops/p007-content.png",
+    "pixel_size": [
+     2293,
+     1138
+    ],
+    "also_draws": [
+     {
+      "ref": "page7/t3",
+      "as": "chrome"
+     },
+     {
+      "ref": "page7/t4",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p007-c1",
+     "file": "crops/p007-c1.png",
+     "pixel_size": [
+      1003,
+      1138
+     ],
+     "box_in": [
+      7.76,
+      1.18,
+      5.57,
+      6.32
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "The boardroom agenda spans fourteen topics",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "photos_or_logos",
+      "status_stamps"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 8,
+   "page_png": "pages/slide-08.png",
+   "content_crop": {
+    "file": "crops/p008-content.png",
+    "pixel_size": [
+     2155,
+     828
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "diagram_or_process",
+     "type": "diagram_or_framework",
+     "data_shape": "diagram_or_framework",
+     "message": "Models are the tip of what generative AI value needs",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "icons",
+      "bold_or_coloured_lead_in"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 9,
+   "page_png": "pages/slide-09.png",
+   "content_crop": {
+    "file": "crops/p009-content.png",
+    "pixel_size": [
+     2182,
+     566
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p009-c1",
+     "file": "crops/p009-c1.png",
+     "pixel_size": [
+      657,
+      308
+     ],
+     "box_in": [
+      0.6,
+      3.47,
+      3.65,
+      1.71
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 1
+     }
+    },
+    {
+     "id": "p009-c2",
+     "file": "crops/p009-c2.png",
+     "pixel_size": [
+      665,
+      363
+     ],
+     "box_in": [
+      4.81,
+      3.47,
+      3.7,
+      2.02
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "Companies can take, shape or make generative AI solutions",
+     "message_kind": "choice_or_recommendation",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "icons"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 10,
+   "page_png": "pages/slide-10.png",
+   "content_crop": {
+    "file": "crops/p010-content.png",
+    "pixel_size": [
+     2400,
+     1350
+    ],
+    "also_draws": [
+     {
+      "ref": "page10/t8",
+      "as": "chrome"
+     },
+     {
+      "ref": "page10/t9",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p010-c1",
+     "file": "crops/p010-c1.png",
+     "pixel_size": [
+      2400,
+      1350
+     ],
+     "box_in": [
+      0.0,
+      0.0,
+      13.33,
+      7.5
+     ],
+     "kinds": {
+      "shape": 10
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p010-c1",
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "Six questions decide whether a board executes on generative AI",
+     "message_kind": "other",
+     "annotation_moves": [
+      {
+       "move": "numbered_keys",
+       "anchor": "six numbered questions"
+      }
+     ],
+     "emphasis_devices": [
+      "bold_or_coloured_lead_in",
+      "numbered_markers",
+      "takeaway_band_or_sidebar"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 11,
+   "page_png": "pages/slide-11.png",
+   "content_crop": {
+    "file": "crops/p011-content.png",
+    "pixel_size": [
+     2227,
+     1017
+    ],
+    "also_draws": [
+     {
+      "ref": "page11/t13",
+      "as": "chrome"
+     },
+     {
+      "ref": "page11/t14",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p011-c1",
+     "file": "crops/p011-c1.png",
+     "pixel_size": [
+      1217,
+      930
+     ],
+     "box_in": [
+      6.2,
+      1.6,
+      6.76,
+      5.17
+     ],
+     "kinds": {
+      "shape": 6
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p011-c1",
+     "class": "big_numbers",
+     "type": "big_numbers_or_kpi",
+     "data_shape": "comps_or_benchmark_table",
+     "message": "Highly effective boards outscore less effective ones on every measure",
+     "message_kind": "subject_vs_peers",
+     "annotation_moves": [
+      {
+       "move": "circled_or_boxed_mark",
+       "anchor": "the induction-training column, 24% against 43%"
+      },
+      {
+       "move": "footnote_markers",
+       "anchor": "detail follows on page 15"
+      }
+     ],
+     "emphasis_devices": [
+      "big_numbers",
+      "boxed_or_circled_figure",
+      "icons"
+     ],
+     "number_formats": [
+      "percent_suffix"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 12,
+   "page_png": "pages/slide-12.png",
+   "content_crop": {
+    "file": "crops/p012-content.png",
+    "pixel_size": [
+     2293,
+     1350
+    ],
+    "also_draws": [
+     {
+      "ref": "page12/t7",
+      "as": "chrome"
+     },
+     {
+      "ref": "page12/t8",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p012-c1",
+     "file": "crops/p012-c1.png",
+     "pixel_size": [
+      1543,
+      1350
+     ],
+     "box_in": [
+      4.76,
+      0.0,
+      8.57,
+      7.5
+     ],
+     "kinds": {
+      "image": 1,
+      "connector": 5,
+      "shape": 6
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": null,
+     "class": "shape_built_text",
+     "type": "structured_text",
+     "data_shape": "no_data_shape",
+     "message": "Boards take on more but keep directors without the new skills",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "takeaway_band_or_sidebar",
+      "bold_or_coloured_lead_in"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 13,
+   "page_png": "pages/slide-13.png",
+   "content_crop": {
+    "file": "crops/p013-content.png",
+    "pixel_size": [
+     2139,
+     1022
+    ],
+    "also_draws": [
+     {
+      "ref": "page13/t10",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p013-c1",
+     "file": "crops/p013-c1.png",
+     "pixel_size": [
+      877,
+      423
+     ],
+     "box_in": [
+      1.4,
+      4.51,
+      4.87,
+      2.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p013-c1",
+     "class": "diagram_or_process",
+     "type": "diagram_or_framework",
+     "data_shape": "diagram_or_framework",
+     "message": "An effective director combines know-how, skills and mindset",
+     "message_kind": "other",
+     "annotation_moves": [
+      {
+       "move": "numbered_keys",
+       "anchor": "three ring segments numbered 1 to 3"
+      }
+     ],
+     "emphasis_devices": [
+      "numbered_markers"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 14,
+   "page_png": "pages/slide-14.png",
+   "content_crop": {
+    "file": "crops/p014-content.png",
+    "pixel_size": [
+     2188,
+     1058
+    ],
+    "also_draws": [
+     {
+      "ref": "page14/t39",
+      "as": "chrome"
+     },
+     {
+      "ref": "page14/t40",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p014-c1",
+     "file": "crops/p014-c1.png",
+     "pixel_size": [
+      1531,
+      821
+     ],
+     "box_in": [
+      4.24,
+      2.24,
+      8.5,
+      4.56
+     ],
+     "kinds": {
+      "connector": 3,
+      "shape": 52
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p014-c1",
+     "class": "table",
+     "type": "status_or_check_matrix",
+     "data_shape": "status_or_check_matrix",
+     "message": "The current board lacks skills the strategy needs",
+     "message_kind": "other",
+     "annotation_moves": [
+      {
+       "move": "status_glyphs",
+       "anchor": "checks per director and skill"
+      },
+      {
+       "move": "column_spanners",
+       "anchor": "current directors and those to be replaced"
+      },
+      {
+       "move": "footnote_markers",
+       "anchor": "the process steps note"
+      }
+     ],
+     "emphasis_devices": [
+      "status_glyphs_or_rag",
+      "dark_label_cells_or_banners"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "legend_box",
+     "data_labels": "not_applicable",
+     "colour_logic": "monochrome"
+    }
+   ]
+  },
+  {
+   "slide": 15,
+   "page_png": "pages/slide-15.png",
+   "content_crop": {
+    "file": "crops/p015-content.png",
+    "pixel_size": [
+     2185,
+     980
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p015-c1",
+     "file": "crops/p015-c1.png",
+     "pixel_size": [
+      75,
+      890
+     ],
+     "box_in": [
+      4.36,
+      1.86,
+      0.42,
+      4.94
+     ],
+     "kinds": {
+      "connector": 2
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p015-c1",
+     "class": "table",
+     "type": "text_or_data_table",
+     "data_shape": "text_or_data_table",
+     "message": "Onboarding runs through four kinds of session",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "bold_or_coloured_lead_in"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  },
+  {
+   "slide": 16,
+   "page_png": "pages/slide-16.png",
+   "content_crop": {
+    "file": "crops/p016-content.png",
+    "pixel_size": [
+     2293,
+     1350
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p016-c1",
+     "file": "crops/p016-c1.png",
+     "pixel_size": [
+      2293,
+      1350
+     ],
+     "box_in": [
+      0.59,
+      0.0,
+      12.74,
+      7.5
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": []
+  },
+  {
+   "slide": 17,
+   "page_png": "pages/slide-17.png",
+   "content_crop": {
+    "file": "crops/p017-content.png",
+    "pixel_size": [
+     2400,
+     1318
+    ],
+    "also_draws": [
+     {
+      "ref": "page17/t0",
+      "as": "title"
+     },
+     {
+      "ref": "page17/t8",
+      "as": "chrome"
+     },
+     {
+      "ref": "page17/t9",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p017-c1",
+     "file": "crops/p017-c1.png",
+     "pixel_size": [
+      2400,
+      1318
+     ],
+     "box_in": [
+      0.0,
+      0.18,
+      13.33,
+      7.32
+     ],
+     "kinds": {
+      "image": 1,
+      "connector": 2,
+      "shape": 8
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p017-c1",
+     "class": "table",
+     "type": "text_or_data_table",
+     "data_shape": "text_or_data_table",
+     "message": "The ideal director's know-how, skills and mindset in detail",
+     "message_kind": "other",
+     "annotation_moves": [],
+     "emphasis_devices": [
+      "bold_or_coloured_lead_in"
+     ],
+     "number_formats": [
+      "no_figures"
+     ],
+     "legend": "not_applicable",
+     "data_labels": "not_applicable",
+     "colour_logic": "single_hue"
+    }
+   ]
+  }
+ ]
+}

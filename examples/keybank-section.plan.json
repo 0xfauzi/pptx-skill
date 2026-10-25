@@ -1,0 +1,18 @@
+{
+ "schema": "pptx-skill section plan v1",
+ "reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad",
+ "pages": [
+  {"id": "s1-exec", "intent": "the board's answer first", "message": "Decline the $11.40 offer; re-engage at $10.50 to $11.30",
+   "composition": "new:sections-beside-table", "exhibit_types": ["text_or_data_table", "structured_text"],
+   "data_shapes": ["comps_or_benchmark_table"], "title_register": "topic", "deliberate_parallel": null},
+  {"id": "s2-comps", "intent": "price the offer against precedents", "message": "1.33x tangible book is below the 1.58x precedent median",
+   "composition": "new:table-over-chart-beside-reading", "exhibit_types": ["comps_or_benchmark_table", "horizontal_bar"],
+   "data_shapes": ["comps_or_benchmark_table", "horizontal_bar_ranking"], "title_register": "topic", "deliberate_parallel": null},
+  {"id": "s3-football", "intent": "standalone value against the offer", "message": "$11.40 sits above every standalone midpoint",
+   "composition": "new:field-beside-commentary", "exhibit_types": ["football_field_or_range_bars"],
+   "data_shapes": ["football_field_or_ranges"], "title_register": "topic", "deliberate_parallel": null},
+  {"id": "s4-synergies", "intent": "what the price needs from synergies", "message": "$400m required against $295m precedented at run-rate",
+   "composition": "new:bridge-over-table-beside-risks", "exhibit_types": ["waterfall_or_bridge", "financial_or_projection_table"],
+   "data_shapes": ["waterfall", "financial_or_projection_table"], "title_register": "topic", "deliberate_parallel": null}
+ ]
+}

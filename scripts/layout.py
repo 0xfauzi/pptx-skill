@@ -1449,12 +1449,25 @@ def build_context(spec_path: str, guide_path: str) -> Context:
     from build_deck import mark_measured_weights, normalise, prepare_page
     if "root" in raw:
         slide: dict = {}
+        raw["root"] = _components_as_boxes(raw["root"])
         raw["root"] = normalise(raw["root"], slide)
         mark_measured_weights(raw["root"], slide, raw_guide)
     prepare_page(raw, raw_guide)
     spec = parse_spec(raw)
     guide = load_guide(raw_guide)
     return Context(guide, default_ruler(), default_index(), spec)
+
+def _components_as_boxes(node: dict) -> dict:
+    """A component node held as a flexible box of its own id and weight, the stand-in
+    build_deck solves before it expands (its first pass): capacity budgets the regions
+    around a component; what fits inside one is the component's own measure (component_api)."""
+    if node.get("type") == "region":
+        return {**node, "children": [_components_as_boxes(c) for c in node.get("children", [])]}
+    if node.get("type") == "component":
+        print(f"component {node['id']!r} ({node.get('kind')}): budgeted as a flexible box; its own text is measured by component_api", file=sys.stderr)
+        return {"type": "element", "id": node["id"], "kind": "image", **({"weight": node["weight"]} if "weight" in node else {})}
+    return node
+
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Solve a slide spec to EMU boxes with measured text fit.")
