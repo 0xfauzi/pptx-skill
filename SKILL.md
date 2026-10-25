@@ -434,14 +434,17 @@ Then ask the page library, which ranks by the tags you gave pages after looking 
 
 ```bash
 python3 scripts/library.py pick --intent "valuation football field against the offer" \
-  --exhibit "football field / range bars" [--composition C] [--move M]... [--data-shape "methods x low/high"] \
+  --exhibit football_field_or_range_bars [--composition C] [--move M]... [--data-shape "methods x low/high"] \
   [--aspect 4:3] --gallery work/ref/gallery --own <company library>
 ```
 
 It searches the reference's own gallery (words only), then the company's library, then the
 external library (`refs/library`, git-ignored), and says which answered. Order is
 composition, exhibit family and annotation moves first, page aspect next, data-shape and
-intent words last. `library.py vocab` lists the values; any other value is refused. Use the
+intent words last. `library.py vocab` lists the values; any other value is refused. The title
+register, exhibit family and annotation moves are the same slugs the digest records
+(`references/page_craft_vocabulary.json`): an entry stores the slug, and `--exhibit` and
+`--move` take the slug or its label. Use the
 `why` and `ask` lines as questions to answer for your page, never as a layout to copy. An
 aspect mismatch is flagged because examples do not carry across page sizes. `no evidence`
 means nothing there fits this intent. Build a company library from its past decks

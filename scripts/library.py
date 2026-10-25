@@ -72,6 +72,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gallery
 import ooxml
 import render
+from complete_guide import VOCABULARY
 from extract_style import quant
 from lxml import etree
 from PIL import Image
@@ -80,19 +81,18 @@ SKILL_ROOT = Path(__file__).resolve().parent.parent
 EXTERNAL_LIBRARY = SKILL_ROOT / "refs" / "library"
 RENDER_WIDTH_PX = 1600  # TARGET_SPEC 10.1: all pages at 1600 px
 EMU_PER_INCH = 914_400
-MANIFEST_SCHEMA = 2  # 2: every file names the pages it derives from ("pages")
+MANIFEST_SCHEMA = 3  # 2: every file names the pages it derives from ("pages"); 3: tags are page_craft_vocabulary slugs
 # The kinds that hold a picture of a page. Kept kinds need `--images yes`; a withheld render
 # exists only while the model tags a tags-only deck, and `check --seal` deletes it.
 KEPT_IMAGE_KINDS = frozenset({"page_image", "contact_sheet"})
 WITHHELD_KIND = "withheld_render"
 
 # --- vocabulary -------------------------------------------------------------------------------
-# The synthesis taxonomy that tagged the 578-page development corpus (pagecraft
-# synth/analyze_all.py: page_family, EX_RULES, MOVES); TARGET_SPEC A.2, A.5 and A.6 count
-# these categories under longer spellings. The corpus starter set uses exactly these strings.
+# House type and composition: the synthesis taxonomy that tagged the 578-page development
+# corpus (pagecraft synth/analyze_all.py: page_family); TARGET_SPEC A.2 counts these
+# compositions under longer spellings. The corpus starter set uses exactly these strings.
 
 HOUSE_TYPES = ("investment bank", "consulting", "chart book", "other")
-TITLE_REGISTERS = ("topic", "claim", "question")
 COMPOSITIONS = (
     "single chart, full width",
     "single table, full width",
@@ -105,28 +105,12 @@ COMPOSITIONS = (
     "exhibit + text above or below",
     "big numbers / KPI panel",
 )
-EXHIBIT_FAMILIES = (
-    "line", "column", "text / data table", "stacked bar / column / area", "financial / projection table",
-    "process / timeline / plan", "sensitivity grid", "diagram / framework", "framework matrix / placemat",
-    "image / logo / evidence wall", "structured text (rows, cards, quotes)", "horizontal bar", "status / check matrix",
-    "comps / benchmark table", "combo (bar + line/dot)", "football field / range bars", "pie / donut",
-    "table with in-cell bars", "waterfall / bridge", "map", "big numbers / KPI", "scatter / bubble", "histogram",
-    "funnel", "heatmap", "other",
-)
-ANNOTATION_MOVES = (
-    "data labels on all marks", "selective data labels", "end / direct labels instead of legend",
-    "reference / benchmark / average line", "highlight one item, mute the rest", "median / stat row or block emphasised",
-    "sorted order", "totals above stacks / 100%= bases", "shaded / bold total row", "column spanners / grouped headers",
-    "bracket / brace (often with sum)", "callout box / arrow / leader to the insight", "circled or boxed mark",
-    "delta / growth / CAGR label", "event markers on time axis", "forecast / period demarcation", "footnote markers",
-    "NM / NA / n.q. markers", "data rows / table aligned under the chart", "inset stats table in the plot",
-    "italic ratio rows", "logos as labels", "numbered / lettered keys tied to text",
-    "semantic colour (sign, status, sentiment, heat)", "status glyphs (check, cross, dots)",
-    "shared scale / order held across panels", "axis break / inversion / rebasing", "percent-of-total labels",
-    "reading key / how-to-read note", "zone / quadrant shading", "regression line / R2",
-    "connectors / zoom lines between marks", "derivation shown on the exhibit",
-    "uncertainty (ranges, scenario lines, stamps)", "input cells / base case marked",
-)
+# The title register, the exhibit family and the annotation moves are the digest's own
+# closed sets (references/page_craft_vocabulary.json); an entry stores the slug, and
+# the corpus's spelling is read only on import, through that file's corpus_spelling.
+TITLE_REGISTERS: dict[str, str] = VOCABULARY["title_register"]
+EXHIBIT_FAMILIES: dict[str, str] = VOCABULARY["exhibit_type"]
+ANNOTATION_MOVES: dict[str, str] = VOCABULARY["annotation_move"]
 # Fields the model fills after looking. Everything else in an entry is measured or recorded.
 TAG_FIELDS = ("house_type", "composition_family", "composition_as_recorded", "title", "title_register", "exhibits",
               "emphasis_devices", "craft", "why_instructive", "designer_questions")
@@ -599,8 +583,8 @@ def check_entry(entry: dict) -> list[str]:
     if untagged:
         problems.append(f"not tagged yet: {', '.join(untagged)}")
 
-    def one_of(field: str, value: object, allowed: tuple[str, ...]) -> None:
-        if value is not None and value not in allowed:
+    def one_of(field: str, value: object, allowed: tuple[str, ...] | dict[str, str]) -> None:
+        if value is not None and not (isinstance(value, str) and value in allowed):
             problems.append(f"{field} {value!r} is not in the vocabulary (library.py vocab)")
 
     one_of("house_type", entry.get("house_type"), HOUSE_TYPES)
@@ -739,6 +723,27 @@ def forget(lib: Library, deck_id: str) -> str:
 
 # --- the corpus starter set ------------------------------------------------------------------
 
+# corpus spelling -> slug, per vocabulary list
+CORPUS_SPELLING = {name: {spelt: slug for slug, spelt in VOCABULARY["corpus_spelling"][name].items()} for name in ("exhibit_type", "annotation_move")}
+
+
+def _corpus_terms(page: dict) -> list[tuple[str, object]]:
+    """Every family and move a corpus page writes; a list that is not one is a term of its own
+    (refused by name), never read as empty."""
+    exhibits = page.get("exhibits")
+    if not isinstance(exhibits, list):
+        return [("exhibit_type", exhibits)]
+    out: list[tuple[str, object]] = []
+    for ex in exhibits:
+        if not isinstance(ex, dict):
+            out.append(("exhibit_type", ex))
+            continue
+        out.append(("exhibit_type", ex.get("family")))
+        moves = ex.get("annotation_moves")
+        out += [("annotation_move", m) for m in moves] if isinstance(moves, list) else [("annotation_move", moves)]
+    return out
+
+
 CORPUS_HOUSE = {"investment bank": "investment bank", "consulting": "consulting", "asset manager market guide (JPM)": "chart book"}
 
 
@@ -747,8 +752,15 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
     The corpus kept no deck files beside the images, so a deck's sha256 is null (no
     evidence) and the page size is the stored image's own aspect."""
     payload = json.loads(source.read_text())
+    pages = payload.get("pages") if isinstance(payload, dict) else None
+    if not isinstance(pages, list) or not all(isinstance(p, dict) for p in pages):
+        raise Refused("corpus_unreadable", f"{source} has no pages list of objects")
+    unknown = sorted({f"{p.get('deck')}-p{p.get('page')}: {what} {value!r}" for p in pages for what, value in _corpus_terms(p)
+                      if not isinstance(value, str) or value not in CORPUS_SPELLING[what]})
+    if unknown:
+        raise Refused("corpus_spelling_unknown", f"{len(unknown)} corpus terms page_craft_vocabulary.json corpus_spelling does not spell: {'; '.join(unknown)}")
     lines = []
-    for page in payload["pages"]:
+    for page in pages:
         deck_id = page["deck"]
         if deck_id not in lib.manifest["decks"]:
             permit(lib, None, deck_id, "external", "external", True, by, basis, None)
@@ -767,6 +779,9 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
         entry["look_at"] = rel
         house = page["house_type"]
         entry.update({k: page[k] for k in TAG_FIELDS})
+        entry["exhibits"] = [dict(ex, family=CORPUS_SPELLING["exhibit_type"][ex["family"]],
+                                  annotation_moves=[CORPUS_SPELLING["annotation_move"][m] for m in ex["annotation_moves"]])
+                             for ex in page["exhibits"]]
         entry["house_type"] = CORPUS_HOUSE.get(house, "other")
         if entry["house_type"] != house:
             entry["house_type_as_recorded"] = house
@@ -778,13 +793,16 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
 
 # --- pick ------------------------------------------------------------------------------------
 
-def _vocab(value: str | None, allowed: tuple[str, ...], flag: str) -> str | None:
+def _vocab(value: str | None, allowed: tuple[str, ...] | dict[str, str], flag: str) -> str | None:
+    """The term asked, by its slug or its label; the slug is what entries store."""
     if value is None:
         return None
-    hit = [a for a in allowed if a.lower() == value.strip().lower()]
+    labels = allowed if isinstance(allowed, dict) else {a: a for a in allowed}
+    asked = value.strip().lower()
+    hit = [slug for slug, label in labels.items() if asked in (slug.lower(), label.lower())]
     if not hit:
-        near = sorted(allowed, key=lambda a: -len(gallery.words(a) & gallery.words(value)))[:4]
-        raise Refused("not_in_vocabulary", f"{flag} {value!r}; nearest: {' | '.join(near)} (library.py vocab lists all)")
+        near = sorted(labels, key=lambda a: -len(gallery.words(labels[a]) & gallery.words(value)))[:4]
+        raise Refused("not_in_vocabulary", f"{flag} {value!r}; nearest: {' | '.join(f'{a} ({labels[a]})' if a != labels[a] else a for a in near)} (library.py vocab lists all)")
     return hit[0]
 
 
@@ -805,7 +823,7 @@ def entry_words(entry: dict) -> frozenset[str]:
     text = [entry.get("title"), entry.get("composition_as_recorded"), entry.get("why_instructive"),
             *(entry.get("designer_questions") or []), *(entry.get("emphasis_devices") or [])]
     for ex in entry.get("exhibits") or []:
-        text += [ex.get("type"), ex.get("message"), *(ex.get("annotation_moves") or [])]
+        text += [ex.get("type"), ex.get("message"), *(ANNOTATION_MOVES.get(m) for m in ex.get("annotation_moves") or [] if isinstance(m, str))]
     return frozenset().union(*(gallery.words(t) for t in text if isinstance(t, str)))
 
 
@@ -992,6 +1010,7 @@ def main(argv: list[str]) -> int:
         elif args.cmd == "vocab":
             print(json.dumps({"house_type": HOUSE_TYPES, "title_register": TITLE_REGISTERS, "composition_family": COMPOSITIONS,
                               "exhibit_family": EXHIBIT_FAMILIES, "annotation_moves": ANNOTATION_MOVES,
+                              "spelling": "a tag is the slug; pick's --exhibit and --move take the slug or its label",
                               "tag_fields": TAG_FIELDS, "exhibit_fields": EXHIBIT_FIELDS}, indent=1))
     except Refused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)
