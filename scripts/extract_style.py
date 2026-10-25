@@ -1783,6 +1783,8 @@ def variety_report(v: dict | None) -> list[str]:
     out.append(f"Runs of one composition: {m['runs'] or 'none'}")
     ex = m["exhibits"]
     out.append(f"V (exhibit-type sets): {ex['V'] if 'V' in ex else ex['why']}")
+    cl = m["classes"]
+    out.append(f"V (exhibit-class sets): {cl['V'] if 'V' in cl else cl['why']}")
     return out
 
 

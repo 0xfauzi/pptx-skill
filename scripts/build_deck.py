@@ -618,8 +618,34 @@ def frame_tracks(pages: list[tuple[int, list[dict]]], guide: dict) -> list[dict]
     return [t for t in element_tracks(pages, drift_step(guide)) if set(t["pages"]) == every and t["kind"] not in ("table", "chart", "image")]
 
 
+REALISED_CLASS = {"table": "table", "chart": "data_chart"}  # element kinds whose exhibit class is the kind itself (page_craft_vocabulary exhibit_class)
+BUILD_UNREAD = {"exhibits": "the build knows element kinds, not exhibit types; the plan's exhibit types are declared",
+                "classes": "a component or an image on the page: its exhibit class is not its element kind"}
+
+
+def realised_classes(spec_root: dict) -> list[str] | None:
+    """The exhibit classes a page's spec realises, read from its element kinds: a table is
+    class table, a chart is data_chart, text, rules and shapes are no exhibit. A component
+    or an image could be any class (a kpi row is big numbers, a picture may be a chart), so
+    a page holding one is unread (None), never text only."""
+    found: list[str] = []
+
+    def walk(node: dict) -> bool:
+        if node.get("type") == "region":
+            return all(walk(c) for c in node.get("children", []))
+        if node.get("type") == "component" or (node.get("kind") == "image" and not node.get("_spacer")):
+            return False
+        cls = REALISED_CLASS.get(node.get("kind"))
+        if cls and cls not in found:
+            found.append(cls)
+        return True
+
+    return found if walk(spec_root) else None
+
+
 def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: list[dict] | None = None, others: list[dict] | None = None,
-                  slide_ids: dict[int, str] | None = None) -> dict:
+                  slide_ids: dict[int, str] | None = None, classes: dict[int, list[str] | None] | None = None,
+                  names: list[str] | None = None, plan_check: dict | None = None) -> dict:
     """The built section's realised variety. Each solved page's content is its flattened
     elements' boxes with the page frame (frame_tracks) left out; pages get a realised
     composition by the extractor's own leader clustering (leader_clusters on
@@ -630,7 +656,11 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
     (guide.variety, pooled with `others`), a run longer than the house's longest is flagged;
     with no house evidence none is judged, and the report says so. Against the plan, each
     adjacent pair where plan and build disagree (the plan repeats a composition and the
-    build changes it, or the reverse) flags the later page. The house's measure keeps its
+    build changes it, or the reverse) flags the later page. The exhibit classes each page
+    realises (realised_classes) are measured the same way against the house's digest
+    classes: unlike the plan's composition names they cannot be renamed, so a section of
+    pages that each set a table beside a chart reads as the repeat it is however the plan
+    names them. The house's measure keeps its
     title as content where the build leaves the frame out: the house is held to the more
     lenient count, never the stricter one."""
     frame = frame_tracks(pages, guide)
@@ -645,14 +675,14 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
     for number, _ in pages:
         if not segments or segments[-1][-1]["slide"] != number - 1:
             segments.append([])
-        segments[-1].append({"slide": number, "composition": realised[number], "exhibits": None})
+        segments[-1].append({"slide": number, "composition": realised[number], "exhibits": None, "classes": (classes or {}).get(number)})
     pairs = []
     for (pa, ea), (pb, eb) in zip(pages, pages[1:]):
         if pb == pa + 1:
             sim = slide_similarity(content(pa, ea), content(pb, eb))
             pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": sim >= ARCHETYPE_IOU_THRESHOLD})
-    built = plan.measure_deck("built", segments)
-    house = plan.house_of([guide, *(others or [])])
+    built = plan.measure_deck("built", segments, BUILD_UNREAD)
+    house = plan.house_of([guide, *(others or [])], names)
     pooled = house["pooled"]
     longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
     runs = built.get("runs") or []
@@ -663,15 +693,19 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
                  "house": {"decks": [{k: d[k] for k in ("deck", "status", "content_pages", "composition", "longest_run", "why") if k in d} for d in house["decks"]],
                            "pooled": pooled},
                  "against_house": ({"composition_V": plan.against(built["composition"]["V"], pooled, "composition"),
-                                    "distinct_per_page": {"built": built["distinct"]["per_page"], "house": pooled.get("distinct_per_page", "no evidence")},
+                                    "classes_V": plan.against(built["classes"].get("V"), pooled, "classes"),
+                                    "distinct_per_page": plan.distinct_against(built["distinct"]["per_page"], built["content_pages"], pooled),
                                     "longest_run": {"built": built["longest_run"], "house": longest if longest is not None else "no evidence"}}
                                    if built["status"] == "measured" else {"built": built["why"]}),
                  "house_longest_run": longest if longest is not None else "no evidence", "runs_over_reference": over}
+    warnings = [f"{k} {v['value']} {v['verdict']} ({v.get('house_p10_deck', v.get('house_p10_window'))}); the threshold is unmeasured"
+                for k, v in (out["against_house"].items() if built["status"] == "measured" else []) if isinstance(v, dict) and v.get("verdict", "").startswith("below")]
+    out["warnings"] = warnings
     if plan_pages is None:
         out["plan"] = "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
         return out
     by_id = {p["id"]: p for p in plan_pages}
-    mine = plan.measure_deck("plan", plan.plan_segments(plan_pages))
+    mine = plan.measure_deck("plan", plan.plan_segments(plan_pages), plan.PLAN_UNREAD)
     flags = []
     for pair in pairs:
         a, b = (by_id[(slide_ids or {})[n]] for n in pair["pages"])
@@ -682,10 +716,10 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
                           "realised": [realised[pair["pages"][0]], realised[pair["pages"][1]]], "similarity": pair["similarity"],
                           "detail": (f"planned to repeat {a['composition']} ({b['deliberate_parallel'] or 'undeclared'}) but built differently"
                                      if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")})
-    out["plan"] = {"measure": mine,
+    out["plan"] = {"check": {k: (plan_check or {}).get(k) for k in ("status", "refusals", "warnings")}, "measure": mine,
                    "composition_V": {"planned": (mine.get("composition") or {}).get("V"), "realised": (built.get("composition") or {}).get("V")},
-                   "exhibits_V": {"planned": (mine.get("exhibits") or {}).get("V"),
-                                  "realised": "not measured: the build knows element kinds, not exhibit types; the planned figure is declared"},
+                   "exhibits_V": {"planned": (mine.get("exhibits") or {}).get("V"), "realised": "not measured: " + BUILD_UNREAD["exhibits"]},
+                   "classes_V": {"planned": "not declared: " + plan.PLAN_UNREAD["classes"], "realised": (built.get("classes") or {}).get("V", (built.get("classes") or {}).get("why"))},
                    "pages_differing_from_plan": flags}
     return out
 
@@ -1245,7 +1279,8 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
 
 
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
-          plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None) -> dict:
+          plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None, house_names: list[str] | None = None,
+          plan_check: dict | None = None) -> dict:
     Path(out).parent.mkdir(parents=True, exist_ok=True)  # before the solve: a missing -o directory otherwise fails only at the save
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
@@ -1337,7 +1372,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             annotation_pages[len(emitted)] = entry["annotations"]
         emitted.append(entry)
     report["position_drift"] = position_drift(pages, guide)
-    report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages})
+    report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages},
+                                         {n: realised_classes(deck["slides"][n - 1]["spec"]["root"]) for n, _ in pages}, house_names, plan_check)
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
     # the file as written, measured against the boxes it was solved for
@@ -1433,13 +1469,23 @@ def main(argv: list[str]) -> int:
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     plan_pages = None
+    plan_check = None
+    house_decks = [json.loads(Path(p).read_text()) for p in args.house_deck]
+    house_names = [f"--guide {args.guide}", *(f"--house-deck {p}" for p in args.house_deck)]
     if args.plan:
-        plan_pages = plan.read_plan(json.loads(Path(args.plan).read_text()), guide)
+        # the plan gate is plan.py check's, whole: a plan it refuses is not built
+        plan_json = json.loads(Path(args.plan).read_text())
+        plan_check = plan.check(plan_json, guide, house_decks, house_names)
+        if plan_check["status"] != "pass":
+            raise plan.Refused(f"--plan: plan.py check refuses {args.plan}: " + "; ".join(plan_check["refusals"]))
+        plan_pages = plan.read_plan(plan_json, guide)
         planned, built = [p["id"] for p in plan_pages], [s.get("id") for s in deck["slides"]]
         if planned != built:
             raise plan.Refused(f"--plan: the plan's page ids {planned} are not the deck's slide ids {built}, in order")
-    house_decks = [json.loads(Path(p).read_text()) for p in args.house_deck]
-    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks)
+    else:
+        plan.house_of([guide, *house_decks], house_names)  # the house decks proven before the solve, not after it
+    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
+                   house_names, plan_check)
     shown = ("id", "status", "reason", "problems", "title", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures

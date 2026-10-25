@@ -12,13 +12,19 @@ extract_style.py and complete_guide.py), the plan (this script's `check`) and th
 - V (exhibits) = pairs whose exhibit-type set differs / pairs, a page with no exhibit
   counting as the set {text_only}, a pair with a page whose exhibits were not read
   left out (and counted as unread, never as a change or a repeat);
-- distinct compositions per page = distinct compositions / pages;
+- V (classes) = the same over exhibit-class sets: the house's from the digest, the build's
+  from its element kinds (the plan declares none). A class cannot be renamed the way a
+  plan's composition name can;
+- distinct compositions per page = distinct compositions / pages, held against the house's
+  10th percentile window of the same number of pages (distinct_windows);
 - the longest run of one composition, and every run of two or more with its pages.
 
 Pairs are counted only between pages the reader sees next to each other: a sequence breaks
 at a page that is not content (a cover, a divider, a disclaimer) and at a page that was not
-read, so with one unbroken sequence pairs = n - 1. Fewer than VARIETY_MIN_PAGES content
-pages is no evidence, and every figure says so rather than reading 0 or 1.
+read, so with one unbroken sequence pairs = n - 1. A deck with no stretch of
+VARIETY_MIN_PAGES content pages in a row is no evidence, and every figure says so rather
+than reading 0 or 1. Every guide given as house evidence is proven at the boundary
+(read_house_guide) and each reference counts once (a repeated sha256 is refused).
 
 plan.json (every key required; `deliberate_parallel` is null on a page that does not
 repeat the previous page's composition, and the reason in words on one that does):
@@ -38,8 +44,11 @@ repeat the previous page's composition, and the reason in words on one that does
 vocabulary, an archetype the guide does not hold, a reason on a page that repeats nothing,
 and an UNDECLARED repeat that makes a run longer than the house's longest (with no house
 evidence for the longest run, every undeclared repeat is refused: there is nothing to hold
-it to). It warns when the plan's V falls below the house's 10th percentile deck. That
-threshold is a choice, not a measurement: nothing has measured what V a reader calls samey.
+it to). It warns when the plan's V falls below the house's 10th percentile deck, when its
+distinct compositions per page fall below the house's 10th percentile window, and when a
+DECLARED run is longer than the house's longest (the reason is the model's; the length is
+the house's measure). Those thresholds are choices, not measurements: nothing has measured
+what V a reader calls samey.
 """
 
 from __future__ import annotations
@@ -59,7 +68,7 @@ TEXT_ONLY = "text_only"  # the exhibit-type set of a page with no exhibit (A.10'
 WARN_PERCENTILE = 0.1  # unmeasured: the house's 10th percentile deck, a choice and not a reader's threshold
 PLAN_SCHEMA = "pptx-skill section plan v1"
 PAGE_KEYS = ("id", "intent", "message", "composition", "exhibit_types", "data_shapes", "title_register", "deliberate_parallel")
-NEW_COMPOSITION = re.compile(r"^new:[a-z0-9][a-z0-9_-]*$")
+NEW_COMPOSITION = re.compile(r"new:[a-z0-9][a-z0-9_-]*")  # fullmatch: `$` also matches before a final newline
 CONTENT = "content"
 METHOD = ("Composition per page is the extractor's archetype (composition.archetypes): the page's content boxes (layout and master "
           "chrome and recurring furniture left out, the title kept) leader-clustered by slide_similarity, the Hungarian assignment of box "
@@ -107,37 +116,68 @@ def runs_of(segment: list[dict]) -> list[list[dict]]:
     return out
 
 
-def measure_deck(name: str, segments: list[list[dict]]) -> dict:
+SET_FIELDS = (("exhibits", "/exhibit_habits not answered"), ("classes", "/exhibit_habits not answered"))
+
+
+def _sets_measure(pages: list[dict], pairs: list[tuple[dict, dict]], field: str, unread_why: str) -> dict:
+    """V over one per-page set field ("exhibits": exhibit-type slugs, "classes": exhibit-class
+    slugs): a page with none counts as {text_only}; a pair with an unread page (None) is left
+    out and counted as unread, never as a change or a repeat."""
+    def as_set(p: dict) -> frozenset | None:
+        return None if p[field] is None else frozenset(p[field] or [TEXT_ONLY])
+
+    read = [(as_set(a), as_set(b)) for a, b in pairs if as_set(a) is not None and as_set(b) is not None]
+    unread = sorted({p["slide"] for p in pages if p[field] is None})
+    if not read:
+        return {"status": "no evidence", "why": f"{field} not read on {len(unread)} of {len(pages)} content pages ({unread_why})" if unread else "no pair read"}
+    changed = sum(1 for a, b in read if a != b)
+    return {"V": round(changed / len(read), 3), "changed": changed, "pairs": len(read), "pages_unread": unread}
+
+
+def distinct_windows(sequences: list[list[str]], n: int) -> list[float]:
+    """Distinct compositions per page over every window of n pages in a row (within one
+    sequence): the house's distinct-per-page at the length of the sequence it is held against,
+    since a short sequence reads more distinct than a long one by arithmetic alone."""
+    return [round(len(set(seq[i:i + n])) / n, 3) for seq in sequences for i in range(len(seq) - n + 1)]
+
+
+def measure_deck(name: str, segments: list[list[dict]], unread_why: dict[str, str] | None = None) -> dict:
     """One deck's variety. `segments` are lists of pages the reader sees in a row, each page
-    {"slide", "composition", "exhibits"}; `exhibits` is a list of exhibit-type slugs ([] for a
-    page with none) or None when nobody read it."""
+    {"slide", "composition", "exhibits", "classes"}; `exhibits` and `classes` are lists of
+    slugs ([] for a page with none) or None when nobody read them, and `unread_why` names why
+    for each field. Evidence needs one segment of VARIETY_MIN_PAGES pages: pairs from shorter
+    segments still count once a deck has it, never on their own."""
+    whys = {**dict(SET_FIELDS), **(unread_why or {})}
     pages = [p for seg in segments for p in seg]
     n = len(pages)
     pairs = [(a, b) for seg in segments for a, b in pairwise(seg)]
+    longest_segment = max((len(s) for s in segments), default=0)
     out: dict = {"deck": name, "content_pages": n, "segments": [[p["slide"] for p in seg] for seg in segments], "pairs": len(pairs)}
-    if n < VARIETY_MIN_PAGES or not pairs:
-        why = f"no evidence: {n} content page{'s' if n != 1 else ''} in {len(pairs)} adjacent pair{'s' if len(pairs) != 1 else ''} (at least {VARIETY_MIN_PAGES} pages in a row are needed)"
+    if longest_segment < VARIETY_MIN_PAGES:
+        why = (f"no evidence: {n} content page{'s' if n != 1 else ''}, the longest stretch read in a row {longest_segment} "
+               f"(at least {VARIETY_MIN_PAGES} pages in a row are needed: two pages make one pair, one observation)")
         return {**out, "status": "no evidence", "why": why}
     changed = sum(1 for a, b in pairs if a["composition"] != b["composition"])
     runs = [r for seg in segments for r in runs_of(seg)]
     distinct = len({p["composition"] for p in pages})
-
-    def as_set(p: dict) -> frozenset | None:
-        return None if p["exhibits"] is None else frozenset(p["exhibits"] or [TEXT_ONLY])
-
-    read = [(as_set(a), as_set(b)) for a, b in pairs if as_set(a) is not None and as_set(b) is not None]
-    unread = sorted({p["slide"] for p in pages if p["exhibits"] is None})
-    if len(read) == 0:
-        exhibits = {"status": "no evidence", "why": f"exhibits not read on {len(unread)} of {n} content pages (/exhibit_habits not answered)" if unread else "no pair read"}
-    else:
-        ex_changed = sum(1 for a, b in read if a != b)
-        exhibits = {"V": round(ex_changed / len(read), 3), "changed": ex_changed, "pairs": len(read), "pages_unread": unread}
     return {**out, "status": "measured",
             "composition": {"V": round(changed / len(pairs), 3), "changed": changed, "pairs": len(pairs)},
-            "exhibits": exhibits,
+            **{field: _sets_measure(pages, pairs, field, whys[field]) for field, _ in SET_FIELDS},
             "distinct": {"compositions": distinct, "pages": n, "per_page": round(distinct / n, 3)},
             "longest_run": max(len(r) for r in runs),
-            "runs": [{"composition": r[0]["composition"], "pages": [p["slide"] for p in r]} for r in runs if len(r) > 1]}
+            "runs": [{"composition": r[0]["composition"], "pages": [p["slide"] for p in r]} for r in runs if len(r) > 1],
+            "sequences": [[p["composition"] for p in seg] for seg in segments]}
+
+
+def _pool_sets(measured: list[dict], field: str) -> dict:
+    ex = [d for d in measured if "V" in d[field]]
+    if not ex:
+        return {"status": "no evidence", "why": f"no deck's {field} were read (/exhibit_habits not answered)"}
+    pairs = sum(d[field]["pairs"] for d in ex)
+    changed = sum(d[field]["changed"] for d in ex)
+    return {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
+            "p10_deck_V": round(percentile([d[field]["V"] for d in ex], WARN_PERCENTILE), 3),
+            "deck_V": [d[field]["V"] for d in ex], "decks_unread": [d["deck"] for d in measured if d not in ex]}
 
 
 def pool(decks: list[dict]) -> dict:
@@ -146,23 +186,33 @@ def pool(decks: list[dict]) -> dict:
     archetype ids belong to one reference each."""
     measured = [d for d in decks if d["status"] == "measured"]
     if not measured:
-        return {"status": "no evidence", "why": f"none of {len(decks)} deck{'s' if len(decks) != 1 else ''} has {VARIETY_MIN_PAGES} content pages in a row",
-                "decks": len(decks)}
+        return {"status": "no evidence", "decks": len(decks),
+                "why": f"no deck of {len(decks)} has evidence: " + "; ".join(f"{d['deck']}: {d['why']}" for d in decks)}
     pairs = sum(d["composition"]["pairs"] for d in measured)
     changed = sum(d["composition"]["changed"] for d in measured)
-    ex = [d for d in measured if "V" in d["exhibits"]]
-    ex_pairs = sum(d["exhibits"]["pairs"] for d in ex)
     vs = [d["composition"]["V"] for d in measured]
     one = " (one deck: the 10th percentile is that deck)" if len(measured) == 1 else ""
-    return {"status": "measured", "decks": len(measured), "decks_without_evidence": [d["deck"] for d in decks if d["status"] != "measured"],
+    return {"status": "measured", "decks": len(measured), "decks_without_evidence": [{"deck": d["deck"], "why": d["why"]} for d in decks if d["status"] != "measured"],
             "composition": {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
                             "p10_deck_V": round(percentile(vs, WARN_PERCENTILE), 3), "deck_V": vs, "p10_note": "unmeasured threshold" + one},
-            "exhibits": ({"V": round(sum(d["exhibits"]["changed"] for d in ex) / ex_pairs, 3), "changed": sum(d["exhibits"]["changed"] for d in ex),
-                          "pairs": ex_pairs, "p10_deck_V": round(percentile([d["exhibits"]["V"] for d in ex], WARN_PERCENTILE), 3),
-                          "deck_V": [d["exhibits"]["V"] for d in ex], "decks_unread": [d["deck"] for d in measured if d not in ex]}
-                         if ex else {"status": "no evidence", "why": "no deck's exhibits were read (/exhibit_habits not answered)"}),
+            **{field: _pool_sets(measured, field) for field, _ in SET_FIELDS},
             "distinct_per_page": {d["deck"]: d["distinct"]["per_page"] for d in measured},
-            "longest_run": max(d["longest_run"] for d in measured)}
+            "longest_run": max(d["longest_run"] for d in measured),
+            "sequences": [s for d in measured for s in d["sequences"]]}
+
+
+def distinct_against(value: float, n: int, house: dict) -> dict:
+    """A sequence's distinct compositions per page against the house's 10th percentile window
+    of the same length (distinct_windows): how an A B A B A sequence is held to the house."""
+    if house.get("status") != "measured":
+        return {"value": value, "verdict": "no evidence in the house: " + house["why"]}
+    windows = distinct_windows(house["sequences"], n)
+    if not windows:
+        return {"value": value, "verdict": f"no evidence in the house: no stretch of {n} content pages in a row"}
+    p10 = round(percentile(windows, WARN_PERCENTILE), 3)
+    return {"value": value, "house_p10_window": p10, "windows": len(windows), "window_pages": n,
+            "verdict": "below the house's 10th percentile window" if value < p10 else "at or above the house's 10th percentile window",
+            "threshold": "unmeasured: the 10th percentile window is a choice"}
 
 
 # --- the house, from a guide -------------------------------------------------------------------
@@ -170,16 +220,19 @@ def pool(decks: list[dict]) -> dict:
 def content_segments(variety: dict, exhibit_habits: dict | None) -> list[list[dict]]:
     """The guide's page sequence cut into the runs of content pages a reader sees in a row.
     A hidden page is not in the reading order and is skipped; any other page that is not
-    content breaks the sequence, and so does a gap in the page numbers (a page not read)."""
+    content breaks the sequence, and so does a gap in the page numbers (a page not read).
+    Each page carries its exhibit types and exhibit classes from the digest's records, or
+    None when the digest did not read it (no digest, or the page outside its sample)."""
     content = set(variety["content_pages"]["pages"])
     read = None
-    by_slide: dict[int, list[str]] = {}
+    by_slide: dict[int, dict[str, list[str]]] = {}
     if exhibit_habits:
         read = {r["slide"] for r in exhibit_habits["records"]} | set(exhibit_habits["sample"]["pages_without"])
         for r in exhibit_habits["records"]:
-            by_slide.setdefault(r["slide"], [])
-            if r["type"] not in by_slide[r["slide"]]:
-                by_slide[r["slide"]].append(r["type"])
+            got = by_slide.setdefault(r["slide"], {"exhibits": [], "classes": []})
+            for field, key in (("exhibits", "type"), ("classes", "class")):
+                if r[key] not in got[field]:
+                    got[field].append(r[key])
     segments: list[list[dict]] = [[]]
     last = None
     for page in variety["pages"]:
@@ -188,8 +241,9 @@ def content_segments(variety: dict, exhibit_habits: dict | None) -> list[list[di
         if page["slide"] not in content or (last is not None and page["slide"] != last + 1 and not _hidden_between(variety, last, page["slide"])):
             segments.append([])
         if page["slide"] in content:
-            exhibits = None if read is None or page["slide"] not in read else by_slide.get(page["slide"], [])
-            segments[-1].append({"slide": page["slide"], "composition": page["composition"], "exhibits": exhibits})
+            got = None if read is None or page["slide"] not in read else by_slide.get(page["slide"], {"exhibits": [], "classes": []})
+            segments[-1].append({"slide": page["slide"], "composition": page["composition"],
+                                 "exhibits": None if got is None else got["exhibits"], "classes": None if got is None else got["classes"]})
         last = page["slide"]
     return [s for s in segments if s]
 
@@ -200,9 +254,52 @@ def _hidden_between(variety: dict, a: int, b: int) -> bool:
     return all(listed.get(n) == "hidden" for n in range(a + 1, b))
 
 
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def read_house_guide(guide, where: str) -> dict:
+    """A guide given as the house's evidence, proven at the boundary: a style guide (a
+    reference with its sha256), whose variety, when it carries pages, lists each page once
+    with its number, composition and triage and names its content pages among them, and
+    whose exhibit digest, when there is one, gives every record a page, type and class.
+    Anything else is refused by name: a plan, a list or a guide from before the variety
+    measure is not evidence about the house's pages."""
+    if not isinstance(guide, dict) or not isinstance(guide.get("reference"), dict) or not (isinstance(guide["reference"].get("sha256"), str) and guide["reference"]["sha256"]):
+        raise Refused(f"{where}: not a style guide (no reference.sha256): a house deck is a guide or draft from extract_style.py")
+    variety = guide.get("variety")
+    if variety is None:
+        return guide
+    if not isinstance(variety, dict):
+        raise Refused(f"{where}: variety is {type(variety).__name__}, not an object")
+    pages = variety.get("pages")
+    if not pages:
+        return guide
+    if not isinstance(pages, list) or not all(isinstance(p, dict) for p in pages):
+        raise Refused(f"{where}: variety.pages is not a list of pages")
+    bad = [i for i, p in enumerate(pages) if not (_is_int(p.get("slide")) and isinstance(p.get("composition"), str) and isinstance(p.get("triage"), str))]
+    if bad:
+        raise Refused(f"{where}: variety.pages{bad} lack a slide number, composition or triage (a guide from before plan.py: re-run extract_style.py)")
+    slides = [p["slide"] for p in pages]
+    if len(set(slides)) != len(slides) or slides != sorted(slides):
+        raise Refused(f"{where}: variety.pages slides {slides} are not each listed once, in order")
+    cp = (variety.get("content_pages") or {}).get("pages") if isinstance(variety.get("content_pages"), dict) else None
+    if not isinstance(cp, list) or not all(_is_int(v) and v in slides for v in cp) or len(set(cp)) != len(cp):
+        raise Refused(f"{where}: variety.content_pages.pages {cp!r} is not a list of listed slides, each once")
+    eh = guide.get("exhibit_habits")
+    if eh is not None:
+        records = eh.get("records") if isinstance(eh, dict) else None
+        without = (eh.get("sample") or {}).get("pages_without") if isinstance(eh, dict) and isinstance(eh.get("sample"), dict) else None
+        if not isinstance(records, list) or not all(isinstance(r, dict) and _is_int(r.get("slide")) and isinstance(r.get("type"), str) and isinstance(r.get("class"), str) for r in records):
+            raise Refused(f"{where}: exhibit_habits.records is not a list of records with a slide, type and class")
+        if not isinstance(without, list) or not all(_is_int(v) for v in without):
+            raise Refused(f"{where}: exhibit_habits.sample.pages_without is not a list of slide numbers")
+    return guide
+
+
 def house_deck(guide: dict) -> dict:
     """One guide's deck measured, or no evidence with the reason the guide gives."""
-    name = Path((guide.get("reference") or {}).get("file") or "reference").name
+    name = Path(guide["reference"].get("file") or "reference").name
     variety = guide.get("variety")
     if not isinstance(variety, dict) or not variety.get("pages"):
         why = (variety or {}).get("why") if isinstance(variety, dict) else None
@@ -211,7 +308,18 @@ def house_deck(guide: dict) -> dict:
     return measure_deck(name, content_segments(variety, guide.get("exhibit_habits")))
 
 
-def house_of(guides: list[dict]) -> dict:
+def house_of(guides: list[dict], names: list[str] | None = None) -> dict:
+    """The house's variety over the guide and its other decks, each proven at the boundary
+    and each reference counted once: a deck given twice would weigh its pairs twice and move
+    the 10th percentile toward itself."""
+    names = names or [f"guide {i}" for i in range(len(guides))]
+    seen: dict[str, str] = {}
+    for guide, where in zip(guides, names, strict=True):
+        read_house_guide(guide, where)
+        sha = guide["reference"]["sha256"]
+        if sha in seen:
+            raise Refused(f"{where}: the same reference as {seen[sha]} (sha256 {sha[:12]}): a deck counts once in the house")
+        seen[sha] = where
     decks = [house_deck(g) for g in guides]
     return {"decks": decks, "pooled": pool(decks)}
 
@@ -252,7 +360,7 @@ def read_plan(plan, guide: dict) -> list[dict]:
                 errors.append(f"{where}: id given twice")
             ids.append(page["id"])
         comp = page.get("composition")
-        if "composition" in page and not (isinstance(comp, str) and (comp in archetypes or NEW_COMPOSITION.match(comp))):
+        if "composition" in page and not (isinstance(comp, str) and (comp in archetypes or NEW_COMPOSITION.fullmatch(comp))):
             errors.append(f"{where} composition: {comp!r} is neither an archetype of this guide ({sorted(archetypes, key=_arch_order)}) "
                           "nor a named new one (new:<lowercase-name>)")
         for key, vocab in (("exhibit_types", "exhibit_type"), ("data_shapes", "data_shape")):
@@ -268,7 +376,7 @@ def read_plan(plan, guide: dict) -> list[dict]:
             twice = sorted({v for v in got if isinstance(v, str) and got.count(v) > 1})
             if twice:
                 errors.append(f"{where} {key}: {twice} named more than once (the list is a set: two exhibits of one type are one entry)")
-        if "title_register" in page and page["title_register"] not in registers:
+        if "title_register" in page and not (isinstance(page["title_register"], str) and page["title_register"] in registers):
             errors.append(f"{where} title_register: {page['title_register']!r} not in {'|'.join(registers)}")
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
@@ -291,7 +399,11 @@ def _arch_order(a: str) -> tuple:
 
 
 def plan_segments(pages: list[dict]) -> list[list[dict]]:
-    return [[{"slide": i, "id": p["id"], "composition": p["composition"], "exhibits": list(p["exhibit_types"])} for i, p in enumerate(pages, 1)]]
+    return [[{"slide": i, "id": p["id"], "composition": p["composition"], "exhibits": list(p["exhibit_types"]), "classes": None}
+             for i, p in enumerate(pages, 1)]]
+
+
+PLAN_UNREAD = {"classes": "the plan declares exhibit types, not classes: the build measures the classes it realises"}
 
 
 def against(value: float | None, house: dict, key: str) -> dict:
@@ -306,11 +418,11 @@ def against(value: float | None, house: dict, key: str) -> dict:
             "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"}
 
 
-def check(plan, guide: dict, others: list[dict]) -> dict:
+def check(plan, guide: dict, others: list[dict], names: list[str] | None = None) -> dict:
     pages = read_plan(plan, guide)
-    house = house_of([guide, *others])
+    house = house_of([guide, *others], names)
     pooled = house["pooled"]
-    mine = measure_deck("plan", plan_segments(pages))
+    mine = measure_deck("plan", plan_segments(pages), PLAN_UNREAD)
     refusals: list[str] = []
     warnings: list[str] = []
     longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
@@ -325,6 +437,9 @@ def check(plan, guide: dict, others: list[dict]) -> dict:
                "house_longest_run": longest if longest is not None else "no evidence"}
         if declared:
             rec["verdict"] = "declared" + (f"; the run of {run} is longer than the house's {longest}" if longest is not None and run > longest else "")
+            if longest is None or run > longest:
+                warnings.append(f"page {page['id']!r} makes a declared run of {run} of {page['composition']}, longer than the house's longest "
+                                f"({longest if longest is not None else 'no evidence'}): the reason is the model's, the length is the house's measure")
         elif longest is None:
             rec["verdict"] = "refused: undeclared, and the house has no evidence for its longest run to hold it to"
             refusals.append(f"page {page['id']!r} repeats {page['composition']} undeclared and the house's longest run is no evidence "
@@ -341,13 +456,18 @@ def check(plan, guide: dict, others: list[dict]) -> dict:
     if mine["status"] == "measured":
         comparison = {"composition_V": against(mine["composition"]["V"], pooled, "composition"),
                       "exhibits_V": against(mine["exhibits"].get("V"), pooled, "exhibits"),
-                      "distinct_per_page": {"plan": mine["distinct"]["per_page"], "house": pooled.get("distinct_per_page") if pooled["status"] == "measured" else "no evidence"},
+                      "distinct_per_page": {**distinct_against(mine["distinct"]["per_page"], mine["content_pages"], pooled),
+                                            "house_decks": pooled.get("distinct_per_page") if pooled["status"] == "measured" else "no evidence"},
                       "longest_run": {"plan": mine["longest_run"], "house": longest if longest is not None else "no evidence"}}
         for key in ("composition_V", "exhibits_V"):
             if comparison[key]["verdict"].startswith("below"):
                 c = comparison[key]
                 warnings.append(f"{key} {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
                                 "the threshold is unmeasured")
+        d = comparison["distinct_per_page"]
+        if d["verdict"].startswith("below"):
+            warnings.append(f"distinct compositions per page {d['value']} is below the house's 10th percentile window of {d['window_pages']} pages "
+                            f"({d['house_p10_window']}, {d['windows']} windows): the plan reuses compositions more than the house does; the threshold is unmeasured")
     else:
         comparison = {"plan": mine["why"]}
     archetypes = {a["archetype_id"]: a for a in (guide.get("composition") or {}).get("archetypes") or []}
@@ -386,11 +506,12 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     guide = load(args.guide)
     others = [load(p) for p in args.house_deck]
+    names = [f"--guide {args.guide}", *(f"--house-deck {p}" for p in args.house_deck)]
     if args.cmd == "house":
-        print(json.dumps(house_of([guide, *others]), indent=1))
+        print(json.dumps(house_of([guide, *others], names), indent=1))
         return 0
     try:
-        report = check(load(args.plan), guide, others)
+        report = check(load(args.plan), guide, others, names)
     except Refused as error:
         report = {"status": "refused", "refusals": [str(error)]}
     text = json.dumps(report, indent=1)
