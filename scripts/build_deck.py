@@ -1224,8 +1224,30 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             report["renders"] = json.loads(completed.stdout)
         except json.JSONDecodeError:
             report["renders"] = {"error": completed.stderr[-500:]}
-        if annotation_pages and Path(pdf).exists():
-            words = annotate.pdf_words(pdf)
+        unread = None
+        words: list = []
+        if annotation_pages:
+            try:
+                if not Path(pdf).exists():
+                    raise annotate.RenderUnread("the render wrote no PDF")
+                words = annotate.pdf_words(pdf)
+                if len(words) < len(emitted):
+                    raise annotate.RenderUnread(f"the PDF has {len(words)} page(s) for {len(emitted)} emitted page(s)")
+            except annotate.RenderUnread as error:
+                unread = str(error)
+        if unread is not None:
+            # asked for and not done: the words the host draws are unknown, so the page is
+            # not passed as if they had been read
+            for index, placed in annotation_pages.items():
+                entry = emitted[index]
+                for e in placed:
+                    if e.get("status") == "placed":
+                        e["render_check"] = f"not checked: the render's words were not read ({unread})"
+                entry["problems"].append({"kind": "annotation render check failed", "severity": "refusal", "detail": f"the words the host drew were not read: {unread}"})
+                if entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", "annotation render check failed"
+        elif annotation_pages:
+            # the emitted pages are the PDF's last pages, as emitted_fit reads the file
             offset = len(words) - len(emitted)
             for index, placed in annotation_pages.items():
                 found = annotate.render_check(placed, emit_spec["slides"][index]["elements"], words[offset + index])
@@ -1236,7 +1258,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     for placed in annotation_pages.values():
         for e in placed:
             if e.get("status") == "placed" and "render_check" not in e:
-                e["render_check"] = "not checked: no render, so the words the host draws are unknown"
+                e["render_check"] = "not checked: --no-render, so the words the host draws are unknown"
             for k in [k for k in e if k.startswith("_")]:
                 e.pop(k)
     if reference:

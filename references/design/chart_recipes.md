@@ -391,25 +391,32 @@ under the page's `annotations[].defaults_taken`):
 
 `position` is one of `above`, `below`, `left`, `right`, `above_left`, `above_right`,
 `below_left`, `below_right`. Labels are `{"text", "role", "ink_role"}` plus optional
-`position`, `align` and `max_width_share` (a fraction of the host's width to wrap at;
-left out, the label is one line). Every label is measured with the solver's ruler at
-the page's scale and written with its measured lines.
+`position`, `align` and `max_width_share` (a fraction of the host's width to wrap at,
+for every kind; left out, the label is one line). Every label is measured with the
+solver's ruler at the page's scale and written with its measured lines; a label whose
+word is wider than its line (it would break between characters) is refused, and a band's
+label must fit inside the band.
 
 What the build refuses, by name, under `problems`:
 
 - `annotation refused`: a key, anchor or role it cannot honour (`axes.value needs
-  numeric min < max`, `cross_between ... is required`, `body row 10 (emphasis) is
-  filled with color.accent1, which hides a band drawn under it`).
+  numeric min < max`, `cross_between ... is required`, `value 45 is outside axes.value
+  20..44`, `value '36.5' on axes.value is not a number`, `'Committee' ... breaks between
+  characters`, a band label wider than its band, `body row 10 (emphasis) is filled with
+  color.accent1, which hides a band drawn under it`).
 - `annotation collides`: the annotation covers another page element, another
-  annotation (a band is ground and collides with nothing), the page edge, a reserved
-  chrome zone, or a mark of its host it does not anchor to (`covers mark 'Range'
-  'Dividend discount model'`). A reference line crosses the marks by design; its label
-  may not.
+  annotation, the page edge, a reserved chrome zone, or a mark of its host it does not
+  anchor to (`covers mark 'Range' 'Dividend discount model'`). A reference line crosses
+  the marks by design; its label may not. A band's fill is ground and collides with
+  nothing; its label lies under the host, so it may cover no mark at all, and another
+  annotation may not cover it.
 - `annotation covers chart text`: after the render, the words LibreOffice drew in the
   host (tick labels, data labels, legend, cell text, read with `pdftotext -bbox`) that a
   stroke crosses or a box covers (`'mean' (reference_line) covers 4 word(s) its host
   drew: ['1.62x', '1.59x', '1.55x', '1.48x']`). An outline's interior is not a cover, so
-  a box around a cell's text passes. Without a render the report says `not checked`.
+  a box around a cell's text passes; a band's label counts as a box. With `--no-render`
+  the report says `not checked: --no-render`; a render that was asked for and wrote no
+  readable PDF refuses the page (`annotation render check failed`).
 - `contrast`: every label is scored like any text, against its own box's fill, a
   band, a filled plot (`plot_fill_role` with `plot_area`) or the page.
 

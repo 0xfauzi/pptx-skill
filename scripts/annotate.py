@@ -27,12 +27,18 @@ The collision contract (TARGET_SPEC 15.3): an annotation may overlap only its an
 (its host). It may not cover another page element, another annotation, the page edge
 or a reserved chrome zone (checked here, from the solved boxes), nor the host's own
 text: tick labels, data labels, legend (checked after the render, from the words
-LibreOffice drew: render_check). A band is ground, drawn under its host, and is not a
-cover; the contrast gate scores every label and table row on it.
+LibreOffice drew: render_check). A band's fill is ground, drawn under its host, and is
+not a cover; the contrast gate scores every label and table row on it. A band's label
+is drawn under the host too: it is checked like any label, against every mark of the
+host, every other annotation and the host's words, and it must lie inside its band.
+
+A value anchor must be a number inside its axis's min..max, and a label may not break
+a word between characters (layout.split_words, the solver's own test).
 """
 
 from __future__ import annotations
 
+import html
 import re
 import subprocess
 import sys
@@ -264,6 +270,10 @@ class Labeller:
         m = rows[0]
         if max_width is None and len(m.lines) > 1:
             raise AnnotationRefused(f"{where}: the label breaks at the page's width; shorten it or set label.max_width_share")
+        cut = L.split_words(m)
+        if cut:
+            raise AnnotationRefused(f"{where}: {cut[0]!r} at {m.entry.size_pt}pt is wider than the {m.allowance_emu - self.ctx.ruler.fit_epsilon_emu} EMU line, "
+                                    "so it breaks between characters; widen label.max_width_share or shorten the label")
         w = max(line.width_emu for line in m.lines) + 2 * self.ctx.ruler.fit_epsilon_emu
         h = L.element_height_emu(rows)
         hints = L._entry_hints(m.entry)
@@ -409,8 +419,9 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     if host["kind"] == "chart":
         geo = ChartGeometry(host, host["box"])
         a = chart_anchor(geo, ann["anchor"], where)
-        # every drawn mark the anchor does not take in: an annotation may not cover them
-        own = a.get("marks", a["rect"]) if "line" not in a else None
+        # every drawn mark the anchor does not take in: an annotation may not cover them. A
+        # band's label lies under its host, so every mark in it hides it: none is its own
+        own = a.get("marks", a["rect"]) if "line" not in a and kind != "band" else None
         for j, i, m in drawn_marks(geo):
             if own is None or not _intersects(m, own):
                 name = geo.series[j].get("name")
@@ -432,13 +443,13 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     footprint: list[dict] = []  # what the annotation covers: [{"rect" | "segment", ...}]
     r = a["rect"]
 
-    def label_box(max_share_of: float | None) -> tuple[list[str], int, int, dict]:
+    def label_box() -> tuple[list[str], int, int, dict]:
         share = label.get("max_width_share")
         if share is not None and (not _num(share) or not 0 < share <= 1):
             raise AnnotationRefused(f"{where} label: max_width_share is a fraction of the host's width, 0 to 1")
         if share is None:
             default("label.max_width_share")
-        return lab.measure(label, share * max_share_of if share else None, f"{where} label")
+        return lab.measure(label, share * host["box"][2] if share is not None else None, f"{where} label")
 
     def align(default_align: str) -> str:
         if "align" in label:
@@ -468,12 +479,16 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                 raise AnnotationRefused(f"{where} label: position {pos!r} not in {list(LABEL_POSITIONS['band'])}")
             if "position" not in label:
                 default("label.position", "label.position.band")
-            lines, w, h, fit = label_box(box[2])
+            lines, w, h, fit = label_box()
+            room_w, room_h = box[2] - 2 * pad, box[3] - 2 * pad
+            if w > room_w or h > room_h:
+                raise AnnotationRefused(f"{where} label: measures {w} x {h} EMU and the band holds {round(room_w)} x {round(room_h)} EMU inside its pad; "
+                                        "a label placed inside a band stays inside it: shorten it or set label.max_width_share")
             _, v, hz = pos.split("_")
             lx = box[0] + pad if hz == "left" else box[0] + box[2] - pad - w
             ly = box[1] + pad if v == "top" else box[1] + box[3] - pad - h
             drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, align("left")))
-            footprint.append({"rect": (lx, ly, w, h), "text": True})
+            footprint.append({"rect": (lx, ly, w, h), "text": True, "tokens": label["text"].split()})
     elif kind == "reference_line":
         if "line" not in a:
             raise AnnotationRefused(f"{where}: a reference line anchors to a value or a category, not {sorted(ann['anchor'])}")
@@ -492,7 +507,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                 raise AnnotationRefused(f"{where} label: position {pos!r} not in {list(options)} for a {'horizontal' if horizontal else 'vertical'} line")
             if "position" not in label:
                 default("label.position", "label.position.reference_line")
-            lines, w, h, fit = label_box(host["box"][2])
+            lines, w, h, fit = label_box()
             end, start = (x2, y2), (x1, y1)
             if horizontal:
                 lx = {"end_outside": end[0] + gap, "end_above": end[0] - w, "end_below": end[0] - w, "start_above": start[0], "start_below": start[0]}[pos]
@@ -501,7 +516,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                 lx = {"end_outside": end[0] - w / 2, "end_right": end[0] + gap, "end_left": end[0] - gap - w, "start_right": start[0] + gap, "start_left": start[0] - gap - w}[pos]
                 ly = {"end_outside": end[1] - gap - h, "end_right": end[1], "end_left": end[1], "start_right": start[1] - h, "start_left": start[1] - h}[pos]
             drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, align("left")))
-            footprint.append({"rect": (lx, ly, w, h), "text": True})
+            footprint.append({"rect": (lx, ly, w, h), "text": True, "tokens": label["text"].split()})
     elif kind in ("arrow", "callout"):
         pos = ann["position"]
         if pos not in AROUND:
@@ -509,7 +524,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         if gap <= 0:
             raise AnnotationRefused(f"{where}: gap_role must leave room for the {'arrow' if kind == 'arrow' else 'leader'}")
         target = a.get("marks", r)
-        lines, w, h, fit = label_box(host["box"][2])
+        lines, w, h, fit = label_box()
         inner = (2 * pad) if kind == "callout" else 0
         box = _placed(pos, target, w + inner, h + inner, gap)
         if kind == "callout":
@@ -517,7 +532,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             footprint.append({"rect": box})
         text_box = (box[0] + inner / 2, box[1] + inner / 2, w, h)
         drawn.append(lab.text_element(f"{aid}-label", label, text_box, lines, fit, align("left")))
-        footprint.append({"rect": text_box, "text": True})
+        footprint.append({"rect": text_box, "text": True, "tokens": label["text"].split()})
         (sx, sy), (ex, ey) = _toward(pos, box, target)
         head = "arrow" if kind == "arrow" else ann.get("head", "none")
         if head not in ("none", "arrow"):
@@ -550,15 +565,15 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         drawn.append({"id": f"{aid}-bracket", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": prst[0].lower() + prst[1:], "rot": rot, **stroke})
         footprint.append({"rect": box})
         if label:
-            lines, w, h, fit = label_box(host["box"][2])
+            lines, w, h, fit = label_box()
             lb = _placed(side, box, w, h, gap)
             drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, align("center")))
-            footprint.append({"rect": lb, "text": True})
+            footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
     elif kind == "badge":
         pos = ann["position"]
         if pos not in AROUND:
             raise AnnotationRefused(f"{where}: position {pos!r} not in {list(AROUND)}")
-        lines, w, h, fit = label_box(None)
+        lines, w, h, fit = label_box()
         if len(lines) != 1:
             raise AnnotationRefused(f"{where}: a badge holds one line")
         # the circle holds the whole text box (its diagonal), so the label stands on the fill
@@ -568,7 +583,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         drawn.append({"id": f"{aid}-badge", "kind": "rect", "box": [round(v) for v in box], "fill_role": ann["fill_role"], "line_role": None, "prst": "ellipse"})
         tb = (box[0] + (d - w) / 2, box[1] + (d - h) / 2, w, h)
         drawn.append(lab.text_element(f"{aid}-label", label, tb, lines, fit, align("center"), anchor="m"))
-        footprint += [{"rect": box}, {"rect": tb, "text": True}]
+        footprint += [{"rect": box}, {"rect": tb, "text": True, "tokens": label["text"].split()}]
     entry = {"id": aid, "kind": kind, "host": host["id"], "anchor": ann["anchor"], "status": "placed",
              "anchor_emu": [round(v) for v in r], "drawn": [d["id"] for d in drawn], "defaults_taken": taken,
              "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks}
@@ -646,11 +661,18 @@ def _bbox(fp: dict) -> tuple:
     return fp["rect"]
 
 
+def _covering(e: dict) -> list[dict]:
+    """The footprint parts that can collide: all of them, except a band's fill, which is
+    ground under its host. A band's label is text like any other."""
+    return [fp for fp in e["_footprint"] if e["kind"] != "band" or fp.get("text")]
+
+
 def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: int, zones: list[dict]) -> list[dict]:
     """Refusals from the solved boxes: an annotation over another page element (a filled
     ground that contains it is no collision), over another annotation (a band is ground),
     past the page edge, or in a reserved chrome zone. The host is the annotation's anchor
-    and is never a collision."""
+    and is never a collision. A band's fill covers nothing; its label is checked against
+    the host's marks (all of them: it lies under the host) and every other annotation."""
     out: list[dict] = []
     placed = [e for e in report if e.get("status") == "placed"]
     own = {d for e in placed for d in e["drawn"]}
@@ -673,16 +695,15 @@ def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: in
                     continue  # the ground the exhibit stands on (a filled panel)
                 if covers(fp, tuple(el["box"])):
                     hits.append(f"element {el['id']}")
-        if e["kind"] != "band":
-            # a reference line crosses the marks by design; its label may not
-            for fp in fps:
-                if e["kind"] == "reference_line" and "segment" in fp:
-                    continue
-                hits += [name for name, m in e.get("_other_marks", []) if covers(fp, m)]
-        for other in placed:
-            if other is e or other["kind"] == "band" or e["kind"] == "band":
+        # a reference line crosses the marks by design; its label may not
+        for fp in _covering(e):
+            if e["kind"] == "reference_line" and "segment" in fp:
                 continue
-            if any(covers(fp, _bbox(ofp)) for fp in fps for ofp in other["_footprint"]):
+            hits += [name for name, m in e.get("_other_marks", []) if covers(fp, m)]
+        for other in placed:
+            if other is e:
+                continue
+            if any(covers(fp, _bbox(ofp)) for fp in _covering(e) for ofp in _covering(other)):
                 hits.append(f"annotation {other['id']}")
         hits = list(dict.fromkeys(hits))
         e["collisions"] = hits
@@ -697,54 +718,71 @@ _WORD = re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax=
 _PAGE = re.compile(r"<page width=\"([\d.]+)\" height=\"([\d.]+)\">(.*?)</page>", re.S)
 
 
+class RenderUnread(RuntimeError):
+    """The render's words could not be read, so the host's text is unknown."""
+
+
 def pdf_words(pdf: str) -> list[list[tuple[tuple[float, float, float, float], str]]]:
     """Every word LibreOffice drew, per page, as an EMU box (pdftotext -bbox)."""
-    done = subprocess.run(["pdftotext", "-bbox", pdf, "-"], capture_output=True, text=True, timeout=300)
+    try:
+        done = subprocess.run(["pdftotext", "-bbox", pdf, "-"], capture_output=True, text=True, timeout=300)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise RenderUnread(f"pdftotext did not run: {error}") from None
+    if done.returncode != 0:
+        raise RenderUnread(f"pdftotext exited {done.returncode}: {done.stderr.strip()[-200:]}")
     pages = []
     for m in _PAGE.finditer(done.stdout):
         words = []
         for w in _WORD.finditer(m.group(3)):
             x0, y0, x1, y1 = (float(v) * EMU_PER_PT for v in w.groups()[:4])
-            words.append(((x0, y0, x1 - x0, y1 - y0), w.group(5)))
+            words.append(((x0, y0, x1 - x0, y1 - y0), html.unescape(w.group(5))))
         pages.append(words)
     return pages
 
 
+def _label_words(placed: list[dict], words: list[tuple]) -> set[int]:
+    """Indices of the words that are an annotation label's own: inside the label's box and
+    one of its tokens, each token taken once. A word of the host under a label is not."""
+    own: set[int] = set()
+    for e in placed:
+        for fp in e["_footprint"]:
+            if not fp.get("text"):
+                continue
+            tokens = list(fp["tokens"])
+            for k, (box, text) in enumerate(words):
+                centre = (box[0] + box[2] / 2, box[1] + box[3] / 2, 0, 0)
+                if k not in own and text in tokens and _contains(fp["rect"], centre):
+                    tokens.remove(text)
+                    own.add(k)
+    return own
+
+
 def render_check(entry_annotations: list[dict], elements: list[dict], words: list[tuple]) -> list[dict]:
     """Every word the renderer drew inside an annotation's host (tick labels, data labels,
-    legend, cell text), against what each annotation covers. A word inside an annotation's
-    own label, or inside another element's box (checked before the emit), is not the
-    host's. Returns the refusals and fills each entry's `render_check`."""
+    legend, cell text), against what each annotation covers: its strokes and boxes, and
+    for a band its label only (the fill lies under the host's text by design). A word of
+    an annotation's own label, or inside another element's box (checked before the
+    emit), is not the host's. Returns the refusals and fills each entry's `render_check`."""
     out: list[dict] = []
     placed = [e for e in entry_annotations if e.get("status") == "placed"]
-    label_boxes = [fp["rect"] for e in placed for fp in e["_footprint"] if fp.get("text")]
+    own_words = _label_words(placed, words)
     own = {d for e in placed for d in e["drawn"]}
     others = [el for el in elements if el["id"] not in own]
     for e in placed:
         host_box = tuple(e["_host_box"])
         candidates = []
-        for box, text in words:
+        for k, (box, text) in enumerate(words):
             centre = (box[0] + box[2] / 2, box[1] + box[3] / 2, 0, 0)
-            if any(_contains(lb, centre) for lb in label_boxes):
-                continue
-            if not _contains(host_box, centre):
+            if k in own_words or not _contains(host_box, centre):
                 continue
             if any(el["id"] != e["host"] and el["kind"] in ("text", "table", "chart") and _contains(tuple(el["box"]), centre) for el in others):
                 continue
             candidates.append((box, text))
-        crossed = []
-        if e["kind"] != "band":
-            for box, text in candidates:
-                # half a point of the glyph box's slack: pdftotext's boxes are the font's
-                # ascent to descent, wider than the ink
-                if any(covers(fp, box) for fp in e["_footprint"]):
-                    crossed.append(text)
+        # pdftotext's word box runs from the face's ascent to its descent, taller than the
+        # ink: a stroke inside that box but clear of the ink is still counted as a crossing
+        crossed = [text for box, text in candidates if any(covers(fp, box) for fp in _covering(e))]
         e["render_check"] = {"host_words": len(candidates), "covered": crossed}
         if crossed:
             out.append({"kind": "annotation covers chart text", "severity": "refusal",
                         "detail": f"annotation {e['id']!r} ({e['kind']}) covers {len(crossed)} word(s) its host drew: {crossed[:6]}"})
     return out
-
-
-
-

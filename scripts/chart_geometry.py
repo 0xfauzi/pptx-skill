@@ -139,12 +139,20 @@ class ChartGeometry:
 
     def _value_fraction(self, name: str, v: float) -> float:
         lo, hi = self.scale(name)
+        # the spec's value as written: a string or a bool is not converted, and a value off
+        # the axis has no drawn position (the renderer clips at the plot's edge)
+        if not _num(v):
+            raise GeometryRefused(f"{self.where}: value {v!r} on axes.{name} is not a number")
+        if not lo <= v <= hi:
+            raise GeometryRefused(f"{self.where}: value {v!r} is outside axes.{name} {lo:g}..{hi:g}; it has no position inside the plot")
         t = (float(v) - lo) / (hi - lo)
         return 1 - t if self._axis(name).get("reverse") else t
 
     def value_coord(self, v: float, axis: str = "value") -> tuple[str, float]:
         """("x" | "y", page EMU) of a value on the value axis, or on the x axis
         ("category") of an XY chart."""
+        if axis not in ("value", "category"):
+            raise GeometryRefused(f"{self.where}: axis {axis!r} is not value or category (the x axis of an XY chart)")
         if axis == "category" and self.family != "xy":
             raise GeometryRefused(f"{self.where}: a category axis has no scale; a value line sits on the value axis")
         t = self._value_fraction(axis, v)
