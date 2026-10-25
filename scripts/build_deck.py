@@ -843,7 +843,8 @@ def source_line_missing(elements: list[dict]) -> bool:
 def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
                   precedent: dict | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
-    the agent meant), then the refusals (contrast, no source line). A refusal turns a fit
+    the agent meant), then the refusals (contrast, bridge ties, the measured checks), then
+    the source-line warning (the house's source-line habit is not measured). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
     entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent)
@@ -862,7 +863,12 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in entry["bridge_ties"])
     problems.extend(measured or [])
     if source_line_missing(elements):
-        problems.append({"kind": "no source line", "severity": "refusal", "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote"})
+        # a warning, not a refusal: whether the house carries source lines as a rule is not
+        # measured (TARGET_SPEC 17.9, 23.5: source lines on 23 of 111 and 27 of 121 data pages
+        # in two consulting groups, 2 of 33 data exhibits in the native-pptx bank decks)
+        problems.append({"kind": "no source line", "severity": "warning",
+                         "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; the house's "
+                                   "source-line habit is not measured, so this warns: look at the reference's data pages and add one where the house does"})
     refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
     entry["solver_status"] = entry["status"]  # the geometry verdict alone; component.py's harness page reads it
     if refusals and entry["status"] == "fit":
