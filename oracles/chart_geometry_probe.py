@@ -7,7 +7,7 @@ Writes one page per chart configuration through emit_pptx.write_chart (the emitt
 build uses: manual inner plot layout, explicit axis min and max, cross_between), twice:
 A, the charts alone; B, the same pages with 1 px magenta marker shapes at every
 position chart_geometry predicts (bar edges and value ends, point centres, gridline
-values) drawn through the annotation layer's own shape writer. Both decks are rendered
+values) drawn through the emitter's rect writer, the one annotations use. Both decks are rendered
 with scripts/render.py. From A every drawn mark is located in the PNG by its own
 colour, with sub-pixel edges from the anti-aliased coverage across the edge; from B
 every marker is located the same way. The report prints, per configuration and per
@@ -34,7 +34,6 @@ from pptx.util import Emu
 
 SKILL = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SKILL / "scripts"))
-import annotate  # noqa: E402
 import emit_pptx as E  # noqa: E402
 from chart_geometry import ChartGeometry  # noqa: E402
 
@@ -90,6 +89,9 @@ CONFIGS = [
     ("horizontal bar, 2 series, categories reversed", {"type": "BAR_CLUSTERED", "categories": CATS5,
      "series": [series(0, [35, 62, 48, 90, 20]), series(1, [55, 40, 70, 30, 65])], "gap_width": 70, "overlap": 0,
      "axes": axes(cat={"reverse": True})}),
+    ("horizontal bar, value axis deleted (visible false), categories reversed", {"type": "BAR_CLUSTERED", "categories": CATS5,
+     "series": [series(0, [35, 62, 48, 90, 20])], "gap_width": 45, "overlap": 0,
+     "axes": axes(cat={"reverse": True}, lo=10, hi=140, val={"visible": False})}),
     ("horizontal stacked bar, 2 series, gap 40", {"type": "BAR_STACKED", "categories": CATS5,
      "series": [series(0, [35, 22, 48, 30, 20]), series(1, [25, 40, 30, 45, 35])], "gap_width": 40, "overlap": 100, "axes": axes()}),
     ("column, legend and title drawn (inner layout ignores both)", {"type": "COLUMN_CLUSTERED", "categories": CATS5[:3],
@@ -153,6 +155,8 @@ def features(geo: ChartGeometry) -> list[dict]:
             for i in range(n):
                 px, py = geo.point(j, i)
                 out.append({"what": f"S{j} point {i}", "role": s["marker"]["fill_role"], "axis": "xy", "emu": (px, py)})
+    if el["axes"]["value"].get("visible") is False:
+        return out
     lo, hi = geo.scale("value")
     unit = el["axes"]["value"]["major_unit"]
     v = lo
@@ -291,7 +295,7 @@ def draw_markers(slide, marks: list[dict], width_px: int) -> None:
             box = (round(m["at"] - one / 2), round(m["from"]), round(one), round(m["to"] - m["from"]))
         else:
             box = (round(m["from"]), round(m["at"] - one / 2), round(m["to"] - m["from"]), round(one))
-        annotate.write_filled_rect(slide, box, E.Guide(GUIDE).hex("color.marker", where="marker"), "probe-marker")
+        E.write_rect(slide, {"id": "probe-marker", "fill_role": "color.marker", "line_role": None}, E.Guide(GUIDE), box)
 
 
 def build(out: Path, with_markers: bool, width_px: int) -> tuple[Path, list[list[dict]]]:
@@ -417,7 +421,11 @@ def main(argv: list[str]) -> int:
             for r in c["rows"]:
                 print(f"    {r['what']:<34} pred {r['predicted']:>8}  mark {r['mark']}  marker {r['marker']}")
     allm = [abs(r["mark"] - r["predicted"]) for c in report["configs"] for r in c["rows"] if r["mark"] is not None]
-    print(f"ALL: {len(allm)} features read, max |mark - predicted| {max(allm):.2f} px, mean {sum(allm) / len(allm):.3f} px at {args.width} px wide")
+    unread = [f"{c['name']}: {w}" for c in report["configs"] for w in c["unread"]]
+    print(f"ALL: {len(allm)} features read, max |mark - predicted| {max(allm):.2f} px, mean {sum(allm) / len(allm):.3f} px at {args.width} px wide; "
+          f"{len(unread)} not found within 7 px of the prediction (occluded by a later series, or misplaced)")
+    for u in unread:
+        print(f"    not found: {u}")
     return 0
 
 

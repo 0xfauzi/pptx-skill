@@ -1375,6 +1375,11 @@ def capacity(ctx: Context, scale: Fraction, boxes: Mapping[str, Box], roles: Seq
 
 # --- output ------------------------------------------------------------------------------
 
+#: What the emitter writes from the solver's resolved entry (_entry_hints), the one
+#: source of a written size: the page's fitted scale, not the guide's scale-1 sizes.
+FIT_KEYS = ("sz", "b", "lnSpc_spcPts", "spcBef", "spcAft", "spc")
+
+
 def _entry_hints(entry: TypeEntry) -> dict[str, Any]:
     """What a pptx writer sets so the file draws what was measured."""
     return {"role": entry.role, "latin": entry.family, "sz": hundredths(entry.size_pt), "b": entry.bold, "i": entry.italic, "lnSpc_spcPts": hundredths(entry.line_spacing * entry.size_pt), "spcBef": hundredths(entry.space_before_pt), "spcAft": hundredths(entry.space_after_pt), "spc": hundredths(entry.tracking_pt)}

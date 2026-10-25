@@ -87,6 +87,16 @@ class Plot:
     horizontal_bars: bool  # BAR_*: categories run up the page, values across
 
 
+def plot_rect(el: dict, box) -> tuple[float, float, float, float] | None:
+    """The inner plot rectangle in page EMU from the spec's plot_area, or None when the
+    spec leaves the plot to the renderer."""
+    pa = el.get("plot_area")
+    if not isinstance(pa, dict) or not all(_num(pa.get(k)) for k in ("x", "y", "w", "h")):
+        return None
+    x, y, w, h = (float(v) for v in box)
+    return x + pa["x"] * w, y + pa["y"] * h, pa["w"] * w, pa["h"] * h
+
+
 class ChartGeometry:
     """Data to page EMU for one chart element (emit_pptx's chart spec plus its solved box)."""
 
@@ -99,12 +109,11 @@ class ChartGeometry:
             raise GeometryRefused(f"{self.where}: data positions are computed for bar, column, line and XY scatter charts; a {self.type} is not (unmeasured)")
         if self.type.startswith(("LINE_STACKED", "LINE_MARKERS_STACKED")):
             raise GeometryRefused(f"{self.where}: a stacked line's point positions are not computed here (unmeasured)")
-        pa = el.get("plot_area")
-        if not isinstance(pa, dict) or not all(_num(pa.get(k)) for k in ("x", "y", "w", "h")):
+        rect = plot_rect(el, box)
+        if rect is None:
             raise GeometryRefused(f"{self.where}: needs plot_area {{x, y, w, h}}, written as the manual inner layout, so data positions are computable")
-        x, y, w, h = (float(v) for v in box)
-        self.box = (x, y, w, h)
-        self.plot = Plot(x + pa["x"] * w, y + pa["y"] * h, pa["w"] * w, pa["h"] * h, self.type.startswith("BAR_"))
+        self.box = tuple(float(v) for v in box)
+        self.plot = Plot(*rect, self.type.startswith("BAR_"))
         self.axes = el.get("axes") or {}
         self.categories = el.get("categories") or []
         self.series = el.get("series") or []

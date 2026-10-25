@@ -55,8 +55,10 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import annotate  # noqa: E402
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
+from chart_geometry import bar_thickness, plot_rect  # noqa: E402
 from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
 from ooxml import visual_extent  # noqa: E402
@@ -132,9 +134,7 @@ def title_band_emu(guide: dict) -> int | None:
     return int(rule_top - top_margin)
 
 
-#: What the emitter writes from the solver's resolved entry (layout._entry_hints), the one
-#: source of a written size: the page's fitted scale, not the guide's scale-1 sizes.
-FIT_KEYS = ("sz", "b", "lnSpc_spcPts", "spcBef", "spcAft", "spc")
+FIT_KEYS = L.FIT_KEYS
 PRESENTATION_KEYS = ("fill_role", "line_role", "pad_role", "prst", "line_width_emu", "anchor", "ink_role", "dash", "_spacer")
 
 
@@ -314,6 +314,15 @@ def _contains(outer: list, inner: list) -> bool:
     return outer[0] <= inner[0] and outer[1] <= inner[1] and outer[0] + outer[2] >= inner[0] + inner[2] and outer[1] + outer[3] >= inner[1] + inner[3]
 
 
+def _ellipse_contains(outer: list, inner: list) -> bool:
+    """Whether the ellipse inscribed in `outer` holds every corner of `inner` (an
+    annotation badge's label inside its circle)."""
+    cx, cy, rx, ry = outer[0] + outer[2] / 2, outer[1] + outer[3] / 2, outer[2] / 2, outer[3] / 2
+    if rx <= 0 or ry <= 0:
+        return False
+    return all(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0 for x in (inner[0], inner[0] + inner[2]) for y in (inner[1], inner[1] + inner[3]))
+
+
 def chrome_layers(guide: dict, mode: str) -> list[dict]:
     """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
     under whatever lands on them) and text lines (a run to score), each with its EMU page
@@ -367,13 +376,26 @@ def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict
         if earlier["kind"] == "image":
             undecidable = True
             continue
+        if earlier["kind"] == "chart" and earlier.get("plot_fill_role") not in (None, "none"):
+            # an annotation inside a chart's fixed plot rectangle stands on the plot fill
+            plot = plot_rect(earlier, earlier["box"])
+            if plot is not None and _intersects(list(plot), box):
+                fill = eg.hex(earlier["plot_fill_role"], where=earlier.get("id", "chart"))
+                if _contains(list(plot), box):
+                    backings, undecidable = [fill], False
+                    names.setdefault(fill, f"{earlier['plot_fill_role']} plot of {earlier.get('id')}")
+                else:
+                    backings.append(fill)
+                    names.setdefault(fill, f"{earlier['plot_fill_role']} plot of {earlier.get('id')} (partial)")
+            continue
         if earlier["kind"] not in ("rect", "text") or not earlier.get("fill_role"):
-            continue  # a table cannot overlap (the solver refuses it); a chart draws no plot fill here; a rule is a line
+            continue  # a table cannot overlap (the solver refuses it); a rule is a line
         fill = eg.hex(earlier["fill_role"], where=earlier.get("id", "fill"))
         if fill is None:
             continue
-        full_rect = earlier["kind"] == "text" or (earlier.get("prst") or "rect") == "rect"
-        if full_rect and _contains(earlier["box"], box):
+        prst = earlier.get("prst") or "rect"
+        full_rect = earlier["kind"] == "text" or prst == "rect"
+        if (full_rect and _contains(earlier["box"], box)) or (prst == "ellipse" and _ellipse_contains(earlier["box"], box)):
             backings, undecidable = [fill], False
             names.setdefault(fill, f"{earlier['fill_role']} of {earlier.get('id')}")
         else:
@@ -874,10 +896,8 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
         horizontal = str(el["type"]).startswith("BAR_")
         extent = el["box"][3] if horizontal else el["box"][2]
         slot = extent / len(cats)
-        gap = float(el.get("gap_width", 0)) / 100
-        k = len(el["series"])
-        overlap = float(el.get("overlap", 100)) / 100
-        bar = slot / (1 + gap) if "STACKED" in el["type"] else slot / (k - (k - 1) * overlap + gap)
+        # gap and overlap at their thickest when left out: an upper bound
+        bar = bar_thickness(slot, el["type"], len(el["series"]), float(el.get("gap_width", 0)), float(el.get("overlap", 100)))
 
         def words_over(text: str, role: str | None, limit: float, part: str) -> None:
             role = role or (el.get("text") or {}).get("role")
@@ -1099,6 +1119,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         precedent = ink_backings(ref_slides)
     pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
     emitted: list[dict] = []  # the report entry of every emitted page, in emit order
+    annotation_pages: dict[int, list[dict]] = {}  # emitted page index -> its annotations as resolved
     for number, slide in enumerate(deck["slides"], 1):
         try:
             spec_raw = json.loads(json.dumps(slide["spec"]))
@@ -1144,11 +1165,17 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             if outcome.status == "unfittable":
                 entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
             elements = flatten(slide, resolved, spec_raw)
+            annotation_problems: list[dict] = []
+            if slide.get("annotations") is not None:
+                # resolved on the solved page: anchored to the hosts' boxes, measured at the page's scale
+                elements, placed, annotation_problems = annotate.resolve(slide["annotations"], elements, ctx, outcome.resolved.scale, guide,
+                                                                         spec_raw["page"].get("reserved_zones") or [])
+                entry["annotations"] = placed
             entry["density"] = density_of(elements, resolved, guide, spec_raw)
             breaks, unread = chart_label_breaks(elements, ctx)
             if breaks or unread:
                 entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread}
-            entry["problems"] = page_problems(entry, elements, resolved, guide, [
+            entry["problems"] = page_problems(entry, elements, resolved, guide, annotation_problems + [
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks], chrome, precedent)
@@ -1161,6 +1188,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         pages.append((number, elements))
         emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
         report["slides"].append(entry)
+        if "annotations" in entry:
+            annotation_pages[len(emitted)] = entry["annotations"]
         emitted.append(entry)
     report["position_drift"] = position_drift(pages, guide)
     report["repetition"] = repetition_of(pages, guide)
@@ -1183,11 +1212,28 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     if do_render:
         import subprocess
         rdir = renders or str(Path(out).with_name(Path(out).stem + "-renders"))
-        completed = subprocess.run([sys.executable, str(Path(__file__).with_name("render.py")), out, "--out", rdir, "--width", "1600"], capture_output=True, text=True, timeout=900)
+        pdf = str(Path(rdir) / "deck.pdf")
+        completed = subprocess.run([sys.executable, str(Path(__file__).with_name("render.py")), out, "--out", rdir, "--width", "1600", "--keep-pdf", pdf],
+                                   capture_output=True, text=True, timeout=900)
         try:
             report["renders"] = json.loads(completed.stdout)
         except json.JSONDecodeError:
             report["renders"] = {"error": completed.stderr[-500:]}
+        if annotation_pages and Path(pdf).exists():
+            words = annotate.pdf_words(pdf)
+            offset = len(words) - len(emitted)
+            for index, placed in annotation_pages.items():
+                found = annotate.render_check(placed, emit_spec["slides"][index]["elements"], words[offset + index])
+                entry = emitted[index]
+                entry["problems"].extend(found)
+                if found and entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", "annotation covers chart text"
+    for placed in annotation_pages.values():
+        for e in placed:
+            if e.get("status") == "placed" and "render_check" not in e:
+                e["render_check"] = "not checked: no render, so the words the host draws are unknown"
+            for k in [k for k in e if k.startswith("_")]:
+                e.pop(k)
     if reference:
         from fingerprint import judge as judge_style
         judge = judge_style(out, reference, others, ref_slides=ref_slides)
@@ -1218,7 +1264,7 @@ def main(argv: list[str]) -> int:
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome)
-    shown = ("id", "status", "reason", "problems", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken")
+    shown = ("id", "status", "reason", "problems", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures
              "position_drift": report.get("position_drift"), "repetition": report.get("repetition"),
