@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Apply the model's completion patch to a style guide draft, deterministically.
 
-    complete_guide.py draft.json patch.json -o guide.json [--allow-partial]
+    complete_guide.py draft.json patch.json -o guide.json [--allow-partial] [--digest digest.json]
     complete_guide.py guide.json --check            # what is still open
 
 The model (Claude, reading the evidence digest and the renders) answers the draft's
@@ -37,9 +37,12 @@ import copy
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
+#: TARGET_SPEC Appendix A as closed sets: the title register, the title companions and the exhibit digest fields.
+VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 # the extractor never observes these, so they are always the model's to write
 ALWAYS_WRITABLE = {"/description", "/derivation_rules", "/continuation", "/typography/families/substitutes"}
 SETTLED = {"observed", "deterministic_inference"}
@@ -150,6 +153,155 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
                      f"{'; on this raster reference, a new role with provenance raster_inference' if raster else ''}); open: {sorted(open_paths)}")
 
 
+def _vocab_error(name: str, value, where: str) -> str | None:
+    allowed = VOCABULARY[name]
+    return None if isinstance(value, str) and value in allowed else f"{where}: {value!r} is not in {name} ({'|'.join(allowed)})"
+
+
+def title_register(guide: dict, value) -> dict:
+    """The model's reading of every title the draft found by position, checked against that
+    list: each page title classified once in the closed register vocabulary, each block the
+    draft found above or below a title named in the companion vocabulary, nothing added.
+    Every omission and every stray key is reported by name in one refusal. The counts are
+    computed here, never written by the model."""
+    records = [r for r in (guide.get("titles") or {}).get("records") or [] if r.get("placeholder") != "ctrTitle"]
+    if not isinstance(value, dict) or not isinstance(value.get("per_title"), dict):
+        raise PatchError('/titles/register: expected {"per_title": {"<slide>": register}, "companions": {...}, "claims_elsewhere": {...}, "why": "..."}')
+    errors: list[str] = []
+    stray = sorted(set(value) - {"per_title", "companions", "claims_elsewhere", "why"})
+    if stray:
+        errors.append(f"unknown keys {stray}")
+    want = {str(r["slide"]): r for r in records}
+    per = value["per_title"]
+    errors += [f"per_title: slide {k} ({want[k]['text']!r}) is not classified" for k in want if k not in per]
+    errors += [f"per_title: slide {k} has no title found by position" for k in per if k not in want]
+    errors += [e for k, v in per.items() if k in want for e in [_vocab_error("title_register", v, f"per_title/{k}")] if e]
+    given = value.get("companions") or {}
+    found = {(str(r["slide"]), pos): r[pos]["text"] for r in records for pos in ("above", "below") if r.get(pos)}
+    for (slide, pos), text in found.items():
+        if pos not in (given.get(slide) or {}):
+            errors.append(f"companions: slide {slide} {pos} ({text!r}) is not named")
+    for slide, entry in given.items():
+        for pos, kind in (entry or {}).items():
+            if (slide, pos) not in found:
+                errors.append(f"companions: slide {slide} has no block {pos} its title")
+            else:
+                e = _vocab_error(f"title_companion_{pos}", kind, f"companions/{slide}/{pos}")
+                if e:
+                    errors.append(e)
+    claims = value.get("claims_elsewhere") or {}
+    for slide, where in claims.items():
+        if per.get(slide) != "topic":
+            errors.append(f"claims_elsewhere: slide {slide} is not a topic title")
+        elif where is not None and not (isinstance(where, str) and where.strip()):
+            errors.append(f"claims_elsewhere/{slide}: a place in words, or null when the page states no claim")
+    if errors:
+        raise PatchError("/titles/register: " + "; ".join(errors))
+    counts = {k: sum(1 for v in per.values() if v == k) for k in VOCABULARY["title_register"]}
+    return {"counts": counts, "n": len(per), "per_title": dict(sorted(per.items(), key=lambda kv: int(kv[0]))),
+            "companions": given, "companion_counts": {pos: dict(Counter(e[pos] for e in given.values() if pos in (e or {}))) for pos in ("above", "below")},
+            "claims_elsewhere": claims, "why": value.get("why"), "provenance": model_prov(value.get("why") or "")}
+
+
+EXHIBIT_KEYS = {"candidate", "class", "type", "data_shape", "message", "message_kind", "annotation_moves", "emphasis_devices",
+                "number_formats", "legend", "data_labels", "colour_logic", "why"}
+EXHIBIT_SCALARS = (("class", "exhibit_class"), ("type", "exhibit_type"), ("data_shape", "data_shape"), ("message_kind", "message_kind"),
+                   ("legend", "legend"), ("data_labels", "data_labels"), ("colour_logic", "colour_logic"))
+EXHIBIT_LISTS = (("emphasis_devices", "emphasis_device"), ("number_formats", "number_format"))
+
+
+def exhibit_habits(guide: dict, value) -> dict:
+    """The completed digest stub (gallery.py digest), checked and aggregated. Every page the
+    stub lists is answered (an empty list states the page holds no exhibit; a missing or
+    null list is an omission); every exhibit names each field in the closed vocabulary,
+    every annotation move with what it anchors to. All omissions are named in one refusal.
+    The counts, by type, data shape and message kind, are computed here."""
+    if not isinstance(value, dict) or not isinstance(value.get("pages"), list):
+        raise PatchError("/exhibit_habits: expected the completed digest stub, {\"reference_sha256\", \"pages\": [{\"slide\", \"candidates\", \"exhibits\": [...]}]}")
+    sha = (guide.get("reference") or {}).get("sha256")
+    if value.get("reference_sha256") != sha:
+        raise PatchError(f"/exhibit_habits: the digest was cut from {value.get('reference_sha256')}, this guide's reference is {sha}")
+    errors: list[str] = []
+    records: list[dict] = []
+    for page in value["pages"]:
+        slide = page.get("slide")
+        exhibits = page.get("exhibits")
+        if not isinstance(exhibits, list):
+            errors.append(f"slide {slide}: exhibits not answered (an empty list states the page has none)")
+            continue
+        candidates = {c.get("id") for c in page.get("candidates") or []}
+        for i, ex in enumerate(exhibits):
+            where = f"slide {slide} exhibit {i}"
+            if not isinstance(ex, dict):
+                errors.append(f"{where}: not an object")
+                continue
+            missing = sorted(EXHIBIT_KEYS - {"candidate", "why"} - set(ex))
+            stray = sorted(set(ex) - EXHIBIT_KEYS)
+            if missing:
+                errors.append(f"{where}: {missing} not answered")
+            if stray:
+                errors.append(f"{where}: unknown keys {stray}")
+            if ex.get("candidate") is not None and ex["candidate"] not in candidates:
+                errors.append(f"{where}: candidate {ex['candidate']!r} is not one of the page's ({sorted(c for c in candidates if c)})")
+            for key, vocab in EXHIBIT_SCALARS:
+                if key in ex:
+                    e = _vocab_error(vocab, ex[key], f"{where} {key}")
+                    if e:
+                        errors.append(e)
+            for key, vocab in EXHIBIT_LISTS:
+                if key in ex:
+                    if not isinstance(ex[key], list):
+                        errors.append(f"{where} {key}: a list (empty when there is none)")
+                    else:
+                        errors += [e for v in ex[key] for e in [_vocab_error(vocab, v, f"{where} {key}")] if e]
+            if "message" in ex and not (isinstance(ex["message"], str) and ex["message"].strip()):
+                errors.append(f"{where} message: the one message in words")
+            moves = ex.get("annotation_moves")
+            if "annotation_moves" in ex:
+                if not isinstance(moves, list):
+                    errors.append(f"{where} annotation_moves: a list of {{\"move\", \"anchor\"}} (empty when the exhibit carries none)")
+                else:
+                    for j, m in enumerate(moves):
+                        if not isinstance(m, dict) or set(m) != {"move", "anchor"}:
+                            errors.append(f"{where} annotation_moves[{j}]: exactly {{\"move\", \"anchor\"}}")
+                            continue
+                        e = _vocab_error("annotation_move", m["move"], f"{where} annotation_moves[{j}]")
+                        if e:
+                            errors.append(e)
+                        if not (isinstance(m["anchor"], str) and m["anchor"].strip()):
+                            errors.append(f"{where} annotation_moves[{j}]: anchor names what the move points at")
+            records.append({"slide": slide, **ex})
+    if errors:
+        raise PatchError(f"/exhibit_habits: {len(errors)} problems: " + "; ".join(errors))
+
+    def count(values) -> dict:
+        return dict(sorted(Counter(values).items(), key=lambda kv: (-kv[1], kv[0])))
+
+    pages = value["pages"]
+    moves = [(r, m["move"]) for r in records for m in r["annotation_moves"]]
+    return {
+        "sample": {"pages_read": len(pages), "pages_with_exhibits": sum(1 for p in pages if p["exhibits"]),
+                   "pages_without": [p["slide"] for p in pages if not p["exhibits"]], "exhibits": len(records),
+                   "policy": value.get("sample_policy") or "every evidence page the digest cut"},
+        "classes": count(r["class"] for r in records),
+        "types": count(r["type"] for r in records),
+        "data_shapes": count(r["data_shape"] for r in records),
+        "message_kinds": count(r["message_kind"] for r in records),
+        "annotation_moves": count(m for _, m in moves),
+        "moves_by_data_shape": {shape: count(m for r, m in moves if r["data_shape"] == shape) for shape in sorted({r["data_shape"] for r in records})},
+        "moves_by_message_kind": {kind: count(m for r, m in moves if r["message_kind"] == kind) for kind in sorted({r["message_kind"] for r in records})},
+        "mean_moves_per_exhibit": round(len(moves) / len(records), 2) if records else None,
+        "exhibits_without_moves": [f"{r['slide']}:{r.get('candidate')}" for r in records if not r["annotation_moves"]],
+        "emphasis_devices": count(d for r in records for d in r["emphasis_devices"]),
+        "number_formats": count(f for r in records for f in r["number_formats"]),
+        "legend": count(r["legend"] for r in records),
+        "data_labels": count(r["data_labels"] for r in records),
+        "colour_logic": count(r["colour_logic"] for r in records),
+        "records": records,
+        "provenance": model_prov(f"exhibit digest of {len(pages)} pages, {len(records)} exhibits"),
+    }
+
+
 def core_open(guide: dict) -> list[str]:
     """Core addresses still open: absent, partial, or listed in `unresolved` (the address
     itself or its /members). A member refinement that carries a measured default, such as
@@ -226,6 +378,10 @@ def apply(guide: dict, patch: dict) -> tuple[dict, list[str]]:
                 else:
                     raise PatchError(f"{path}: member {member} is not open")
             check_color_refs(guide, value if isinstance(value, dict) else {}, path)
+        elif path == "/titles/register":
+            guide["titles"]["register"] = title_register(guide, value)
+        elif path == "/exhibit_habits":
+            guide["exhibit_habits"] = exhibit_habits(guide, value)
         elif path in SECTION_PATHS:
             check_color_refs(guide, value, path)
             if path == "/tables" and isinstance(value, dict):
@@ -283,6 +439,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--allow-partial", action="store_true", help="write the guide with core addresses still open, and list them")
+    ap.add_argument("--digest", default=None, help="the completed exhibit digest (gallery.py digest): the answer to /exhibit_habits")
     args = ap.parse_args(argv)
     guide = json.loads(Path(args.guide).read_text())
     if args.check or not args.patch:
@@ -291,6 +448,10 @@ def main(argv: list[str]) -> int:
         print(f"{len(guide.get('unresolved', []))} open; core open: {core_open(guide) or 'none'}")
         return 0
     patch = json.loads(Path(args.patch).read_text())
+    if args.digest:
+        if "/exhibit_habits" in patch:
+            raise PatchError("/exhibit_habits: answered both in the patch and by --digest; give one")
+        patch["/exhibit_habits"] = json.loads(Path(args.digest).read_text())
     guide, applied = apply(guide, patch)
     core = core_open(guide)
     if core and not args.allow_partial:

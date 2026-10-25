@@ -372,6 +372,7 @@ class Shape:
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
     paint_order: int = 0  # position in the page's painting sequence: a higher one paints over a lower one
     line_style: dict | None = None  # PDF text blocks only: modal family, size_pt, ink_hex and bold of the block's glyphs
+    drawn_lines: int | None = None  # PDF text blocks only: the glyph lines the page draws (a pptx box's lines are measured, not read)
 
 
 @dataclass
@@ -2173,7 +2174,7 @@ def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | No
         text = " ".join("".join(r["text"] for r in p["runs"]) for p in paras)
         sp.shapes.append(Shape("text_box", (int(x * scale), int(y * scale), int(bw * scale), int(bh * scale)), None, None, None, None, False,
                                None, "slide", ref=ref, rotation=rotation, text_chars=chars, text=text[:80], paragraphs=paras,
-                               paint_order=min(g.paint for s in blk for g in s.ink), line_style=_block_style(blk)))
+                               paint_order=min(g.paint for s in blk for g in s.ink), line_style=_block_style(blk), drawn_lines=len(blk)))
 
 
 RECURRENCE_FLOOR = 0.5

@@ -135,10 +135,8 @@ def _spacing_emu(value: float, size_pt: float) -> float:
 
 
 def text_overflows(s: SlidePrint, *, strict: bool = False, substitutes: dict | None = None) -> tuple[list[dict], list[dict], int]:
-    """Every text shape on the slide whose paragraphs, wrapped at the box's inner width
-    (less marL) with the solver's ruler, need more height than the box holds. Height is
-    what the file draws: lines at the paragraph's own pitch plus its spcBef and spcAft,
-    as the solver charges them. Returns (findings, unmeasured, measured count); each
+    """Every text shape on the slide whose paragraphs, wrapped by wrap_shape, need more
+    height than the box holds. Returns (findings, unmeasured, measured count); each
     finding names the slide, the shape and its lines, so a rate is never the only answer.
 
     strict (the build's check of its own file): a written line must stay one line at the
@@ -146,8 +144,6 @@ def text_overflows(s: SlidePrint, *, strict: bool = False, substitutes: dict | N
     the emit gate's, and a face is measured as the guide's substitute for it. Not strict
     (the judge, on any deck): half a line of slack and the renderer's face for a family the
     sandbox lacks. Shapes under autofit and furniture placeholders are skipped in both."""
-    ruler, index, measure = _measurer()
-    from textfit import resolve_measured
     findings: list[dict] = []
     unmeasured: list[dict] = []
     measured = 0
@@ -159,59 +155,78 @@ def text_overflows(s: SlidePrint, *, strict: bool = False, substitutes: dict | N
         runs = [r for p in sh.paragraphs for r in p["runs"] if not r.get("br")]
         if not runs:
             continue
-        lin, tin, rin, bin_ = sh.text_inset_emu or (91440, 45720, 91440, 45720)
-        width = sh.box[2] - lin - rin - (ruler.fit_epsilon_emu if strict else 0)
-        budget = sh.box[3] - tin - bin_
         where = {"slide": s.index + 1, "shape": sh.name, "ref": sh.ref}
+        width, budget = _inner_box(sh, strict)
         if width <= 0 or budget <= 0:
             unmeasured.append({**where, "why": f"inner box {width} x {budget} EMU"})
             continue
         if any(r.size_layer == "autofit" for r in s.runs if r.ref.startswith(sh.ref)):
             continue
-        needed = 0.0
-        pitch = 0.0
-        lines: list[str] = []
-        rewrapped: list[str] = []
-        why = None
-        drawn = [para for para in sh.paragraphs if any(not r.get("br") for r in para["runs"])]
-        for pi, para in enumerate(drawn):
-            real = [r for r in para["runs"] if not r.get("br")]
-            lead = real[0]
-            text = "".join(r["text"] for r in para["runs"])
-            pitch = _pitch_emu(para, lead["size_pt"])
-            if strict:  # what the solver charges: every spcBef and spcAft
-                needed += _spacing_emu(para.get("space_before") or 0.0, lead["size_pt"]) + _spacing_emu(para.get("space_after") or 0.0, lead["size_pt"])
-            if not text.strip():
-                needed += pitch
-                continue
-            family = lead.get("family") or next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None)
-            if not family:
-                why = "no face declared or inherited"
-                break
-            try:
-                face = resolve_measured(index, family, bold=bool(lead["bold"]), italic=bool(lead["italic"]),
-                                        substitute=(substitutes or {}).get(family), renderer_ok=not strict)
-            except LookupError as error:
-                why = str(error)
-                break
-            for segment in text.split("\n"):
-                if not segment.strip():
-                    needed += pitch
-                    continue
-                got = measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"])
-                if strict and len(got) > 1:
-                    rewrapped.append(segment)
-                lines.extend(ln.text for ln in got)
-                needed += len(got) * pitch
-        if why is not None:
-            unmeasured.append({**where, "why": why})
+        got = wrap_shape(s, sh, strict=strict, substitutes=substitutes)
+        if "why" in got:
+            unmeasured.append({**where, "why": got["why"]})
             continue
         measured += 1
-        slack = STRICT_SLACK_EMU if strict else 0.5 * pitch
-        if needed > budget + slack or rewrapped:
-            findings.append({**where, "needed_emu": round(needed), "budget_emu": budget, "lines": lines,
-                             **({"rewrapped_lines": rewrapped} if rewrapped else {})})
+        slack = STRICT_SLACK_EMU if strict else 0.5 * got["pitch_emu"]
+        if got["needed_emu"] > budget + slack or got["rewrapped"]:
+            findings.append({**where, "needed_emu": round(got["needed_emu"]), "budget_emu": budget, "lines": got["lines"],
+                             **({"rewrapped_lines": got["rewrapped"]} if got["rewrapped"] else {})})
     return findings, unmeasured, measured
+
+
+def _inner_box(sh, strict: bool) -> tuple[int, int]:
+    """(width, height) inside the shape's insets; strict narrows the width by the ruler's
+    fit epsilon, the width the solver wrapped at."""
+    ruler = _measurer()[0]
+    lin, tin, rin, bin_ = sh.text_inset_emu or (91440, 45720, 91440, 45720)
+    return sh.box[2] - lin - rin - (ruler.fit_epsilon_emu if strict else 0), sh.box[3] - tin - bin_
+
+
+def wrap_shape(s: SlidePrint, sh, *, strict: bool = False, substitutes: dict | None = None) -> dict:
+    """One text shape's paragraphs wrapped at its inner width (less marL) with the solver's
+    ruler: {"lines", "needed_emu", "rewrapped", "pitch_emu"}, or {"why"} when it cannot be
+    measured. Height is what the file draws: lines at the paragraph's own pitch, plus every
+    spcBef and spcAft in strict mode (what the solver charges). strict also measures a face
+    as the guide's substitute for it; not strict, a family the sandbox lacks is measured in
+    the renderer's face."""
+    ruler, index, measure = _measurer()
+    from textfit import resolve_measured
+    width, budget = _inner_box(sh, strict)
+    if width <= 0 or budget <= 0:
+        return {"why": f"inner box {width} x {budget} EMU"}
+    needed = 0.0
+    pitch = 0.0
+    lines: list[str] = []
+    rewrapped: list[str] = []
+    drawn = [para for para in sh.paragraphs if any(not r.get("br") for r in para["runs"])]
+    for para in drawn:
+        real = [r for r in para["runs"] if not r.get("br")]
+        lead = real[0]
+        text = "".join(r["text"] for r in para["runs"])
+        pitch = _pitch_emu(para, lead["size_pt"])
+        if strict:  # what the solver charges: every spcBef and spcAft
+            needed += _spacing_emu(para.get("space_before") or 0.0, lead["size_pt"]) + _spacing_emu(para.get("space_after") or 0.0, lead["size_pt"])
+        if not text.strip():
+            needed += pitch
+            continue
+        family = lead.get("family") or next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None)
+        if not family:
+            return {"why": "no face declared or inherited"}
+        try:
+            face = resolve_measured(index, family, bold=bool(lead["bold"]), italic=bool(lead["italic"]),
+                                    substitute=(substitutes or {}).get(family), renderer_ok=not strict)
+        except LookupError as error:
+            return {"why": str(error)}
+        for segment in text.split("\n"):
+            if not segment.strip():
+                needed += pitch
+                continue
+            got = measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"])
+            if strict and len(got) > 1:
+                rewrapped.append(segment)
+            lines.extend(ln.text for ln in got)
+            needed += len(got) * pitch
+    return {"lines": lines, "needed_emu": needed, "rewrapped": rewrapped, "pitch_emu": pitch}
 
 
 def overflow_rate(s: SlidePrint) -> float | None:

@@ -8,7 +8,8 @@ inheritance-resolved run, fill, line, table and chart on the slide layer; cluste
 sizes into levels and bind them to type roles; pool colours by how they are
 used and assign colour roles by painted area and WCAG contrast; mine spacing
 from the gaps between boxes; mine chrome, motifs, tables, charts, composition
-archetypes, register and density bands, and legibility floors. Every value
+archetypes, register and density bands, legibility floors, and the page titles by
+position (text, length, lines, the blocks above and below). Every value
 carries provenance (observed | deterministic_inference, assigned | inferred,
 evidence, frequency, master_membership, confidence). Whatever one reproducible
 rule cannot decide is listed under `unresolved` with its constraints: the model
@@ -39,7 +40,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, pdf_triage, visual_extent  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, pdf_triage, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -65,6 +66,11 @@ MOTIF_RULE_ASPECT = 20  # deckgen tokens.py:5767
 ALIGNMENT_EDGE_MIN_MEMBERS = 3
 ALIGNMENT_EDGE_CAP = 53
 EVIDENCE_CAP = 8
+# Asserted, unmeasured: a block counts as sitting at the kicker (above) or subtitle and
+# units-line (below) position when its gap to the title is within one title line pitch.
+TITLE_COMPANION_GAP_PITCHES = 1.0
+#: The closed vocabulary (TARGET_SPEC Appendix A) the model classifies titles and exhibits in.
+VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
 # Product safety floor: the smallest size the specimen stays legible at on both render media,
 # measured in deckgen docs/measurements/E45-decision.md (recorded 7.0 pt for display, body,
@@ -1042,6 +1048,99 @@ class Extractor:
         self.open("/spacing/baseline_emu", "a baseline grid is not observable in OOXML; leave null unless the renders show one",
                   {"body_line_pitch_emu": round(1.2 * self._roles.get("type.body", {}).get("size_pt", 0) * EMU_PER_PT) if self._roles.get("type.body") else None})
 
+    # ---- titles ----
+    def titles(self) -> None:
+        """Every page title, found by position (the title placeholder in a pptx, the
+        recurring title slot in a PDF; never by size): its text, characters, words and
+        lines, the length distribution, and the text block that sits directly above or
+        below it (the kicker and the subtitle or units-line positions). Register is a
+        reading of the words, so it stays open for the model with every title listed."""
+        records: list[dict] = []
+        unmeasured: list[dict] = []
+        for s in self.slides:
+            heads = sorted((sh for sh in s.shapes if sh.ph_type in TITLE_TYPES and sh.box and sh.paragraphs and sh.text_chars),
+                           key=lambda sh: (sh.box[1], sh.box[0]))  # type: ignore[index]
+            if not heads:
+                continue
+            sh = heads[0]  # one title per page: the topmost title shape
+            text = " ".join(" ".join(r["text"] for r in p["runs"] if not r.get("br")) for p in sh.paragraphs)
+            text = " ".join(text.split())
+            if not text:
+                continue
+            sizes = [r["size_pt"] for p in sh.paragraphs for r in p["runs"] if r.get("size_pt") and not r.get("br")]
+            rec = {"slide": s.index + 1, "text": text, "chars": len(text), "words": len(text.split()), "placeholder": sh.ph_type,
+                   "size_pt": modal([round(v * 2) / 2 for v in sizes]), "ref": sh.ref}
+            if sh.drawn_lines is not None:
+                rec["lines"], rec["lines_basis"] = sh.drawn_lines, "drawn: the glyph lines the PDF page sets"
+            else:
+                from fingerprint import wrap_shape
+                got = wrap_shape(s, sh)
+                if "why" in got:
+                    rec["lines"], rec["lines_basis"] = None, f"not measured: {got['why']}"
+                    unmeasured.append({"slide": s.index + 1, "why": got["why"]})
+                else:
+                    rec["lines"], rec["lines_basis"] = len(got["lines"]), "measured: the solver's ruler at the placeholder's inner width"
+            pitch = (rec["size_pt"] or 0) * 1.2 * EMU_PER_PT
+            rec["above"] = self._title_neighbour(s, sh, pitch, above=True)
+            rec["below"] = self._title_neighbour(s, sh, pitch, above=False)
+            records.append(rec)
+        # a cover title (ctrTitle) names the deck, not a page: listed, never part of the page distribution
+        pages = [r for r in records if r["placeholder"] != "ctrTitle"]
+
+        def dist(values: list) -> dict:
+            if not values:
+                return {"n": 0, "median": None, "p90": None, "max": None}
+            return {"n": len(values), "median": round(percentile(values, 0.5), 2), "p90": round(percentile(values, 0.9), 2), "max": max(values)}
+
+        measured_lines = [r["lines"] for r in pages if r["lines"] is not None]
+        self.guide["titles"] = {
+            "records": records,
+            "distribution": {"chars": dist([r["chars"] for r in pages]), "words": dist([r["words"] for r in pages]),
+                             "lines": {**dist(measured_lines), "unmeasured": len(pages) - len(measured_lines)}},
+            "positions": {"pages_with_title": len(pages), "above": sum(1 for r in pages if r["above"]), "below": sum(1 for r in pages if r["below"]),
+                          "gap_rule": f"a text block within {TITLE_COMPANION_GAP_PITCHES:g} title line pitch (1.2 x the title size) of the title's top or bottom edge, overlapping it across the page"},
+            "register": None,
+            "provenance": observed([f"slide{r['slide']}#{r['ref']}" for r in records], len(records), False, 1.0),
+        }
+        if unmeasured:
+            self.notes.append(f"title lines not measured on {len(unmeasured)} pages: {unmeasured[:4]}")
+        if not pages:
+            self.notes.append("no page title found by position (no title placeholder, no recurring title slot): /titles has no evidence and register cannot be read")
+            return
+        companions = {str(r["slide"]): {k: r[k]["text"] for k in ("above", "below") if r[k]} for r in pages if r["above"] or r["below"]}
+        self.open("/titles/register", "register is a reading of each title's words (topic phrase, claim sentence, question), and what the "
+                  "blocks above and below the title are: judgment, so the model classifies every title listed here",
+                  {"titles": {str(r["slide"]): r["text"] for r in pages}, "companions": companions,
+                   "shape": {"per_title": {"<slide>": "|".join(VOCABULARY["title_register"])},
+                             "companions": {"<slide>": {"above": "|".join(VOCABULARY["title_companion_above"]), "below": "|".join(VOCABULARY["title_companion_below"])}},
+                             "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null when it states none"},
+                             "why": "..."}})
+
+    def _title_neighbour(self, s: SlidePrint, title: Shape, pitch: float, above: bool) -> dict | None:
+        """The nearest content text block directly above (or below) the title: its gap to
+        the title edge within TITLE_COMPANION_GAP_PITCHES title pitches, overlapping the
+        title across the page. Chrome and other title shapes are not candidates."""
+        tx, ty, tw, th = title.box  # type: ignore[misc]
+        best: tuple[float, Shape] | None = None
+        for sh in self.content_boxes(s):
+            if sh is title or sh.ph_type in TITLE_TYPES or not sh.text_chars or not sh.paragraphs or sh.ref == title.ref:
+                continue
+            x, y, w, h = sh.box  # type: ignore[misc]
+            if min(x + w, tx + tw) <= max(x, tx):
+                continue
+            gap = (ty - (y + h)) if above else (y - (ty + th))
+            if gap < -0.5 * pitch or gap > TITLE_COMPANION_GAP_PITCHES * pitch:
+                continue
+            if best is None or gap < best[0]:
+                best = (gap, sh)
+        if best is None:
+            return None
+        sh = best[1]
+        words = " ".join(" ".join(r["text"] for r in p["runs"] if not r.get("br")) for p in sh.paragraphs)
+        sizes = [r["size_pt"] for p in sh.paragraphs for r in p["runs"] if r.get("size_pt") and not r.get("br")]
+        return {"text": " ".join(words.split())[:120], "size_pt": modal([round(v * 2) / 2 for v in sizes]), "paragraphs": len(sh.paragraphs),
+                "gap_pt": round(best[0] / EMU_PER_PT, 1), "ref": sh.ref}
+
     # ---- composition, register, density ----
     def composition(self) -> None:
         groups: list[list[tuple]] = []
@@ -1497,7 +1596,7 @@ class Extractor:
             self.notes.append(f"hidden slides counted as evidence (delete them from a copy with pptx_tools.py delete to exclude): {hidden}")
         if self.raster:
             return self.run_raster()
-        for stage in (self.typography, self.color, self.spacing, self.composition, self.chrome_and_motifs, self.tables, self.charts,
+        for stage in (self.typography, self.color, self.spacing, self.composition, self.chrome_and_motifs, self.titles, self.tables, self.charts,
                       self.shapes_and_imagery):
             stage()
             self._stage(stage.__name__)
@@ -1517,6 +1616,10 @@ class Extractor:
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
                              ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
             self.open(path, reason)
+        self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, complete "
+                  "every page of the stub in the vocabulary it names, and answer this address with the completed stub",
+                  {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json",
+                   "vocabulary": "references/page_craft_vocabulary.json"})
         self.notes.append("gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide")
         text_layer = {"status": "typographic"}
         if self.is_pdf:
@@ -1686,6 +1789,19 @@ def report(guide: dict) -> str:
                    + f", paints {ch.get('paint_order')}" + (f", content inside on {ch['carries_content_on']} slides" if ch.get("carries_content_on") else ""))
     for m in g.get("motifs", []):
         out.append(f"- {m['motif_id']}: {m['name']}, line {m['line_role']} {m['line_width_pt']}pt, fill {m['fill_role']}")
+    ti = g.get("titles")
+    if ti:
+        out += ["", "## Titles (by position)", ""]
+        d = ti["distribution"]
+        out.append(f"Characters {d['chars']}; words {d['words']}; lines {d['lines']}. Blocks at the kicker position (above): {ti['positions']['above']} "
+                   f"of {ti['positions']['pages_with_title']} pages; at the subtitle or units-line position (below): {ti['positions']['below']} ({ti['positions']['gap_rule']}).")
+        out += ["", "| slide | title | chars | words | lines | above | below |", "|---|---|---|---|---|---|---|"]
+        for r in ti["records"]:
+            out.append(f"| {r['slide']}{' (cover)' if r['placeholder'] == 'ctrTitle' else ''} | {r['text']} | {r['chars']} | {r['words']} | {r['lines']} | "
+                       f"{(r['above'] or {}).get('text', '')} | {(r['below'] or {}).get('text', '')} |")
+        reg = ti.get("register")
+        out.append("")
+        out.append(f"Register: {json.dumps(reg['counts']) if reg else 'open (/titles/register): classify every title above'}.")
     out += ["", "## Register and density", ""]
     out.append(json.dumps(g.get("register_stats"), indent=0)[:1500])
     out.append(json.dumps(g.get("density_bands"), indent=0))

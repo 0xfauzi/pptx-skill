@@ -228,6 +228,25 @@ Rules the finalizer enforces, and the ones only you can keep:
   measurement, so for a deck that will be printed never go below the reference's own
   `floor_pt` either).
 
+### 3.1 Titles and exhibit habits: read by looking
+
+The draft's `titles` section lists every page title found by position (text, characters,
+words, lines, and the block directly above or below it) with median, p90 and max. Two
+addresses stay open because only reading answers them:
+
+- `/titles/register`: `{"per_title": {"<slide>": "topic|claim|question"}, "companions":
+  {"<slide>": {"above": ..., "below": ...}}, "claims_elsewhere": {"<topic slide>": "where, or null"}, "why"}`.
+  Every listed title and every block found above or below one must be named.
+- `/exhibit_habits`: run `python3 scripts/gallery.py digest ref --out work/ref/digest --guide work/ref/draft.json`,
+  look at every page, content crop and candidate crop, replace each page's `exhibits: null`
+  with records in the stub's `record_template` (an empty list states the page has none), and
+  pass the file as `complete_guide.py ... --digest work/ref/digest/digest.stub.json`.
+
+Values come from `references/page_craft_vocabulary.json` (TARGET_SPEC Appendix A); every
+annotation move names its anchor. The finalizer refuses an omission by name and computes
+all counts itself (register counts; types, data shapes, moves by data shape and by message,
+emphasis, number formats, legend, labels, colour logic).
+
 Example completion: `examples/keybank.completion.json` (a pptx reference with no tables
 or charts) and `examples/mckinsey-pdf.completion.json` (a PDF reference).
 
@@ -301,8 +320,10 @@ exemplar of its composition family begins inside the house's bands and columns.
 ## 5. Plan the deck
 
 Read `references/design/storyline_logic.md` and `title_and_message_writing.md` first.
-Then write the plan as a list of pages, each with: an assertion title (one line in the
-reference's title band; the solver refuses a title the band cannot hold), the one
+Then write the plan as a list of pages, each with: a title in the house's register and
+length (`guide.titles`: a bank house that writes topic phrases gets topic phrases, and its
+claim goes in a lead-in or takeaway where the house puts it; one line in the reference's
+title band; the solver refuses a title the band cannot hold), the one
 message, the exhibit that proves it, the supporting text, the data it needs, the
 composition intent (which element dominates), and the boundaries where the page may
 split if it will not fit. Vary composition across pages unless content demands
@@ -531,6 +552,7 @@ houses. Read `work/out/deck.build.json`:
 - The file is written at the sizes the solver fitted: at scale 0.89 a 12pt cell is written at 10.5pt, with the scaled line pitch, paragraph spacing, tracking and cell inset. After the emit the build reads the written file back and measures it against the solved boxes: every text element's written lines at the width the solver wrapped at, its height at the written pitch and spacing, and every table's rows re-wrapped at the written column widths, insets and sizes. Any shape that outgrows its box refuses the page as `emitted text overflows`, naming the shape; a page that fit in the solver and overflows in the file is a defect between the two, not a page to accept.
 - `chart_label_breaks` per page with a bar or column chart: words a renderer must break between characters, measured with the solver's ruler at the chart text's size. A column chart's category label wraps to its slot (at most the chart's width over the category count); a centred data label wraps to the bar's thickness (at most the slot less `gap_width`, shared by the series when clustered). Both are upper bounds, so a word over one breaks for certain (`Standalo / ne`, `Remaini / ng`) and refuses the page as `chart label breaks mid-word`; a word under one may still break in a crowded plot, so read the render. `unmeasured` lists labels whose text the check cannot form (a number format it does not read). XY labels and labels outside the bar are not measured.
 - `contrast` per page: every text run, every table row class, every chart text (data labels per series and per overriding point, axis labels, legend) and every chrome text line the page carries (footer label, page number, at its observed ink) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else a chrome band under it, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. House precedent comes first: a pair the reference itself draws (the same ink hex over the same backing hex, read from the `--reference` file) at that size or smaller is filed under `house_precedent` with the reference's pages and smallest size, neither refused nor warned. BCG (nystate covid deck) sets its titles and heads in 29BA74 on white, 2.51:1, on 23 pages and at sizes down to 3.5pt; a deck in that house keeps its green. A pair the reference never draws is refused as before, and with no `--reference` nothing can claim precedent. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
+- `title` per page: the page's title (`slide.title.element`, else the root's first type.title text) against `guide.titles`: characters, words and solved lines against the house's median, p90 and max (above the max is a warning), and the register the slide states as `"title": {"register": "topic|claim|question"}` against the house's counts (a register on under 10% of the house's titles warns; that line is unmeasured). An unstated register reads `not stated`; a guide without titles reads `no evidence`.
 - `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`; a native table or chart against a band of 0 to 0 reads `no evidence`, which is what a reference that pastes its exhibits as pictures gives (they count as images). Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
 - `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) with the page frame left out (`frame_left_out`: a text, rule or rect element at the same place on every page, such as the title, units line, lead and source line; an exhibit is never frame), and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.
 - `tieouts` per page: for every table with `totals_last_row`, each number, currency or percent column's body sum against its totals cell at the cell's own decimals ($ , % x stripped, parentheses negative). A row headed median, average or mean is skipped as a statistic; a column with an n.a. cell is skipped and names the cell. A mismatch is a warning under `problems`: a subtotal inside the body or a non-total row styled as the totals row reads as a mismatch, so either compute the figure or take `totals_last_row` off that row.
@@ -719,7 +741,8 @@ again without learning from your pages; `--include-generated` overrides.
 |---|---|
 | `scripts/ooxml.py` | the OOXML and PDF reader with inheritance resolved; `triage` for PDFs |
 | `scripts/extract_style.py` | reference to guide draft with provenance and the open list |
-| `scripts/gallery.py` | component crops, exemplars, skeletons, manifest |
+| `scripts/gallery.py` | component crops, exemplars, skeletons, manifest; `digest`, the exhibit digest stub |
+| `references/page_craft_vocabulary.json` | the closed vocabulary for title registers and exhibit records (TARGET_SPEC Appendix A) |
 | `scripts/complete_guide.py` | folds your completion into the draft under the rules |
 | `scripts/render.py` | LibreOffice to PNG, font substitution report, contact sheet |
 | `scripts/raster_style.py` | what a scanned reference can still tell: palette, ink, chrome, margins, line pitch |
