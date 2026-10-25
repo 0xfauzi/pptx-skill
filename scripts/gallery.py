@@ -1113,11 +1113,12 @@ def skeleton_leaves(payload: dict[str, object]) -> list[tuple[str, str]]:
     return out
 
 
-def pick(gallery_dir: Path, intent_text: str) -> str:
+def rank(gallery_dir: Path, intent_text: str) -> tuple[list[tuple[dict, int, list[str]]], list[tuple[dict, int]]]:
     """deckgen select_design_images (content/design_prompt.py:252-291): exemplars by
     overlap of the intent's words with family, id and skeleton vocabulary, crops by
-    overlap with the caption's words; ties break on id. Printed in the shape of its
-    _exemplars_block and _gallery_block (600-632)."""
+    overlap with the caption's words; ties break on id. Returns the top exemplars as
+    (entry, overlap, skeleton lines) and the top crops as (entry, overlap); library.py
+    pick reads the reference's own gallery through this."""
     manifest = json.loads((gallery_dir / "manifest.json").read_text())
     intent = words(intent_text)
     leaves = {e["exemplar_id"]: skeleton_leaves(json.loads((gallery_dir / e["skeleton_file"]).read_text())) for e in manifest["exemplars"]}
@@ -1128,16 +1129,23 @@ def pick(gallery_dir: Path, intent_text: str) -> str:
 
     exemplars = sorted(manifest["exemplars"], key=lambda e: (-exemplar_overlap(e), e["exemplar_id"]))[:EXEMPLAR_PICK]
     crops = sorted(manifest["crops"], key=lambda c: (-len(words(c["caption"]) & intent), c["gallery_id"]))[:CROP_PICK]
-    lines = [f"intent words: {' '.join(sorted(intent))}",
+    return ([(e, exemplar_overlap(e), [line for _, line in leaves[e["exemplar_id"]]]) for e in exemplars],
+            [(c, len(words(c["caption"]) & intent)) for c in crops])
+
+
+def pick(gallery_dir: Path, intent_text: str) -> str:
+    """rank() printed in the shape of deckgen's _exemplars_block and _gallery_block (600-632)."""
+    exemplars, crops = rank(gallery_dir, intent_text)
+    lines = [f"intent words: {' '.join(sorted(words(intent_text)))}",
              "Exemplars ranked by overlap of the intent with each exemplar's family, id and skeleton vocabulary; ties on exemplar id."]
-    for e in exemplars:
-        lines.append(f"exemplar {e['exemplar_id']} family {e['slide_family']} overlap {exemplar_overlap(e)} slide {e['source_slide_index'] + 1}: "
+    for e, overlap, skeleton_lines in exemplars:
+        lines.append(f"exemplar {e['exemplar_id']} family {e['slide_family']} overlap {overlap} slide {e['source_slide_index'] + 1}: "
                      f"{(gallery_dir / e['render_file']).resolve()}")
         lines.append("  skeleton (kind role size at position):")
-        lines.extend(f"    {line}" for _, line in leaves[e["exemplar_id"]])
+        lines.extend(f"    {line}" for line in skeleton_lines)
     lines.append("Crops ranked by caption overlap with the same words; ties on gallery id.")
-    for c in crops:
-        lines.append(f"crop {c['gallery_id']} overlap {len(words(c['caption']) & intent)}: {c['caption']}")
+    for c, overlap in crops:
+        lines.append(f"crop {c['gallery_id']} overlap {overlap}: {c['caption']}")
         lines.append(f"  {(gallery_dir / c['file']).resolve()} (cut from {(gallery_dir / c['slide_render_file']).resolve()})")
     return "\n".join(lines)
 

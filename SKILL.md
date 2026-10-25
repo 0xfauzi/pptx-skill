@@ -430,6 +430,54 @@ their skeleton lines. Overlap 0 everywhere means the gallery has nothing for tha
 (keybank's tables are pasted images, so a table intent finds none): design from the
 guide and the doctrines, not from a near miss.
 
+Then ask the page library, which ranks by the tags you gave pages after looking at them:
+
+```bash
+python3 scripts/library.py pick --intent "valuation football field against the offer" \
+  --exhibit "football field / range bars" [--composition C] [--move M]... [--data-shape "methods x low/high"] \
+  [--aspect 4:3] --gallery work/ref/gallery --own <company library>
+```
+
+It searches the reference's own gallery (words only), then the company's library, then the
+external library (`refs/library`, git-ignored), and says which answered. Order is
+composition, exhibit family and annotation moves first, page aspect next, data-shape and
+intent words last. `library.py vocab` lists the values; any other value is refused. Use the
+`why` and `ask` lines as questions to answer for your page, never as a layout to copy. An
+aspect mismatch is flagged because examples do not carry across page sizes. `no evidence`
+means nothing there fits this intent. Build a company library from its past decks
+(pptx or PDF):
+
+```bash
+python3 scripts/library.py permit deck.pptx --lib <company dir>/library --owner <company> \
+  --source-type company --images yes|no --by <who> --basis <what allows it>
+python3 scripts/library.py build --lib <company dir>/library deck.pptx [--skip ID:PAGES] [--keep ID:PAGES] [--exclude ID[:PAGES]]
+python3 scripts/library.py tag --lib <company dir>/library tags.json   # {entry_id: {tag fields}}
+python3 scripts/library.py check --lib <company dir>/library [--seal]
+```
+
+`build` refuses a deck with no `permit` record. It renders each page that is not excluded
+and proposes a triage: cover (a declared title layout, or page 1), divider (a declared
+section layout, or no exhibit and under a fifth of the deck's median words), disclaimer (a
+legal phrase and no table or chart). Pictures in the same place on half the pages do not
+count as exhibits. These rules are definitions, not measurements. A PDF states no tables
+or charts, so on a PDF neither the divider nor the disclaimer rule fires: those pages are
+proposed as content with their word count, and you skip them after looking. On keybank
+(pptx) the triage matched 12 of 12 pages. So look at `work/<id>/triage.png` and
+override with `--skip` and `--keep` (a page outside the deck, a deck not in this build, or
+a page named by both is refused). Each kept page gets a stub whose tag fields are null.
+Fill them after looking at `look_at`. `[]` means you looked and found none. A designer
+question must open with a sentence ending in `?`; a follow-up after it is allowed.
+`--images no` keeps no page image: entries carry tags only, and `check --seal` deletes the
+renders. Permitting a deck again with `--images no` deletes its kept images and contact
+sheet at once. `--exclude` deletes every file that shows or lists the page (its image, the
+contact sheet, `triage.json`), and an excluded pptx slide is emptied in a temporary copy
+before rendering, so it is never drawn. Every file in the library is listed in its
+`manifest.json` with the source hash and the pages it derives from. `check` refuses
+unlisted files, files derived from an excluded page, and kept images on a deck whose
+permission keeps none; `forget --deck ID` deletes one deck's files as a set. A company
+library inside the skill directory is refused, and an external one there must sit in a
+directory git ignores as a whole. One pick never mixes two companies' libraries.
+
 A slide-layer logo, rule or label the reference pastes on every page is drawn on every
 generated page in the default `--chrome auto`; chrome the layout already carries is
 inherited, never redrawn. The build report's `chrome` section lists what each page drew
@@ -777,6 +825,7 @@ again without learning from your pages; `--include-generated` overrides.
 | `scripts/extract_style.py` | reference to guide draft with provenance and the open list |
 | `scripts/gallery.py` | component crops, exemplars, skeletons, manifest; `digest`, the exhibit digest stub |
 | `references/page_craft_vocabulary.json` | the closed vocabulary for title registers and exhibit records (TARGET_SPEC Appendix A) |
+| `scripts/library.py` | the page library: permit, build with triage, tag, check, pick by tags, import, forget |
 | `scripts/complete_guide.py` | folds your completion into the draft under the rules |
 | `scripts/render.py` | LibreOffice to PNG, font substitution report, contact sheet |
 | `scripts/raster_style.py` | what a scanned reference can still tell: palette, ink, chrome, margins, line pitch |
