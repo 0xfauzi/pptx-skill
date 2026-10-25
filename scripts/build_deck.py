@@ -38,7 +38,9 @@ page with reason "contrast", below AA warns; no ink is ever swapped to pass it),
 reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
 a warning listed first under `problems`), and the source-line rule (a table or chart
 with no type.source_line or type.footnote paragraph refuses the page with reason "no
-source line"). `repetition` at deck level is the arrangement similarity of each
+source line"), and `title` (the page title's characters, words and lines against the house's
+titles, and the register the slide states against the house's register counts; warnings only).
+`repetition` at deck level is the arrangement similarity of each
 consecutive pair of pages (the extractor's own slide_similarity) with any run of
 look-alike pages longer than the reference's longest. After the emit, each page with a
 chart carries `chart_defaults_taken`: every chart choice its spec left out, with the
@@ -65,7 +67,7 @@ import layout as L  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
 from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
-from ooxml import visual_extent  # noqa: E402
+from ooxml import paragraphs_words, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 #: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
@@ -939,6 +941,98 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
     return findings, unmeasured
 
 
+def title_node(spec_raw: dict) -> dict | None:
+    """The page title by position: the first text element, in reading order (depth first,
+    so a title inside a region counts), whose first paragraph is set in type.title. The
+    title report and the title-lines reason read this; the title band holds it only when it
+    is the root's first child (banded_title)."""
+    def walk(node: dict) -> dict | None:
+        if node.get("kind") == "text" and (node.get("paragraphs") or [{}])[0].get("role") == "type.title":
+            return node
+        for child in node.get("children") or []:
+            found = walk(child)
+            if found is not None:
+                return found
+        return None
+    return walk(spec_raw.get("root") or {})
+
+
+def banded_title(spec_raw: dict) -> dict | None:
+    """title_node when it is the root's first child: the one place the title band applies."""
+    node = title_node(spec_raw)
+    children = (spec_raw.get("root") or {}).get("children") or []
+    return node if node is not None and children and children[0] is node else None
+
+
+def page_title_id(slide: dict, spec_raw: dict) -> str | None:
+    """The element the page spec names as its title (`title.element`), else title_node's."""
+    named = (slide.get("title") or {}).get("element")
+    if named:
+        return named
+    node = title_node(spec_raw)
+    return node.get("id") if node else None
+
+
+#: Asserted, unmeasured: a page whose stated register the house uses on fewer than this
+#: share of its titles is warned. No measurement says where a register becomes foreign.
+RARE_REGISTER_SHARE = 0.10
+
+
+def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict, guide: dict) -> tuple[dict, list[dict]]:
+    """The page title against the house's titles (guide.titles): characters, words and the
+    solver's lines against the house distribution (above the house max warns), and the
+    register the page spec states (`slide.title.register`) against the house's register
+    counts (a register on under RARE_REGISTER_SHARE of the house's titles warns). The
+    register is never read from the words here: the spec states it, or it is reported as
+    not stated. Absence of house evidence is reported as such, never as zero."""
+    tid = page_title_id(slide, spec_raw)
+    named = (slide.get("title") or {}).get("element")
+    stated = (slide.get("title") or {}).get("register")
+    vocab = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())["title_register"]
+    if stated is not None and stated not in vocab:
+        raise SystemExit(f"{slide.get('id')}: title.register {stated!r} is not one of {sorted(vocab)}")
+    el = next((e for e in elements if e["id"] == tid and e["kind"] == "text"), None) if tid else None
+    if named and el is None:
+        kinds = sorted({e["kind"] for e in elements if e["id"] == named})
+        raise SystemExit(f"{slide.get('id')}: title.element {named!r} names " + (f"a {'/'.join(kinds)} element, not a text" if kinds else "no element on the page"))
+    if el is None:
+        return {"element": None, "register_stated": stated,
+                "verdict": "no title: the page names none (title.element) and holds no text element set in type.title"}, []
+    text = paragraphs_words(el["paragraphs"])
+    house = guide.get("titles")
+    report: dict = {"element": tid, "text": text, "register_stated": stated}
+    warnings: list[dict] = []
+    measured = {"chars": len(text), "words": len(text.split()), "lines": (entry.get("text_lines") or {}).get(tid)}
+    if not house or not house["distribution"]["chars"]["n"]:
+        report["length"] = {k: {"value": v, "verdict": "no evidence: the guide has no titles read by position"} for k, v in measured.items()}
+    else:
+        report["length"] = {}
+        for k, v in measured.items():
+            d = house["distribution"][k]
+            if v is None or not d["n"]:
+                verdict = "no evidence" if v is not None else "not measured"
+            else:
+                verdict = "above house max" if v > d["max"] else "above house p90" if v > d["p90"] else "within house p90"
+            report["length"][k] = {"value": v, "house": {q: d[q] for q in ("median", "p90", "max", "n")}, "verdict": verdict}
+            if verdict == "above house max":
+                warnings.append({"kind": "title longer than the house", "severity": "warning",
+                                 "detail": f"{tid}: {v} {k} against the house max of {d['max']} (median {d['median']}, {d['n']} titles)"})
+    reg = (house or {}).get("register")
+    if stated is None:
+        report["register"] = {"verdict": "not stated: the page spec names no title.register"}
+    elif not reg:
+        report["register"] = {"verdict": "no evidence: the guide's /titles/register is not completed"}
+    else:
+        share = reg["counts"].get(stated, 0) / reg["n"] if reg["n"] else None
+        report["register"] = {"house_counts": reg["counts"], "share": None if share is None else round(share, 3), "threshold": RARE_REGISTER_SHARE,
+                              "threshold_basis": "unmeasured", "verdict": "rare in the house" if share is not None and share < RARE_REGISTER_SHARE else "house register"}
+        if share is not None and share < RARE_REGISTER_SHARE:
+            warnings.append({"kind": "title register rare in the house", "severity": "warning",
+                             "detail": f"{tid}: a {stated} title, which the house writes on {reg['counts'].get(stated, 0)} of {reg['n']} titles "
+                                       f"({json.dumps(reg['counts'])}); the {RARE_REGISTER_SHARE:.0%} line is unmeasured"})
+    return report, warnings
+
+
 def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None:
     """The page as the build enforces it: the guide's page size, the chrome zones, the
     indent progression for a bullet-less reference, and the title band. `layout.py
@@ -954,7 +1048,7 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None
         spec_raw["bullet_indent_roles"] = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
     band = title_band_emu(guide)
     root_children = spec_raw.get("root", {}).get("children", [])
-    if band and root_children and root_children[0].get("kind") == "text" and root_children[0].get("paragraphs", [{}])[0].get("role") == "type.title" and "size" not in root_children[0]:
+    if band and banded_title(spec_raw) is not None and "size" not in root_children[0]:
         # the reference keeps its titles above the top rule: a title that needs more
         # lines than the band holds is refused, never pushed under the rule
         pad_top = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 0)
@@ -1153,7 +1247,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
                 report["slides"].append(entry)
                 continue
-            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get("title", []))
+            banded = banded_title(spec_raw)
+            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get(banded.get("id") or "", [])) if banded else 0
             if outcome.status != "fit" and title_lines > 1 and title_band_emu(guide):
                 # the first cause named first: every other violation on the page follows from a
                 # title that pushed the content down
@@ -1184,6 +1279,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks], chrome, precedent)
+            entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
+            entry["problems"][:0] = title_warnings  # warnings first, as the tie-outs are
         except L.FaceRefused as error:
             # the guide's faces cannot measure this page as the renderer draws it: the page is
             # refused by name in the report, not solved in another face and not a traceback
@@ -1291,7 +1388,7 @@ def main(argv: list[str]) -> int:
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome)
-    shown = ("id", "status", "reason", "problems", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
+    shown = ("id", "status", "reason", "problems", "title", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures
              "position_drift": report.get("position_drift"), "repetition": report.get("repetition"),

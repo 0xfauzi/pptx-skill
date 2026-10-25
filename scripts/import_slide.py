@@ -37,7 +37,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from extract_style import POSITION_DIAMETER_EMU  # noqa: E402  the grain chrome is mined at
-from ooxml import Shape, SlidePrint, delta_e, fingerprint_deck  # noqa: E402
+from ooxml import Shape, SlidePrint, delta_e, fingerprint_deck, paragraphs_words  # noqa: E402
 
 EMU_PER_INCH = 914400
 CHROME_PH = {"sldNum", "ftr", "dt"}
@@ -121,13 +121,19 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
     para_style: dict[str, dict] = {}
     inverse = None
     for i, para in enumerate(sh.paragraphs or []):
-        runs = [dict(r, text=r["text"].replace("\n", " ")) for r in para["runs"] if r["text"].strip() and not r.get("br")]
+        runs: list[dict] = []
+        for r in para["runs"]:
+            if r.get("br") or not r["text"].strip():
+                if runs:  # a break between two words is a space between them, never nothing
+                    runs[-1]["text"] += " "
+                continue
+            runs.append(dict(r, text=r["text"].replace("\n", " ")))
         if not runs:
             continue
         lead = runs[0]
         all_bold = all(r["bold"] for r in runs)
         role = bind_role(lead["size_pt"], all_bold, sh.ph_type == "title", roles)
-        text = " ".join("".join(r["text"] for r in runs).split())  # explicit breaks and runs of spaces collapse
+        text = paragraphs_words([para])  # explicit breaks and runs of spaces collapse
         p = {"role": role, "text": text}
         if para["bullet"].startswith("char") or para["bullet"] == "auto":
             p["bullet_level"] = int(para["level"])

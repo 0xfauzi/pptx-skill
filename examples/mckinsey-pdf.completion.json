@@ -171,16 +171,6 @@
   "Georgia": "DejaVu Serif",
   "Aptos": "Carlito"
  },
- "/typography/roles/type.footnote": {
-  "size_pt": 9,
-  "weight": 400,
-  "italic": false,
-  "family": "Arial",
-  "alignment": "left",
-  "case": "as_typed",
-  "ink_role": "color.ink",
-  "why": "the numbered note under the skills matrix (page 14) is set like the source line, at the 9pt floor"
- },
  "/shape_language/corner_radii": {
   "modal_radius_emu": 0,
   "rounded_share": 0.0,

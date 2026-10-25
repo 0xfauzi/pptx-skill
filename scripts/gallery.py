@@ -745,16 +745,10 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def build(
-    deck_path: Path,
-    out: Path,
-    width: int,
-    guide_path: Path | None,
-    pool_max: int = GALLERY_POOL_MAX,
-    exemplar_max: int = EXEMPLAR_POOL_MAX,
-    include_generated: bool = False,
-    pages: tuple[int, int] | None = None,
-) -> dict[str, object]:
+def read_sources(deck_path: Path, guide_path: Path | None, include_generated: bool, pages: tuple[int, int] | None) -> tuple:
+    """The deck joined to its leaves and the slides that are evidence: (pdf, deck, shown,
+    sources, excluded, skipped, gap_emu, evidence, gutter). The gallery and the digest read the same
+    pages through this one path."""
     pdf = is_pdf(deck_path)
     excluded: list[int] = []
     if pdf:
@@ -782,7 +776,12 @@ def build(
     pair_count = sum(len(content_leaves(s)) * (len(content_leaves(s)) - 1) // 2 for s in sources)
     if pair_count > MAX_SHAPE_PAIRS:
         raise GalleryRefused("too_many_shape_pairs", f"{pair_count} shape pairs to group against {MAX_SHAPE_PAIRS}")
+    return pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter
 
+
+def render_setup(deck_path: Path, out: Path, width: int, deck: Deck, shown: list[Slide], pdf: bool) -> tuple:
+    """(page_of, fonts, raster_w, raster_h). A pptx is rendered whole here; a PDF only
+    reports its fonts, and the caller rasterizes the pages it cuts from."""
     page_of: dict[int, Path] = {}
     if pdf:
         # pdftoppm draws the pages straight from the file; only the pages a crop or an
@@ -798,6 +797,114 @@ def build(
         page_of = {slide.index: page for slide, page in zip(shown, pages, strict=True)}
         with Image.open(pages[0]) as first:
             raster_w, raster_h = first.size
+    return page_of, fonts, raster_w, raster_h
+
+
+def _overlaps(a: Box, b: Box) -> bool:
+    """The two boxes share area (touching edges do not)."""
+    return min(a[0] + a[2], b[0] + b[2]) > max(a[0], b[0]) and min(a[1] + a[3], b[1] + b[3]) > max(a[1], b[1])
+
+
+def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, include_generated: bool = False,
+           pages: tuple[int, int] | None = None) -> dict[str, object]:
+    """The house exhibit digest stub (TARGET_SPEC 10.3): for every evidence page, its full
+    render, a content crop (the rectangle around every leaf that is neither chrome nor the
+    title; a crop is a rectangle, so a title or chrome leaf that falls inside it is still
+    drawn, and is named under `also_draws`) and one crop per exhibit
+    candidate (a substantive component of legible area holding a table, chart, picture or a
+    drawn shape with no text), with `exhibits: null` for the model to answer after looking. Candidates
+    only aid the eye: the model decides what is an exhibit, and answers [] for a page
+    that holds none. Nothing is classified here."""
+    pdf, deck, shown, sources, excluded, skipped, gap_emu, _, _ = read_sources(deck_path, guide_path, include_generated, pages)
+    page_of, fonts, raster_w, raster_h = render_setup(deck_path, out, width, deck, shown, pdf)
+    if pdf:
+        rendered = render.rasterize(deck_path, out / "pages", 110, [s.index + 1 for s in sources], width)
+        page_of = dict(zip([s.index for s in sources], rendered, strict=True))
+    emu_per_px = deck.width_emu / raster_w
+    pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
+    shutil.rmtree(out / "crops", ignore_errors=True)
+    (out / "crops").mkdir(parents=True)
+    found = components(deck, sources, gap_emu)
+    by_slide: dict[int, list[Component]] = {}
+    for c in found:
+        by_slide.setdefault(c.slide.index, []).append(c)
+    stub_pages: list[dict[str, object]] = []
+    rows: list[str] = []
+    for slide in sources:
+        n = slide.index + 1
+        body = [leaf for leaf in content_leaves(slide) if leaf.role not in ("title", "ctrTitle")]
+        entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [], "exhibits": None}
+        if body:
+            extents = [extent_of(leaf) for leaf in body]
+            left, top = min(e[0] for e in extents), min(e[1] for e in extents)
+            right, bottom = max(e[0] + e[2] for e in extents), max(e[1] + e[3] for e in extents)
+            box = crop_box(Component(slide, tuple(body), (left, top, right - left, bottom - top)), pad_floor, deck)
+            target = out / "crops" / f"p{n:03d}-content.png"
+            size = cut(page_of[slide.index], box, deck, target)
+            inside = [leaf for leaf in slide.leaves if leaf.bounds is not None and (leaf.chrome or leaf.role in ("title", "ctrTitle"))
+                      and _overlaps(extent_of(leaf), box)]
+            entry["content_crop"] = {"file": f"crops/{target.name}", "pixel_size": list(size),
+                                     "also_draws": [{"ref": leaf.ref, "as": "chrome" if leaf.chrome else "title"} for leaf in inside]}
+        k = 0
+        for c in by_slide.get(slide.index, []):
+            drawn = any(kind in NON_TEXT_KINDS for kind in c.kinds) or any(leaf.runs == 0 for leaf in c.members)
+            box = crop_box(c, pad_floor, deck)
+            # the gallery's two filters: substantive, and big enough to read (MIN_CROP_AREA_PX)
+            if not (is_substantive(c) and drawn and is_legible(box, emu_per_px)) or all(leaf.role in ("title", "ctrTitle") for leaf in c.members):
+                continue
+            k += 1
+            cid = f"p{n:03d}-c{k}"
+            target = out / "crops" / f"{cid}.png"
+            size = cut(page_of[slide.index], box, deck, target)
+            entry["candidates"].append({"id": cid, "file": f"crops/{target.name}", "pixel_size": list(size),  # type: ignore[union-attr]
+                                        "box_in": [round(v / EMU_PER_INCH, 2) for v in box], "kinds": dict(Counter(c.kinds))})
+        stub_pages.append(entry)
+        rows.append(f"| {n} | `{entry['page_png']}` | {('`' + entry['content_crop']['file'] + '`') if entry['content_crop'] else 'no content leaves'} | "  # type: ignore[index]
+                    f"{', '.join('`' + c['id'] + '`' for c in entry['candidates']) or 'none'} |")  # type: ignore[union-attr]
+    vocab_path = Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json"
+    stub: dict[str, object] = {
+        "schema": "pptx-skill exhibit digest v1",
+        "reference": deck_path.name,
+        "reference_sha256": _sha256(deck_path),
+        "render_fidelity": render_fidelity(fonts),
+        "raster": {"width_px": raster_w, "height_px": raster_h, "px_per_pt": round(raster_w / (deck.width_emu / 12700), 2)},
+        "vocabulary": str(vocab_path),
+        "sample_policy": "every evidence page" + (f" in {pages[0]}-{pages[1]}" if pages else ""),
+        "pages_not_read": excluded,
+        "generated_slides_skipped": skipped,
+        "record_template": {"candidate": "<a candidate id on this page, or null>", "class": "exhibit_class", "type": "exhibit_type",
+                            "data_shape": "data_shape", "message": "<the one message, in words>", "message_kind": "message_kind",
+                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>"}],
+                            "emphasis_devices": ["emphasis_device"], "number_formats": ["number_format"], "legend": "legend",
+                            "data_labels": "data_labels", "colour_logic": "colour_logic", "why": "<optional>"},
+        "pages": stub_pages,
+    }
+    (out / "digest.stub.json").write_text(json.dumps(stub, indent=1) + "\n")
+    (out / "DIGEST.md").write_text("\n".join([
+        f"# Exhibit digest stub: {deck_path.name}", "",
+        f"Render fidelity `{stub['render_fidelity']}`; {stub['raster']['px_per_pt']} px per point. Look at each page, its content crop and",
+        "its candidate crops. A content crop is the rectangle around the page's content; a title or chrome",
+        "leaf inside that rectangle is still drawn, and the stub names it under `also_draws`: it is not an exhibit.",
+        "Copy `digest.stub.json` to `digest.json` in this directory and leave the stub as cut; in the copy, replace each",
+        "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
+        f"`{vocab_path.name}` (an empty list states the page has no exhibit). Keep every page and its candidates as cut:",
+        "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
+        "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
+    return stub
+
+
+def build(
+    deck_path: Path,
+    out: Path,
+    width: int,
+    guide_path: Path | None,
+    pool_max: int = GALLERY_POOL_MAX,
+    exemplar_max: int = EXEMPLAR_POOL_MAX,
+    include_generated: bool = False,
+    pages: tuple[int, int] | None = None,
+) -> dict[str, object]:
+    pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter = read_sources(deck_path, guide_path, include_generated, pages)
+    page_of, fonts, raster_w, raster_h = render_setup(deck_path, out, width, deck, shown, pdf)
     fidelity = render_fidelity(fonts)
     # The raster preserves the page aspect and a pixel is square, so one scale
     # serves both axes; the floor and the pad are judged on the image actually sent.
@@ -1042,6 +1149,27 @@ def main(argv: list[str]) -> int:
         ap.add_argument("--intent", required=True, help="the page's composition intent in words")
         args = ap.parse_args(argv[1:])
         print(pick(Path(args.gallery_dir), args.intent))
+        return 0
+    if argv[:1] == ["digest"]:
+        ap = argparse.ArgumentParser(prog="gallery.py digest", description="the exhibit digest stub: page renders, content and candidate crops, records for the model to complete")
+        ap.add_argument("deck")
+        ap.add_argument("--out", required=True)
+        ap.add_argument("--width", type=int, default=2400, help="raster width in pixels (default 2400: crops of small type stay readable)")
+        ap.add_argument("--guide", default=None, help="extract_style.py draft: a PDF's chrome, and the mined gutter")
+        ap.add_argument("--include-generated", action="store_true")
+        ap.add_argument("--pages", default=None, help="1-based inclusive range, e.g. 30-70 (a large library is sampled; the range is recorded)")
+        args = ap.parse_args(argv[1:])
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        try:
+            stub = digest(Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.include_generated,
+                          tuple(int(v) for v in args.pages.split("-", 1)) if args.pages else None)  # type: ignore[arg-type]
+        except GalleryRefused as refused:
+            print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)
+            return 2
+        pages_ = stub["pages"]
+        print(json.dumps({"out": str(out / "digest.stub.json"), "pages": len(pages_), "candidates": sum(len(p["candidates"]) for p in pages_),  # type: ignore[union-attr, arg-type, index]
+                          "render_fidelity": stub["render_fidelity"], "px_per_pt": stub["raster"]["px_per_pt"]}, indent=1))  # type: ignore[index]
         return 0
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("deck")
