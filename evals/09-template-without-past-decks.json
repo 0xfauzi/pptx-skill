@@ -1,0 +1,92 @@
+{
+ "id": "09-template-without-past-decks",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": [
+  7,
+  8
+ ],
+ "reference": {
+  "type": "a template file with several masters (one sample slide per theme) and no past decks",
+  "files": [
+   "refs/files/themes.pptx"
+  ],
+  "notes": "Seven masters; the user names the house's master in the brief. Habits (titles, exhibits, variety) have no evidence; the corpus tendencies are the only context."
+ },
+ "brief": "Three-page market overview for an internal strategy meeting, on our standard template (the plain 'Standard Office theme' master in the template file): market size by segment, share of the top five players, growth outlook.",
+ "data": {
+  "segments_usd_bn": [
+   [
+    "Hardware",
+    41.2
+   ],
+   [
+    "Software",
+    28.7
+   ],
+   [
+    "Services",
+    19.5
+   ]
+  ],
+  "shares": [
+   [
+    "Player A",
+    "18%"
+   ],
+   [
+    "Player B",
+    "14%"
+   ],
+   [
+    "Player C",
+    "11%"
+   ],
+   [
+    "Player D",
+    "9%"
+   ],
+   [
+    "Player E",
+    "7%"
+   ],
+   [
+    "Others",
+    "41%"
+   ]
+  ],
+  "growth_pct": [
+   [
+    "Hardware",
+    3.1
+   ],
+   [
+    "Software",
+    8.4
+   ],
+   [
+    "Services",
+    5.6
+   ]
+  ]
+ },
+ "expected_behavior": [
+  {
+   "statement": "The agent builds on the master and layouts the brief names, keeps no sample slide, and says why that master.",
+   "check": "pptx_tools.py text on the output: every slide on a layout of that master; no sample-slide text; the report names the choice."
+  },
+  {
+   "statement": "Every habit the template cannot show is reported as no evidence or completed with low confidence and flagged.",
+   "check": "guide titles and variety read 'no evidence'; completion values carry their why; the report lists them."
+  },
+  {
+   "statement": "The plan declares any repeat, since the house has no longest run to hold it to.",
+   "check": "plan.check.json: no refusal."
+  },
+  {
+   "statement": "Every page fits on the template's own layouts and the package validates.",
+   "check": "deck.build.json; validate --render."
+  }
+ ]
+}

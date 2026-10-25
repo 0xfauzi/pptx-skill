@@ -1,0 +1,142 @@
+{
+ "id": "03-consulting-navy-serif",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 3,
+ "reference": {
+  "type": "vector PDF consulting deck with navy grounds and serif titles",
+  "files": [
+   "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf"
+  ],
+  "notes": "No template file: blank template at 13.333 x 7.5 in, --chrome draw. Titles: 4 claim, 7 topic; every page its own archetype (longest run 1)."
+ },
+ "brief": "Four-page governance diagnostic for the board of a state pension fund: board effectiveness against benchmarks, skills gap, target operating model, 18-month roadmap.",
+ "data": {
+  "benchmarks": [
+   [
+    "Days per year on board work",
+    24,
+    31
+   ],
+   [
+    "Directors receiving sufficient induction",
+    "21%",
+    "45%"
+   ],
+   [
+    "Board reviews own effectiveness annually",
+    "38%",
+    "77%"
+   ],
+   [
+    "Time on strategy",
+    "22%",
+    "35%"
+   ]
+  ],
+  "benchmark_columns": [
+   "measure",
+   "this board",
+   "top-quartile boards"
+  ],
+  "skills_matrix": {
+   "skills": [
+    "Investment management",
+    "Actuarial",
+    "Technology",
+    "Risk",
+    "Public policy",
+    "Audit"
+   ],
+   "directors": 9,
+   "covered": [
+    7,
+    2,
+    1,
+    5,
+    6,
+    3
+   ]
+  },
+  "operating_model": [
+   "Board",
+   "Investment committee",
+   "Audit and risk committee",
+   "Governance committee",
+   "Executive"
+  ],
+  "roadmap": [
+   [
+    "Skills review",
+    "Months 1 to 3"
+   ],
+   [
+    "Committee charters",
+    "Months 2 to 6"
+   ],
+   [
+    "Director onboarding programme",
+    "Months 4 to 9"
+   ],
+   [
+    "Effectiveness review",
+    "Months 12 to 18"
+   ]
+  ]
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "Titles are in the house's register and within its length.",
+   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+  },
+  {
+   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
+   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+  },
+  {
+   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "The guide was completed after triage confirmed a vector deck, with /titles/register, /exhibit_habits and /variety/content_pages answered.",
+   "check": "complete_guide.py --check lists nothing open."
+  },
+  {
+   "statement": "The deck is built on a blank template with drawn chrome and the house's navy surface.",
+   "check": "--chrome draw; contrast of every run against the drawn surface passes."
+  },
+  {
+   "statement": "Claim titles where the page argues, topic titles on reference pages, as the house does.",
+   "check": "Register per page against guide.titles.register.counts."
+  },
+  {
+   "statement": "The round trip's render was compared with the original page and its losses named.",
+   "check": "Transcript names what the imported page lost, whatever the judge's number."
+  }
+ ]
+}

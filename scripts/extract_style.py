@@ -1883,8 +1883,10 @@ def main(argv: list[str]) -> int:
     ex = Extractor(args.reference, args.max_pages, pages, args.include_generated)
     guide = ex.run()
     out = Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(guide, indent=1, default=str))
     rep = Path(args.report) if args.report else out.with_suffix(".md")
+    rep.parent.mkdir(parents=True, exist_ok=True)
     rep.write_text(report(guide))
     roles = guide.get("typography", {}).get("roles", {})
     print(json.dumps({"guide": str(out), "report": str(rep), "slides": guide["reference"]["slides"],

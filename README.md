@@ -1,13 +1,16 @@
-# pptx-skill
+# pptx-skill: building-house-style-decks
 
-A skill for generating dense, expert-grade presentation pages in the style of ANY
-reference deck, pptx or PDF, including components the reference never showed. The agent
-does the design. Instruments do the measuring: an OOXML reader with full inheritance, a
-style extractor that emits token roles with provenance, a layout solver with measured text
-fit, an emitter that writes the house values on every run, and an outside judge that says
-whether the result would be filed under the same house.
+A skill (`name: building-house-style-decks`) for generating dense, expert-grade
+presentation pages in the house style of a company's own templates and past decks, or of
+ANY reference deck, pptx or PDF, including exhibits and components the reference never
+showed. The agent does the design. Instruments do the measuring: an OOXML and PDF reader
+with full inheritance, a style extractor that emits token roles with provenance, a section
+plan checked against the house's measured variety, a layout solver with measured text fit,
+an emitter that writes the house values on every run, gates that refuse what is measurably
+wrong, and an outside judge that says which house a deck most resembles.
 
-`SKILL.md` is the skill. Everything else supports it.
+`SKILL.md` is the skill: a checklist workflow under 500 lines that sends the agent to one
+reference file per task. Everything else supports it.
 
 ## Why this exists
 
@@ -25,16 +28,18 @@ What was carried over is from deckgen, with the assumption behind each port reco
 
 ## The path, in one paragraph
 
-Render the reference and look at it. Extract a guide (`extract_style.py`): typography
-levels and the role ladder, colour roles by usage and contrast, spacing steps from measured
-gaps, composition families, register and density bands, legibility floors, chrome and
-motifs. Complete what the extractor could not prove (`complete_guide.py --check`). Make a
-template from the reference with its slides removed, or a blank page-sized template for a
-PDF (`pptx_tools.py`). Write page specs that name roles and weights, never sizes or
-coordinates. Build (`build_deck.py`): solve, emit, validate, render, judge. Read the render,
-add content, build again until the page is as dense as the house allows. For a component
-the reference never showed, write an expander and admit it on held-out data in a held-out
-box (`component.py`).
+Render the reference and look at it; triage a PDF first. Extract a guide draft
+(`extract_style.py`) and answer its open addresses by looking (`complete_guide.py`),
+including the house's title register, its exhibit digest (`gallery.py digest`) and which
+pages are content. Make a template from the reference with its slides removed, or a blank
+page-sized one for a PDF (`pptx_tools.py`). Round-trip one of the house's pages
+(`import_slide.py`). Plan the section and check the plan against the house's variety
+(`plan.py check`). Write page specs that name roles and weights, never sizes or
+coordinates, after looking at the house's nearest pages and the page library. Build
+(`build_deck.py --plan`): solve, emit, read back, validate, render, judge, and report the
+realised variety. Look at every render, write located findings, fix, rebuild within a cap,
+keep the best build. For a component the reference never showed, write an expander and
+admit it on held-out data in a held-out box (`component.py`).
 
 ## What was measured
 
@@ -50,14 +55,14 @@ session that built the skill. None is estimated.
 | The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback the sandbox has |
 | The gallery port is deckgen's gallery | Component, candidate, cluster, crop and exemplar counts equal deckgen's recorded manifests on three decks; crop rows match 12/12, 14/14 and 22/24; every exemplar skeleton byte-identical |
 | The extractor tracks deckgen's draft | Title, body, emphasis and caption sizes, surface and ink equal deckgen's on jazz, keybank, netflix and exhibits; 47 of 160 compared values differ (h1/h2 sizes on two decks, rule and muted ink by deliberate change, spacing steps on two), listed in `PORT_AUDIT.md` and re-runnable with `oracles/diff_oracle.py` |
-| New pages read as the house | keybank: 4 generated pages with a novel football-field component, 0.086 against the reference with the house's own pages at 0.055 to 0.372 (median 0.091), nearest among nine other houses, layout clean, every page fit, filed. A cold run of the skill on netflix by a reviewer produced two pages at 0.054 after the fixes it prompted (one still over budget until trimmed). McKinsey PDF: 2 generated pages at 0.335 against a house spread of 0.12 to 0.30: not filed, and the report says why (sizes off the histogram, a page half empty); the closest result, with its gap stated |
-| The chain reproduces the house's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.057, inside the house's own spread; the render matches the original to the eye |
+| New pages read as the house (judge only) | keybank: 4 generated pages with a novel football-field component, 0.090 against the reference with the house's own pages at 0.055 to 0.372, every page fit, filed (`examples/proofs/keybank-section.build.json`). McKinsey board PDF: 2 generated pages at 0.313 against a house spread of 0.082 to 0.355: every page fit, not filed (`examples/proofs/mckinsey-pdf.build.json`). In a blind round on an earlier build the rater caught every generated page in two houses the judge had filed, so a filed deck is necessary, not sufficient (`evals/README.md`) |
+| The chain reproduces the house's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.056, inside the house's own spread; the render matches the original to the eye. McKinsey PDF page 13: 0.097, filed, while the render lost the ring diagram, the gradient ground and the block positions: the number does not see it |
 | PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders |
 | The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and accent exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.08 in, the top and bottom rules at the walk's positions, body 11.7pt from a 14.4pt pitch against 12pt in the file |
 
-The McKinsey result is marginal and the gap is diagnosed in `SKILL.md` section 9: the
-reference's size histogram puts its mass at 11, 16 and 18pt while the generated pages sit
-on the 12pt body role, and its pages use navy fills that the specs did not ask for.
+The McKinsey pages are not filed; the judge's components carry the gap (sizes off the
+house's histogram, fills), and the renders show a flat navy where the house draws a
+gradient.
 
 ## What the review round found
 
@@ -79,7 +84,11 @@ designs, instruments measure):
 
 - Adopted from deckgen: the inheritance-resolving reader, the token-role guide with
   provenance, the layout solver and text ruler, the gallery, the component admission
-  contract, master reuse as the template, the nine design doctrines.
+  contract, master reuse as the template. deckgen's nine design doctrines were adopted and
+  later rewritten as questions plus measured tendencies (TARGET_SPEC 23.5 and Appendices A
+  and B): several of their rules (claim titles, label only what matters, one emphasis per
+  table, same-sized panels are a dashboard, fills as a last resort, a source line on every
+  data page) contradicted the corpus counts.
 - Adopted that nobody proposed: a fingerprint judge with fitted weights (the extractor's
   own opinion is not evidence); drawn chrome for PDF references; a per-series contrast rule
   for chart labels; a render font report that names metric aliases so the agent does not
@@ -92,33 +101,43 @@ designs, instruments measure):
 ## Layout
 
 ```
-SKILL.md                 the skill
+SKILL.md                 the skill: workflow checklist, commands, design questions, hard rules
 PORT_AUDIT.md            every port, its assumption and its check
+TARGET_SPEC.md           the target specification the skill is built against
 scripts/
   ooxml.py               package reader, inheritance chains, colour transforms, PDF reader and triage
-  extract_style.py       guide extraction with provenance; markdown report
-  complete_guide.py      apply and check a completion patch
+  extract_style.py       guide extraction with provenance; markdown report; the house's variety
+  complete_guide.py      apply and check a completion patch (titles, exhibit digest, content pages)
+  plan.py                the one variety measure (house, plan, build); `check` a section plan
   fingerprint.py         style fingerprint and distance; calibrate; compare
   render.py              render to PDF and PNG; font substitution report; contact sheet
   raster_style.py        palette, ink, chrome, margins and line pitch from page images
-  gallery.py             component crops and exemplar skeletons
-  layout.py, textfit.py  flex/grid solver, measured wrap, table fitter, scale descent
+  gallery.py             component crops, exemplar skeletons, the exhibit digest stub, pick
+  library.py             the page library: permit, build, tag, check, pick, vocab, forget
+  layout.py, textfit.py  flex/grid solver, measured wrap, table fitter, scale descent, capacity
   emit_pptx.py           write a solved page into a template with house values on every run
-  build_deck.py          spec -> solve -> emit -> validate -> render -> judge
-  component.py           check and admit a component on held-out data
+  chart_geometry.py, annotate.py   data positions on charts and tables; annotations placed and checked
+  build_deck.py          spec -> solve -> emit -> read back -> validate -> render -> judge -> variety
+  component.py, component_api.py   check and admit a component; the solver's measures for components
   import_slide.py        a reference slide into a spec of roles: the round trip, and a seed
-  pptx_tools.py          template surgery, delete, duplicate, clean, validate, blank
+  pptx_tools.py          template, blank, layouts, text, duplicate, delete, clean, validate
+references/              one level deep from SKILL.md, by domain:
+  intake, guide-completion, templates-and-chrome, planning-and-variety, page-specs,
+  page-library, chart-recipes, build-report, components, review, editing, gotchas
+  (procedures); storyline, titles-and-text, composition, charts, tables, typography,
+  emphasis-and-decoration (design questions with measured tendencies);
+  page_craft_vocabulary.json (the closed vocabulary)
+evals/                   nine end-to-end scenarios and the blind-round and fresh-agent protocol
 components/              four admitted components: football field, title block, bullet stack, KPI row
-examples/house/          deckgen's 14 house specimen pages as deck specs, with COVERAGE.md
+examples/                deck specs, section plans, completions and digests for a pptx and a PDF
+                         reference; house/ specimen pages; proofs/ build reports
 oracles/                 the scripts behind every 'Checked by' in PORT_AUDIT.md
-references/design/       the nine design doctrines and the chart recipes
-examples/                worked completions and page specs for a pptx and a PDF reference
 refs/                    manifest and fetch script for the public reference decks (files git-ignored)
 ```
 
 ## Requirements
 
-Python 3.11 or later with lxml and Pillow; pdfplumber for PDF references; LibreOffice and
+Python 3.11 or later with lxml, Pillow and python-pptx; pdfplumber for PDF references; LibreOffice and
 poppler for rendering; uharfbuzz if available (the Pillow ruler is the fallback and the
 build report names which one ran).
 
@@ -126,8 +145,14 @@ build report names which one ran).
 
 - No arrangement search: when a page does not fit, the solver reports the splittable
   groups and the row prefix that fits, and the agent decides.
-- Hidden slides are read as evidence (deckgen's rule); the digest lists them and the agent excludes them by deleting them from a copy.
+- The house's source-line habit is not measured, so a data page without a source line is a
+  warning, never a refusal.
+- The football-field component's tick labels sat off their values on two renders; read the
+  axis on every render until it is fixed.
+- Hidden slides are read as evidence (deckgen's rule); the digest lists them and the agent
+  excludes them by deleting them from a copy.
 - A scanned PDF yields palette, ink, chrome, margins and line pitch from pixels (confidence
   capped at 0.5) and nothing about faces; the agent names the family by eye.
-- The judge was calibrated on 19 public decks from 8 houses; a house unlike all of them
-  needs its own calibration run before the distance means anything.
+- The judge was calibrated on 19 public decks from 8 houses and does not track a human
+  rater; the blind round in `evals/README.md` is the success measure.
+- The scenarios in `evals/` have not yet been run with fresh agents on every model tier.

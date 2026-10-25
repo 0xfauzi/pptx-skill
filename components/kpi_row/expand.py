@@ -4,7 +4,7 @@ Ported from deckgen fixtures/components/kpi_row (seed 2A-3). The first metric le
 (type.emphasis, color.accent1); the rest are its comparison (type.body, base ink);
 labels are type.caption in color.ink_muted. No panels, no fills, no equal-weight tiles:
 "icon + number + label KPI tiles" is a named generated-deck tell
-(references/design/deliberate_composition.md), and both arrangements here are its
+(references/composition.md), and both arrangements here are its
 counter-example, the figures read as a table with one dominant.
 
 Two arrangements: `horizontal` sets the figures side by side on one line with each

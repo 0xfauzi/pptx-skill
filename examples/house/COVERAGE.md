@@ -51,7 +51,7 @@ are absent here too; `coverage.json` in deckgen records why for each.
 - **Decor** (`el-divider-rule`, `el-spine`, ...) becomes a `rule` with a one-EMU extent
   across its parent's main axis.
 - **Charts** are real charts from `datasets.json`, written in the full chart spec
-  (`references/design/chart_recipes.md`) with every choice explicit: column (04, 12:
+  (`references/chart-recipes.md`) with every choice explicit: column (04, 12:
   labelled bars, value axis hidden, `color.accent1` with `color.ink` labels outside the
   bars), line (05: two `LINE` series in `color.accent1` and `color.accent2` at 1.75pt,
   value axis shown without gridlines, legend at the bottom), the mekko (06: one

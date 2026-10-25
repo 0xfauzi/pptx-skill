@@ -314,6 +314,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out", required=True)
     args = ap.parse_args(argv)
     guide = json.loads(Path(args.guide).read_text())
+    Path(args.out).resolve().parent.mkdir(parents=True, exist_ok=True)  # a new work directory, as build_deck makes for -o
     deck = import_slide(args.reference, args.slide - 1, guide, Path(args.out).resolve().parent)
     Path(args.out).write_text(json.dumps(deck, indent=1))
     sl = deck["slides"][0]

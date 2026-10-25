@@ -1,0 +1,80 @@
+{
+ "id": "07-extend-existing-deck",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 10,
+ "reference": {
+  "type": "an existing company deck to extend in its own style",
+  "files": [
+   "refs/files/mi_keybank_first_niagara_fig_ma.pptx"
+  ],
+  "notes": "Existing slides are the reference and are not re-solved."
+ },
+ "brief": "Add three pages after slide 11 of the deck: a sensitivity of the offer's accretion to synergy realisation, a capital impact table, and a next-steps page.",
+ "data": {
+  "accretion_by_synergy_pct": [
+   [
+    25,
+    -4.1
+   ],
+   [
+    50,
+    -1.2
+   ],
+   [
+    75,
+    1.6
+   ],
+   [
+    100,
+    4.3
+   ]
+  ],
+  "capital": [
+   [
+    "CET1",
+    "10.4%",
+    "9.6%"
+   ],
+   [
+    "Tier 1",
+    "11.0%",
+    "10.1%"
+   ],
+   [
+    "Leverage",
+    "9.1%",
+    "8.4%"
+   ]
+  ],
+  "capital_columns": [
+   "ratio",
+   "standalone",
+   "pro forma"
+  ],
+  "next_steps": [
+   "Request the synergy build from management",
+   "Board discussion of re-engagement band",
+   "Respond to the bidder within two weeks"
+  ]
+ },
+ "expected_behavior": [
+  {
+   "statement": "The original slides are byte-identical in the output apart from slide order.",
+   "check": "Compare the original slide XML parts with the output's."
+  },
+  {
+   "statement": "New pages use the deck's own layouts and carry the origin tag.",
+   "check": "pptx_tools.py text shows the layout and [pptx-skill: generated] on the three new slides only."
+  },
+  {
+   "statement": "The extracted guide skips no original slide and learns nothing from the generated ones.",
+   "check": "extract_style.py output: generated_slides_skipped equals the number of added pages on re-extraction."
+  },
+  {
+   "statement": "Every new page fits and the package validates.",
+   "check": "deck.build.json and validate --render."
+  }
+ ]
+}

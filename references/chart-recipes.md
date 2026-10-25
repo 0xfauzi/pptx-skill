@@ -1,5 +1,16 @@
 # Chart recipes
 
+## Contents
+- The spec
+- How the contrast gate reads a chart
+- Waterfall (bridge): an invisible first series as the running base
+- Bridge with negative steps that cross zero
+- Football field as a chart: a stacked bar with an invisible low series
+- Mekko approximation: one 100% column per segment, widths by weight
+- Labelled bars with no value axis
+- Annotations: shapes at data positions
+- What a default looks like in the report
+
 A chart is a spec you write. The emitter writes it as given and decides nothing: not
 the chart type, not a colour, not whether an axis shows, not which ink a label takes.
 The guide is the style (its colour roles, its type roles, `charts.series_color_roles`

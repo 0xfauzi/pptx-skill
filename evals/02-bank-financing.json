@@ -1,0 +1,165 @@
+{
+ "id": "02-bank-financing",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 2,
+ "reference": {
+  "type": "native pptx pitch book, financing deck type, same master as scenario 1",
+  "files": [
+   "refs/files/mi_netflix_financing_pitchbook.pptx"
+  ],
+  "house_decks": [
+   "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx"
+  ],
+  "notes": "A section of this kind once read as samey to a rater: three of five pages set a table beside a chart."
+ },
+ "brief": "Five-page financing section for Streamline Media's CFO: financing alternatives compared, credit impact, dilution, maturity profile, recommendation.",
+ "data": {
+  "alternatives": [
+   [
+    "Senior notes",
+    "6.75%",
+    "8 yr",
+    "none"
+   ],
+   [
+    "Convertible notes",
+    "2.25%",
+    "5 yr",
+    "conversion at 30% premium"
+   ],
+   [
+    "Common equity",
+    "n.a.",
+    "n.a.",
+    "4.8% dilution"
+   ]
+  ],
+  "alternatives_columns": [
+   "instrument",
+   "coupon",
+   "tenor",
+   "dilution"
+  ],
+  "credit": [
+   [
+    "Net debt / EBITDA",
+    2.1,
+    2.9,
+    2.6,
+    1.8
+   ],
+   [
+    "EBITDA / interest",
+    9.4,
+    6.8,
+    8.9,
+    9.6
+   ]
+  ],
+  "credit_columns": [
+   "metric",
+   "today",
+   "senior notes",
+   "convertible",
+   "equity"
+  ],
+  "dilution_pct_by_share_price": [
+   [
+    60,
+    0.0
+   ],
+   [
+    70,
+    1.1
+   ],
+   [
+    80,
+    2.4
+   ],
+   [
+    90,
+    3.5
+   ]
+  ],
+  "maturities_usd_m": [
+   [
+    2026,
+    0
+   ],
+   [
+    2027,
+    500
+   ],
+   [
+    2028,
+    750
+   ],
+   [
+    2029,
+    0
+   ],
+   [
+    2030,
+    1000
+   ],
+   [
+    2031,
+    400
+   ]
+  ],
+  "raise_usd_m": 1500
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "Titles are in the house's register and within its length.",
+   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+  },
+  {
+   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
+   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+  },
+  {
+   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "No two adjacent pages share an exhibit-class set unless declared a deliberate parallel.",
+   "check": "deck.build.json repetition.measure.classes: realised class V >= house p10 (0.643 pooled when measured), or the repeat is declared."
+  },
+  {
+   "statement": "Each composition name in the plan is honest: two pages that set a table beside a chart carry the same name.",
+   "check": "Compare plan compositions with the renders; the realised classes in the build agree with the plan's exhibit types."
+  },
+  {
+   "statement": "The maturity profile marks the year the new issue lands and the next maturity wall.",
+   "check": "An annotation or point fill on the relevant columns."
+  }
+ ]
+}

@@ -35,7 +35,7 @@ tuned to its three examples.
 
 1. The data schema and three or four real data instances (not lorem).
 2. The composition in words: what dominates, what is support, how it reads
-   (references/design/deliberate_composition.md).
+   (references/composition.md).
 3. `expand`: proportions from the data (a bar's length is a weight, never an EMU),
    roles from the guide, nothing else.
 4. `component.py check`, look, fix, repeat; then `component.py admit`.

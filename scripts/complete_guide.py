@@ -562,6 +562,7 @@ def main(argv: list[str]) -> int:
     if core:
         guide["completion"]["core_open"] = core
     out = Path(args.out) if args.out else Path(args.guide).with_name(Path(args.guide).stem.replace(".style", "") + ".guide.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(guide, indent=1, default=str))
     print(json.dumps({"out": str(out), "applied": applied, "core_open": core,
                       "still_open": [u["path"] for u in guide["unresolved"]]}, indent=1))

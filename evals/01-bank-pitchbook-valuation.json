@@ -1,0 +1,219 @@
+{
+ "id": "01-bank-pitchbook-valuation",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 1,
+ "reference": {
+  "type": "native pptx pitch books on one master (template plus past decks)",
+  "files": [
+   "refs/files/mi_keybank_first_niagara_fig_ma.pptx"
+  ],
+  "house_decks": [
+   "refs/files/mi_netflix_financing_pitchbook.pptx",
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx"
+  ],
+  "notes": "Topic titles (8 topic, 3 question, 0 claim on the first deck); claims in lead-in bullets and numbered rows; house longest run 2."
+ },
+ "brief": "Five-page valuation section for the board of Harbor Lake Bancorp on a proposed sale to Meridian Financial at $24.00 per share: comparable companies, football field against the offer, precedent transactions, pro forma EPS bridge, process timeline.",
+ "data": {
+  "offer_per_share": 24.0,
+  "unaffected_price": 19.1,
+  "comps": [
+   [
+    "Ridgeview Bank",
+    1.42,
+    12.8
+   ],
+   [
+    "Coastal Trust",
+    1.21,
+    11.9
+   ],
+   [
+    "Pinecrest Financial",
+    1.65,
+    14.1
+   ],
+   [
+    "Granite Bancshares",
+    1.08,
+    10.7
+   ],
+   [
+    "Lakeshore Capital",
+    1.33,
+    13.2
+   ],
+   [
+    "Harbor Lake (subject)",
+    1.18,
+    12.0
+   ]
+  ],
+  "comps_columns": [
+   "company",
+   "P / TBV (x)",
+   "P / E fwd (x)"
+  ],
+  "football_field": [
+   [
+    "52-week range",
+    17.2,
+    22.4
+   ],
+   [
+    "Analyst targets",
+    19.0,
+    25.5
+   ],
+   [
+    "Trading comps (P / TBV)",
+    18.1,
+    23.9
+   ],
+   [
+    "Precedent transactions",
+    21.5,
+    27.0
+   ],
+   [
+    "DDM",
+    18.8,
+    24.6
+   ]
+  ],
+  "precedents": [
+   [
+    "2024-03",
+    "Northgate",
+    "Union Valley",
+    1.55,
+    "28%"
+   ],
+   [
+    "2023-11",
+    "First Atlantic",
+    "Bayside",
+    1.38,
+    "22%"
+   ],
+   [
+    "2023-06",
+    "Summit",
+    "Clearwater",
+    1.71,
+    "31%"
+   ],
+   [
+    "2022-09",
+    "Keystone",
+    "Old Mill",
+    1.24,
+    "18%"
+   ]
+  ],
+  "eps_bridge": {
+   "standalone_eps": 2.1,
+   "steps": [
+    [
+     "cost synergies",
+     0.38
+    ],
+    [
+     "financing cost",
+     -0.21
+    ],
+    [
+     "intangible amortisation",
+     -0.09
+    ],
+    [
+     "share issuance",
+     -0.12
+    ]
+   ],
+   "pro_forma_eps": 2.06
+  },
+  "timeline": [
+   [
+    "Board approval",
+    "Week 0"
+   ],
+   [
+    "Due diligence",
+    "Weeks 1 to 6"
+   ],
+   [
+    "Definitive agreement",
+    "Week 8"
+   ],
+   [
+    "Regulatory filings",
+    "Weeks 9 to 12"
+   ],
+   [
+    "Close",
+    "Q3"
+   ]
+  ]
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "Titles are in the house's register and within its length.",
+   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+  },
+  {
+   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
+   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+  },
+  {
+   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "Titles are topic phrases; claims sit in lead-ins or numbered rows as in the house.",
+   "check": "slides[].title.register == 'topic' or 'question'; no 'claim'."
+  },
+  {
+   "statement": "The football field draws the offer as a reference line and its midpoints claim is computed (the offer is above four of five midpoints).",
+   "check": "Midpoints 19.80, 22.25, 21.00, 24.25, 21.70: offer $24.00 is above four of five; any sentence stating a count must match."
+  },
+  {
+   "statement": "The comps table marks the subject and a median row in the house's way.",
+   "check": "Annotations or emphasis rows on the subject and the median."
+  },
+  {
+   "statement": "The bridge declares `bridge` and ties.",
+   "check": "No 'bridge does not tie' refusal; 2.10 + 0.38 - 0.21 - 0.09 - 0.12 = 2.06."
+  },
+  {
+   "statement": "House variety pooled over the three decks of the house.",
+   "check": "Build and plan run with --house-deck for the two sister decks."
+  }
+ ]
+}

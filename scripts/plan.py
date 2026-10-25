@@ -516,6 +516,7 @@ def main(argv: list[str]) -> int:
         report = {"status": "refused", "refusals": [str(error)]}
     text = json.dumps(report, indent=1)
     if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(text + "\n")
     print(text)
     return 0 if report["status"] == "pass" else 1

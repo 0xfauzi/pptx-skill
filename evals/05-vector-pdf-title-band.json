@@ -1,0 +1,149 @@
+{
+ "id": "05-vector-pdf-title-band",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 5,
+ "reference": {
+  "type": "long vector PDF with a navy title band and a heavy rule (205 pages)",
+  "files": [
+   "/home/user/deckgen/fixtures/corpus/consulting/bain-ucberkeley-diagnostic-2010.pdf"
+  ],
+  "notes": "The house writes Verdana; the renderer draws it as Inter, so the substitute must be fc-match's answer. House longest run 2."
+ },
+ "brief": "Five-page cost diagnostic for a university: cost baseline, spans and layers, procurement, implementation plan, savings bridge.",
+ "data": {
+  "cost_baseline_usd_m": [
+   [
+    "Academic",
+    812
+   ],
+   [
+    "Research",
+    640
+   ],
+   [
+    "Administration",
+    415
+   ],
+   [
+    "Facilities",
+    288
+   ],
+   [
+    "Student services",
+    133
+   ]
+  ],
+  "spans": {
+   "median_span": 4.2,
+   "benchmark_span": 6.0,
+   "layers": 9,
+   "benchmark_layers": 6
+  },
+  "procurement_spend_usd_m": [
+   [
+    "IT",
+    92
+   ],
+   [
+    "Lab supplies",
+    71
+   ],
+   [
+    "Facilities services",
+    64
+   ],
+   [
+    "Professional services",
+    58
+   ],
+   [
+    "Travel",
+    21
+   ]
+  ],
+  "plan": [
+   [
+    "Spans and layers",
+    "Year 1"
+   ],
+   [
+    "Procurement categories",
+    "Years 1 to 2"
+   ],
+   [
+    "Shared services",
+    "Years 2 to 3"
+   ]
+  ],
+  "savings_bridge_usd_m": {
+   "start": 0,
+   "steps": [
+    [
+     "Spans and layers",
+     38
+    ],
+    [
+     "Procurement",
+     45
+    ],
+    [
+     "Shared services",
+     22
+    ]
+   ],
+   "total": 105
+  }
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "Titles are in the house's register and within its length.",
+   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+  },
+  {
+   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
+   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+  },
+  {
+   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "The Verdana stand-in recorded is fc-match's face, and no page is refused for its font.",
+   "check": "guide typography.families.substitutes; no 'font refused'."
+  },
+  {
+   "statement": "Undeclared runs longer than the house's longest are refused at the plan and declared or removed before the build.",
+   "check": "plan.check.json refusals empty; any run of 3 carries deliberate_parallel."
+  },
+  {
+   "statement": "The savings bridge ties.",
+   "check": "38 + 45 + 22 = 105; no 'bridge does not tie'."
+  }
+ ]
+}

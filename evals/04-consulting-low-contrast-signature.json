@@ -1,0 +1,125 @@
+{
+ "id": "04-consulting-low-contrast-signature",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 4,
+ "reference": {
+  "type": "vector PDF consulting deck whose signature green reads 2.51:1 on white",
+  "files": [
+   "/home/user/deckgen/fixtures/corpus/consulting/bcg-nystate-covid-impact-2020.pdf"
+  ],
+  "notes": "The house sets titles and heads in its green at 2.51:1 on 23 pages; contrast precedent comes only with --reference."
+ },
+ "brief": "Four-page budget impact section for a state budget office: revenue scenarios, sensitivity of the gap to two drivers, recovery path, actions.",
+ "data": {
+  "scenarios_usd_bn": [
+   [
+    "Baseline",
+    82.4,
+    84.1,
+    86.0
+   ],
+   [
+    "Moderate downturn",
+    78.9,
+    80.2,
+    83.5
+   ],
+   [
+    "Severe downturn",
+    74.6,
+    76.0,
+    80.1
+   ]
+  ],
+  "scenario_years": [
+   "FY25",
+   "FY26",
+   "FY27"
+  ],
+  "sensitivity_gap_usd_bn": {
+   "rows_unemployment_pct": [
+    5,
+    7,
+    9
+   ],
+   "cols_sales_tax_growth_pct": [
+    -2,
+    0,
+    2
+   ],
+   "grid": [
+    [
+     3.1,
+     2.2,
+     1.4
+    ],
+    [
+     5.0,
+     4.1,
+     3.2
+    ],
+    [
+     7.2,
+     6.3,
+     5.4
+    ]
+   ]
+  },
+  "recovery_quarters_to_baseline": {
+   "moderate": 6,
+   "severe": 11
+  }
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "Titles are in the house's register and within its length.",
+   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+  },
+  {
+   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
+   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+  },
+  {
+   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "Every build passes --reference so the house's own ink-on-ground pairs are filed as precedent, and no other low-contrast pair is introduced.",
+   "check": "contrast.house_precedent lists the green pairs; contrast.violations empty."
+  },
+  {
+   "statement": "The sensitivity grid boxes the scenario region the claim rests on.",
+   "check": "An outline_box annotation with a table anchor on the relevant cells."
+  },
+  {
+   "statement": "The house's measured habits for source lines are followed by looking, not by default.",
+   "check": "Pages carry source lines where the house's data pages do; no 'no source line' warning left unexplained."
+  }
+ ]
+}

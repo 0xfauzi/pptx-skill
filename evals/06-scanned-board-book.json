@@ -1,0 +1,132 @@
+{
+ "id": "06-scanned-board-book",
+ "skills": [
+  "building-house-style-decks"
+ ],
+ "target_spec_scenario": 6,
+ "reference": {
+  "type": "scanned PDF board book (raster only, logos)",
+  "files": [
+   "refs/files/goldman_airvana_why_goldman_2009.pdf"
+  ],
+  "notes": "deck_class raster: palette, ink, chrome, margins and line pitch from pixels; faces named by eye; the house's variety is no evidence; the judge cannot judge."
+ },
+ "brief": "Five-page credentials section for a sell-side pitch to a telecom equipment company: why us, league table, selected deals, team, buyer universe.",
+ "data": {
+  "league_table": [
+   [
+    "Bank A (us)",
+    14,
+    21.3
+   ],
+   [
+    "Bank B",
+    11,
+    18.9
+   ],
+   [
+    "Bank C",
+    9,
+    12.4
+   ],
+   [
+    "Bank D",
+    8,
+    10.2
+   ],
+   [
+    "Bank E",
+    6,
+    7.7
+   ]
+  ],
+  "league_columns": [
+   "adviser",
+   "deals",
+   "value ($bn)"
+  ],
+  "deals": [
+   [
+    "2024",
+    "Acquisition of Wavecore",
+    "$2.1bn"
+   ],
+   [
+    "2023",
+    "Sale of Linkpath",
+    "$1.4bn"
+   ],
+   [
+    "2023",
+    "Merger of Optiq and Relay",
+    "$3.0bn"
+   ]
+  ],
+  "team": [
+   [
+    "Senior adviser",
+    "Coverage"
+   ],
+   [
+    "Managing director",
+    "M&A"
+   ],
+   [
+    "Director",
+    "Financing"
+   ]
+  ],
+  "buyers": {
+   "strategic": [
+    "Telco equipment majors (4)",
+    "Network software (3)"
+   ],
+   "financial": [
+    "Large-cap sponsors (5)",
+    "Infrastructure funds (2)"
+   ]
+  }
+ },
+ "expected_behavior": [
+  {
+   "statement": "Every page of the delivered deck is status fit and the package validates.",
+   "check": "deck.build.json: every slides[].status == 'fit'; validation_ok == true; `pptx_tools.py validate --render` ok."
+  },
+  {
+   "statement": "plan.py check passes on the plan the deck was built with, and the build ran with --plan.",
+   "check": "plan.check.json status 'pass'; deck.build.json repetition.plan.check.status 'pass'."
+  },
+  {
+   "statement": "Every figure stated in a title, lead-in or callout is computed from the page's own data.",
+   "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
+  },
+  {
+   "statement": "chart_defaults_taken is empty or every remaining entry is named in the report as intended.",
+   "check": "deck.build.json slides[].chart_defaults_taken."
+  },
+  {
+   "statement": "The agent looked at every render and wrote located findings (element id, what, the change), and stayed within the build cap.",
+   "check": "Transcript: one findings list per review round; builds <= 8 per 5 pages; the delivered build is the best kept, not merely the last."
+  },
+  {
+   "statement": "The final report separates measured, completed-by-judgement and substituted values, and lists what the user must supply.",
+   "check": "Read the final report."
+  },
+  {
+   "statement": "The agent ran raster_style.py, applied its patch, and named the faces by eye with the evidence.",
+   "check": "guide provenance raster_inference; the report names the faces and why."
+  },
+  {
+   "statement": "The plan declares any repeated composition, because the house has no variety evidence to hold an undeclared repeat to.",
+   "check": "plan.check.json: no refusal; every repeat declared."
+  },
+  {
+   "statement": "The style verdict is given from the renders side by side, not from a judge number.",
+   "check": "judge.cannot_judge present; the report's verdict cites the renders."
+  },
+  {
+   "statement": "Logos the house shows are carried and placed, or the report asks the user for them.",
+   "check": "Render inspection; report."
+  }
+ ]
+}

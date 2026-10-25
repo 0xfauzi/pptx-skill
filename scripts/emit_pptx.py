@@ -53,7 +53,7 @@ A chart is the spec the model wrote: `type` is any XL_CHART_TYPE member python-p
 writes, every colour a role or "none", every label, axis, legend and spacing choice
 explicit. A choice the spec omits is written as the neutral value in CHART_DEFAULTS and
 named in the slide note's `defaults_taken`. Waterfalls, football fields and mekkos are
-recipes over this spec (references/design/chart_recipes.md), not code paths. No ink is
+recipes over this spec (references/chart-recipes.md), not code paths. No ink is
 chosen here for any fill: tables and charts write the ink the spec or guide names, and
 the build's contrast gate refuses a pair below 3:1.
 
@@ -783,10 +783,10 @@ def _keys(where: str, obj, allowed: set[str]) -> dict:
         raise SpecError(f"{where}: expected an object, got {obj!r}")
     extra = sorted(set(obj) - allowed)
     if extra:
-        hint = " (the chart spec changed: see references/design/chart_recipes.md)" if {"chart_kind", "deltas", "totals", "data_labels", "hide_value_axis"} & set(extra) else ""
+        hint = " (the chart spec changed: see references/chart-recipes.md)" if {"chart_kind", "deltas", "totals", "data_labels", "hide_value_axis"} & set(extra) else ""
         if "reference_lines" in extra:
             hint = (" (a line at a data value is a slide-level annotation now: {\"kind\": \"reference_line\", \"host\": <chart id>,"
-                    " \"anchor\": {\"value\": v}}; see references/design/chart_recipes.md)")
+                    " \"anchor\": {\"value\": v}}; see references/chart-recipes.md)")
         raise SpecError(f"{where}: unknown keys {extra}; allowed {sorted(allowed)}{hint}")
     return obj
 
