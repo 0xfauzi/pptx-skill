@@ -113,6 +113,21 @@ def _union(rects: list[tuple]) -> tuple[float, float, float, float]:
     return x0, y0, x1 - x0, y1 - y0
 
 
+def drawn_marks(geo: ChartGeometry) -> list[tuple[int, int, tuple]]:
+    """(series, index, rect) of every mark the chart draws: a bar of a series with no fill
+    (a football field's invisible base, a label carrier) and a zero-sized point are not."""
+    out = []
+    for j, s in enumerate(geo.series):
+        if s.get("fill_role") == "none" and geo.family in ("bar", "bar_stacked"):
+            continue
+        n = len(s["values"]) if geo.family == "xy" else len(geo.categories)
+        for i in range(n):
+            m = geo.mark_rect(j, i)
+            if m[2] > 0 and m[3] > 0:
+                out.append((j, i, m))
+    return out
+
+
 def chart_anchor(geo: ChartGeometry, anchor: dict, where: str) -> dict:
     """{"rect": (x, y, w, h)} for an area anchor, plus "line": ((x1, y1), (x2, y2)) for a
     value or category line and "marks": the union of the marks the anchor spans."""
@@ -131,9 +146,9 @@ def chart_anchor(geo: ChartGeometry, anchor: dict, where: str) -> dict:
         _, b0, b1 = geo.category_band(b)
         lo, hi = min(a0, b0), max(a1, b1)
         i0, i1 = sorted((geo._category_index(a), geo._category_index(b)))
-        marks = _union([geo.mark_rect(j, i) for j in range(len(geo.series)) for i in range(i0, i1 + 1)])
         rect = (lo, p.top, hi - lo, p.height) if ax == "x" else (p.left, lo, p.width, hi - lo)
-        return {"rect": rect, "marks": marks}
+        inside = [m for _, i, m in drawn_marks(geo) if i0 <= i <= i1]
+        return {"rect": rect, "marks": _union(inside)} if inside else {"rect": rect}
     if keys == {"category"}:
         ax, c = geo.category_centre(anchor["category"])
         line = ((c, p.top), (c, p.top + p.height)) if ax == "x" else ((p.left, c), (p.left + p.width, c))
@@ -396,17 +411,10 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         a = chart_anchor(geo, ann["anchor"], where)
         # every drawn mark the anchor does not take in: an annotation may not cover them
         own = a.get("marks", a["rect"]) if "line" not in a else None
-        for j, s in enumerate(geo.series):
-            if s.get("fill_role") == "none" and geo.family in ("bar", "bar_stacked"):
-                continue  # an invisible carrier series (a football field's base) draws nothing
-            n = len(s["values"]) if geo.family == "xy" else len(geo.categories)
-            for i in range(n):
-                m = geo.mark_rect(j, i)
-                if m[2] <= 0 or m[3] <= 0:
-                    continue
-                if own is not None and _intersects(m, own):
-                    continue
-                other_marks.append((f"mark {s.get('name')!r} {geo.categories[i] if geo.family != 'xy' else i!r}", m))
+        for j, i, m in drawn_marks(geo):
+            if own is None or not _intersects(m, own):
+                name = geo.series[j].get("name")
+                other_marks.append((f"mark {name!r} {geo.categories[i] if geo.family != 'xy' else i!r}", m))
     else:
         a = table_anchor(host, ann["anchor"], where)
     lw = round(float(ann.get("line_width_pt", 0)) * EMU_PER_PT)

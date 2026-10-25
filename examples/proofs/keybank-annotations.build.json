@@ -1,0 +1,1232 @@
+{
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck.pptx",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "a1-comps",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "lead": 1,
+    "source": 1
+   },
+   "tables": {
+    "comps": {
+     "rows": 15,
+     "height_emu": 4118610,
+     "column_widths_emu": [
+      2849880,
+      1318100,
+      1330794,
+      1627314,
+      1255912
+     ]
+    }
+   },
+   "annotations": [
+    {
+     "id": "median-box",
+     "kind": "outline_box",
+     "host": "comps",
+     "anchor": {
+      "cells": [
+       [
+        10,
+        1
+       ],
+       [
+        10,
+        2
+       ]
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3230880,
+      4322856,
+      2648894,
+      274574
+     ],
+     "drawn": [
+      "median-box-box"
+     ],
+     "defaults_taken": [
+      "dash: solid",
+      "pad_role: 0 EMU: drawn on the anchor's own edge",
+      "shape: rect"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 99,
+      "covered": []
+     }
+    },
+    {
+     "id": "subject-box",
+     "kind": "outline_box",
+     "host": "comps",
+     "anchor": {
+      "row": 13
+     },
+     "status": "placed",
+     "anchor_emu": [
+      381000,
+      5146578,
+      8382000,
+      274574
+     ],
+     "drawn": [
+      "subject-box-box"
+     ],
+     "defaults_taken": [
+      "dash: solid",
+      "pad_role: 0 EMU: drawn on the anchor's own edge",
+      "shape: rect"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 99,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 142,
+    "elements": 6,
+    "covered_area_fraction": 0.693,
+    "words_per_slide": {
+     "value": 142,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 6,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.693,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 10,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "source",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.source_line",
+     "ink": "color.ink_muted",
+     "text": "Source: illustrative figures; FactSet co",
+     "ratio": 7.0,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 3,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 2,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "table": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "chart": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 2,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": []
+  },
+  {
+   "id": "a2-sensitivity",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "lead": 1,
+    "key": 1,
+    "source": 1
+   },
+   "tables": {
+    "grid": {
+     "rows": 10,
+     "height_emu": 2745740,
+     "column_widths_emu": [
+      874166,
+      852050,
+      737647,
+      737647,
+      737647,
+      600470,
+      600470,
+      714873,
+      714873,
+      714877
+     ]
+    }
+   },
+   "annotations": [
+    {
+     "id": "scenario",
+     "kind": "outline_box",
+     "host": "grid",
+     "anchor": {
+      "cells": [
+       [
+        1,
+        3
+       ],
+       [
+        5,
+        5
+       ]
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3393503,
+      2400330,
+      2075764,
+      1372870
+     ],
+     "drawn": [
+      "scenario-box"
+     ],
+     "defaults_taken": [
+      "dash: solid",
+      "pad_role: 0 EMU: drawn on the anchor's own edge",
+      "shape: rect"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 100,
+      "covered": []
+     }
+    },
+    {
+     "id": "syn-range",
+     "kind": "bracket",
+     "host": "grid",
+     "anchor": {
+      "header_group": {
+       "columns": [
+        3,
+        5
+       ]
+      }
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3393503,
+      1851182,
+      2075764,
+      274574
+     ],
+     "drawn": [
+      "syn-range-bracket",
+      "syn-range-label"
+     ],
+     "defaults_taken": [
+      "style: square (leftBracket / rightBracket presets)",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 100,
+      "covered": []
+     }
+    },
+    {
+     "id": "base-key",
+     "kind": "badge",
+     "host": "grid",
+     "anchor": {
+      "row": 3
+     },
+     "status": "placed",
+     "anchor_emu": [
+      929640,
+      2949478,
+      7284720,
+      274574
+     ],
+     "drawn": [
+      "base-key-badge",
+      "base-key-label"
+     ],
+     "defaults_taken": [
+      "pad_role: 0 EMU: drawn on the anchor's own edge",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 100,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 159,
+    "elements": 10,
+    "covered_area_fraction": 0.483,
+    "words_per_slide": {
+     "value": 159,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 10,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.483,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 13,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "source",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.source_line",
+     "ink": "color.ink_muted",
+     "text": "Source: illustrative merger model; compa",
+     "ratio": 7.0,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 6,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 3,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "table": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "chart": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 3,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": []
+  },
+  {
+   "id": "a3-football",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "side-h": 1,
+    "b1": 2,
+    "b2": 2,
+    "b3": 2,
+    "source": 1
+   },
+   "tables": {},
+   "annotations": [
+    {
+     "id": "selected",
+     "kind": "band",
+     "host": "ff",
+     "anchor": {
+      "values": [
+       29.0,
+       35.0
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3421309,
+      1436941,
+      916257,
+      4029838
+     ],
+     "drawn": [
+      "selected-band"
+     ],
+     "defaults_taken": [
+      "pad_role: 0 EMU: drawn on the anchor's own edge"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 23,
+      "covered": []
+     }
+    },
+    {
+     "id": "selected-note",
+     "kind": "callout",
+     "host": "ff",
+     "anchor": {
+      "values": [
+       29.0,
+       35.0
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3421309,
+      1436941,
+      916257,
+      4029838
+     ],
+     "drawn": [
+      "selected-note-box",
+      "selected-note-label",
+      "selected-note-leader"
+     ],
+     "defaults_taken": [
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)",
+      "head: none: a plain leader"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 23,
+      "covered": []
+     }
+    },
+    {
+     "id": "offer",
+     "kind": "reference_line",
+     "host": "ff",
+     "anchor": {
+      "value": 36.5
+     },
+     "status": "placed",
+     "anchor_emu": [
+      4566630,
+      1436941,
+      0,
+      4029838
+     ],
+     "drawn": [
+      "offer-line",
+      "offer-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 23,
+      "covered": []
+     }
+    },
+    {
+     "id": "unaffected",
+     "kind": "reference_line",
+     "host": "ff",
+     "anchor": {
+      "value": 27.8
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3238057,
+      1436941,
+      0,
+      4029838
+     ],
+     "drawn": [
+      "unaffected-line",
+      "unaffected-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 23,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 55,
+    "elements": 12,
+    "covered_area_fraction": 0.641,
+    "words_per_slide": {
+     "value": 55,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 12,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.641,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 19,
+    "violations": [],
+    "warnings": [
+     {
+      "element": "offer-label",
+      "paragraph": 0,
+      "run": 0,
+      "role": "type.data_label",
+      "ink": "color.negative",
+      "text": "Offer $36.50",
+      "ratio": 4.0,
+      "threshold": 4.5,
+      "size_pt": 10.0,
+      "bold": false,
+      "backing": "color.surface",
+      "ink_hex": "FF0000",
+      "backing_hex": "FFFFFF"
+     }
+    ],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "source",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.source_line",
+     "ink": "color.ink_muted",
+     "text": "Source: illustrative figures; FactSet co",
+     "ratio": 7.0,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 9,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 2,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "line": {
+      "value": 3,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 5,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [],
+   "chart_defaults_taken": {
+    "ff": []
+   }
+  },
+  {
+   "id": "a4-ranking",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "side-h": 1,
+    "b1": 2,
+    "b2": 2,
+    "source": 1
+   },
+   "tables": {},
+   "annotations": [
+    {
+     "id": "mean",
+     "kind": "reference_line",
+     "host": "rank",
+     "anchor": {
+      "value": 1.66
+     },
+     "status": "placed",
+     "anchor_emu": [
+      4567889,
+      1386568,
+      0,
+      4483195
+     ],
+     "drawn": [
+      "mean-line",
+      "mean-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 41,
+      "covered": []
+     }
+    },
+    {
+     "id": "subject",
+     "kind": "arrow",
+     "host": "rank",
+     "anchor": {
+      "point": {
+       "series": 0,
+       "category": 3
+      }
+     },
+     "status": "placed",
+     "anchor_emu": [
+      2642616,
+      2958263,
+      1983263,
+      343540
+     ],
+     "drawn": [
+      "subject-label",
+      "subject-leader"
+     ],
+     "defaults_taken": [
+      "dash: solid",
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 41,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 55,
+    "elements": 8,
+    "covered_area_fraction": 0.547,
+    "words_per_slide": {
+     "value": 55,
+     "band": [
+      32.8,
+      159.3
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 8,
+     "band": [
+      2.0,
+      15.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.547,
+     "band": [
+      0.4116,
+      0.7078
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 12,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "source",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.source_line",
+     "ink": "color.ink_muted",
+     "text": "Source: illustrative figures; FactSet co",
+     "ratio": 7.0,
+     "threshold": 4.5,
+     "size_pt": 10.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "595959",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 7,
+      "band": [
+       2.0,
+       15.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       2.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "line": {
+      "value": 2,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 2,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.4667
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [],
+   "chart_defaults_taken": {
+    "rank": []
+   }
+  }
+ ],
+ "position_drift": {
+  "source": {
+   "pages": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "top_in": [
+    6.13,
+    6.73,
+    6.73,
+    6.73
+   ],
+   "drift_in": 0.6
+  }
+ },
+ "repetition": {
+  "threshold": 0.5,
+  "frame_left_out": [
+   "source",
+   "title"
+  ],
+  "pairs": [
+   {
+    "pages": [
+     1,
+     2
+    ],
+    "similarity": 0.197,
+    "similar": false
+   },
+   {
+    "pages": [
+     2,
+     3
+    ],
+    "similarity": 0.071,
+    "similar": false
+   },
+   {
+    "pages": [
+     3,
+     4
+    ],
+    "similarity": 0.328,
+    "similar": false
+   }
+  ],
+  "reference_consecutive_max": 2,
+  "runs_over_reference": []
+ },
+ "emitted_slides": 4,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [
+   "SLIDE_NUMBER"
+  ],
+  "slide_layer_entries": [],
+  "notes": [],
+  "drawn": [
+   [],
+   [],
+   [],
+   []
+  ]
+ },
+ "validation": {
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck.pptx",
+  "slides": 4,
+  "problems": [],
+  "ok": true
+ },
+ "renders": {
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 72,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 12,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Wingdings": {
+    "rendered_with": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+    "fidelity": "substituted",
+    "codepoints_checked": 1,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": true
+   }
+  },
+  "pages": 4,
+  "images": [
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck-renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck-renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck-renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot/run5/deck-renders/slide-04.png"
+  ]
+ },
+ "judge": {
+  "reference": "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "total": 0.126,
+  "components": {
+   "families": 0.0,
+   "size_hist": 0.293,
+   "size_ladder": 0.019,
+   "title_size": 0,
+   "bold_ratio": 0.15,
+   "text_colors": 0.141,
+   "fills": 0.038,
+   "lines": 0.396,
+   "aligns": 0.359,
+   "kinds": 0.346,
+   "background": 0.0,
+   "margins": 0.263,
+   "coverage": 0.023,
+   "count": 0.165,
+   "overlap": 0.0,
+   "overflow": 0.0
+  },
+  "per_slide": [
+   {
+    "slide": 1,
+    "total": 0.103,
+    "worst": [
+     [
+      "kinds",
+      0.419
+     ],
+     [
+      "aligns",
+      0.406
+     ],
+     [
+      "margins",
+      0.295
+     ]
+    ]
+   },
+   {
+    "slide": 2,
+    "total": 0.128,
+    "worst": [
+     [
+      "aligns",
+      0.526
+     ],
+     [
+      "lines",
+      0.441
+     ],
+     [
+      "margins",
+      0.363
+     ]
+    ]
+   },
+   {
+    "slide": 3,
+    "total": 0.191,
+    "worst": [
+     [
+      "lines",
+      0.869
+     ],
+     [
+      "size_hist",
+      0.521
+     ],
+     [
+      "count",
+      0.401
+     ]
+    ]
+   },
+   {
+    "slide": 4,
+    "total": 0.127,
+    "worst": [
+     [
+      "size_hist",
+      0.648
+     ],
+     [
+      "margins",
+      0.363
+     ],
+     [
+      "text_colors",
+      0.327
+     ]
+    ]
+   }
+  ],
+  "overflow_where": [],
+  "house_spread": {
+   "n": 12,
+   "min": 0.055,
+   "median": 0.091,
+   "p90": 0.223,
+   "max": 0.372
+  },
+  "others": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/45541_Header.pptx": 0.53,
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.469,
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/themes.pptx": 0.521
+  },
+  "panel_skipped": {
+   "reason": "no type evidence (a scan, a browser print or an empty deck)",
+   "files": [
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/perella_weinberg_pitch.pdf"
+   ]
+  },
+  "same_house_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.148,
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.126,
+   "/home/user/pptx-skill/.claude/worktrees/wf_2f0d81f9-940-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.16
+  },
+  "panel": "refs/files (default)",
+  "nearest_is_reference": true,
+  "reference_rank": 1,
+  "within_house_spread": true,
+  "layout_clean": true,
+  "filed_under_reference": true
+ }
+}

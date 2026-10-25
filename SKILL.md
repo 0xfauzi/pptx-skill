@@ -429,11 +429,8 @@ measure and refuse.
   no waterfall kind and no football-field kind: they, the mekko, a bridge that crosses
   zero and labelled bars without a value axis are recipes over the spec in
   `references/design/chart_recipes.md`, as worked JSON to adapt. A line at a decision
-  value (an offer price across a football field, a threshold across columns) is
-  `reference_lines` (`axis`, `at`, `line_role`, `line_width_pt`, `dash`); it needs
-  `plot_area` (the inner plot as x, y, w, h fractions of the chart frame, written as a
-  manual layout) and that axis's `min` and `max`, so its position is computed, not
-  guessed. An enumerated value written in another spelling (`nextTo`, `insideEnd`) is
+  value, a boxed mark, a shaded zone, an arrow or a bracket is an annotation (6.2). An
+  enumerated value written in another spelling (`nextTo`, `insideEnd`) is
   refused with this spec's spelling named. The one value written
   unasked is `c:varyColors val=0` (file safety: the renderers read its absence
   oppositely), so a pie whose slices differ names a fill per point.
@@ -453,6 +450,35 @@ measure and refuse.
   or any key none of them knows, is refused by name. `header_role` and `cell_role` are
   the roles the solver measures and the file is written in, with nothing substituted;
   a bold header (`header_bold`, yours or the guide's) is measured bold.
+
+### 6.2 Annotations: shapes at positions in an exhibit's own data
+
+Humans annotate almost every data exhibit (7 of 291 corpus charts carry nothing), and
+most moves are a shape at a data position: a boxed median, a mean line, a shaded range,
+an arrow to the subject. Write them under the slide as `annotations`, each with a
+`host` (a chart or table element), an `anchor` in the host's data (a point, a category
+span, a value or value band, a region; a cell, cell range, row, column or header group)
+and a `kind` (`outline_box`, `band`, `reference_line`, `arrow`, `callout`, `bracket`,
+`badge`), every colour, width and distance a role. The full vocabulary, the label
+positions and four worked exhibits are in `references/design/chart_recipes.md`
+("Annotations"). Placement is computed from the anchor; nothing annotates unasked.
+
+- A chart anchor needs `plot_area` (the inner plot as x, y, w, h fractions of the frame,
+  written as a manual layout) and, on the axis it names, `min`, `max` and
+  `axes.value.cross_between`; without them it is refused by name. Measured on
+  LibreOffice 24.2: data positions land within 1.07 px at 1600 px (13 chart
+  configurations, `oracles/chart_geometry_probe.py`). PowerPoint is not measured.
+- An annotation may overlap only its host. The build refuses (`annotation collides`)
+  one that covers another element, another annotation, a mark of the host it does not
+  anchor to, the page edge or a chrome zone, and after the render (`annotation covers
+  chart text`) one whose stroke or box crosses a word the host drew: tick labels, data
+  labels, cell text. A reference line crosses bars by design and its label may not. A
+  `band` is drawn under its host and covers nothing.
+- Labels are measured at the page's scale and scored by the contrast gate like any text.
+- What you leave out (padding, dash, label position, wrap width) is written neutral and
+  listed per annotation under `defaults_taken`.
+- Prefer native where it exists: a median row is `emphasis_rows`, a highlighted bar a
+  point `fill_role`. A shape over a chart does not follow an edit of its data.
 
 Motifs the digest lists (a band, a rule, a block with a preset, roles and an anchor)
 are applied by you: draw one as a `rule` or `rect` element with the motif's line or
@@ -527,7 +553,7 @@ houses. Read `work/out/deck.build.json`:
   reads the theme's line style, and they differ`). None of these is the house's style.
   Write each one into the spec and build again until the list is empty or every entry
   left is one you meant.
-- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas; `chart label breaks mid-word`; `emitted text overflows`); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
+- `problems` per page, listed before the figures: tie-out warnings first, then refusals. A refusal turns a page that fit into `status: unfittable` with the refusal as `reason` (`contrast`, `no source line`, `bridge does not tie`: a chart that declares `bridge` whose totals or drawn spans do not tie to its deltas; `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`, `annotation collides`, `annotation covers chart text`: 6.2); `solver_status` keeps the geometry verdict beside it. A warning never refuses.
 - The file is written at the sizes the solver fitted: at scale 0.89 a 12pt cell is written at 10.5pt, with the scaled line pitch, paragraph spacing, tracking and cell inset. After the emit the build reads the written file back and measures it against the solved boxes: every text element's written lines at the width the solver wrapped at, its height at the written pitch and spacing, and every table's rows re-wrapped at the written column widths, insets and sizes. Any shape that outgrows its box refuses the page as `emitted text overflows`, naming the shape; a page that fit in the solver and overflows in the file is a defect between the two, not a page to accept.
 - `chart_label_breaks` per page with a bar or column chart: words a renderer must break between characters, measured with the solver's ruler at the chart text's size. A column chart's category label wraps to its slot (at most the chart's width over the category count); a centred data label wraps to the bar's thickness (at most the slot less `gap_width`, shared by the series when clustered). Both are upper bounds, so a word over one breaks for certain (`Standalo / ne`, `Remaini / ng`) and refuses the page as `chart label breaks mid-word`; a word under one may still break in a crowded plot, so read the render. `unmeasured` lists labels whose text the check cannot form (a number format it does not read). XY labels and labels outside the bar are not measured.
 - `contrast` per page: every text run, every table row class, every chart text (data labels per series and per overriding point, axis labels, legend) and every chrome text line the page carries (footer label, page number, at its observed ink) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else a chrome band under it, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. House precedent comes first: a pair the reference itself draws (the same ink hex over the same backing hex, read from the `--reference` file) at that size or smaller is filed under `house_precedent` with the reference's pages and smallest size, neither refused nor warned. BCG (nystate covid deck) sets its titles and heads in 29BA74 on white, 2.51:1, on 23 pages and at sizes down to 3.5pt; a deck in that house keeps its green. A pair the reference never draws is refused as before, and with no `--reference` nothing can claim precedent. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
@@ -725,6 +751,7 @@ again without learning from your pages; `--include-generated` overrides.
 | `scripts/raster_style.py` | what a scanned reference can still tell: palette, ink, chrome, margins, line pitch |
 | `scripts/layout.py`, `scripts/textfit.py` | solver, measured text, table fitter, scale descent, capacity |
 | `scripts/emit_pptx.py` | resolved pages to slides on the template |
+| `scripts/chart_geometry.py`, `scripts/annotate.py` | where chart data and table cells land in EMU; annotations resolved, placed and checked against collisions |
 | `scripts/build_deck.py` | solve, emit, validate, render, judge, in one command |
 | `scripts/component.py` | component contract check and admission |
 | `scripts/import_slide.py` | a reference slide into a spec of roles, for the round trip and as a seed |

@@ -145,3 +145,21 @@ Last run 2026-10-20: surface FFFFFF; accent1 113D63; ink 010101 (OOXML 000000); 
 at 0.90 in and bottom rule at 6.92 in, both 113D63; margins left 388620, right 502920,
 top 434340, bottom 617220 EMU (0.425, 0.55, 0.475, 0.675 in); modal pitch 14pt over 11
 pages, with 14.4pt on 3 of the 11; modal ink-run height 9pt (44 runs).
+
+## chart_geometry_probe.py: chart data coordinates against LibreOffice renders
+
+    python3 -I oracles/chart_geometry_probe.py OUT_DIR [--rows]
+
+Needs no deckgen checkout and runs with the skill's own Python. Writes 13 chart
+configurations and one table through `emit_pptx.write_chart` and `write_table`, twice
+(A: the exhibits alone; B: with 1 px marker shapes at every position
+`scripts/chart_geometry.py` predicts), renders both with `scripts/render.py` at 1600 px,
+locates every bar edge, point centre, gridline and cell edge in A by its own colour
+(sub-pixel, from the anti-aliased coverage across the edge) and every marker by the
+difference B - A, and prints per configuration the worst offset between mark,
+marker and prediction.
+
+Last run 2026-10-25 (LibreOffice 24.2.7.2): 408 features read, worst |mark - predicted|
+1.07 px, mean 0.24 px; markers within 0.39 px of their predicted pixel; 4 bar edges not
+found, each hidden by the next series of a clustered chart with overlap 30.
+

@@ -43,6 +43,10 @@ consecutive pair of pages (the extractor's own slide_similarity) with any run of
 look-alike pages longer than the reference's longest. After the emit, each page with a
 chart carries `chart_defaults_taken`: every chart choice its spec left out, with the
 value the file got for it.
+
+A slide's `annotations` (annotate.py) are resolved on the solved page, before those
+instruments, into rect, rule and text elements; their collisions refuse the page, and
+after the render the words LibreOffice drew are checked against what each one covers.
 """
 
 from __future__ import annotations
@@ -379,9 +383,10 @@ def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict
         if earlier["kind"] == "chart" and earlier.get("plot_fill_role") not in (None, "none"):
             # an annotation inside a chart's fixed plot rectangle stands on the plot fill
             plot = plot_rect(earlier, earlier["box"])
-            if plot is not None and _intersects(list(plot), box):
+            plot = None if plot is None else [round(v) for v in plot]  # whole EMU, as the boxes it is compared with
+            if plot is not None and _intersects(plot, box):
                 fill = eg.hex(earlier["plot_fill_role"], where=earlier.get("id", "chart"))
-                if _contains(list(plot), box):
+                if _contains(plot, box):
                     backings, undecidable = [fill], False
                     names.setdefault(fill, f"{earlier['plot_fill_role']} plot of {earlier.get('id')}")
                 else:
