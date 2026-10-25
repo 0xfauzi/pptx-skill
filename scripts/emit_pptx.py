@@ -95,6 +95,9 @@ from pptx.opc.package import Part
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from chart_geometry import chart_family  # noqa: E402
+
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
@@ -683,7 +686,10 @@ SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "lin
 LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
 POINT_KEYS = {"index", "fill_role", "line_role", "label"}
 POINT_LABEL_KEYS = LABEL_KEYS | {"text"}
-AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels"}
+AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels", "cross_between"}
+# c:crossBetween on the value axis: "between" puts categories in bands (bar centres, line
+# points mid-band), "midpoint" puts line points on band edges (OOXML midCat).
+CROSS_BETWEEN = {"between": "between", "midpoint": "midCat"}
 AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role"}
 TICK_LABEL_POSITIONS = {"next_to": XL_TICK_LABEL_POSITION.NEXT_TO_AXIS, "low": XL_TICK_LABEL_POSITION.LOW, "high": XL_TICK_LABEL_POSITION.HIGH}
 GRIDLINE_KEYS = {"line_role", "line_width_pt"}
@@ -745,27 +751,6 @@ CHART_DEFAULTS = {
     "title": "none",
     "plot_area": "automatic: each renderer places the plot inside the frame itself",
 }
-
-
-def chart_family(type_name: str) -> str:
-    n = type_name
-    if n.startswith(("COLUMN_", "BAR_")) and n != "BAR_OF_PIE":
-        return "bar_stacked" if "STACKED" in n else "bar"
-    if n.startswith("PIE"):
-        return "pie"
-    if n.startswith("DOUGHNUT"):
-        return "doughnut"
-    if n.startswith("LINE"):
-        return "line"
-    if n.startswith("AREA"):
-        return "area"
-    if n.startswith("XY_SCATTER"):
-        return "xy"
-    if n.startswith("BUBBLE"):
-        return "bubble"
-    if n.startswith("RADAR"):
-        return "radar"
-    return "other"
 
 
 def _keys(where: str, obj, allowed: set[str]) -> dict:
@@ -966,6 +951,10 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 if k not in ax:
                     took(f"axes.{name}.{k}", d)
             numeric = name == "value" or family in ("xy", "bubble")
+            if "cross_between" in ax:
+                if name != "value" or family in ("xy", "bubble"):
+                    raise SpecError(f"{aw}: cross_between belongs to the value axis of a category chart")
+                _enum(aw, "cross_between", ax["cross_between"], CROSS_BETWEEN)
             if numeric:
                 if "number_format" not in ax:
                     took(f"axes.{name}.number_format", "axis.number_format")
@@ -1102,6 +1091,25 @@ def _write_reference_line(slide, el: dict, family: str, line: dict, index: int, 
         shape = slide.shapes.add_connector(1, Emu(left), Emu(at), Emu(left + pw), Emu(at))
     shape.name = f"{el.get('id', 'chart')}-reference-{index}"
     _set_line(shape._element.spPr, guide.hex(line["line_role"], where=shape.name), int(round(float(line["line_width_pt"]) * EMU_PER_PT)), line.get("dash"))
+
+
+def _write_cross_between(val_ax: etree._Element, value: str) -> None:
+    """c:crossBetween in its schema place on a c:valAx: after c:crosses or c:crossesAt,
+    before the unit and display elements. python-pptx 1.0.2 writes none on a category
+    chart, so without it each renderer picks its own default."""
+    old = val_ax.find(qn("c:crossBetween"))
+    if old is not None:
+        val_ax.remove(old)
+    cb = etree.Element(qn("c:crossBetween"))
+    cb.set("val", value)
+    anchor = val_ax.find(qn("c:crossesAt"))
+    if anchor is None:
+        anchor = val_ax.find(qn("c:crosses"))
+    if anchor is not None:
+        anchor.addnext(cb)
+    else:
+        later = [c for c in val_ax if etree.QName(c).localname in ("majorUnit", "minorUnit", "dispUnits", "extLst")]
+        (later[0].addprevious(cb) if later else val_ax.append(cb))
 
 
 def _write_vary_colors(chart_space: etree._Element) -> None:
@@ -1312,6 +1320,8 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 axis.maximum_scale = float(ax["max"])
             if ax.get("major_unit") is not None:
                 axis.major_unit = float(ax["major_unit"])
+            if ax.get("cross_between"):
+                _write_cross_between(axis._element, CROSS_BETWEEN[ax["cross_between"]])
     _write_vary_colors(chart._chartSpace)
     _pad_point_counts(chart._chartSpace)
     if el.get("plot_area"):
