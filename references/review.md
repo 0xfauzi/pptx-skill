@@ -54,8 +54,8 @@ Element id, what is wrong, the change:
 ## Package checks before handing over
 
 ```bash
-python3 scripts/pptx_tools.py validate work/out/deck.pptx --render
-python3 scripts/pptx_tools.py validate work/out/deck.pptx --emit --guide work/ref/guide.json
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --render
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --emit --guide "$DECK_WORK/ref/guide.json"
 ```
 
 The build already validated the package (relationships, one layout per slide, content

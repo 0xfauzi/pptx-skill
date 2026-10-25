@@ -12,16 +12,16 @@
   "seeded_strings": [
    "First Niagara",
    "KeyBank",
-   "$4.1 billion",
-   "Goldman Stanley"
-  ]
+   "$4.1 billion"
+  ],
+  "chrome": "The bank name in the footer ('Goldman Stanley') is the house's furniture on every page: it is chrome, drawn by the template, never a finding."
  },
  "brief": "Run scenario 01 with the reference deck built into a company page library (library.py permit, build, tag) and picked from while designing.",
  "data": "as scenario 01",
  "expected_behavior": [
   {
-   "statement": "Zero seeded client strings appear in the output deck.",
-   "check": "pptx_tools.py text on the output; grep each seeded string; zero hits. The house's own furniture (a logo word on the master) is chrome, not client content, and is listed separately."
+   "statement": "The build's leakage report has no finding the agent did not answer, and none of the seeded strings appears in the deck.",
+   "check": "Build with --reference and --brief (scenario 01's brief and data as text). deck.build.json leakage.pages lists no seeded string; every other finding is named in the final report as removed or supplied. Chrome is excluded by the report's own rule (text on half a past deck's pages or more, and the template's own text), so the footer bank name is never listed. The same check on any deck: leakage.py OUT.pptx --past REF --brief brief.txt --template tpl.pptx."
   },
   {
    "statement": "No script makes a network call.",

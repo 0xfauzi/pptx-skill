@@ -9,7 +9,7 @@ nothing here draws, and nothing here decides what to annotate.
     {"id": "subject", "host": "comps", "kind": "outline_box", "anchor": {"row": 3},
      "line_role": "color.accent2", "line_width_pt": 1.5, "pad_role": "space.xs"}
 
-Kinds (each a measured move, TARGET_SPEC Appendix A.6): outline_box, band, reference_line,
+Kinds (each a move the coded corpus measures): outline_box, band, reference_line,
 arrow, callout, bracket, badge. Anchors on a chart (chart_geometry.py, which needs
 plot_area and the axes' min, max and cross_between): point {series, category} or
 {series, index} on XY; categories [i, j]; category i (a line at its centre: an event
@@ -23,7 +23,7 @@ spacing roles the spec names. A choice the spec leaves out is written as the neu
 value in DEFAULTS and listed in the report's `defaults_taken`; a choice with no neutral
 value (a colour, a stroke width, which side, how far) is required and refused by name.
 
-The collision contract (TARGET_SPEC 15.3): an annotation may overlap only its anchor
+The collision contract: an annotation may overlap only its anchor
 (its host). It may not cover another page element, another annotation, the page edge
 or a reserved chrome zone (checked here, from the solved boxes), nor the host's own
 text: tick labels, data labels, legend (checked after the render, from the words
@@ -45,6 +45,7 @@ import sys
 from fractions import Fraction
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import layout as L  # noqa: E402
 from chart_geometry import ChartGeometry, GeometryRefused, table_geometry  # noqa: E402

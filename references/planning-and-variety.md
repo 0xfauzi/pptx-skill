@@ -43,7 +43,7 @@ reference (its pages have no shapes). Pool decks of one house with `--house-deck
 given twice (same sha256) is refused, and so is anything that is not a guide.
 
 ```bash
-python3 scripts/plan.py house --guide work/ref/guide.json [--house-deck other.guide.json ...]
+python3 scripts/plan.py house --guide "$DECK_WORK/ref/guide.json" [--house-deck other.guide.json ...]
 ```
 
 ## plan.json
@@ -52,7 +52,7 @@ Every key on every page:
 
 ```json
 {"schema": "pptx-skill section plan v1", "reference_sha256": "<guide.reference.sha256>",
- "pages": [{"id": "<deck slide id>", "intent": "...", "message": "...",
+ "pages": [{"id": "<the page's slide id in the deck JSON>", "intent": "...", "message": "...",
             "composition": "arch-4 | new:<lowercase-name>",
             "exhibit_types": ["<exhibit_type>"], "data_shapes": ["<data_shape>"],
             "title_register": "topic|claim|question", "deliberate_parallel": null}]}
@@ -68,8 +68,15 @@ scale and category order, held exactly). Worked plans: `examples/keybank-section
 ## plan.py check: what it refuses and what it warns
 
 ```bash
-python3 scripts/plan.py check work/plan.json --guide work/ref/guide.json [--house-deck other.guide.json ...] -o work/plan.check.json
+python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/guide.json" [--house-deck other.guide.json ...] -o "$DECK_WORK/plan.check.json"
 ```
+
+It prints a short verdict (status, each refusal and warning, each measure against the
+house's 10th percentile) and writes the whole report as JSON with `-o` (`--json` prints it).
+With one house deck each 10th percentile is that deck's own value, and its exhibit and class
+V come from your digest reading: a different reading of the same deck moves these lines by
+up to 0.3 (two readers of keybank: exhibit V 0.8 and 1.0, class V 0.6 and 0.9). The verdict
+says so; pool sister decks with `--house-deck` where you have them.
 
 Refused (exit 1), each by name: a plan not of this shape; a value outside the vocabulary
 (`references/page_craft_vocabulary.json`), including a non-string register; an archetype the
@@ -86,8 +93,9 @@ where V reads as samey. Answer every warning in the plan or in your report.
 
 ## What the build reports against the plan
 
-`build_deck.py --plan work/plan.json` runs the same check first and refuses to build a plan
-it refuses. After solving it reports, under `repetition`: each page's realised composition
+`build_deck.py --plan $DECK_WORK/plan.json` runs the same check first and refuses to build a plan
+it refuses. The deck holds the whole plan or one run of consecutive planned pages (one page
+while you work on it), each slide's id its page id. After solving it reports, under `repetition`: each page's realised composition
 (the same clustering over the solved content boxes, the page frame left out), V and runs
 against the house, the exhibit classes each page realises (a table is `table`, a chart
 `data_chart`; a page with a component or an image is unread), class V against the house's,
@@ -109,10 +117,11 @@ percentile deck 0.643, warned; its revision built at class V 0.75, not warned).
   another, so a consulting PDF can read every page as its own archetype.
 - The exhibit-type vocabulary has 25 types against 10 corpus families, so exhibit V comes
   out higher than the corpus figures below.
+- V counts adjacent pairs only: A B A C A reads 1.0; distinct compositions per page shows it.
 
 ## Measured tendencies across houses
 
-Over 23 coded decks on 10 composition families: the median composition change between
+Over the 23 of the 24 coded decks that carry a variety row, on 10 composition families: the median composition change between
 consecutive pages is 0.69 (investment bank 0.645, consulting 0.765, chart book 0.55 at a
 two-page stride); exhibit sets change more often (median 0.77 bank, 0.85 consulting, 0.97
 chart book). Three native-pptx bank pitch books on one master change composition 83% to

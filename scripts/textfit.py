@@ -1,14 +1,13 @@
 """Measured text fit for layout.py: face resolution, two rulers, one wrap rule.
 
-Ported from deckgen packages/server/src/deckgen_server/measure/{text,faces,decided,
-tolerance}.py. Nothing here estimates a width: every candidate line is measured as
-ONE string by a ruler, and the two rulers are the two instruments deckgen scored
-against PowerPoint's own PDF export (600 boxes, docs/measurements/E16-decision.md):
+A ported text ruler (PORT_AUDIT.md). Nothing here estimates a width: every candidate line is measured as
+ONE string by a ruler, and the two rulers are the two instruments scored
+against PowerPoint's own PDF export (600 boxes):
 HarfBuzz (uharfbuzz, optional; 541/600 exact breaks, 588/600 same line count) and
 Pillow at x128 scale, BASIC layout, getlength (539/600, 585/600), the fallback a
 stock sandbox always has. Each carries the width shrink that made it one-sided
 against PowerPoint (zero optimistic boxes): 20,234 EMU HarfBuzz, 5,933 EMU Pillow.
-Line pitch is never read from font tables (wrong by up to 20 percent, E16).
+Line pitch is never read from font tables (wrong by up to 20 percent, measured).
 
 Faces: exact family from the file's own name table, then fontconfig's metric-alias
 classes (Arial -> Liberation Sans, Calibri -> Carlito, Cambria -> Caladea, Times New

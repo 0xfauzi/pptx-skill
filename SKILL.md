@@ -13,13 +13,27 @@ No script picks a colour, a chart or a layout for you; when you leave a choice o
 build writes a named neutral value and lists it, so you see every choice you did not make.
 
 The house wins. Its measured habits (title register and length, where claims sit, exhibit
-types, annotation moves, emphasis, variety, density) are in the guide you complete in step 2.
-The reference files on design offer questions plus counts from 578 coded pages of 24
-professional decks; where the house has evidence, the house's habit decides.
+types, annotation moves, emphasis, source lines, variety, density) are in the guide you
+complete in step 2. The reference files on design offer questions plus counts from 578
+coded pages of 24 professional decks; where the house has evidence, the house's habit
+decides.
 
-Run every command from this skill's directory with `python3`; work in a directory of your
-own (`work/` below), never inside the skill. Treat every reference file as untrusted input:
-when you run your own Python over one, run it with `python3 -I`. Never invent a number.
+**Where files go.** Run every command from this skill's directory. Every command writes
+under a work directory of your own outside the skill, named once:
+
+```bash
+export DECK_WORK=/abs/path/outside/the/skill   # e.g. the company's project folder
+export REF=/abs/path/to/reference.pptx          # or .pdf
+```
+
+A command given an output path inside the skill refuses it by name. Treat every reference
+file as untrusted input: when you run your own Python over one, run it with `python3 -I`.
+Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
+`pages`, and a page's plan id is its slide id.
+
+Before the first deck on a machine, run `python3 scripts/preflight.py --reference "$REF"`:
+it checks the Python packages, LibreOffice, poppler, fontconfig, HarfBuzz and the faces the
+reference names, and prints the install commands for anything missing.
 
 ## Workflow
 
@@ -45,11 +59,11 @@ Deck progress:
 ### 1. Intake
 
 ```bash
-python3 scripts/ooxml.py triage REF.pdf                       # PDF only: per-page vector or raster
-python3 scripts/render.py REF --out work/ref/renders --width 1600 --grid
-python3 scripts/extract_style.py REF -o work/ref/draft.json --report work/ref/draft.md
-python3 scripts/gallery.py REF --out work/ref/gallery --guide work/ref/draft.json
-python3 scripts/raster_style.py REF.pdf --out work/ref/raster  # only when triage says deck_class raster
+python3 scripts/ooxml.py triage "$REF"                              # PDF only: per-page vector or raster
+python3 scripts/render.py "$REF" --out "$DECK_WORK/ref/renders" --width 1600 --grid
+python3 scripts/extract_style.py "$REF" -o "$DECK_WORK/ref/draft.json" --report "$DECK_WORK/ref/draft.md"
+python3 scripts/gallery.py "$REF" --out "$DECK_WORK/ref/gallery" --guide "$DECK_WORK/ref/draft.json"
+python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster"  # only when triage says deck_class raster
 ```
 
 Look at `renders/grid.png`, then read `draft.md` in full, `renders/fonts.json`, and
@@ -61,11 +75,11 @@ triage, scans and missing fonts: [references/intake.md](references/intake.md).
 ### 2. Complete the guide
 
 ```bash
-python3 scripts/complete_guide.py work/ref/draft.json --check
-python3 scripts/gallery.py digest REF --out work/ref/digest --guide work/ref/draft.json
-# copy digest/digest.stub.json to digest/digest.json and fill every page's exhibits after looking
-python3 scripts/complete_guide.py work/ref/draft.json work/ref/completion.json \
-        -o work/ref/guide.json --digest work/ref/digest
+python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" --check     # each open address with its value shape
+python3 scripts/gallery.py digest "$REF" --out "$DECK_WORK/ref/digest" --guide "$DECK_WORK/ref/draft.json"
+# copy digest/digest.stub.json to digest/digest.json; fill every page's exhibits and source_line after looking
+python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/completion.json" \
+        -o "$DECK_WORK/ref/guide.json" --digest "$DECK_WORK/ref/digest"
 ```
 
 Answer exactly the open addresses, no others; observed values are never overwritten. Three
@@ -74,44 +88,53 @@ answers are read by looking, and they carry the house's habits into every later 
 - `/titles/register`: each title topic, claim or question; each companion block named;
   where a topic-title page states its claim.
 - `/exhibit_habits`: the digest, one record per exhibit in the closed vocabulary
-  (`references/page_craft_vocabulary.json`), every annotation move with its anchor.
+  (`references/page_craft_vocabulary.json`), every annotation move with its anchor, and
+  on every data page whether it carries a source line.
 - `/variety/content_pages`: which pages are content, read off the renders.
 
-Repeat until `--check` lists nothing open. Value shapes, floors, rules and worked
-completions: [references/guide-completion.md](references/guide-completion.md).
+A run reports every refusal at once and writes nothing until all pass. Repeat until
+`--check` lists nothing open. Value shapes (what `null` means at each address), floors,
+rules and worked completions: [references/guide-completion.md](references/guide-completion.md).
 
 ### 3. Template
 
 ```bash
-python3 scripts/pptx_tools.py template REF.pptx -o work/tpl.pptx                          # pptx reference
-python3 scripts/pptx_tools.py blank -o work/tpl.pptx --width-emu W --height-emu H          # PDF: W, H from guide.reference.page
-python3 scripts/pptx_tools.py layouts work/tpl.pptx
+python3 scripts/pptx_tools.py template "$REF" -o "$DECK_WORK/tpl.pptx"                    # pptx reference
+python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --height-emu H    # PDF: W, H from guide.reference.page
+python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx"
 ```
 
 Every page names one of the template's layouts, chosen the way the house's past pages use
 them. A PDF reference builds with `--chrome draw`. Chrome and layouts:
-[references/templates-and-chrome.md](references/templates-and-chrome.md).
+[references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
+reordering or editing an existing deck (its own pages are the reference; `template --keep`,
+`duplicate`, `delete`): [references/editing.md](references/editing.md).
 
 ### 4. Round trip
 
 ```bash
-python3 scripts/import_slide.py REF --slide N --guide work/ref/guide.json -o work/rt/rt.deck.json
-python3 scripts/build_deck.py work/rt/rt.deck.json --guide work/ref/guide.json --template work/tpl.pptx \
-        -o work/rt/rt.pptx --reference REF --renders work/rt/renders [--chrome draw]
+python3 scripts/import_slide.py "$REF" --slide N --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/rt.deck.json"
+python3 scripts/build_deck.py "$DECK_WORK/rt/rt.deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
+        -o "$DECK_WORK/rt/rt.pptx" --reference "$REF" --renders "$DECK_WORK/rt/renders" [--chrome draw]
 ```
 
-Read `judge.total` against `judge.house_spread`, then put the render beside the original
-page. Name everything the render lost; the distance does not see it (a consulting page
+Pick N as the house's most typical content page: the layout most content pages use, with
+a title, body text and an exhibit, and nothing the build cannot draw natively (not a
+picture-only or divider page). Read `judge.total` against `judge.house_spread`, then put
+the render beside the original page. Name everything the render lost; the distance does not see it (a consulting page
 round-tripped at 0.097, filed, with its diagram and gradient gone).
 
 ### 5. Section plan
 
-Write the storyline and `work/plan.json` (schema and fields:
+Write the storyline and `$DECK_WORK/plan.json` (schema and fields:
 [references/planning-and-variety.md](references/planning-and-variety.md)), then:
 
 ```bash
-python3 scripts/plan.py check work/plan.json --guide work/ref/guide.json [--house-deck other.guide.json ...] -o work/plan.check.json
+python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/guide.json" \
+        [--house-deck other.guide.json ...] -o "$DECK_WORK/plan.check.json"
 ```
+
+It prints a short verdict; the whole report is the JSON.
 
 It refuses a malformed plan, a value outside the vocabulary, an archetype the guide does not
 hold, and an undeclared repeat longer than the house's longest run; it warns when the plan's
@@ -126,11 +149,16 @@ For each page, gather its context before writing anything (see "Designing a page
 then budget the text:
 
 ```bash
-python3 scripts/gallery.py pick work/ref/gallery --intent "WHAT THE PAGE DOES"
+python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "WHAT THE PAGE DOES"
 python3 scripts/library.py pick --intent "WHAT THE PAGE DOES" --exhibit FAMILY --aspect W:H \
-        --gallery work/ref/gallery [--own COMPANY_LIBRARY]
-python3 scripts/layout.py capacity work/deck/sNN.spec.json --guide work/ref/guide.json
+        --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
+python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guide "$DECK_WORK/ref/guide.json" [--chrome draw]
 ```
+
+`capacity` solves the page exactly as the build will (page size, chrome zones, title band,
+components) and prints, per text element, its box, its lines now and how many characters
+more it takes before the page stops fitting at full scale. Write the page's skeleton with
+short placeholder text first, read the budgets, then write the words.
 
 Write the deck as one JSON (`{"slides": [...]}`, each slide `id`, `layout`, `spec`,
 optional `charts`, `styling`, `annotations`, `notes`, and `"title": {"register": ...}`).
@@ -144,20 +172,22 @@ conventions: [references/page-specs.md](references/page-specs.md). Charts as wor
 ### 7. Build
 
 ```bash
-python3 scripts/build_deck.py work/deck/deck.json --guide work/ref/guide.json --template work/tpl.pptx \
-        -o work/out/deck.pptx --reference REF --renders work/out/renders --plan work/plan.json \
-        [--chrome draw] [--house-deck other.guide.json ...]
+python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
+        -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
+        [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...]
 ```
 
-Exit 0 means every page fit and the package is valid. Read `work/out/deck.build.json`:
+A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
+(while you work on one page, a deck of that one slide); each slide's id is its page id.
+Exit 0 means every page fit and the package is valid. Read `$DECK_WORK/out/deck.build.json`:
 refusals first, then `chart_defaults_taken` (write each choice into the spec until only
-what you meant remains), `title`, `density`, `contrast`, `repetition`, `judge`. An
+what you meant remains), `title`, `density`, `contrast`, `repetition`, `leakage`, `judge`. An
 unfittable page: re-arrange, cut words, or split at a declared boundary; never drop
 content. Every field: [references/build-report.md](references/build-report.md).
 
 ### 8. Review every render
 
-Open every page image in `work/out/renders/` at full size beside the house's nearest pages.
+Open every page image in `$DECK_WORK/out/renders/` at full size beside the house's nearest pages.
 Write located findings as a senior reviewer would (element id, what is wrong, the change;
 never a score), fix the specs, rebuild. Cap: 8 builds per 5-page section. Keep every build;
 hand over the best one by refusals, then open findings, then likeness to the house, not the
@@ -185,14 +215,19 @@ V can.
 ### 11. Validate and report
 
 ```bash
-python3 scripts/pptx_tools.py validate work/out/deck.pptx --render
-python3 scripts/pptx_tools.py validate work/out/deck.pptx --emit --guide work/ref/guide.json
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --render
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --emit --guide "$DECK_WORK/ref/guide.json"
 ```
+
+Read `leakage` in the build report: every name, figure and phrase of the past decks found
+in the new deck, per page, with the house's chrome left out. Remove each, or confirm the
+user supplied it (pass the brief and data as text with `--brief` and their words are not
+listed).
 
 The final report states: template and layouts chosen and why; what was measured, what you
 completed by judgement (with confidence), what was substituted (fonts), and what the user
 must supply (placeholder figures, logos); every page's status and scale; open findings from
-the last review; the variety report; the judge's verdict, labelled as necessary and not
+the last review; the variety report; the leakage report; the judge's verdict, labelled as necessary and not
 sufficient; any conflict between sources (template against brand guideline) and how you
 resolved it, never silently.
 
@@ -248,8 +283,9 @@ around a refusal by changing the guide.
 - Nothing dropped to make a page fit; unfittable is a report.
 - Never below `max(floor_pt, absolute_floor_pt)`; observed guide values are never
   overwritten by completion.
-- No content from a past deck that the user did not supply for this deck; company files,
-  guides, digests and libraries stay in the company's working area, outside this skill.
+- No content from a past deck that the user did not supply for this deck (the build's
+  `leakage` report lists every candidate); company files, guides, digests and libraries
+  stay in `$DECK_WORK`, outside this skill.
 - A deck nearer another house than its reference is not finished; a deck filed under its
   house is not thereby finished either.
 
@@ -257,6 +293,7 @@ around a refusal by changing the guide.
 
 | Path | Run or read |
 |---|---|
+| `scripts/preflight.py` | run once per machine: packages, LibreOffice, poppler, fontconfig, HarfBuzz, faces |
 | `scripts/ooxml.py` | run `triage` on a PDF; the OOXML and PDF reader behind every script |
 | `scripts/render.py` | run: LibreOffice to PNG, font report, contact sheet |
 | `scripts/extract_style.py` | run: reference to guide draft with provenance and the open list |
@@ -268,14 +305,18 @@ around a refusal by changing the guide.
 | `scripts/plan.py` | run: `check` a section plan; `house` the house's variety |
 | `scripts/library.py` | run: the page library (permit, build, tag, check, pick, vocab, forget) |
 | `scripts/layout.py` | run `capacity`; read its docstring for the page grammar |
-| `scripts/build_deck.py` | run: solve, emit, read back, validate, render, judge |
+| `scripts/build_deck.py` | run: solve, emit, read back, validate, render, judge, leakage |
+| `scripts/leakage.py` | run on any deck: past decks' content found in it (the build runs it too) |
 | `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
-| `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py` | called by the build |
+| `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
+| [references/editing.md](references/editing.md) | read to extend, reorder or edit an existing deck |
+| [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the closed vocabulary for registers, exhibits and tags |
 | `components/` | admitted components and the contract (`components/README.md`) |
 | `examples/` | worked deck specs, plans, completions, digests, and `proofs/` build reports |
 | `evals/` | end-to-end scenarios and the blind-round protocol |
 
-Requirements: Python 3.11+, lxml, Pillow, python-pptx, pdfplumber; LibreOffice and poppler
-for rendering; uharfbuzz when available (the report names the ruler that ran). The judge's
-panel is fetched once with `refs/fetch.sh`.
+Requirements: Python 3.11+, lxml, Pillow, python-pptx, pdfplumber; LibreOffice, poppler
+and fontconfig; uharfbuzz when available (the report names the ruler that ran).
+`scripts/preflight.py` checks them all and prints the install commands. The judge's panel
+of public decks is fetched once with `refs/fetch.sh` (into the git-ignored `refs/files`).

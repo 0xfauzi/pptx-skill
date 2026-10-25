@@ -1,4 +1,4 @@
-# Raster evidence: /tmp/claude-0/-home-user-deckgen/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/raster/keybank-render
+# Raster evidence: keybank rendered at 100 dpi
 
 12 pages at 100 dpi, slide 10.00 x 7.50 in.
 Every value here is inference from pixels (provenance raster_inference, confidence <= 0.5). Faces cannot be read from pixels.

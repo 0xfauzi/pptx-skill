@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The section plan and the house's variety (TARGET_SPEC 12.3, 17.7, Appendix A.10).
+"""The section plan and the house's variety.
 
     plan.py check plan.json --guide guide.json [--house-deck other.guide.json ...] [-o check.json]
     plan.py house --guide guide.json [--house-deck other.guide.json ...]
@@ -60,9 +60,15 @@ import sys
 from itertools import pairwise
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
+#: Element kinds whose exhibit class is the kind itself (page_craft_vocabulary exhibit_class).
+#: Their classes are the data exhibits: a page holding one is a data page, which the
+#: source-line habit is measured over (the digest) and held to (the build).
+REALISED_CLASS = {"table": "table", "chart": "data_chart"}
+DATA_CLASSES = frozenset(REALISED_CLASS.values())
 VARIETY_MIN_PAGES = 3  # definition: two pages make one pair, which is one observation, not a rate
 TEXT_ONLY = "text_only"  # the exhibit-type set of a page with no exhibit (A.10's {text only})
 WARN_PERCENTILE = 0.1  # unmeasured: the house's 10th percentile deck, a choice and not a reader's threshold
@@ -76,20 +82,21 @@ METHOD = ("Composition per page is the extractor's archetype (composition.archet
           "library.py's triage proposal (cover, divider, disclaimer, hidden and generated pages are not content) until /variety/content_pages "
           "answers it.")
 WEAKNESSES = (
-    ("Boxes only: a full-width table and a full-width bullet block of the same extent are one archetype (labels are not compared; "
-     "netflix slide 11, a table, shares arch-2 with three bullet pages)."),
-    ("Arrangement, not kind: a table beside a chart, mirrored or re-weighted, is a different arrangement to box IoU (netflix's built "
-     "pages 2, 4 and 5 score 0.30 to 0.40 against each other), so the realised measure cannot see that kind of sameness; the plan's "
-     "named compositions are where it shows."),
+    ("Boxes only: a full-width table and a full-width bullet block of the same extent are one archetype; what the boxes hold is not "
+     "compared."),
+    ("Arrangement, not kind: a table beside a chart, mirrored or re-weighted, is a different arrangement to box IoU (such pairs score "
+     "0.30 to 0.40), so the realised composition cannot see that kind of sameness; the exhibit classes the build reads, and the "
+     "plan's named compositions, are where it shows."),
     ("Leader clustering is order-dependent and not transitive: a page joins the first archetype whose anchor it matches, so two pages "
      "that match each other but not an earlier anchor can land in different archetypes."),
     ("The title is content to the extractor, so pages that differ only below the title look more alike than the build's frame-free "
      "measure sees them: the house is held to the more lenient count."),
-    ("On a PDF the reader's text blocks stand in for shapes, and a page set as many small blocks rarely matches another at 0.5: the "
-     "mckinsey PDF reads every page as its own archetype, and bcg's ten-page sector template splits into runs of 3 and 2."),
+    ("On a PDF the reader's text blocks stand in for shapes, and a page set as many small blocks rarely matches another at 0.5, so a "
+     "PDF house can read every page as its own archetype."),
     ("V counts adjacent pairs only: an arrangement used on every other page (A B A C A) reads 1.0; distinct compositions per page "
-     "is the figure that shows it, and nothing gates on it."),
-    "The exhibit-type vocabulary has 25 types against A.10's 10 families, so exhibit V comes out higher than the corpus figures.",
+     "is the figure that shows it."),
+    ("The exhibit-type vocabulary has 25 types, finer than the 10 families the corpus rates were counted in, so exhibit V comes out "
+     "higher than those rates."),
 )
 
 
@@ -499,11 +506,14 @@ def main(argv: list[str]) -> int:
     c.add_argument("plan")
     c.add_argument("--guide", required=True, help="the guide the section is built with (its archetype ids are the plan's)")
     c.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
-    c.add_argument("-o", "--out", default=None)
+    c.add_argument("-o", "--out", default=None, help="write the full report as JSON")
+    c.add_argument("--json", action="store_true", help="print the full report instead of the verdict")
     h = sub.add_parser("house", help="the house's variety, per deck and pooled")
     h.add_argument("--guide", required=True)
     h.add_argument("--house-deck", action="append", default=[])
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out")
     guide = load(args.guide)
     others = [load(p) for p in args.house_deck]
     names = [f"--guide {args.guide}", *(f"--house-deck {p}" for p in args.house_deck)]
@@ -518,9 +528,39 @@ def main(argv: list[str]) -> int:
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(text + "\n")
-    print(text)
+    if args.json:
+        print(text)
+    else:
+        print(verdict(report, args.out))
     return 0 if report["status"] == "pass" else 1
 
 
+def verdict(report: dict, out: str | None) -> str:
+    """The check in a few lines: status, every refusal and warning, each variety measure
+    against the house; the whole report is the JSON (-o, or --json)."""
+    lines = [f"plan check: {report['status']}"]
+    lines += [f"  refused: {r}" for r in report.get("refusals") or []]
+    lines += [f"  warning: {w}" for w in report.get("warnings") or []]
+    for key, v in (report.get("comparison") or {}).items():
+        if isinstance(v, dict) and "verdict" in v:
+            house = v.get("house_p10_deck", v.get("house_p10_window"))
+            lines.append(f"  {key}: {v.get('value')}, house 10th percentile {house} ({v['verdict']})")
+        elif isinstance(v, dict):
+            lines.append(f"  {key}: " + ", ".join(f"{k} {x}" for k, x in v.items()))
+        else:
+            lines.append(f"  {key}: {v}")
+    decks = (report.get("house") or {}).get("decks") or []
+    if len(decks) == 1:
+        lines.append("  note: the house is one deck, so each 10th percentile is that deck's own value; its exhibit and class V come "
+                     "from your digest reading, so a different reading moves these lines (pool sister decks with --house-deck)")
+    regs = report.get("title_registers") or {}
+    if regs:
+        lines.append(f"  title registers: plan {regs.get('plan')}, house {regs.get('house')}")
+    lines.append(f"  full report: {out}" if out else "  full report: pass -o FILE or --json")
+    return "\n".join(lines)
+
+
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

@@ -3,7 +3,7 @@
 
     extract_style.py reference.pptx -o guide.json [--report guide.md]
 
-What comes out is deckgen's reference-mode cascade, ported: observe every
+What comes out is a reference-mode cascade: observe every
 inheritance-resolved run, fill, line, table and chart on the slide layer; cluster
 sizes into levels and bind them to type roles; pool colours by how they are
 used and assign colour roles by painted area and WCAG contrast; mine spacing
@@ -39,6 +39,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
 from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, visual_extent  # noqa: E402
@@ -849,7 +850,7 @@ class Extractor:
                                                        votes_ink[muted].count / max(1, sum(v.count for v in votes_ink.values()))))
             else:
                 self.open("/color/roles/color.ink_muted", "no second ink with two or more runs reaches 3:1 on the surface",
-                          {"candidates": [h for h in inks_sorted if h != ink][:5], "deviation": "deckgen accepts one run; this port needs two"})
+                          {"candidates": [h for h in inks_sorted if h != ink][:5], "deviation": "one run is not enough; a secondary ink needs two"})
             inverse = next((h for h in inks_sorted if contrast(h, surface) < INK_INVERSE_CONTRAST_MAX and votes_ink[h].count >= 2), None)
             if inverse:
                 put("color.ink_inverse", inverse, observed(votes_ink[inverse].evidence, votes_ink[inverse].count, False, 1.0))
@@ -1597,7 +1598,7 @@ class Extractor:
                            "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam],
                            "provenance": observed([], len(vals), False, 1.0)}
         self.guide["floors"] = floors
-        self.guide["floors_note"] = ("absolute_floor_pt: product safety floor measured in deckgen E45 (7.0pt, both render media); never generate below max(floor_pt, absolute_floor_pt). "
+        self.guide["floors_note"] = ("absolute_floor_pt: product safety floor (7.0pt, measured on two screen media); never generate below max(floor_pt, absolute_floor_pt). "
                                      f"floor_pt is the smallest size the reference sets that is inside the Tukey lower fence or recurs on {MIN_LEVEL_OBSERVATIONS} or more pages; "
                                      f"{turned} runs in turned text (rotated shapes or blocks) are not samples")
         # an inferred role below its own family's measured floor cannot be emitted (the solver
@@ -1876,13 +1877,17 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--pages", default=None, help="PDF page range to treat as the deck, 1-based inclusive, e.g. 7-60 (after reading the triage)")
     ap.add_argument("--include-generated", action="store_true", help="count slides carrying the pptx-skill origin tag as evidence (skipped by default)")
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out", "report")
     pages = None
     if args.pages:
         lo, hi = args.pages.split("-")
         pages = (int(lo), int(hi))
     ex = Extractor(args.reference, args.max_pages, pages, args.include_generated)
     guide = ex.run()
-    out = Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json")
+    import cli
+    out = cli.out_path(Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json"), "guide draft")
+    cli.out_path(Path(args.report) if args.report else out.with_suffix(".md"), "report")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(guide, indent=1, default=str))
     rep = Path(args.report) if args.report else out.with_suffix(".md")
@@ -1899,4 +1904,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

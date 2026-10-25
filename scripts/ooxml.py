@@ -3,9 +3,9 @@
 
 The one OOXML reader behind the skill's scripts (fingerprint, extract_style,
 gallery). zipfile + lxml only; entities are never resolved; member counts and
-sizes are capped. Inheritance order and colour arithmetic follow deckgen's
-style/inheritance.py and style/drawml.py (see PORT_AUDIT.md); the reader is
-validated against deckgen's walker on the corpus decks, not against itself.
+sizes are capped. Inheritance order and colour arithmetic are ported (see
+PORT_AUDIT.md); the reader is validated against the walker it was ported from on
+the corpus decks, not against itself.
 
     ooxml.py deck.pptx            # JSON dump of every slide's resolved runs and shapes
 """
@@ -25,6 +25,7 @@ from pathlib import Path
 
 from lxml import etree
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from emit_pptx import ORIGIN_TAG_NAME, ORIGIN_TAG_VALUE  # noqa: E402  the producer of the tag this reader reads
 
@@ -2361,4 +2362,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

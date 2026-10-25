@@ -15,8 +15,7 @@ the guide (hexes are allowed ONLY under `color.roles` and `extra_roles`, which i
 colours enter); a type size may not sit below the family's floor. Patched values carry
 provenance `model_inference`. What the patch leaves open stays listed, so nothing closes
 by silence; a CORE address still open after the patch refuses the guide unless
---allow-partial, which lists it (deckgen prompts/style_completer/v2: "An address you leave
-out is as wrong as one you invent").
+--allow-partial, which lists it: an address left out is as wrong as one invented.
 
 Patch shape: {"<unresolved path>": <value>, ...}. Paths are JSON-pointer-like with the
 draft's spelling, e.g. "/typography/roles/type.footnote", "/color/roles/color.accent3",
@@ -40,6 +39,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
 
@@ -68,6 +68,82 @@ for fam, roles in {"body": ("type.body", "type.emphasis", "type.h1", "type.h2", 
 
 class PatchError(SystemExit):
     pass
+
+
+#: The value every open address takes: (address pattern, shape, what null means or None
+#: when null is refused). `--check` prints the line for each open address, and
+#: references/guide-completion.md carries this table as printed by `--shapes`.
+TYPE_ROLE_SHAPE = ('{"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional '
+                   '"line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"')
+VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
+    (r"/color/roles/color\.(surface|ink|accent1)", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)', None),
+    (r"/color/roles/[^/]+", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)',
+     'the house has no such colour: the role is recorded under absent_roles, and a page that names it is refused'),
+    (r"/extra_roles/[^/]+", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)', None),
+    (r"/typography/roles/type\.(title|body)", TYPE_ROLE_SHAPE, None),
+    (r"/typography/roles/[^/]+/members", ('the open members only: any of "weight", "italic", "family", "alignment", "case", "ink_role", '
+     '"line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", plus "why"; never "size_pt"'), None),
+    (r"/typography/roles/[^/]+/line_spacing", "a multiple of the size, e.g. 1.2", "single spacing (drawn at 1.2 x size)"),
+    (r"/typography/roles/[^/]+", TYPE_ROLE_SHAPE,
+     ('the house has no such text: recorded under absent_roles; a page that names the role is refused. One of '
+     'type.caption, type.footnote, type.source_line must stay answered')),
+    (r"/typography/families", '{"major": "<face>", "minor": "<face>"}', None),
+    (r"/typography/families/substitutes", '{"<face named in the file>": "<installed face measured in its place>"}', None),
+    (r"/typography/scale_ratio", "a number, e.g. 1.25", "the levels are not a geometric ladder"),
+    (r"/spacing/steps/[^/]+", "an integer EMU", None),
+    (r"/spacing/baseline_emu", "an integer EMU", "no baseline grid"),
+    (r"/density_bands/table_rows_per_inch", '{"metric": "table_rows_per_inch", "low", "high", "median", "n"}', "no table to measure"),
+    (r"/floors/[^/]+/floor_pt", "a number of points, never below absolute_floor_pt", "no run in this family: the absolute floor holds"),
+    (r"/shape_language/corner_radii", '{"modal_radius_emu": int, "rounded_share": 0..1, "why": "..."}', None),
+    (r"/shape_language/icon_style", 'a string, e.g. "none" or "white line icons in accent circles"', None),
+    (r"/imagery/register_kind", 'a string, e.g. "photographs, wide crops" or "none"', None),
+    (r"/tables", ('{"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules": {"table_top", "header_bottom", '
+     '"row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, '
+     '"cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"}'), None),
+    (r"/charts", ('{"series_color_roles": [roles in order], "per_kind": {"<bar|column|line|...>": {"gridlines_major": 0..1, '
+     '"data_labels": 0..1, "legend_position": "b|r|t|l|none"}}, "why"}'), None),
+    (r"/continuation", '{"header_repeat": "full|none", "contd_mark": "<text>", "takeaway_policy": "repeat|first_only|none"}', None),
+    (r"/description", '{"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "never_does": [...], "tone"}', None),
+    (r"/derivation_rules", "a list of sentences", None),
+    (r"/titles/register", "see Titles below", None),
+    (r"/variety/content_pages", "a list of page numbers", None),
+    (r"/exhibit_habits", "never in the patch: answered by --digest DIR", None),
+    (r"/notes/[^/]+", "a string", None),
+)
+TABLE_KEYS = {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules", "cell_padding_role", "cell_padding_emu",
+              "alignment_by_column_type", "totals_rule", "merged_cell_convention", "why", "provenance"}
+CHART_KEYS = {"series_color_roles", "per_kind", "why", "provenance"}
+ABSENT_SHAPE = "absent_roles"
+
+
+def value_shape(path: str) -> tuple[str, str | None] | None:
+    for pattern, shape, null in VALUE_SHAPES:
+        if re.fullmatch(pattern, path):
+            return shape, null
+    return None
+
+
+def shape_error(path: str, value) -> str | None:
+    """The answer's shape against the address's, before anything is applied: a null where
+    null is refused names what to write instead; a /tables or /charts key nothing reads is
+    refused by name, so a key cannot look like a setting it is not."""
+    found = value_shape(path)
+    if found is None:
+        return None
+    shape, null = found
+    if value is None:
+        if null is None:
+            return f"{path}: null is not an answer here; write {shape}"
+        return None
+    if path in ("/tables", "/charts"):
+        if not isinstance(value, dict):
+            return f"{path}: expected {shape}"
+        keys = TABLE_KEYS if path == "/tables" else CHART_KEYS
+        stray = sorted(set(value) - keys)
+        if stray:
+            return (f"{path}: {stray} {'is' if len(stray) == 1 else 'are'} read by nothing; {path} takes {sorted(keys - {'provenance'})}. "
+                    "A source-line habit is not a chart setting: it is measured from the digest (each page's source_line)")
+    return None
 
 
 def model_prov(note: str = "", value=None) -> dict:
@@ -280,6 +356,12 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
         if not isinstance(exhibits, list):
             errors.append(f"slide {slide}: exhibits not answered (an empty list states the page has none)")
             continue
+        data_page = any(isinstance(ex, dict) and ex.get("class") in plan.DATA_CLASSES for ex in exhibits)
+        line = page.get("source_line")
+        if data_page and not isinstance(line, bool):
+            errors.append(f"slide {slide}: source_line {line!r}; a page holding a data chart or a table answers true or false")
+        elif not data_page and line is not None:
+            errors.append(f"slide {slide}: source_line {line!r} on a page with no data chart or table; leave it null")
         candidates = set(want[slide])
         # one candidate may hold several exhibits (a grid and the chart beside it), but two
         # records that say the same thing about the same place are one exhibit counted twice
@@ -334,7 +416,13 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
 
     pages = answered
     moves = [(r, m["move"]) for r in records for m in r["annotation_moves"]]
+    data_pages = [p for p in pages if p.get("source_line") is not None]
+    sourced = [p["slide"] for p in data_pages if p["source_line"]]
     return {
+        "source_lines": {"data_pages": len(data_pages), "with_source_line": len(sourced), "pages_with": sourced,
+                         "pages_without": [p["slide"] for p in data_pages if not p["source_line"]],
+                         "share": round(len(sourced) / len(data_pages), 3) if data_pages else None,
+                         "definition": "pages holding a data chart or a table, and how many of them carry a source or note line"},
         "sample": {"pages_read": len(pages), "pages_with_exhibits": sum(1 for p in pages if p["exhibits"]),
                    "pages_without": [p["slide"] for p in pages if not p["exhibits"]], "exhibits": len(records),
                    "policy": stub.get("sample_policy") or "every evidence page the digest cut"},
@@ -390,125 +478,164 @@ def core_open(guide: dict) -> list[str]:
     return out
 
 
-def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[dict, list[str]]:
-    """Fold the patch in. `digest_stub` is the gallery's digest.stub.json, read by --digest
-    beside the completed digest: /exhibit_habits is checked against it, and refused without it."""
+def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[dict, list[str], list[str]]:
+    """Fold the patch in, every address, and return each refusal rather than stopping at
+    the first: (guide, applied, refusals). `digest_stub` is the gallery's digest.stub.json,
+    read by --digest beside the completed digest: /exhibit_habits is checked against it, and
+    refused without it."""
     guide = copy.deepcopy(guide)
     open_paths = {u["path"]: u for u in guide.get("unresolved", [])}
     applied: list[str] = []
     # colour roles first, so later references resolve
     ordered = sorted(patch.items(), key=lambda kv: (0 if kv[0].startswith("/color/roles/") or kv[0].startswith("/extra_roles/") else 1, kv[0]))
+    refusals: list[str] = []
     for path, value in ordered:
-        check_writable(guide, path, value, open_paths)
-        parts = [p for p in path.split("/") if p]
-        if parts[0] == "color" and parts[1] == "roles":
-            role = parts[2]
-            if isinstance(value, str) and HEX_RE.match(value):
-                guide["color"]["roles"][role] = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
-            elif isinstance(value, dict) and HEX_RE.match(value.get("hex", "")):
-                guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
-            else:
-                raise PatchError(f"{path}: expected a hex colour")
-        elif parts[0] == "extra_roles":
-            # the same two forms a colour role takes: a bare hex, or {"hex", "why"} (SKILL.md
-            # section 3 asks for the why, so the object form is the documented one)
-            if isinstance(value, str) and HEX_RE.match(value):
-                spec = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
-            elif isinstance(value, dict) and isinstance(value.get("hex"), str) and HEX_RE.match(value["hex"]):
-                spec = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
-            else:
-                raise PatchError(f"{path}: expected a hex colour, or {{\"hex\": \"RRGGBB\", \"why\": \"...\"}}")
-            guide["extra_roles"] = guide.get("extra_roles") or {}
-            guide["extra_roles"][parts[1]] = spec
-        elif parts[0] == "typography" and parts[1] == "roles":
-            role = parts[2]
-            roles = guide["typography"]["roles"]
-            if len(parts) == 3:
-                if role in roles and not roles[role].get("partial"):
-                    raise PatchError(f"{path}: {role} is observed")
-                if not isinstance(value, dict) or "size_pt" not in value:
-                    raise PatchError(f"{path}: a role needs at least size_pt")
-                spec = {k: value.get(k) for k in TYPE_MEMBERS}
-                if float(spec["size_pt"]) < floor_for(guide, role):
-                    raise PatchError(f"{path}: {spec['size_pt']}pt is below the {FLOOR_FAMILY.get(role)} floor {floor_for(guide, role)}pt")
-                spec.setdefault("weight", 400)
-                spec["provenance"] = model_prov(value.get("why", ""), value)
-                roles[role] = spec
-            elif parts[3] == "members":
-                if role not in roles:
-                    raise PatchError(f"{path}: {role} has no derived size to complete")
-                for k, v in value.items():
-                    if k not in TYPE_MEMBERS or k == "size_pt":
-                        raise PatchError(f"{path}: {k} is not a completable member")
-                    roles[role][k] = v
-                roles[role]["partial"] = False
-                roles[role]["provenance"]["evidence"].append("members by completion")
-            else:
-                member = parts[3]
-                if member == "line_spacing":
-                    # null is an answer: the role keeps single spacing (1.2 x size, the
-                    # renderer's measured default when no lnSpc is written)
-                    roles[role]["line_spacing"] = None if value is None else float(value)
-                else:
-                    raise PatchError(f"{path}: member {member} is not open")
-            check_color_refs(guide, value if isinstance(value, dict) else {}, path)
-        elif path == "/titles/register":
-            guide["titles"]["register"] = title_register(guide, value)
-        elif path == "/exhibit_habits":
-            guide["exhibit_habits"] = exhibit_habits(guide, value, digest_stub)
-        elif path == "/variety/content_pages":
-            guide["variety"]["content_pages"] = content_pages(guide, value)
-        elif path in SECTION_PATHS:
-            check_color_refs(guide, value, path)
-            if path == "/tables" and isinstance(value, dict):
-                for k in ("header_fill_role", "header_ink_role", "banding_role"):
-                    value.setdefault(k, None)
-                value.setdefault("provenance", model_prov("completion"))
-            if path == "/typography/families/substitutes":
-                # stand-in faces for measurement only: the file names the real face
-                guide["typography"].setdefault("families", {})["substitutes"] = dict(value)
-            elif path == "/typography/scale_ratio":
-                # null is an answer: the ladder is not geometric, and nothing reads a ratio
-                guide["typography"]["scale_ratio"] = None if value is None else float(value)
-            elif path == "/spacing/baseline_emu":
-                guide["spacing"]["baseline_emu"] = int(value) if value is not None else None
-            elif path == "/density_bands/table_rows_per_inch":
-                guide["density_bands"]["table_rows_per_inch"] = value
-            elif path.startswith("/shape_language/") or path.startswith("/color/"):
-                guide[parts[0]][parts[1]] = value
-            else:
-                guide[parts[0]] = value
-        elif path.startswith("/floors/"):
-            fam = parts[1]
-            guide["floors"][fam]["floor_pt"] = max(float(value), float(guide["floors"][fam].get("absolute_floor_pt") or 0))
-        elif path.startswith("/spacing/steps/"):
-            guide["spacing"]["steps"][parts[2]] = {"emu": int(value), "provenance": model_prov("completion")}
-        elif path.startswith("/notes"):
-            guide.setdefault("notes", []).append(str(value))
-        else:
-            # any other open leaf: set it where the draft addressed it
-            node = guide
-            for key in parts[:-1]:
-                if not isinstance(node.get(key), dict):
-                    node[key] = {}
-                node = node[key]
-            node[parts[-1]] = value
+        try:
+            apply_one(guide, path, value, open_paths, digest_stub)
+        except PatchError as error:
+            refusals.append(str(error))
+            continue
         applied.append(path)
         open_paths.pop(path, None)
-    # a completed table must name real roles the emitter can resolve
-    tables = guide.get("tables")
-    if isinstance(tables, dict):
-        colors = dict(guide.get("color", {}).get("roles", {}))
-        colors.update(guide.get("extra_roles") or {})
-        for k in ("header_fill_role", "header_ink_role", "banding_role"):
-            if tables.get(k) and tables[k] not in colors:
-                raise PatchError(f"/tables/{k}: {tables[k]} is not a colour role")
+    if not refusals:
+        refusals += table_role_errors(guide)
     guide["unresolved"] = [u for u in guide.get("unresolved", []) if u["path"] in open_paths]
     if (guide.get("variety") or {}).get("pages"):
         # re-measured on every completion: the content pages or the exhibit types may have just been answered
         guide["variety"]["measure"] = plan.house_deck(guide)
     guide.setdefault("completion", {"applied": []})["applied"].extend(applied)
-    return guide, applied
+    return guide, applied, refusals
+
+
+def table_role_errors(guide: dict) -> list[str]:
+    """A completed table must name real roles the emitter can resolve."""
+    tables = guide.get("tables")
+    if not isinstance(tables, dict):
+        return []
+    colors = dict(guide.get("color", {}).get("roles", {}))
+    colors.update(guide.get("extra_roles") or {})
+    return [f"/tables/{k}: {tables[k]} is not a colour role" for k in ("header_fill_role", "header_ink_role", "banding_role")
+            if tables.get(k) and tables[k] not in colors]
+
+
+def record_absent(guide: dict, path: str, role: str, why: str) -> None:
+    guide.setdefault(ABSENT_SHAPE, {})[role] = {"address": path, "why": why, "provenance": model_prov(why)}
+
+
+def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict | None) -> None:
+    check_writable(guide, path, value, open_paths)
+    err = shape_error(path, value)
+    if err:
+        raise PatchError(err)
+    parts = [p for p in path.split("/") if p]
+    if parts[0] == "color" and parts[1] == "roles" and value is None:
+        guide["color"]["roles"].pop(parts[2], None)
+        record_absent(guide, path, parts[2], "answered null: the house shows no such colour")
+    elif parts[0] == "typography" and parts[1] == "roles" and len(parts) == 3 and value is None:
+        guide["typography"]["roles"].pop(parts[2], None)
+        record_absent(guide, path, parts[2], "answered null: the house sets no such text")
+    elif parts[0] == "color" and parts[1] == "roles":
+        role = parts[2]
+        if isinstance(value, str) and HEX_RE.match(value):
+            guide["color"]["roles"][role] = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
+        elif isinstance(value, dict) and HEX_RE.match(value.get("hex", "")):
+            guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
+        else:
+            raise PatchError(f"{path}: expected a hex colour")
+    elif parts[0] == "extra_roles":
+        # the same two forms a colour role takes: a bare hex, or {"hex", "why"} (SKILL.md
+        # section 3 asks for the why, so the object form is the documented one)
+        if isinstance(value, str) and HEX_RE.match(value):
+            spec = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
+        elif isinstance(value, dict) and isinstance(value.get("hex"), str) and HEX_RE.match(value["hex"]):
+            spec = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
+        else:
+            raise PatchError(f"{path}: expected a hex colour, or {{\"hex\": \"RRGGBB\", \"why\": \"...\"}}")
+        guide["extra_roles"] = guide.get("extra_roles") or {}
+        guide["extra_roles"][parts[1]] = spec
+    elif parts[0] == "typography" and parts[1] == "roles":
+        role = parts[2]
+        roles = guide["typography"]["roles"]
+        if len(parts) == 3:
+            if role in roles and not roles[role].get("partial"):
+                raise PatchError(f"{path}: {role} is observed")
+            if not isinstance(value, dict) or "size_pt" not in value:
+                raise PatchError(f"{path}: a role needs at least size_pt")
+            spec = {k: value.get(k) for k in TYPE_MEMBERS}
+            if float(spec["size_pt"]) < floor_for(guide, role):
+                fam = FLOOR_FAMILY.get(role, "body")
+                observed = ((guide.get("floors") or {}).get(fam) or {}).get("floor_pt") is not None and "/floors/" + fam + "/floor_pt" not in open_paths
+                raise PatchError(f"{path}: {spec['size_pt']}pt is below the {fam} floor {floor_for(guide, role)}pt"
+                                 + (f"; that floor is the smallest {fam} text the reference sets as text, observed, so it cannot be lowered. "
+                                    f"Answer {floor_for(guide, role)}pt or more; if the house's own tables are pictures set smaller, "
+                                    "native tables will read larger than they do: say so in the report" if observed else ""))
+            spec.setdefault("weight", 400)
+            spec["provenance"] = model_prov(value.get("why", ""), value)
+            roles[role] = spec
+        elif parts[3] == "members":
+            if role not in roles:
+                raise PatchError(f"{path}: {role} has no derived size to complete")
+            if not isinstance(value, dict):
+                raise PatchError(f"{path}: expected {value_shape(path)[0]}")  # type: ignore[index]
+            bad = sorted(k for k in value if k == "size_pt" or (k not in TYPE_MEMBERS and k != "why"))
+            if bad:
+                raise PatchError(f"{path}: {bad} {'is' if len(bad) == 1 else 'are'} not completable here; write {value_shape(path)[0]}")  # type: ignore[index]
+            for k, v in value.items():
+                if k != "why":
+                    roles[role][k] = v
+            roles[role]["partial"] = False
+            roles[role]["provenance"]["evidence"].append("members by completion" + (f": {value['why']}" if value.get("why") else ""))
+        else:
+            member = parts[3]
+            if member == "line_spacing":
+                # null is an answer: the role keeps single spacing (1.2 x size, the
+                # renderer's measured default when no lnSpc is written)
+                roles[role]["line_spacing"] = None if value is None else float(value)
+            else:
+                raise PatchError(f"{path}: member {member} is not open")
+        check_color_refs(guide, value if isinstance(value, dict) else {}, path)
+    elif path == "/titles/register":
+        guide["titles"]["register"] = title_register(guide, value)
+    elif path == "/exhibit_habits":
+        guide["exhibit_habits"] = exhibit_habits(guide, value, digest_stub)
+    elif path == "/variety/content_pages":
+        guide["variety"]["content_pages"] = content_pages(guide, value)
+    elif path in SECTION_PATHS:
+        check_color_refs(guide, value, path)
+        if path == "/tables" and isinstance(value, dict):
+            for k in ("header_fill_role", "header_ink_role", "banding_role"):
+                value.setdefault(k, None)
+            value.setdefault("provenance", model_prov("completion"))
+        if path == "/typography/families/substitutes":
+            # stand-in faces for measurement only: the file names the real face
+            guide["typography"].setdefault("families", {})["substitutes"] = dict(value)
+        elif path == "/typography/scale_ratio":
+            # null is an answer: the ladder is not geometric, and nothing reads a ratio
+            guide["typography"]["scale_ratio"] = None if value is None else float(value)
+        elif path == "/spacing/baseline_emu":
+            guide["spacing"]["baseline_emu"] = int(value) if value is not None else None
+        elif path == "/density_bands/table_rows_per_inch":
+            guide["density_bands"]["table_rows_per_inch"] = value
+        elif path.startswith("/shape_language/") or path.startswith("/color/"):
+            guide[parts[0]][parts[1]] = value
+        else:
+            guide[parts[0]] = value
+    elif path.startswith("/floors/"):
+        fam = parts[1]
+        # null: no run in this family, so the absolute floor is the floor (floor_for)
+        guide["floors"][fam]["floor_pt"] = None if value is None else max(float(value), float(guide["floors"][fam].get("absolute_floor_pt") or 0))
+    elif path.startswith("/spacing/steps/"):
+        guide["spacing"]["steps"][parts[2]] = {"emu": int(value), "provenance": model_prov("completion")}
+    elif path.startswith("/notes"):
+        guide.setdefault("notes", []).append(str(value))
+    else:
+        # any other open leaf: set it where the draft addressed it
+        node = guide
+        for key in parts[:-1]:
+            if not isinstance(node.get(key), dict):
+                node[key] = {}
+            node = node[key]
+        node[parts[-1]] = value
 
 
 def load_json(path: Path):
@@ -528,18 +655,30 @@ def load_json(path: Path):
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("guide")
+    ap.add_argument("guide", nargs="?")
     ap.add_argument("patch", nargs="?")
+    ap.add_argument("--shapes", action="store_true", help="print the value every address takes, and what null means there")
     ap.add_argument("-o", "--out")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--allow-partial", action="store_true", help="write the guide with core addresses still open, and list them")
     ap.add_argument("--digest", default=None, help="the gallery.py digest directory: digest.stub.json as cut, and digest.json, the completed "
                     "copy, which answers /exhibit_habits")
     args = ap.parse_args(argv)
-    guide = json.loads(Path(args.guide).read_text())
+    if not args.shapes and not args.guide:
+        ap.error("a guide draft is required (or --shapes)")
+    guide = json.loads(Path(args.guide).read_text()) if args.guide else {}
+    if args.shapes:
+        print("| address | value | null means |\n|---|---|---|")
+        def cell(text: str) -> str:
+            return text.replace("|", "\\|")
+        for pattern, shape, null in VALUE_SHAPES:
+            address = pattern.replace("[^/]+", "<name>").replace("\\.", ".")
+            print(f"| `{cell(address)}` | {cell(shape)} | {cell(null or 'refused')} |")
+        return 0
     if args.check or not args.patch:
         for u in guide.get("unresolved", []):
-            print(f"- {u['path']}: {u['reason']}")
+            found = value_shape(u["path"])
+            print(f"- {u['path']}: {u['reason']}" + (f"\n    value: {found[0]}; null: {found[1] or 'refused'}" if found else ""))
         print(f"{len(guide.get('unresolved', []))} open; core open: {core_open(guide) or 'none'}")
         return 0
     patch = load_json(Path(args.patch))
@@ -554,14 +693,18 @@ def main(argv: list[str]) -> int:
                                  "holding the stub as cut and the completed copy beside it")
         stub = load_json(folder / "digest.stub.json")
         patch["/exhibit_habits"] = load_json(folder / "digest.json")
-    guide, applied = apply(guide, patch, stub)
+    guide, applied, refusals = apply(guide, patch, stub)
     core = core_open(guide)
     if core and not args.allow_partial:
-        raise PatchError(f"core addresses still open after the patch: {core}; answer them, or pass --allow-partial to write "
-                         f"a guide that lists them")
+        refusals.append(f"core addresses still open after the patch: {core}; answer them, or pass --allow-partial to write "
+                        f"a guide that lists them")
+    if refusals:
+        raise PatchError(f"refused, {len(refusals)} problem{'s' if len(refusals) > 1 else ''} (nothing written; {len(applied)} other "
+                         "address(es) applied cleanly):\n" + "\n".join(f"{i}. {r}" for i, r in enumerate(refusals, 1)))
     if core:
         guide["completion"]["core_open"] = core
-    out = Path(args.out) if args.out else Path(args.guide).with_name(Path(args.guide).stem.replace(".style", "") + ".guide.json")
+    import cli
+    out = cli.out_path(Path(args.out) if args.out else Path(args.guide).with_name(Path(args.guide).stem.replace(".style", "") + ".guide.json"), "guide")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(guide, indent=1, default=str))
     print(json.dumps({"out": str(out), "applied": applied, "core_open": core,
@@ -570,4 +713,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

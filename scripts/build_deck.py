@@ -37,9 +37,10 @@ After the solve and before the emit, four more instruments read the resolved pag
 labels included, against the fill the page draws behind it; below 3.0:1 refuses the
 page with reason "contrast", below AA warns; no ink is ever swapped to pass it), `register` (kind counts, decoration count and container ratio against the
 reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
-a warning listed first under `problems`), and the source-line rule (a table or chart
-with no type.source_line or type.footnote paragraph refuses the page with reason "no
-source line"), and `title` (the page title's characters, words and lines against the house's
+a warning listed first under `problems`), the source-line check (a table or chart with
+no type.source_line or type.footnote paragraph refuses the page where the house's digest
+shows source lines on at least 80% of its data pages, unmeasured threshold, and warns
+elsewhere), and `title` (the page title's characters, words and lines against the house's
 titles, and the register the slide states against the house's register counts; warnings only).
 `repetition` at deck level is the section's realised variety: each page's content (the
 frame left out) assigned a realised composition by the extractor's own leader clustering,
@@ -63,6 +64,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import annotate  # noqa: E402
 import component_api  # noqa: E402
@@ -70,7 +72,7 @@ import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
 from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
-from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity  # noqa: E402
+from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import paragraphs_words, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
@@ -232,6 +234,37 @@ def normalise(node: dict, slide: dict) -> dict:
     return node
 
 
+#: A text box whose lines fill less than this share of its height is listed under density
+#: (unmeasured: a reading aid for the review, never a gate).
+EMPTY_BOX_SHARE = 0.4
+
+
+def ink_boxes(elements: list[dict], resolved: dict) -> list[tuple[int, int, int, int]]:
+    """What a page draws, as boxes: a text element's measured lines (from its box top, at
+    the paragraph spacing and pitch the solver measured, each line as wide as its text),
+    a table's fitted rows, every other element's box. An annotation's text, which the
+    solver did not measure, counts at its box."""
+    out: list[tuple[int, int, int, int]] = []
+    for el in elements:
+        box = el.get("box")
+        if not box:
+            continue
+        measured = (resolved.get("elements") or {}).get(el.get("id"))
+        if el.get("kind") == "text" and measured and measured.get("kind") == "text":
+            y = box[1]
+            for p in measured["paragraphs"]:
+                y += p["spcBef"] * L.EMU_PER_HUNDREDTH_POINT
+                for width in p["line_widths_emu"]:
+                    out.append((box[0] + int(p.get("marL") or 0), y, int(width), int(p["pitch_emu"])))
+                    y += int(p["pitch_emu"])
+                y += p["spcAft"] * L.EMU_PER_HUNDREDTH_POINT
+        elif el.get("kind") == "table" and measured and measured.get("kind") == "table":
+            out.append((box[0], box[1], box[2], min(box[3], int(measured["total_height_emu"]))))
+        else:
+            out.append(tuple(box))  # type: ignore[arg-type]
+    return out
+
+
 def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict) -> dict:
     """Words, elements and covered area of the page against the reference's own bands
     (10th to 90th percentile): below the band is sparse for this house, above it denser
@@ -246,10 +279,22 @@ def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict
             words += sum(len(str(c).split()) for row in el.get("rows", []) for c in row) + sum(len(c.get("label", "").split()) for c in el.get("columns", []))
     n_elements = sum(1 for el in elements if el.get("kind") not in ("rule",) and not el.get("_spacer"))
     page = spec_raw.get("page", {})
-    page_area = max(1, page.get("width_emu", 1) * page.get("height_emu", 1))
-    covered = sum(el["box"][2] * el["box"][3] for el in elements if el.get("box")) / page_area
+    pw, ph = page.get("width_emu", 1), page.get("height_emu", 1)
+    covered = union_area(ink_boxes(elements, resolved), pw, ph) / max(1, pw * ph)
     bands = guide.get("density_bands", {})
-    out = {"words": words, "elements": n_elements, "covered_area_fraction": round(covered, 3)}
+    empty = []
+    for el in elements:
+        measured = (resolved.get("elements") or {}).get(el.get("id"))
+        if el.get("kind") == "text" and measured and measured.get("kind") == "text" and el["box"][3] > 0:
+            share = 1 - min(1.0, measured["height_emu"] / el["box"][3])
+            if share >= EMPTY_BOX_SHARE:
+                empty.append({"id": el["id"], "text_ends_in": round((el["box"][1] + measured["height_emu"]) / EMU_PER_INCH, 2),
+                              "box_ends_in": round((el["box"][1] + el["box"][3]) / EMU_PER_INCH, 2), "empty_share": round(share, 2)})
+    out = {"words": words, "elements": n_elements, "covered_area_fraction": round(covered, 3),
+           "text_boxes_mostly_empty": empty or "none",
+           "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image "
+                            "and fill at its box, unioned; a text box stretched past its lines is not covered. The house band "
+                            "unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous"}
     for key, value in (("words_per_slide", words), ("elements_per_slide", n_elements), ("content_area_fraction", covered)):
         band = bands.get(key) or {}
         if band.get("low") is None or band.get("high") is None:
@@ -618,7 +663,7 @@ def frame_tracks(pages: list[tuple[int, list[dict]]], guide: dict) -> list[dict]
     return [t for t in element_tracks(pages, drift_step(guide)) if set(t["pages"]) == every and t["kind"] not in ("table", "chart", "image")]
 
 
-REALISED_CLASS = {"table": "table", "chart": "data_chart"}  # element kinds whose exhibit class is the kind itself (page_craft_vocabulary exhibit_class)
+REALISED_CLASS = plan.REALISED_CLASS
 BUILD_UNREAD = {"exhibits": "the build knows element kinds, not exhibit types; the plan's exhibit types are declared",
                 "classes": "a component or an image on the page: its exhibit class is not its element kind"}
 
@@ -716,7 +761,7 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
                           "realised": [realised[pair["pages"][0]], realised[pair["pages"][1]]], "similarity": pair["similarity"],
                           "detail": (f"planned to repeat {a['composition']} ({b['deliberate_parallel'] or 'undeclared'}) but built differently"
                                      if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")})
-    out["plan"] = {"check": {k: (plan_check or {}).get(k) for k in ("status", "refusals", "warnings")}, "measure": mine,
+    out["plan"] = {"check": {k: (plan_check or {}).get(k) for k in ("status", "refusals", "warnings", "subset")}, "measure": mine,
                    "composition_V": {"planned": (mine.get("composition") or {}).get("V"), "realised": (built.get("composition") or {}).get("V")},
                    "exhibits_V": {"planned": (mine.get("exhibits") or {}).get("V"), "realised": "not measured: " + BUILD_UNREAD["exhibits"]},
                    "classes_V": {"planned": "not declared: " + plan.PLAN_UNREAD["classes"], "realised": (built.get("classes") or {}).get("V", (built.get("classes") or {}).get("why"))},
@@ -834,17 +879,40 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
 
 
 def source_line_missing(elements: list[dict]) -> bool:
-    """A page carrying a table or a chart needs a type.source_line or type.footnote."""
-    exhibit = any(el["kind"] in ("table", "chart") for el in elements)
+    """A data page (a table or a chart, plan.REALISED_CLASS) with no type.source_line or
+    type.footnote paragraph."""
+    exhibit = any(el["kind"] in REALISED_CLASS for el in elements)
     sourced = any(p["role"] in SOURCE_ROLES for el in elements if el["kind"] == "text" for p in el["paragraphs"])
     return exhibit and not sourced
+
+
+#: Unmeasured: the house carries source lines "as a rule" when at least this share of its
+#: data pages does, read from the completed digest over at least SOURCE_LINE_MIN_PAGES data
+#: pages. Both numbers are choices; no reader has been asked where the rule begins.
+SOURCE_LINE_HOUSE_SHARE = 0.8
+SOURCE_LINE_MIN_PAGES = 3
+
+
+def source_line_habit(guide: dict) -> dict:
+    """The house's source-line habit from the digest: refuse when it is the rule, warn
+    otherwise. A guide whose digest has no source-line answers has no evidence, which is
+    never read as 'the house carries none'."""
+    lines = (guide.get("exhibit_habits") or {}).get("source_lines")
+    if not isinstance(lines, dict) or lines.get("share") is None:
+        return {"severity": "warning", "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"}
+    n, k = lines["data_pages"], lines["with_source_line"]
+    if n < SOURCE_LINE_MIN_PAGES:
+        return {"severity": "warning", "evidence": f"{k} of {n} data pages carry one: fewer than {SOURCE_LINE_MIN_PAGES} data pages is no evidence of a rule"}
+    rule = lines["share"] >= SOURCE_LINE_HOUSE_SHARE
+    return {"severity": "refusal" if rule else "warning",
+            "evidence": f"{k} of {n} house data pages carry one ({lines['share']:.0%}; the rule threshold {SOURCE_LINE_HOUSE_SHARE:.0%} is unmeasured)"}
 
 
 def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
                   precedent: dict | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, bridge ties, the measured checks), then
-    the source-line warning (the house's source-line habit is not measured). A refusal turns a fit
+    the source-line problem (source_line_habit). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
     entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent)
@@ -863,12 +931,11 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in entry["bridge_ties"])
     problems.extend(measured or [])
     if source_line_missing(elements):
-        # a warning, not a refusal: whether the house carries source lines as a rule is not
-        # measured (TARGET_SPEC 17.9, 23.5: source lines on 23 of 111 and 27 of 121 data pages
-        # in two consulting groups, 2 of 33 data exhibits in the native-pptx bank decks)
-        problems.append({"kind": "no source line", "severity": "warning",
-                         "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; the house's "
-                                   "source-line habit is not measured, so this warns: look at the reference's data pages and add one where the house does"})
+        habit = source_line_habit(guide)
+        problems.append({"kind": "no source line", "severity": habit["severity"],
+                         "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; house: "
+                                   + habit["evidence"] + ("; the house carries them as a rule, so the page is refused: add one" if habit["severity"] == "refusal"
+                                                          else "; add one where the house would")})
     refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
     entry["solver_status"] = entry["status"]  # the geometry verdict alone; component.py's harness page reads it
     if refusals and entry["status"] == "fit":
@@ -1284,9 +1351,158 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
     return out
 
 
+def solve_slide(slide: dict, guide: dict, chrome: str, lg: L.Guide, ruler, index, api: dict, scale: L.Fraction | None = None) -> tuple[dict, L.Context, L.Outcome]:
+    """One page as the build solves it: presentation keys lifted, measured weights marked,
+    the page prepared (guide page size, chrome zones, title band), components probed and
+    expanded at their boxes, then the scale descent; or, given `scale`, one attempt at that
+    scale only. The build and `layout.py capacity` both call this, so a capacity budget is
+    the page the build solves. `slide` is updated as the build updates it (styling, rects,
+    spacers, component notes)."""
+    spec_raw = json.loads(json.dumps(slide["spec"]))
+    spec_raw["root"] = normalise(spec_raw["root"], slide)
+    mark_measured_weights(spec_raw["root"], slide, guide)
+    prepare_page(spec_raw, guide, chrome)
+    # components: probe once with placeholders to learn their boxes, then expand at those boxes
+    tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
+    if pending:
+        # the probe measures the text around the placeholder first, so the component gets
+        # the space the text leaves and not an equal share with a one-line source
+        probe_spec = L.parse_spec({**spec_raw, "root": tree})
+        attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
+        probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
+        tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
+    spec_raw["root"] = tree
+    mark_measured_weights(tree, slide, guide)  # a component's tables too
+    spec = L.parse_spec(spec_raw)
+    ctx = L.Context(lg, ruler, index, spec)
+    if scale is None:
+        return spec_raw, ctx, L.descend(ctx)
+    attempt = L._attempt(ctx, scale)
+    return spec_raw, ctx, L.Outcome("fit" if attempt.fits else "unfittable", attempt.resolved, [attempt], attempt.refusal or "violations at this scale", scale)
+
+
+#: Text appended to an element to find its budget: mean-advance English with figures.
+FILLER = (L.REFERENCE_ALPHABET + " ") * 200
+CAPACITY_MAX_CHARS = 4000
+
+
+def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
+    """The text budget of every text element the slide's spec names, on the page the build
+    solves (solve_slide): its solved box, lines and characters now, and how many characters
+    more it takes before the page stops fitting at full scale, found by solving the page
+    with filler text appended to the element's last paragraph (bisection on the count;
+    every probe is the build's own solve, chrome zones and title band included). A page
+    that does not fit at full scale has no budget: the build would descend the scale."""
+    import copy
+    lg = L.load_guide(guide)
+    ruler, index = L.default_ruler(), L.default_index()
+    api = component_api.make_api(guide, lg, ruler, index)
+    one = L.Fraction(1)
+    base_slide = copy.deepcopy(slide)
+    base_raw, _, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index, api)
+    out: dict = {"id": slide.get("id"), "ruler": ruler.name, "status": outcome.status,
+                 "scale": None if outcome.resolved is None else float(outcome.resolved.scale),
+                 "reserved_zones_in": {z.get("source"): [round(z[k] / EMU_PER_INCH, 2) for k in ("left", "top", "width", "height")]
+                                       for z in base_raw["page"].get("reserved_zones") or []}, "elements": []}
+    if outcome.resolved is None:
+        out["reason"] = outcome.reason
+        return out
+    _, _, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, one)
+    fits_full = full.status == "fit"
+    texts: list[dict] = []
+
+    def walk(node: dict, path: tuple) -> None:
+        if node.get("type") == "region":
+            for i, c in enumerate(node.get("children", [])):
+                walk(c, path + (i,))
+        elif node.get("kind") == "text" and node.get("paragraphs"):
+            texts.append({"node": node, "path": path})
+        elif node.get("type") == "component":
+            out.setdefault("components", []).append({"id": node.get("id"), "kind": node.get("kind"),
+                                                     "budget": "measured by the component itself (component_api); its box is in the build report"})
+
+    walk(slide["spec"]["root"], ())
+
+    def with_filler(path: tuple, n: int) -> dict:
+        probe = copy.deepcopy(slide)
+        node = probe["spec"]["root"]
+        for i in path:
+            node = node["children"][i]
+        last = node["paragraphs"][-1]
+        last["text"] = (last.get("text") or "") + (" " + FILLER[:n] if n else "")
+        return probe
+
+    def fits(path: tuple, n: int) -> tuple[bool, L.Outcome]:
+        try:
+            _, _, o = solve_slide(with_filler(path, n), guide, chrome, lg, ruler, index, api, one)
+        except SystemExit:
+            return False, None  # type: ignore[return-value]
+        return o.status == "fit", o
+
+    for t in texts:
+        node = t["node"]
+        nid = node["id"]
+        box = outcome.resolved.boxes.get(nid)
+        meas = outcome.resolved.measurements.get(nid) or []
+        entry = {"id": nid, "role": node["paragraphs"][-1].get("role"),
+                 "box_in": None if box is None else [round(v / EMU_PER_INCH, 2) for v in (box.left, box.top, box.width, box.height)],
+                 "lines_now": sum(len(m.lines) for m in meas), "chars_now": sum(len(p.get("text") or "") for p in node["paragraphs"])}
+        if not fits_full:
+            entry["chars_free"] = 0
+            entry["why"] = (f"the page fits only at scale {out['scale']}: it is already over its full-scale budget; cut words or re-arrange"
+                            if outcome.status == "fit" else "the page does not fit: " + (outcome.reason or "see the build report"))
+            out["elements"].append(entry)
+            continue
+        lo, hi, best = 0, 64, full
+        while hi <= CAPACITY_MAX_CHARS:
+            ok, o = fits(t["path"], hi)
+            if not ok:
+                break
+            lo, best, hi = hi, o, hi * 2
+        else:
+            hi = CAPACITY_MAX_CHARS + 1
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            ok, o = fits(t["path"], mid)
+            if ok:
+                lo, best = mid, o
+            else:
+                hi = mid
+        at = best.resolved.measurements.get(nid) or [] if best and best.resolved else []
+        entry["chars_free"] = lo if lo < CAPACITY_MAX_CHARS else f">= {CAPACITY_MAX_CHARS}"
+        entry["lines_at_budget"] = sum(len(m.lines) for m in at)
+        entry["lines_free"] = entry["lines_at_budget"] - entry["lines_now"]
+        out["elements"].append(entry)
+    out["method"] = ("each element's chars_free: the most characters of mean-advance filler (English words and figures) appended to its "
+                     "last paragraph with the page still fitting at full scale, every other element unchanged; budgets do not add up "
+                     "across elements that share free space")
+    return out
+
+
+def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs: list[str], template: str, ids: list) -> dict:
+    """leakage.py on the written deck against the past decks this build was given: the
+    reference, and each house deck's own file when it is found with its recorded sha256.
+    A past deck that cannot be read is named, never taken as clean."""
+    import hashlib
+    import leakage
+    past, unread = [], []
+    if reference:
+        past.append(reference)
+    for g in house_decks:
+        ref = g.get("reference") or {}
+        path = Path(ref.get("file") or "")
+        if ref.get("file") and path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == ref.get("sha256"):
+            past.append(str(path))
+        else:
+            unread.append(f"{ref.get('file')}: not found with the guide's sha256, so not compared")
+    if not past:
+        return {"verdict": "not checked: no past deck given (--reference, --house-deck)", "unread": unread}
+    return {**leakage.leakage(out, past, briefs, template, ids), **({"unread": unread} if unread else {})}
+
+
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
           plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None, house_names: list[str] | None = None,
-          plan_check: dict | None = None) -> dict:
+          plan_check: dict | None = None, briefs: list[str] | None = None) -> dict:
     Path(out).parent.mkdir(parents=True, exist_ok=True)  # before the solve: a missing -o directory otherwise fails only at the save
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
@@ -1305,24 +1521,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     annotation_pages: dict[int, list[dict]] = {}  # emitted page index -> its annotations as resolved
     for number, slide in enumerate(deck["slides"], 1):
         try:
-            spec_raw = json.loads(json.dumps(slide["spec"]))
-            spec_raw["root"] = normalise(spec_raw["root"], slide)
-            mark_measured_weights(spec_raw["root"], slide, guide)
-            prepare_page(spec_raw, guide, chrome)
-            # components: probe once with placeholders to learn their boxes, then expand at those boxes
-            tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
-            if pending:
-                # the probe measures the text around the placeholder first, so the component gets
-                # the space the text leaves and not an equal share with a one-line source
-                probe_spec = L.parse_spec({**spec_raw, "root": tree})
-                attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
-                probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
-                tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
-            spec_raw["root"] = tree
-            mark_measured_weights(tree, slide, guide)  # a component's tables too
-            spec = L.parse_spec(spec_raw)
-            ctx = L.Context(lg, ruler, index, spec)
-            outcome = L.descend(ctx)
+            spec_raw, ctx, outcome = solve_slide(slide, guide, chrome, lg, ruler, index, api)
             entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
             if slide.get("component_notes"):
                 entry["component_notes"] = sorted(set(slide["component_notes"]))
@@ -1396,6 +1595,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["chart_defaults_taken"] = {c["id"]: c["defaults_taken"] for c in page["charts"]}
     from pptx_tools import validate
     report["validation"] = validate(out, render=False)
+    report["leakage"] = leakage_of(out, reference, house_decks or [], briefs or [], template, [e.get("id") for e in emitted])
     if do_render:
         import subprocess
         rdir = renders or str(Path(out).with_name(Path(out).stem + "-renders"))
@@ -1471,7 +1671,10 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"])
     ap.add_argument("--plan", default=None, help="the section plan (plan.py): realised compositions are compared with the planned ones")
     ap.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
+    ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out", "renders")
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     plan_pages = None
@@ -1486,21 +1689,32 @@ def main(argv: list[str]) -> int:
             raise plan.Refused(f"--plan: plan.py check refuses {args.plan}: " + "; ".join(plan_check["refusals"]))
         plan_pages = plan.read_plan(plan_json, guide)
         planned, built = [p["id"] for p in plan_pages], [s.get("id") for s in deck["slides"]]
-        if planned != built:
-            raise plan.Refused(f"--plan: the plan's page ids {planned} are not the deck's slide ids {built}, in order")
+        # a deck may build the whole plan or one contiguous run of it (one page while you
+        # work on it): adjacent built pages are then adjacent planned pages, so the
+        # plan-against-build comparison reads the same pairs the plan declared
+        start = next((i for i in range(len(planned) - len(built) + 1) if planned[i:i + len(built)] == built), None) if built else None
+        if start is None:
+            raise plan.Refused(f"--plan: the deck's slide ids {built} are not the plan's page ids {planned} or one contiguous run of them, "
+                               f"in order. Build the whole section, or a deck holding only consecutive planned pages (one page: a deck of "
+                               f"that one slide), with each slide's id equal to its page id")
+        plan_check["subset"] = None if len(built) == len(planned) else {
+            "built": built, "of": planned,
+            "note": "a run of the plan: the plan check covers the whole plan, the realised variety covers only the pages built"}
     else:
         plan.house_of([guide, *house_decks], house_names)  # the house decks proven before the solve, not after it
     report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
-                   house_names, plan_check)
+                   house_names, plan_check, args.brief)
     shown = ("id", "status", "reason", "problems", "title", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures
              "position_drift": report.get("position_drift"), "repetition": report.get("repetition"),
              "validation_ok": report.get("validation", {}).get("ok"), "problems": report.get("validation", {}).get("problems"),
-             "judge": report.get("judge"), "renders": (report.get("renders") or {}).get("images")}
+             "leakage": report.get("leakage"), "judge": report.get("judge"), "renders": (report.get("renders") or {}).get("images")}
     print(json.dumps(brief, indent=1, default=str))
     return 0 if all(s["status"] == "fit" for s in report["slides"]) and report.get("validation", {}).get("ok") else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

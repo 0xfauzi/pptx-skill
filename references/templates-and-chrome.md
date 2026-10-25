@@ -8,14 +8,14 @@
 ## Making the template
 
 ```bash
-python3 scripts/pptx_tools.py template REF.pptx -o work/tpl.pptx                        # pptx reference
-python3 scripts/pptx_tools.py blank -o work/tpl.pptx --width-emu W --height-emu H          # PDF reference; W, H from guide.reference.page
-python3 scripts/pptx_tools.py layouts work/tpl.pptx                                       # layouts and placeholders with boxes
+python3 scripts/pptx_tools.py template "$REF" -o "$DECK_WORK/tpl.pptx"                        # pptx reference
+python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --height-emu H          # PDF reference; W, H from guide.reference.page
+python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx"                                       # layouts and placeholders with boxes
 ```
 
 The pptx template is the reference with every slide removed: masters, layouts, theme and
 chrome intact (PowerPoint opens and re-saves such packages without repair and draws chrome
-once per slide, measured in deckgen E18). Page numbers and footers the reference carried
+once per slide, measured). Page numbers and footers the reference carried
 on its slides are copied from the layout onto each new slide. Every page names one of the
 template's layouts; an unknown layout is refused by name. Choose the layout per page the
 way the house's past pages use them (`pptx_tools.py text` on a past deck prints each
@@ -53,9 +53,9 @@ Before a page of your own, import one of the reference's into a spec of roles an
 (no coordinates survive), build it on the template and compare:
 
 ```bash
-python3 scripts/import_slide.py REF --slide 3 --guide work/ref/guide.json -o work/rt/rt3.deck.json
-python3 scripts/build_deck.py work/rt/rt3.deck.json --guide work/ref/guide.json --template work/tpl.pptx \
-        -o work/rt/rt3.pptx --reference REF --renders work/rt/renders [--chrome draw]
+python3 scripts/import_slide.py "$REF" --slide 3 --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/rt3.deck.json"
+python3 scripts/build_deck.py "$DECK_WORK/rt/rt3.deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
+        -o "$DECK_WORK/rt/rt3.pptx" --reference "$REF" --renders "$DECK_WORK/rt/renders" [--chrome draw]
 ```
 
 A PDF page imports the same way (`--slide` is the page number) and builds with `--chrome

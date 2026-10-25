@@ -2,12 +2,11 @@
 """Solve a slide spec to exact EMU boxes with MEASURED text fit.
 
     layout.py solve spec.json --guide guide.json [--scale 1.0] [-o resolved.json]
-    layout.py capacity spec.json --guide guide.json [--scale 1.0]
+    layout.py capacity deck.json --slide ID --guide guide.json [--chrome draw] [-o capacity.json]
 
-A port of deckgen's layout machinery (packages/server/src/deckgen_server/layout/
-{spacing,solver,typestyles,validation,measure_bridge,table_fitter,table_text}.py and
-content/design_scale.py) into one standalone script; the ruler is textfit.py beside
-it. Stdlib + Pillow, uharfbuzz when importable, no deckgen import at runtime.
+A ported layout solver (spacing, solver, type styles, validation, table fitter and the
+scale descent; PORT_AUDIT.md) in one standalone script; the ruler is textfit.py beside
+it. Stdlib + Pillow, uharfbuzz when importable.
 
 THE LOOP at one scale s: resolve every in-use type role (size snapped to the 0.5 pt
 grid, spacing and tracking to hundredth-points); probe solve for widths; measure
@@ -20,8 +19,8 @@ line text moved; validate (containment, overlap, exceeds_page, overcommit,
 zero_dimension, reserved_zone, and per measured element against its own box:
 overflow and word_split, each with scale_fixable). THE DESCENT: 1.00, then the 0.01 ladder with scales where
 two adjacent hierarchy sizes snap together excluded, truncated at the legibility
-floor, searched by bisection (fit is monotone in s: docs/measurements/
-E21-decision.md, 2,982 measurements, 0 inversions); else Unfittable with the
+floor, searched by bisection (fit is monotone in s: 2,982 measurements, 0
+inversions); else Unfittable with the
 splittable groups and each table's fitting row prefix. THE SOLVER NEVER CLAMPS: an
 oversize measured child overflows and validation refuses. Content is never dropped.
 
@@ -60,15 +59,15 @@ height_emu|null}: a measured extent, null = flexible). Every element may carry
 weight (flex share, default equal) and scale_class ("scaling" | "fixed": type
 resolves at s = 1). Grid tracks are uniform. Node ids are unique and carry no '#'.
 
-GUIDE JSON SUBSET read (extract_style.py's shape; deckgen's {"value", "provenance"}
-wrappers also accepted): typography.families {major, minor, weight_faces?};
+GUIDE JSON SUBSET read (extract_style.py's shape; {"value", "provenance"} wrappers
+also accepted): typography.families {major, minor, weight_faces?};
 typography.roles[role] {size_pt, line_spacing|null, space_before_pt,
 space_after_pt, tracking_pt, family ("major" | "minor" | face name), weight,
 italic, case}, where a null field takes OOXML's absence value (b/i off, spacing 0,
 tracking 0, as_typed, single spacing = 1.2 x size); typography.bullets (level ->
 indent_role when present); spacing.steps[role] {"emu": int} | {"value": int} |
 int; spacing.baseline_emu|null; floors[family] {floor_pt|null, absolute_floor_pt,
-roles} (or deckgen's list); tables.cell_padding_role | tables.cell_padding_emu
+roles} (or a list of those); tables.cell_padding_role | tables.cell_padding_emu
 (else OOXML's 45720 EMU default inset).
 """
 
@@ -83,6 +82,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from textfit import (  # noqa: E402
     Face,
@@ -91,7 +91,6 @@ from textfit import (  # noqa: E402
     Ruler,
     SubstituteMismatchError,
     UnknownFamilyError,
-    UnknownStyleError,
     UnmeasurableTextError,
     advance_emu,
     break_opportunities,
@@ -238,6 +237,7 @@ class Guide:
     cell_padding_emu: int | None
     bullet_indent_roles: dict[int, str]
     substitutes: dict[str, str] = field(default_factory=dict)
+    absent_roles: dict[str, str] = field(default_factory=dict)
 
 def _unwrap(value: Any) -> Any:
     if isinstance(value, dict) and "value" in value and "provenance" in value:
@@ -303,6 +303,7 @@ def load_guide(raw: Mapping[str, Any]) -> Guide:
         cell_padding_role=tables.get("cell_padding_role"),
         cell_padding_emu=None if tables.get("cell_padding_emu") is None else int(tables["cell_padding_emu"]),
         bullet_indent_roles=bullet_roles,
+        absent_roles={k: str((v or {}).get("why", "")) for k, v in (raw.get("absent_roles") or {}).items()},
     )
 
 # --- the slide spec --------------------------------------------------------------
@@ -545,6 +546,9 @@ class TypeEntry:
 def type_role(guide: Guide, role: str) -> TypeRole:
     spec = guide.roles.get(role)
     if spec is None:
+        if role in guide.absent_roles:
+            raise UnknownTokenRoleError(f"type role {role!r}: the completed guide records that the house has none ({guide.absent_roles[role]}); "
+                                        "use a role the house sets")
         raise UnknownTokenRoleError(f"type role {role!r} is not in the guide's typography roles")
     return spec
 
@@ -1344,35 +1348,6 @@ def descend(ctx: Context) -> Outcome:
             lo = mid
     return Outcome("fit", last.resolved, attempts)
 
-# --- capacity (deckgen capacity.py) --------------------------------------------------
-
-def capacity(ctx: Context, scale: Fraction, boxes: Mapping[str, Box], roles: Sequence[str]) -> list[dict[str, Any]]:
-    """Per region content box x role: chars per line from the ruler's mean
-    advance over REFERENCE_ALPHABET (labelled; deckgen uses the reference deck's
-    own text, which a guide subset does not carry), lines after one paragraph's
-    spacing is charged; a tracked role budgets one line (the bridge refuses a
-    tracked paragraph that wraps)."""
-    out: list[dict[str, Any]] = []
-    for node, _ in walk(ctx.spec.root):
-        if not isinstance(node, Region):
-            continue
-        box = content_box(boxes[node.id], node.layout, ctx.guide, scale)
-        for role in roles:
-            try:
-                entry = resolve_type_entry(ctx.guide, role, scale)
-                face = ctx.face(entry)
-            except (LayoutContractError, UnknownFamilyError, UnknownStyleError) as error:
-                out.append({"region_id": node.id, "role": role, "omitted": str(error)})
-                continue
-            mean = Fraction(advance_emu(ctx.ruler, REFERENCE_ALPHABET, face.path, entry.size_pt), len(REFERENCE_ALPHABET)) + round(entry.tracking_pt * EMU_PER_POINT)
-            usable = box.width - ctx.ruler.fit_epsilon_emu
-            chars = max(0, int(Fraction(usable) / mean)) if usable > 0 and mean > 0 else 0
-            lines = max(0, (box.height - entry.spacing_emu) // entry.pitch_emu)
-            if entry.tracking_pt > 0:
-                lines = min(lines, 1)
-            out.append({"region_id": node.id, "role": role, "size_pt": entry.size_pt, "box": box.as_dict(), "lines": lines, "chars_per_line": chars, "chars_total": lines * chars, "mean_advance_source": f"{ctx.ruler.name} over REFERENCE_ALPHABET ({len(REFERENCE_ALPHABET)} chars), not the reference deck's own text"})
-    return out
-
 # --- output ------------------------------------------------------------------------------
 
 #: What the emitter writes from the solver's resolved entry (_entry_hints), the one
@@ -1444,8 +1419,7 @@ def _print_outcome(ctx: Context, outcome: Outcome) -> None:
 def build_context(spec_path: str, guide_path: str) -> Context:
     raw = json.loads(Path(spec_path).read_text(encoding="utf-8"))
     raw_guide = json.loads(Path(guide_path).read_text(encoding="utf-8"))
-    # the CLI budgets the page the build enforces: the guide's page size, the chrome zones
-    # and the title band that build_deck injects, so a printed capacity is the real one
+    # the page the build enforces: the guide's page size, the chrome zones and the title band
     from build_deck import mark_measured_weights, normalise, prepare_page
     if "root" in raw:
         slide: dict = {}
@@ -1457,28 +1431,66 @@ def build_context(spec_path: str, guide_path: str) -> Context:
     guide = load_guide(raw_guide)
     return Context(guide, default_ruler(), default_index(), spec)
 
+
 def _components_as_boxes(node: dict) -> dict:
     """A component node held as a flexible box of its own id and weight, the stand-in
-    build_deck solves before it expands (its first pass): capacity budgets the regions
-    around a component; what fits inside one is the component's own measure (component_api)."""
+    build_deck solves before it expands (its first pass), for `solve` on a bare spec."""
     if node.get("type") == "region":
         return {**node, "children": [_components_as_boxes(c) for c in node.get("children", [])]}
     if node.get("type") == "component":
-        print(f"component {node['id']!r} ({node.get('kind')}): budgeted as a flexible box; its own text is measured by component_api", file=sys.stderr)
+        print(f"component {node['id']!r} ({node.get('kind')}): solved as a flexible box; its own text is measured by component_api", file=sys.stderr)
         return {"type": "element", "id": node["id"], "kind": "image", **({"weight": node["weight"]} if "weight" in node else {})}
     return node
+
+
+def capacity_slide(path: str, slide_id: str | None) -> dict:
+    """The slide `capacity` budgets: a deck JSON's slide by id (the only slide when the
+    deck holds one), or a bare page spec wrapped as one slide."""
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    if "slides" in raw:
+        slides = raw["slides"]
+        found = [s for s in slides if slide_id is None or s.get("id") == slide_id]
+        if slide_id is None and len(slides) != 1:
+            raise SystemExit(f"capacity: {path} holds {len(slides)} slides; name one with --slide ({[s.get('id') for s in slides]})")
+        if len(found) != 1:
+            raise SystemExit(f"capacity: slide {slide_id!r} is {'not' if not found else 'more than once'} in {path} ({[s.get('id') for s in slides]})")
+        return found[0]
+    if "root" not in raw:
+        raise SystemExit(f"capacity: {path} is neither a deck ({{\"slides\": [...]}}) nor a page spec ({{\"root\": ...}})")
+    return {"id": Path(path).stem, "spec": raw}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Solve a slide spec to EMU boxes with measured text fit.")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("solve", "capacity"):
-        p = sub.add_parser(name)
-        p.add_argument("spec")
-        p.add_argument("--guide", required=True)
-        p.add_argument("--scale", type=float, default=None, help="one scale only (no descent)")
-        p.add_argument("-o", "--out", default=None)
+    p = sub.add_parser("solve")
+    p.add_argument("spec")
+    p.add_argument("--guide", required=True)
+    p.add_argument("--scale", type=float, default=None, help="one scale only (no descent)")
+    p.add_argument("-o", "--out", default=None)
+    p = sub.add_parser("capacity", help="each text element's budget on the page the build solves")
+    p.add_argument("spec", help="a deck JSON (with --slide ID) or one page spec")
+    p.add_argument("--slide", default=None, help="the slide id in a deck JSON")
+    p.add_argument("--guide", required=True)
+    p.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="as the build will run")
+    p.add_argument("-o", "--out", default=None)
     args = parser.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out")
+    if args.command == "capacity":
+        from build_deck import capacity
+        payload = capacity(capacity_slide(args.spec, args.slide), json.loads(Path(args.guide).read_text(encoding="utf-8")), args.chrome)
+        print(f"{payload['id']}: {payload['status']} at scale {payload['scale']} ({payload['ruler']})")
+        for e in payload["elements"]:
+            print(f"  {e['id']:<18} {e['role'] or '':<18} box {e['box_in']} in  lines {e['lines_now']}  chars {e['chars_now']}"
+                  f"  free {e['chars_free']} chars" + (f" (+{e['lines_free']} lines)" if "lines_free" in e else f"  ({e.get('why')})"))
+        for c in payload.get("components", []):
+            print(f"  {c['id']:<18} component {c['kind']}: {c['budget']}")
+        if args.out:
+            Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")
+            print(f"wrote {args.out}")
+        return 0 if payload["status"] == "fit" else 1
     ctx = build_context(args.spec, args.guide)
     if args.command == "solve":
         if args.scale is None:
@@ -1492,17 +1504,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             outcome = Outcome("fit" if attempt.fits else "unfittable", attempt.resolved, [attempt], attempt.refusal or "violations at the requested scale", attempt.scale)
         _print_outcome(ctx, outcome)
         payload = outcome_json(ctx, outcome)
-    else:
-        scale = checked_scale(args.scale if args.scale is not None else 1.0)
-        boxes = solve_tree(ctx.spec, ctx.guide, scale)
-        entries = capacity(ctx, scale, boxes, sorted(ctx.guide.roles))
-        for e in entries:
-            print(json.dumps(e))
-        payload = {"scale": str(scale), "ruler": ctx.ruler.name, "entries": entries}
     if args.out:
         Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")
         print(f"wrote {args.out}")
     return 0 if payload.get("status", "fit") == "fit" else 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

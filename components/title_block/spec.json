@@ -1,6 +1,6 @@
 {
  "kind": "title_block",
- "description": "States a slide's claim as one dominant line, with an optional kicker naming the subject above it and a hairline closing the band. Ported from deckgen's title_block seed.",
+ "description": "States a slide's claim as one dominant line, with an optional kicker naming the subject above it and a hairline closing the band.",
  "data_schema": {
   "title": "string (the claim)",
   "kicker": "string (optional; the subject, set in type.kicker)",
@@ -10,7 +10,7 @@
  "size_domain_emu": {
   "width": [2743200, 9144000],
   "height": [914400, 6858000],
-  "source": "deckgen fixtures/components/title_block/spec.json size_domain"
+  "source": "the size domain of the seed this component was ported from"
  },
  "variants": {
   "with_kicker": "flex column: kicker, title, hairline. Chosen whenever the data carries a kicker.",

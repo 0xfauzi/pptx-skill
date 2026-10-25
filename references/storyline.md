@@ -35,8 +35,8 @@ page, good to about plus or minus 2 to 3.
 
 ## Measured tendencies
 
-- Variety: the median composition change between consecutive pages is 0.69 over 23 decks
-  (bank 0.645, consulting 0.765); exhibit types change more often (median 0.77 bank, 0.85
+- Variety: the median composition change between consecutive pages is 0.69 over the 23
+  of the 24 decks that carry a variety row (bank 0.645, consulting 0.765); exhibit types change more often (median 0.77 bank, 0.85
   consulting, 0.97 chart book). Every long run of one composition (up to 7 pages) was a
   sibling template held on purpose: recap pages, segment tables, an appendix of row-label
   pages, two matching scenario pages. No coder found an accidental run of sameness.

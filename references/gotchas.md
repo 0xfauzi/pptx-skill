@@ -2,11 +2,11 @@
 
 - LibreOffice fits more text than PowerPoint on 92 of 600 measured boxes; the ruler shrinks
   the width budget (5,933 EMU with the Pillow ruler, 20,234 with HarfBuzz) so a measured
-  line never runs long in PowerPoint (deckgen E16).
+  line never runs long in PowerPoint (600 boxes measured in both).
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus
-  the cell margins (E38). The fitter writes exactly that.
+  the cell margins (exact to the EMU on 5 sizes and 4 families). The fitter writes exactly that.
 - A deck's theme is reached through the master's relationship, never by globbing theme
   parts: notes and handout masters carry the stock palette.
 - Colour maps apply before the theme lookup; a slide or layout may override the map.

@@ -9,7 +9,7 @@ on its master and a deck that writes it on every run fingerprint the same.
     fingerprint.py print  deck.pptx                      # per-deck summary
     fingerprint.py compare cand.pptx --reference ref.pptx [--others a.pptx ...]
     fingerprint.py calibrate house1=a.pptx,b.pptx house2=c.pptx ...  [--json out]
-    fingerprint.py calibrate --houses-file oracles/calibration-houses.txt --corpus-root ../deckgen \
+    fingerprint.py calibrate --houses-file oracles/calibration-houses.txt --corpus-root CORPUS \
                    --max-pages 25 --fit-weights        # the corpus DEFAULT_WEIGHTS was scored on
 
 `compare` prints every distance component, so a bad component names the defect
@@ -18,8 +18,8 @@ on its master and a deck that writes it on every run fingerprint the same.
 over the houses given and prints accuracy against the binomial chance bound: it
 is how the measure itself is checked before it judges anything.
 
-Ported from deckgen's style walker (inheritance order, colour transforms) with
-the port audit in ../PORT_AUDIT.md. No value in here is a design standard.
+The style walker (inheritance order, colour transforms) is ported, with the
+port audit in ../PORT_AUDIT.md. No value in here is a design standard.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ooxml import SlidePrint, delta_e, fingerprint_deck, is_type_evidence  # noqa: E402
 
@@ -806,12 +807,14 @@ def main(argv: list[str]) -> int:
     s_cal = sub.add_parser("calibrate")
     s_cal.add_argument("houses", nargs="*", help="name=deck1.pptx,deck2.pdf,...")
     s_cal.add_argument("--houses-file", default=None, help="one name=deck,deck,... per line (# comments); paths under refs/ resolve against this repo, others against --corpus-root")
-    s_cal.add_argument("--corpus-root", default=".", help="where the relative corpus paths of --houses-file live (the deckgen checkout)")
+    s_cal.add_argument("--corpus-root", default=".", help="where the relative corpus paths of --houses-file live (a checkout holding the calibration corpus)")
     s_cal.add_argument("--json")
     s_cal.add_argument("--max-pages", type=int, default=None, help="cap pages read per file (PDF references can run to hundreds)")
     s_cal.add_argument("--by-deck", action="store_true", help="every deck is its own class")
     s_cal.add_argument("--fit-weights", action="store_true", help="fit component weights on even slides, judge on odd slides, and print both")
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "json")
 
     if args.cmd == "print":
         slides = fingerprint_deck(args.deck, args.max_pages)
@@ -874,4 +877,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

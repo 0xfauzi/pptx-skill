@@ -159,7 +159,6 @@
     "legend_position": "b"
    }
   },
-  "source_line_required": true,
   "why": "no native chart; the pasted exhibits on slides 7 (clustered columns, deep blue against a second series, legend below, no gridlines) and 9 (horizontal deep-blue bars, value labels at the bar end, no value axis, no gridlines, 'Source:' line under) set the language"
  },
  "/continuation": {

@@ -1,15 +1,15 @@
 {
- "id": "03-consulting-navy-serif",
+ "id": "03-consulting-working-draft-pdf",
  "skills": [
   "building-house-style-decks"
  ],
  "target_spec_scenario": 3,
  "reference": {
-  "type": "vector PDF consulting deck with navy grounds and serif titles",
+  "type": "a 520-page McKinsey working-draft set (PDF, mixed: scanned and vector runs); the vector run of pages 160 to 226 is the reference",
   "files": [
-   "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf"
+   "refs/files/mckinsey_uf_road_ahead_2023.pdf"
   ],
-  "notes": "No template file: blank template at 13.333 x 7.5 in, --chrome draw. Titles: 4 claim, 7 topic; every page its own archetype (longest run 1)."
+  "notes": "Triage first: the deck is mixed, so extract, gallery and digest run with --pages 160-226. No template file: blank template at the triaged page size, --chrome draw. The run is a sibling template held on purpose (topic titles with a part counter, 'HR Processes (1/8)' to '(8/8)'), so the house's longest run is long and declared."
  },
  "brief": "Four-page governance diagnostic for the board of a state pension fund: board effectiveness against benchmarks, skills gap, target operating model, 18-month roadmap.",
  "data": {
@@ -123,16 +123,16 @@
    "check": "Read the final report."
   },
   {
-   "statement": "The guide was completed after triage confirmed a vector deck, with /titles/register, /exhibit_habits and /variety/content_pages answered.",
-   "check": "complete_guide.py --check lists nothing open."
+   "statement": "The agent triaged the PDF and read only the vector run as type evidence.",
+   "check": "ooxml.py triage was run; extract_style.py, gallery.py and gallery.py digest ran with --pages 160-226; the draft's reference.triage names the range."
   },
   {
-   "statement": "The deck is built on a blank template with drawn chrome and the house's navy surface.",
-   "check": "--chrome draw; contrast of every run against the drawn surface passes."
+   "statement": "The deck is built on a blank template with drawn chrome.",
+   "check": "--chrome draw; the chrome (the working-draft label, the status tags, the logo, the source line and the confidentiality line) is drawn on every page; no contrast refusal."
   },
   {
-   "statement": "Claim titles where the page argues, topic titles on reference pages, as the house does.",
-   "check": "Register per page against guide.titles.register.counts."
+   "statement": "Titles follow the house's register as completed, part counters included where a page continues a set.",
+   "check": "deck.build.json slides[].title register verdicts; a continued set carries the house's '(n/m)' counter."
   },
   {
    "statement": "The round trip's render was compared with the original page and its losses named.",

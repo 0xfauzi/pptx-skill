@@ -49,7 +49,8 @@
     "also_draws": []
    },
    "candidates": [],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 2,
@@ -63,7 +64,8 @@
     "also_draws": []
    },
    "candidates": [],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 3,
@@ -97,7 +99,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 4,
@@ -180,7 +183,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": false
   },
   {
    "slide": 5,
@@ -273,7 +277,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "monochrome"
     }
-   ]
+   ],
+   "source_line": false
   },
   {
    "slide": 6,
@@ -307,7 +312,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 7,
@@ -392,7 +398,8 @@
      "data_labels": "all",
      "colour_logic": "categorical"
     }
-   ]
+   ],
+   "source_line": false
   },
   {
    "slide": 8,
@@ -489,7 +496,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "semantic"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 9,
@@ -572,7 +580,8 @@
      "data_labels": "all",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": true
   },
   {
    "slide": 10,
@@ -629,7 +638,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "semantic"
     }
-   ]
+   ],
+   "source_line": false
   },
   {
    "slide": 11,
@@ -643,7 +653,8 @@
     "also_draws": []
    },
    "candidates": [],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 12,
@@ -683,7 +694,9 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   }
- ]
+ ],
+ "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere"
 }

@@ -1,8 +1,7 @@
 # House specimen as examples
 
-Fourteen pages converted from deckgen's default house specimen
-(`fixtures/default_house_style/specimen/slides/*.json`, role-only SlideModels; numbers
-from `specimen/datasets.json`). Each file is a one-slide deck in the shape of
+Fourteen pages converted from a default house specimen of the predecessor system
+(role-only page models, with their own datasets). Each file is a one-slide deck in the shape of
 `examples/keybank-section.deck.json`: `slides[].id`, `layout`, `notes` (the specimen's
 intent), `spec.root`, and `styling` / `charts` / `rules` where the page has them. Every
 value is a token role; nothing here carries a colour, a size or a coordinate.
@@ -15,7 +14,7 @@ sizes; on another reference they are a starting arrangement, not a page that fit
 
 ## Pages
 
-| File | Family it proves (deckgen coverage.json) | Elements |
+| File | Family it proves (the specimen's coverage record) | Elements |
 |---|---|---|
 | `01-section-opener.deck.json` | Section divider | el-section-number (kicker), el-section-title (title), el-divider-rule (rule), el-section-frame (body), five contents groups: grp-content-N-title (emphasis), -head-rule (rule), -body (caption) |
 | `02-agenda.deck.json` | Agenda / tracker; takeaway band | title, el-kicker, five entries el-section-N (body; the live one h2) with el-section-summary-N (caption), the live entry in a filled band, col-live-title (h1) + rule + body, three decisions grp-decide-N (h2 + rule + body) |
@@ -34,7 +33,7 @@ sizes; on another reference they are a starting arrangement, not a page that fit
 
 Families the specimen itself declares NOT covered (bar chart, slide-level annotation,
 tracker-marker, forecast divider, callout bracket, Harvey ball, imagery, continuation)
-are absent here too; `coverage.json` in deckgen records why for each.
+are absent here too; the specimen's coverage record says why for each.
 
 ## What the conversion changed, and why
 
@@ -71,15 +70,14 @@ are absent here too; `coverage.json` in deckgen records why for each.
   `ink_role` in `styling`; emphasis runs become `styling.<id>.paragraphs.<n>.runs`.
 - **Tables.** A totals index on the last row becomes `totals_last_row`; any other totals
   index (the comps peer median, row 8) becomes `emphasis_rows` with
-  `emphasis_fill_role: color.surface_alt` written out (the emitter has no default fill). deckgen's column
+  `emphasis_fill_role: color.surface_alt` written out (the emitter has no default fill). The specimen's column
   alignment and rule overrides are not carried (this emitter reads neither).
-- **Source line.** deckgen computes it from the citations behind each page
-  (`lineage.source_line.build_source_line`, the one producer); its output is written as
+- **Source line.** The specimen computes it from the citations behind each page;
+  its output is written as
   a `type.source_line` paragraph, id `source`, last in the root.
 
-Conversion: deckgen's `oracle_compare.py convert()` extended as above, run with
-`cd /home/user/deckgen && uv run python -I house_examples.py <worktree>` (a scratch
-script, not committed: it imports deckgen).
+Conversion: a one-off script over the specimen, extended as above (not committed: it
+imports the predecessor system).
 
 ## On keybank (4:3, 24pt title, 12pt tables)
 

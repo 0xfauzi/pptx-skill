@@ -1,30 +1,30 @@
 {
- "about": "Closed vocabulary for title registers, the house exhibit digest and the page library's tags, taken from TARGET_SPEC.md Appendix A (A.3, A.5, A.6, A.7, A.8, A.9). Each slug names one row of those tables, except two annotation moves that the synthesis taxonomy behind A.6 codes and A.6 lists under no row of its own (their labels say so); the label is the row's wording. complete_guide.py and library.py refuse any value outside these lists, so a new term enters here first, with the Appendix A row it comes from.",
+ "about": "Closed vocabulary for title registers, the house exhibit digest and the page library's tags: the terms the 578-page coded corpus was tagged in. Each slug names one term; the label is its wording. Two annotation moves are terms the corpus coders used under no row of their own (their labels say so). complete_guide.py and library.py refuse any value outside these lists, so a new term enters here first.",
  "title_register": {
-  "topic": "Topic phrase (A.3)",
-  "claim": "Claim sentence (A.3)",
-  "question": "Question (A.3)"
+  "topic": "Topic phrase",
+  "claim": "Claim sentence",
+  "question": "Question"
  },
  "title_companion_above": {
-  "kicker": "Kicker or eyebrow label above the title (A.3)",
-  "section_tag": "Section tag or tracker (A.3)",
-  "exhibit_label": "\"Exhibit n:\" label (A.3)",
-  "status_tag": "Status or caveat tag (A.9)",
+  "kicker": "Kicker or eyebrow label above the title",
+  "section_tag": "Section tag or tracker",
+  "exhibit_label": "\"Exhibit n:\" label",
+  "status_tag": "Status or caveat tag",
   "other": "Something else; say what in why"
  },
  "title_companion_below": {
-  "subtitle": "Subtitle (A.3)",
-  "units_line": "Units line (A.3, A.9)",
-  "lead_in": "Lead-in sentence or claim under a topic title (A.3, A.4)",
+  "subtitle": "Subtitle",
+  "units_line": "Units line",
+  "lead_in": "Lead-in sentence or claim under a topic title",
   "other": "Something else; say what in why"
  },
  "exhibit_class": {
-  "data_chart": "Data chart (A.5)",
-  "table": "Table (A.5)",
-  "diagram_or_process": "Diagram or process (A.5)",
-  "image_wall": "Image wall (A.5)",
-  "shape_built_text": "Shape-built text structure (A.5)",
-  "big_numbers": "Big numbers (A.5)"
+  "data_chart": "Data chart",
+  "table": "Table",
+  "diagram_or_process": "Diagram or process",
+  "image_wall": "Image wall",
+  "shape_built_text": "Shape-built text structure",
+  "big_numbers": "Big numbers"
  },
  "exhibit_type": {
   "line": "Line (incl. indexed, price, dual-axis, area to baseline)",
@@ -54,33 +54,33 @@
   "heatmap": "Heatmap"
  },
  "data_shape": {
-  "line_or_time_series": "Line or time series (A.7)",
-  "column": "Column (A.7)",
-  "horizontal_bar_ranking": "Horizontal bar (ranking) (A.7)",
-  "stacked_or_100": "Stacked or 100% (A.7)",
-  "waterfall": "Waterfall (A.7)",
-  "football_field_or_ranges": "Football field or ranges (A.7)",
-  "scatter_or_bubble": "Scatter or bubble (A.7)",
-  "histogram": "Histogram (A.7)",
-  "financial_or_projection_table": "Financial or projection table (A.7)",
-  "comps_or_benchmark_table": "Comps or benchmark table (A.7)",
-  "sensitivity_grid": "Sensitivity grid (A.7)",
-  "text_or_data_table": "Text or data table (A.7)",
-  "status_or_check_matrix": "Status or check matrix (A.7)",
-  "process_or_timeline": "Process or timeline (A.7)",
-  "diagram_or_framework": "Diagram or framework (A.7)",
-  "no_data_shape": "None of the A.7 shapes (an image wall, big numbers, structured text); say what in why"
+  "line_or_time_series": "Line or time series",
+  "column": "Column",
+  "horizontal_bar_ranking": "Horizontal bar (ranking)",
+  "stacked_or_100": "Stacked or 100%",
+  "waterfall": "Waterfall",
+  "football_field_or_ranges": "Football field or ranges",
+  "scatter_or_bubble": "Scatter or bubble",
+  "histogram": "Histogram",
+  "financial_or_projection_table": "Financial or projection table",
+  "comps_or_benchmark_table": "Comps or benchmark table",
+  "sensitivity_grid": "Sensitivity grid",
+  "text_or_data_table": "Text or data table",
+  "status_or_check_matrix": "Status or check matrix",
+  "process_or_timeline": "Process or timeline",
+  "diagram_or_framework": "Diagram or framework",
+  "no_data_shape": "None of the data shapes above (an image wall, big numbers, structured text); say what in why"
  },
  "message_kind": {
-  "subject_vs_peers": "Subject against peers (A.7)",
-  "ranking": "Ranking (A.7)",
-  "change_over_time": "Change over time (A.7)",
-  "valuation_range": "Valuation range (A.7)",
-  "composition": "Composition (A.7)",
-  "estimate_or_scenario": "Estimate or scenario (A.7)",
-  "relationship": "Relationship (A.7)",
-  "choice_or_recommendation": "Choice or recommendation (A.7)",
-  "other": "None of the A.7 message kinds; the message field says it"
+  "subject_vs_peers": "Subject against peers",
+  "ranking": "Ranking",
+  "change_over_time": "Change over time",
+  "valuation_range": "Valuation range",
+  "composition": "Composition",
+  "estimate_or_scenario": "Estimate or scenario",
+  "relationship": "Relationship",
+  "choice_or_recommendation": "Choice or recommendation",
+  "other": "None of the message kinds above; the message field says it"
  },
  "annotation_move": {
   "data_labels_all": "Data labels on all marks",
@@ -116,8 +116,8 @@
   "uncertainty": "Uncertainty (ranges, scenario lines, stamps)",
   "zone_shading": "Zone or quadrant shading",
   "regression_and_r2": "Regression line and R-squared",
-  "shared_scale_across_panels": "Shared scale or order held across panels (the synthesis taxonomy behind A.6; A.6 counts it under no row of its own; section 12.4)",
-  "reading_key": "Reading key or how-to-read note (the synthesis taxonomy behind A.6; A.6 counts it under no row of its own; Appendix B)"
+  "shared_scale_across_panels": "Shared scale or order held across panels (a corpus coders' term with no row of its own)",
+  "reading_key": "Reading key or how-to-read note (a corpus coders' term with no row of its own)"
  },
  "emphasis_device": {
   "boxed_or_circled_figure": "Boxed or circled figure",
@@ -136,23 +136,23 @@
   "big_numbers": "Big numbers"
  },
  "number_format": {
-  "units_line": "Units line on the exhibit (A.3, A.9)",
-  "units_in_header": "Units in a column or axis header (A.9)",
-  "currency_first_and_total_rows": "$ only on the first and total rows (A.9)",
+  "units_line": "Units line on the exhibit",
+  "units_in_header": "Units in a column or axis header",
+  "currency_first_and_total_rows": "$ only on the first and total rows",
   "currency_every_figure": "$ on every figure",
-  "x_suffix_multiples": "x on multiples (A.9)",
-  "parentheses_negatives": "Negatives in parentheses (A.9)",
+  "x_suffix_multiples": "x on multiples",
+  "parentheses_negatives": "Negatives in parentheses",
   "minus_negatives": "Negatives with a minus sign",
-  "nm_na_written": "NM and NA written out, never blank (A.9)",
+  "nm_na_written": "NM and NA written out, never blank",
   "percent_suffix": "Percent sign on figures",
-  "k_m_b_suffix": "K, M or B suffixes (A.9)",
-  "tilde_approximate": "~ for approximate figures (A.9)",
+  "k_m_b_suffix": "K, M or B suffixes",
+  "tilde_approximate": "~ for approximate figures",
   "no_figures": "The exhibit shows no figures"
  },
  "legend": {
   "legend_box": "A legend",
   "direct_labels": "Series named on the marks (end or direct labels)",
-  "swatch_text": "Swatches with text in the series colour (A.6)",
+  "swatch_text": "Swatches with text in the series colour",
   "none_needed": "One series, or no series: nothing to name",
   "not_applicable": "Not a chart"
  },
@@ -163,15 +163,15 @@
   "not_applicable": "Not a chart"
  },
  "colour_logic": {
-  "single_hue_plus_highlight": "Tints of one hue plus one \"look here\" colour (A.6)",
+  "single_hue_plus_highlight": "Tints of one hue plus one \"look here\" colour",
   "single_hue": "Tints of one hue, no highlight",
-  "categorical": "One colour per category (A.6)",
-  "semantic": "Colour carries sign, status or heat (A.6)",
+  "categorical": "One colour per category",
+  "semantic": "Colour carries sign, status or heat",
   "monochrome": "Ink and greys only",
   "not_applicable": "No coloured marks"
  },
  "corpus_spelling": {
-  "about": "How the synthesis taxonomy that tagged the 578-page development corpus (pagecraft synth/analyze_all.py: EX_RULES, MOVES) spells the same terms. The corpus starter set is written in these spellings; library.py import reads them through this table and refuses a spelling not in it. Nothing else reads them: every tag is stored and checked as the slug.",
+  "about": "How the corpus taxonomy spells the same terms. The corpus starter set is written in these spellings; library.py import reads them through this table and refuses a spelling not in it. Nothing else reads them: every tag is stored and checked as the slug.",
   "exhibit_type": {
    "line": "line",
    "column": "column",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The page library: real pages, tagged by the model after looking, retrieved by tags
-when a page is planned (TARGET_SPEC 10.4, 7, A.11).
+when a page is planned.
 
     library.py permit  --lib LIB DECK --owner NAME --source-type company|external
                        --images yes|no --by WHO --basis TEXT [--licence TEXT] [--id ID]
@@ -17,7 +17,7 @@ permit records, per deck, who allowed what, and the deck's page count. build ref
 deck with no record: page images and contact sheets are kept only under `--images yes`;
 under `no` the renders live in LIB/work only for the model to look at while tagging,
 entries carry no image, and `check --seal` deletes those renders once every entry passes
-(TARGET_SPEC 7.3: tags, structure and the reasoning note without a client page image).
+(tags, structure and the reasoning note survive without a client page image).
 Withdrawing image permission (permit again with `--images no`) deletes the kept images at
 once, and `check` refuses any kept image on a deck whose permission keeps none.
 
@@ -67,6 +67,7 @@ from collections import Counter
 from pathlib import Path
 from statistics import median
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gallery
@@ -216,10 +217,10 @@ class Library:
         self.entries_path.write_text(json.dumps({"schema": MANIFEST_SCHEMA, "owner": self.manifest["owner"], "pages": self.pages}, indent=1) + "\n")
 
     def guard_location(self, owner: str) -> None:
-        """TARGET_SPEC 7.2: nothing derived from company material is written into the skill
-        directory; third-party page images are never committed."""
-        inside = self.root == SKILL_ROOT or SKILL_ROOT in self.root.parents
-        if not inside:
+        """Nothing derived from company material is written into the skill directory
+        (cli.inside_skill); third-party page images are never committed."""
+        import cli
+        if not cli.inside_skill(self.root):
             return
         if owner != "external":
             raise Refused("library_in_skill_dir", f"{self.root} is inside the skill directory; a library owned by {owner!r} lives in the company's working directory")
@@ -610,7 +611,7 @@ def check_entry(entry: dict) -> list[str]:
         if not isinstance(questions, list) or not questions:
             problems.append("designer_questions must be a non-empty list")
         else:
-            problems += [f"designer question {q!r} does not open with a question (TARGET_SPEC Appendix B: questions, never rules)"
+            problems += [f"designer question {q!r} does not open with a question (designer questions are questions, never rules)"
                          for q in questions if not isinstance(q, str) or not QUESTION_LEAD.match(q.strip())]
     exhibits = entry.get("exhibits")
     if exhibits is not None:
@@ -877,6 +878,11 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
              "searched in order: " + "; ".join(
                  ([f"the reference's own gallery {gallery_dir}"] if gallery_dir else ["no reference gallery given"])
                  + [f"{label} {lib.root} ({len(lib.pages)} entries)" for label, lib in libraries])]
+    if not external:
+        lines.append(f"   not searched: no external library ({EXTERNAL_LIBRARY} does not exist; build it with library.py import, "
+                     "or pass --library DIR)")
+    if own is None:
+        lines.append("   not searched: no company library (--own DIR)")
     if gallery_dir is not None:
         # a word in every crop caption ("the", "deck", "appears") tells no crop from another
         captions = [gallery.words(c["caption"]) for c in json.loads((gallery_dir / "manifest.json").read_text())["crops"]]
@@ -885,7 +891,7 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
             lines.append(f"   words in every gallery caption, left out: {' '.join(sorted(intent & common))}")
         exemplars, crops = gallery.rank(gallery_dir, " ".join(sorted(intent - common)))
         best = max([o for _, o, _ in exemplars] + [o for _, o in crops], default=0)
-        lines.append("1. the reference's own gallery (untagged: word overlap only, measured weak, TARGET_SPEC 10.2)")
+        lines.append("1. the reference's own gallery (untagged: word overlap only, which picks weakly; read the crops yourself)")
         if best == 0:
             lines.append("   no evidence: overlap 0 on every exemplar and crop; the reference shows nothing for this intent")
         else:
@@ -1029,4 +1035,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

@@ -98,7 +98,7 @@ keybank (the pages named under "Proven on") and read from the render.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
 - `c:varyColors val="0"` is written on every chart and is not yours to set: PowerPoint
-  and LibreOffice read its absence oppositely (deckgen E38 class 10). It means a pie
+  and LibreOffice read its absence oppositely (measured on both renderers). It means a pie
   draws one colour unless you give every slice a `fill_role` under `points`.
 
 ## How the contrast gate reads a chart
@@ -351,8 +351,8 @@ or the first category prints at the bottom.
 
 ## Annotations: shapes at data positions
 
-Humans annotate almost every data exhibit (TARGET_SPEC Appendix A.6: 7 of 291 corpus
-charts carry none); most moves are a shape placed at a data position. They are a list
+Humans annotate almost every data exhibit (7 of 291 charts in the coded corpus
+carry none); most moves are a shape placed at a data position. They are a list
 under the slide, beside `charts` and `styling`:
 
 ```json
@@ -364,8 +364,8 @@ under the slide, beside `charts` and `styling`:
 ```
 
 `host` is a chart or table element on the page. Nothing annotates by itself: you decide
-whether and what, from the house's habits and the message (A.7 lists the moves by data
-shape and by message).
+whether and what, from the house's habits and the message (the guide's `exhibit_habits.moves_by_data_shape`
+and `moves_by_message_kind`).
 
 Anchors, in the host's own data:
 
@@ -442,8 +442,8 @@ exhibits on keybank (all four fit, the judge files the deck under keybank).
 
 ### Comps table: the median multiples and the subject row boxed
 
-keybank p5 (red boxes around the median multiples and the subject row; A.7: comps
-tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
+keybank p5 (red boxes around the median multiples and the subject row; in the coded
+corpus, comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
 row is shaded with `emphasis_rows`; the boxes are annotations.
 
 ```json
@@ -457,8 +457,8 @@ row is shaded with `emphasis_rows`; the boxes are annotations.
 
 ### Sensitivity grid: the scenario region boxed, a header group bracketed, the base case keyed
 
-keybank p7 (a red box around the realistic region; A.7: boxed cell or region on 17 of
-29 sensitivity grids). The bracket needs room above the header: the table sits in a
+keybank p7 (a red box around the realistic region; corpus: a boxed cell or
+region on 17 of 29 sensitivity grids). The bracket needs room above the header: the table sits in a
 region with `pad_role`, and the collision check refuses it if the lead text is in the
 way.
 
@@ -475,8 +475,8 @@ way.
 
 ### Football field: the offer and unaffected prices as lines, the selected range as a zone
 
-bmo p125 (the current offer as a labelled dashed line; A.7: a reference line at the
-offer on 4 of 4 football fields). On a horizontal bar with the categories reversed the
+bmo p125 (the current offer as a labelled dashed line; corpus: a reference line at
+the offer on 4 of 4 football fields). On a horizontal bar with the categories reversed the
 value axis and its tick labels move above the plot, exactly where an `end_outside`
 label goes: the render check caught `Unaffected $27.80` over the `$24` tick, and the
 fix was to hide the value axis (the data labels carry the values). It also caught the
@@ -496,7 +496,7 @@ check.
 ### Ranking: the subject highlighted, the mean as a line, an arrow carrying the subject's figure
 
 bcg-dallas p15 and bmo p33 (sorted, labelled, subject highlighted, a dashed mean line;
-A.7: all three on 5 of 5 horizontal-bar rankings in one consulting group). The subject
+corpus: all three on 5 of 5 horizontal-bar rankings in one consulting group). The subject
 bar's own label is hidden (`points[...].label.show: false`) and the arrow's label
 carries its figure; data labels sit at `inside_base`, because at `outside_end` the mean
 line crossed four of them and the render check refused the page.
@@ -521,7 +521,7 @@ builds, and its page lists 26 lines under `chart_defaults_taken`, among them:
 
     series[0].fill_role: no fill written: the renderer's automatic colour by series index
     series[0].labels: no data labels
-    axes.category.line_role: no stroke written: each renderer reads the theme's line style, and they differ (E38 class 5)
+    axes.category.line_role: no stroke written: each renderer reads the theme's line style, and they differ (measured)
     axes.value.tick_marks: out (python-pptx's chart part)
     gap_width: 150 (python-pptx's chart part)
     legend: none (OOXML absence)

@@ -39,6 +39,7 @@ from pathlib import Path
 
 from lxml import etree
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ooxml  # noqa: E402
 from textfit import fc_match, metric_alias  # noqa: E402
@@ -285,7 +286,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--keep-pdf", default=None, help="also write the PDF LibreOffice made (a pptx source) to this path: the build reads the words it drew")
     args = ap.parse_args(argv)
     src = Path(args.deck).resolve()
-    out = Path(args.out) if args.out else src.with_name(src.stem + "-renders")
+    import cli
+    cli.guard_args(args, "keep_pdf")
+    out = cli.out_path(Path(args.out) if args.out else src.with_name(src.stem + "-renders"), "render folder")
     out.mkdir(parents=True, exist_ok=True)
     report: dict[str, object] = {"source": str(src)}
     with tempfile.TemporaryDirectory(prefix="render-") as tmp:
@@ -321,4 +324,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

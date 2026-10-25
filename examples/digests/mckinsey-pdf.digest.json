@@ -68,7 +68,8 @@
      }
     }
    ],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 2,
@@ -82,7 +83,8 @@
     "also_draws": []
    },
    "candidates": [],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 3,
@@ -115,7 +117,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 4,
@@ -235,7 +238,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 5,
@@ -288,7 +292,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 6,
@@ -335,7 +340,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 7,
@@ -396,7 +402,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 8,
@@ -430,7 +437,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 9,
@@ -500,7 +508,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 10,
@@ -567,7 +576,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 11,
@@ -638,7 +648,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 12,
@@ -701,7 +712,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 13,
@@ -763,7 +775,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": null
   },
   {
    "slide": 14,
@@ -838,7 +851,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "monochrome"
     }
-   ]
+   ],
+   "source_line": true
   },
   {
    "slide": 15,
@@ -889,7 +903,8 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": false
   },
   {
    "slide": 16,
@@ -922,7 +937,8 @@
      }
     }
    ],
-   "exhibits": []
+   "exhibits": [],
+   "source_line": null
   },
   {
    "slide": 17,
@@ -988,7 +1004,9 @@
      "data_labels": "not_applicable",
      "colour_logic": "single_hue"
     }
-   ]
+   ],
+   "source_line": true
   }
- ]
+ ],
+ "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere"
 }

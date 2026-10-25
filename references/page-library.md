@@ -31,7 +31,7 @@ count as exhibits. These rules are definitions, not measurements. A PDF states n
 charts, so on a PDF neither the divider nor the disclaimer rule fires: those pages are
 proposed as content with their word count, and you skip them after looking (`--skip
 deck-id:1,2,16`). On one bank pptx the triage matched 12 of 12 pages. Look at
-`work/<id>/triage.png` and override with `--skip` and `--keep`; a page outside the deck, a
+`LIB/work/<id>/triage.png` and override with `--skip` and `--keep`; a page outside the deck, a
 deck not in this build, or a page named by both is refused.
 
 ## Tagging

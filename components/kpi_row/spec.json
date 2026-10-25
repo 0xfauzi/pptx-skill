@@ -1,6 +1,6 @@
 {
  "kind": "kpi_row",
- "description": "A handful of figures with their labels, ranked so the first leads (emphasis role, accent ink) and the rest read as its comparison; set side by side when the box is wide enough, else as label-left, figure-right lines. Never tiles. Ported from deckgen's kpi_row seed.",
+ "description": "A handful of figures with their labels, ranked so the first leads (emphasis role, accent ink) and the rest read as its comparison; set side by side when the box is wide enough, else as label-left, figure-right lines. Never tiles.",
  "data_schema": {
   "metrics": [
    {
@@ -20,13 +20,13 @@
    1143000,
    6858000
   ],
-  "source": "deckgen fixtures/components/kpi_row/spec.json size_domain"
+  "source": "the size domain of the seed this component was ported from"
  },
  "variants": {
   "horizontal": "flex row of one column per metric: figure over its label",
   "stacked": "flex column of rows: label (takes the rest) beside its figure (as wide as the widest figure measures)"
  },
- "variant_rule": "deckgen's: parts >= 2 and width // parts >= height, with parts = the metric count; plus every figure must measure onto one line in its horizontal column, else stacked",
+ "variant_rule": "the seed's rule: parts >= 2 and width // parts >= height, with parts = the metric count; plus every figure must measure onto one line in its horizontal column, else stacked",
  "roles_used": [
   "type.emphasis",
   "type.body",
@@ -72,7 +72,7 @@
    },
    "data": "data-heldout.json"
   },
-  "held_out_box_note": "deckgen's held-out strip is 9,144,000 wide, the whole 4:3 keybank slide; with the harness margins it ran past the slide (validation: shape extends past the slide), so the held-out box is keybank's content width, 9,144,000 - 2 x space.margin 381,000"
+  "held_out_box_note": "the seed's held-out strip is 9,144,000 wide, the whole 4:3 keybank slide; with the harness margins it ran past the slide (validation: shape extends past the slide), so the held-out box is keybank's content width, 9,144,000 - 2 x space.margin 381,000"
  },
  "single_line_ids": [
   "-figure"

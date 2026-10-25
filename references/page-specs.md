@@ -30,20 +30,37 @@ optional; without it the first text whose first paragraph is `type.title` is the
 
 Each refused with its own message: node ids unique on the page; at most 400 nodes; at most
 5 levels below the root (`root > body > col > panel > head > text` is the deepest chain).
-The depth cap is deckgen's runaway bound (observed nesting 3 plus 2), not a measurement of
+The depth cap is a runaway bound (shape nesting observed 3 deep in three reference decks, plus 2), not a measurement of
 layout trees. When a chain runs out, remove a region that wraps one child, or merge a
 column into its parent; a text element takes `fill_role` and `anchor` itself.
 
 ## Capacity before text
 
 ```bash
-python3 scripts/layout.py capacity work/deck/s03.spec.json --guide work/ref/guide.json
+python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide s3-synergies --guide "$DECK_WORK/ref/guide.json" \
+        [--chrome draw] [-o "$DECK_WORK/deck/s3.capacity.json"]
 ```
 
-Prints lines and characters per region per role from the measured ruler, on the page the
-build will solve (page size, chrome zones, title band). A component is budgeted as the
-flexible box the build solves first; what fits inside it is the component's own measure.
-Write to that budget.
+`capacity` solves the page with the build's own solve (the same function: guide page size,
+chrome zones for the `--chrome` mode, the title band, components probed and expanded),
+then, for every text element the spec names, prints its solved box, its lines and
+characters now, and `free`: how many characters more it takes before the page stops
+fitting at full scale, found by solving the page again with filler text appended to that
+element (every other element unchanged). One run on a keybank page:
+
+```
+s3-synergies: fit at scale 1.0 (pillow_x128)
+  title              type.title         box [0.42, 0.42, 9.17, 0.4] in  lines 1  chars 38  free 21 chars (+0 lines)
+  read               type.body          box [6.05, 1.02, 3.53, 5.51] in  lines 8  chars 251  free 807 chars (+19 lines)
+  source             type.source_line   box [0.42, 6.73, 9.17, 0.17] in  lines 1  chars 44  free 3219 chars (+22 lines)
+```
+
+Budgets do not add up: two elements in one column share the same free space. A page that
+fits only below full scale has no budget left (every `free` is 0, with the reason); cut or
+re-arrange first. A component's own text is measured by the component, not here. The
+filler is mean-advance English with figures, so a run of capitals or wide figures takes
+fewer characters than `free` says. Write the skeleton with short placeholder text, read
+the budgets, then write the words.
 
 ## Conventions the build enforces
 
@@ -72,7 +89,7 @@ Write to that budget.
 ## Looking before writing: the reference's gallery
 
 ```bash
-python3 scripts/gallery.py pick work/ref/gallery --intent "two column comparison table beside commentary"
+python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "two column comparison table beside commentary"
 ```
 
 Prints the two exemplars and three crops whose words overlap the intent most, with their
@@ -86,7 +103,7 @@ stronger evidence.
 ```bash
 python3 scripts/library.py pick --intent "valuation football field against the offer" \
   --exhibit football_field_or_range_bars [--composition C] [--move M]... [--data-shape TEXT] \
-  [--aspect 4:3] --gallery work/ref/gallery [--own COMPANY_LIBRARY]
+  [--aspect 4:3] --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
 python3 scripts/library.py vocab        # every value the tags take
 ```
 

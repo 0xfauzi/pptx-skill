@@ -9,6 +9,7 @@
 - Contrast
 - Titles, register and density
 - Repetition (the section's variety)
+- Leakage
 - Position drift, tie-outs, chart defaults, label breaks
 - The judge
 - Density is a loop
@@ -16,10 +17,15 @@
 ## The command and the judge's panel
 
 ```bash
-python3 scripts/build_deck.py work/deck/deck.json --guide work/ref/guide.json --template work/tpl.pptx \
-  -o work/out/deck.pptx --reference REF --renders work/out/renders --plan work/plan.json \
-  [--chrome draw] [--house-deck other.guide.json ...]
+python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
+  -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
+  [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...]
 ```
+
+With `--plan`, the deck holds the whole plan or one run of consecutive planned pages, each
+slide's id its page id: to build one page while you work on it, give a deck of that one
+slide. Any other set is refused, naming the plan's ids. The plan check covers the whole
+plan; the realised variety covers only the pages built (`repetition.plan.check.subset`).
 
 One command solves every page with measured fit, emits on the template, reads the file
 back, validates, renders, and judges. It prints a brief and writes `deck.build.json` beside
@@ -50,10 +56,16 @@ refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `cont
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
 `annotation collides`, `annotation covers chart text`, `annotation render check failed`;
-`font refused`. Warnings never refuse: `tieout` (a totals cell that does not equal its
-column), and `no source line` (a page with a table or chart and no `type.source_line` or
-`type.footnote` paragraph: the house's source-line habit is not measured, so look at its
-data pages and add one where the house does).
+`font refused`; `no source line` where the house carries source lines as a rule (below).
+Warnings never refuse: `tieout` (a totals cell that does not equal its column), and `no
+source line` elsewhere.
+
+`no source line` is a page with a table or chart and no `type.source_line` or
+`type.footnote` paragraph. The house's habit is the digest's count of data pages that
+carry one (`exhibit_habits.source_lines`). Where at least 80% of three or more house data
+pages carry one, the page is refused; otherwise it warns, with the house's count in the
+detail (keybank: 1 of 5, so it warns). A guide whose digest answered no `source_line`
+warns and says the habit is not measured. The 80% line is unmeasured.
 
 ## What the file is written at
 
@@ -83,8 +95,14 @@ no ink role. The fix is a role change; nothing in the emitter corrects an ink.
   reference's bands; a native table or chart against a band of 0 to 0 reads `no evidence`
   (a house that pastes exhibits as pictures).
 - `density`: words, elements and covered area against the reference's bands (`below`,
-  `in band`, `above`, or `no evidence`). A fit page `below` on covered area ends half-way
-  down: give the body region a weight in its column, or add content.
+  `in band`, `above`, or `no evidence`). Covered area is ink: each measured text line at
+  its width and pitch, each table at its fitted rows, charts, pictures and fills at their
+  boxes, unioned. A text box stretched past its last line does not count. The house's band
+  unions its shape boxes, so it is the more generous of the two. `text_boxes_mostly_empty`
+  lists every text element whose lines fill under 60% of its box, with where the text ends
+  and where the box ends (a reading aid, unmeasured; never a gate). A keybank page whose
+  commentary column ended at 2.72 in of a box running to 6.53 in read 0.72 covered by
+  boxes and 0.48 by ink, and is listed there: re-weight the column, or add a point.
 
 ## Repetition (the section's variety)
 
@@ -96,6 +114,20 @@ longer than the house's longest, and `warnings` lists every figure below the hou
 percentile. With `--plan`, `plan.check` repeats the plan check and
 `pages_differing_from_plan` flags each page where plan and build disagree. A plan the check
 refuses is not built.
+
+## Leakage
+
+`leakage` lists, per page, every name (two or more capitalised words), figure (a currency
+figure, a percent of two or more digits, a decimal, or three or more digits) and five-word phrase of the new deck that a past deck also
+carries, with the past page it is on. The past decks are `--reference` and each
+`--house-deck`'s own file (found by its recorded sha256; one not found is named under
+`unread`, never taken as clean). Left out: the house's chrome (text a past deck repeats on
+half its pages or more, and the template's own text), and every word of a `--brief` file
+(the user's brief and data, as text). Pictures are compared by hash, the template's own
+excepted. `verdict` is `clean` or `possible carry-over`: remove each finding, or confirm the
+user supplied it for this deck, in the final report. The thresholds are unmeasured. The
+same report runs on any deck: `python3 scripts/leakage.py DECK.pptx --past PAST.pptx
+[--brief brief.txt] [--template tpl.pptx]`.
 
 ## Position drift, tie-outs, chart defaults, label breaks
 

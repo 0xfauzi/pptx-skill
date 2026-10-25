@@ -1,15 +1,19 @@
 {
- "id": "04-consulting-low-contrast-signature",
+ "id": "04-house-contrast-precedent",
  "skills": [
   "building-house-style-decks"
  ],
  "target_spec_scenario": 4,
  "reference": {
-  "type": "vector PDF consulting deck whose signature green reads 2.51:1 on white",
+  "type": "native pptx pitch book whose house sets white text on its steel blue (5E7C9E) at 4.33:1, below AA, on pages 15, 18 and 20",
   "files": [
-   "/home/user/deckgen/fixtures/corpus/consulting/bcg-nystate-covid-impact-2020.pdf"
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx"
   ],
-  "notes": "The house sets titles and heads in its green at 2.51:1 on 23 pages; contrast precedent comes only with --reference."
+  "house_decks": [
+   "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+   "refs/files/mi_netflix_financing_pitchbook.pptx"
+  ],
+  "notes": "Contrast precedent comes only with --reference: without it the house's own white-on-steel-blue labels warn under AA."
  },
  "brief": "Four-page budget impact section for a state budget office: revenue scenarios, sensitivity of the gap to two drivers, recovery path, actions.",
  "data": {
@@ -110,16 +114,16 @@
    "check": "Read the final report."
   },
   {
-   "statement": "Every build passes --reference so the house's own ink-on-ground pairs are filed as precedent, and no other low-contrast pair is introduced.",
-   "check": "contrast.house_precedent lists the green pairs; contrast.violations empty."
+   "statement": "Every build passes --reference, so the house's own ink-on-ground pairs are filed as precedent, and no other sub-AA pair is introduced.",
+   "check": "deck.build.json contrast.house_precedent lists FFFFFF on 5E7C9E where the deck uses it; contrast.violations empty; no sub-AA warning on a pair the house never draws."
   },
   {
    "statement": "The sensitivity grid boxes the scenario region the claim rests on.",
    "check": "An outline_box annotation with a table anchor on the relevant cells."
   },
   {
-   "statement": "The house's measured habits for source lines are followed by looking, not by default.",
-   "check": "Pages carry source lines where the house's data pages do; no 'no source line' warning left unexplained."
+   "statement": "Source lines follow the house's measured habit.",
+   "check": "The digest answers source_line on every data page; each 'no source line' problem is a refusal or a warning per exhibit_habits.source_lines, and each warning is answered in the report."
   }
  ]
 }

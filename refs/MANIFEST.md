@@ -1,6 +1,6 @@
 # Public deck references (collected 2026-10-19)
 
-All files below were fetched with curl only, type-checked with `file`, hashed with `sha256sum`. Nothing was opened with an interpreter. Total: 11 files (3 pptx, 8 pdf).
+All files below were fetched with curl only, type-checked with `file`, hashed with `sha256sum`. Nothing was opened with an interpreter. Total: 13 files (5 pptx, 8 pdf).
 
 | filename | source URL | publisher | document type | format | pages | sha256 | bytes | legal basis for public availability |
 |---|---|---|---|---|---|---|---|---|
@@ -15,6 +15,8 @@ All files below were fetched with curl only, type-checked with `file`, hashed wi
 | perella_weinberg_pitch.pdf | https://media.wallstreetprep.com/uploads/2011/09/17133621/Perella-Pitch.pdf | Perella Weinberg Partners; hosted by Wall Street Prep | board presentation (short advisory pitch) | pdf | 8 | a66afa7e91227f37df50bf22bf6ee0886e9786e7a35304486b3688c11705fa97 | 6004396 | Training-site copy, free download; WSP states SEC filing / litigation provenance, not independently verified here |
 | bmo_fairness_opinion_board.pdf | https://media.wallstreetprep.com/uploads/2011/09/17133601/BMO-Fairness-Opinion-Pitchbook.pdf | BMO Capital Markets; hosted by Wall Street Prep | board presentation (fairness-opinion presentation, 243 pp incl. appendices) | pdf | 243 | 732ceefea1d93f09345b1dd067af8ec4f1954682ee297eae2b69f5e60b0b4ff2 | 4735326 | SEC filing exhibit per WSP; training-site copy, free download |
 | mckinsey_uf_road_ahead_2023.pdf | https://assets.documentcloud.org/documents/25079673/uf-mckinsey-documents.pdf (manifest URL https://s3.documentcloud.org/documents/25079673/uf-mckinsey-documents.pdf now redirects to a Cloudflare challenge; assets host serves the file) | McKinsey & Company for University of Florida; published on DocumentCloud by journalists | consulting deck (set of "The Road Ahead" working decks, scanned, 520 pp) | pdf | 520 | cab9033dbbae4260cc63f4d51c75eca8a001a2e90c7db09f8d79307dde9a46d4 | 56759655 | Government public-records release (Florida public records request to a state university), hosted on DocumentCloud; URL was pre-verified in fixtures/corpus/consulting/MANIFEST.md |
+| themes.pptx | https://raw.githubusercontent.com/apache/poi/trunk/test-data/slideshow/themes.pptx | Apache POI project (test data) | template file with several masters and themes (a test specimen, no content pages of a real house) | pptx | unknown | 3ea86e4ee84a8bca6b99fe3a9f2a9a9186c0655df28ff92a2d02da24926c64ba | 322325 | Apache License 2.0 test data in the public apache/poi repository |
+| 45541_Header.pptx | https://raw.githubusercontent.com/apache/poi/trunk/test-data/slideshow/45541_Header.pptx | Apache POI project (test data) | small deck with headers and footers (a test specimen) | pptx | unknown | fda10ff5e22a0222a40a69ddd6d00b29dc8081eff499ccf2b5df0579395a0df2 | 308041 | Apache License 2.0 test data in the public apache/poi repository |
 
 ## Attempted and rejected / unreachable (recorded so the search is not repeated)
 

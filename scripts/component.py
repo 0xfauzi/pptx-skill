@@ -14,7 +14,7 @@ Before any of that, `check` runs each test's expand twice in separate interprete
 PYTHONHASHSEED=0 and PYTHONHASHSEED=1 and compares the returned trees (JSON with sorted
 keys, so a dict whose insertion order moved is not a difference, but a list whose order
 moved is: that is where a set iteration shows). Any difference fails the check and names
-the first differing path (deckgen component_generator/expansion_checks.py run_twice).
+the first differing path.
 `expand-once` is the driver those interpreters run; it prints the canonical tree.
 """
 
@@ -27,6 +27,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
@@ -180,6 +181,9 @@ def main(argv: list[str]) -> int:
     e = sub.add_parser("expand-once", help="print one canonical expansion (the determinism driver)"); e.add_argument("kind"); e.add_argument("data"); e.add_argument("width_emu", type=int); e.add_argument("height_emu", type=int); e.add_argument("--guide", required=True)
     sub.add_parser("list")
     args = ap.parse_args(argv)
+    if args.cmd == "check":
+        import cli
+        cli.guard_args(args, "out")
     if args.cmd == "expand-once":
         print(canonical_expansion(args.kind, args.data, args.width_emu, args.height_emu, args.guide))
         return 0
@@ -200,4 +204,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

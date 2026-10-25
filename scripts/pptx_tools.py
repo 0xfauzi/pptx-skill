@@ -4,7 +4,7 @@
     pptx_tools.py text deck.pptx                      # text per slide, tables as rows (JSON with --json)
     pptx_tools.py layouts deck.pptx                   # masters, layouts, placeholders with boxes, usage counts
     pptx_tools.py template ref.pptx -o tpl.pptx       # the reference with every slide removed: masters, layouts,
-                                                      # theme and chrome intact (deckgen E18: master reuse)
+                                                      # theme and chrome intact (master reuse)
     pptx_tools.py template ref.pptx -o tpl.pptx --keep 3,7   # keep those slides (page reuse)
     pptx_tools.py duplicate deck.pptx --slide 3 -o out.pptx [--after 5]
     pptx_tools.py delete deck.pptx --slides 2,5 -o out.pptx
@@ -17,7 +17,7 @@ a slide's content: content edits go through the layout solver and the emitter, o
 python-pptx in a script the model writes.
 
 `validate --emit` walks the saved package for what the two renderers draw differently
-(deckgen E38) and reports each as a problem: a table whose shared interior edge differs
+(measured on both renderers) and reports each as a problem: a table whose shared interior edge differs
 between its two declaring cells (class 4: PowerPoint keeps the first-declared side and
 writes it back, LibreOffice draws the heavier one); a stroke with w below 6350 EMU, 0.5pt
 (class 5: at 0.25pt PowerPoint inks 0.48px, LibreOffice 1.27px), unless the guide's own
@@ -26,7 +26,7 @@ its charts (classes 6-7); a chart plot group without c:varyColors (class 10); a 
 size is below the legibility floor (the guide's floors, max(floor_pt, absolute_floor_pt)
 per family, resolved by where the run sits: table cells to the table roles' family, chart
 parts to the chart family, everything else to the lowest family floor because the file
-does not carry the role; without a guide, 7.0pt, deckgen E45); a slide-number placeholder
+does not carry the role; without a guide, 7.0pt, measured); a slide-number placeholder
 whose text is digits instead of a slidenum field. It also counts the slides carrying the
 emitter's origin tag (p:tag name="pptx-skill"), which `text` prints per slide.
 """
@@ -52,6 +52,7 @@ from pptx.util import Emu
 
 EMU_PER_INCH = 914400
 EMU_PER_PT = 12700
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
 from ooxml import visual_extent  # noqa: E402  the area a rotated shape covers, one definition
@@ -740,6 +741,8 @@ def main(argv: list[str]) -> int:
     s.add_argument("--emit", action="store_true", help="the emitter read-back: shared table edges, stroke floor, gradients, varyColors, size floors, literal page numbers")
     s.add_argument("--guide", default=None, help="style guide for the floors and the rule widths the house itself declares (with --emit)")
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out")
     if args.cmd == "validate" and args.guide and not args.emit:
         ap.error("--guide needs --emit")
     if args.cmd == "blank":
@@ -776,4 +779,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

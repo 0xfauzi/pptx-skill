@@ -5,11 +5,11 @@
  ],
  "target_spec_scenario": 5,
  "reference": {
-  "type": "long vector PDF with a navy title band and a heavy rule (205 pages)",
+  "type": "a 20-page vector PDF pitch book (the PDF rendition of a native deck); no template file",
   "files": [
-   "/home/user/deckgen/fixtures/corpus/consulting/bain-ucberkeley-diagnostic-2010.pdf"
+   "refs/files/mi_jazz_pharma_sellside_pitchbook.pdf"
   ],
-  "notes": "The house writes Verdana; the renderer draws it as Inter, so the substitute must be fc-match's answer. House longest run 2."
+  "notes": "No template: blank template at the guide's page size, --chrome draw. Arial is drawn as Liberation Sans, a metric alias, so fit is measurable. The pptx twin in refs/files is the same deck: the judge's panel drops it by hash, and it must not be given as a house deck of another house."
  },
  "brief": "Five-page cost diagnostic for a university: cost baseline, spans and layers, procurement, implementation plan, savings bridge.",
  "data": {
@@ -134,12 +134,12 @@
    "check": "Read the final report."
   },
   {
-   "statement": "The Verdana stand-in recorded is fc-match's face, and no page is refused for its font.",
-   "check": "guide typography.families.substitutes; no 'font refused'."
+   "statement": "The face stand-in is a metric alias and no page is refused for its font.",
+   "check": "preflight.py --reference lists Arial as metric_alias; no 'font refused'."
   },
   {
    "statement": "Undeclared runs longer than the house's longest are refused at the plan and declared or removed before the build.",
-   "check": "plan.check.json refusals empty; any run of 3 carries deliberate_parallel."
+   "check": "plan.check.json refusals empty; any run past the house's longest carries deliberate_parallel."
   },
   {
    "statement": "The savings bridge ties.",

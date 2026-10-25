@@ -1,6 +1,6 @@
 {
  "kind": "bullet_stack",
- "description": "A list of co-equal points in the writer's order, set in one column or, when the box is wide enough for two square-or-wider columns, in two columns filled down then across. Ported from deckgen's bullet_stack seed.",
+ "description": "A list of co-equal points in the writer's order, set in one column or, when the box is wide enough for two square-or-wider columns, in two columns filled down then across.",
  "data_schema": {
   "items": ["string, one point each, in reading order"],
   "variant": "single_column | two_column (optional)",
@@ -9,13 +9,13 @@
  "size_domain_emu": {
   "width": [2743200, 9144000],
   "height": [1600200, 6858000],
-  "source": "deckgen fixtures/components/bullet_stack/spec.json size_domain"
+  "source": "the size domain of the seed this component was ported from"
  },
  "variants": {
   "single_column": "flex column of one text element per item, read straight down",
   "two_column": "flex row of two flex columns of ceil(n/2) items, filled down the first column then across"
  },
- "variant_rule": "deckgen's: parts >= 2 and width // parts >= height, with parts = 2 columns",
+ "variant_rule": "the seed's rule: parts >= 2 and width // parts >= height, with parts = 2 columns",
  "roles_used": ["type.body", "space.sm", "space.md"],
  "tests": {
   "shown": [

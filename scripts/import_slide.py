@@ -34,6 +34,7 @@ from pathlib import Path
 
 from PIL import Image
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from extract_style import POSITION_DIAMETER_EMU  # noqa: E402  the grain chrome is mined at
@@ -313,6 +314,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--guide", required=True, help="the completed guide (roles and colours to bind to)")
     ap.add_argument("-o", "--out", required=True)
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out")
     guide = json.loads(Path(args.guide).read_text())
     Path(args.out).resolve().parent.mkdir(parents=True, exist_ok=True)  # a new work directory, as build_deck makes for -o
     deck = import_slide(args.reference, args.slide - 1, guide, Path(args.out).resolve().parent)
@@ -324,4 +327,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

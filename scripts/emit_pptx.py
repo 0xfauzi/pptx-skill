@@ -4,8 +4,8 @@
     emit_pptx.py resolved.json --template tpl.pptx --guide guide.json -o out.pptx [--chrome auto|none]
 
 `tpl.pptx` is the reference with its slides removed (pptx_tools.py template): masters,
-layouts, theme and chrome stay, so every inherited value is the reference's (deckgen E18:
-master reuse). The spec carries TOKEN ROLES and content only. A colour is a role name in
+layouts, theme and chrome stay, so every inherited value is the reference's (master
+reuse: PowerPoint opens and re-saves such a package without repair). The spec carries TOKEN ROLES and content only. A colour is a role name in
 the guide (`color.ink`, `color.accent2`, `color.extra_3`), a text style is a type role
 (`type.body`); a literal hex or point size in the spec is refused unless the element is
 marked `"foreign": true`. Boxes are integer EMU from the layout solver.
@@ -57,12 +57,12 @@ recipes over this spec (references/chart-recipes.md), not code paths. No ink is
 chosen here for any fill: tables and charts write the ink the spec or guide names, and
 the build's contrast gate refuses a pair below 3:1.
 
-What the file carries so that PowerPoint and LibreOffice draw the same page (deckgen
-E38): both cells of every shared table edge declare the edge identically, every chart
+What the file carries so that PowerPoint and LibreOffice draw the same page (measured on
+both): both cells of every shared table edge declare the edge identically, every chart
 plot group writes c:varyColors val=0 (the one chart value written unasked), no rule
 is written below 0.5pt unless the guide's own rule width says so. Every generated slide carries a tags part (p:custDataLst/p:tags,
-one p:tag name="pptx-skill" val="generated"), which deckgen 2E-1 measured surviving a
-PowerPoint save: `pptx_tools.py text` reads it back as the slide's origin.
+one p:tag name="pptx-skill" val="generated"), which survives a PowerPoint save
+(measured): `pptx_tools.py text` reads it back as the slide's origin.
 """
 
 from __future__ import annotations
@@ -95,6 +95,7 @@ from pptx.opc.package import Part
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from chart_geometry import chart_family  # noqa: E402
 
@@ -142,12 +143,18 @@ class Guide:
         if HEX_RE.match(role):
             raise SpecError(f"{where}: literal colour {role!r}; use a colour role from the guide")
         entry = self.colors.get(role)
+        if entry is None and role in (self.g.get("absent_roles") or {}):
+            raise SpecError(f"{where}: colour role {role!r}: the completed guide records that the house has none "
+                            f"({self.g['absent_roles'][role].get('why')}); use a role the house shows")
         if entry is None:
             raise SpecError(f"{where}: unknown colour role {role!r}; guide roles: {sorted(self.colors)}")
         return entry["hex"]
 
     def type_spec(self, role: str, *, where: str) -> dict:
         spec = self.roles.get(role)
+        if spec is None and role in (self.g.get("absent_roles") or {}):
+            raise SpecError(f"{where}: type role {role!r}: the completed guide records that the house has none "
+                            f"({self.g['absent_roles'][role].get('why')}); use a role the house sets")
         if spec is None:
             raise SpecError(f"{where}: unknown type role {role!r}; guide roles: {sorted(self.roles)}")
         if spec.get("partial"):
@@ -1703,6 +1710,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="draw: paint the guide's chrome and surface on every slide (PDF references, blank templates)")
     args = ap.parse_args(argv)
+    import cli
+    cli.guard_args(args, "out")
     spec = json.loads(Path(args.spec).read_text())
     guide = json.loads(Path(args.guide).read_text())
     print(json.dumps(emit(spec, args.template, guide, args.out, args.chrome), indent=1))
@@ -1710,4 +1719,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

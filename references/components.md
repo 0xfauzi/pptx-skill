@@ -23,9 +23,9 @@ the page leaves no room for is refused by name. Use one in a page as
 ## Checking and admitting
 
 ```bash
-python3 scripts/component.py check KIND_OR_DIR --guide work/ref/guide.json --template work/tpl.pptx \
-  --out work/components --reference REF
-python3 scripts/component.py admit KIND_OR_DIR --out work/components
+python3 scripts/component.py check KIND_OR_DIR --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
+  --out "$DECK_WORK/components" --reference "$REF"
+python3 scripts/component.py admit KIND_OR_DIR --out "$DECK_WORK/components"
 ```
 
 `check` runs each test's `expand` twice in separate interpreters under two hash seeds and
@@ -48,7 +48,7 @@ tracked, bold when the role is), `line_pitch_emu(guide, role)`, `paragraph_spaci
 line. By hand:
 
 ```bash
-python3 scripts/component_api.py work/ref/guide.json type.caption '$12.4 to $13.9'
+python3 scripts/component_api.py "$DECK_WORK/ref/guide.json" type.caption '$12.4 to $13.9'
 ```
 
 The functions raise on a role the guide lacks, as the solver would; do not catch and guess.

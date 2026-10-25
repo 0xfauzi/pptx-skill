@@ -16,8 +16,8 @@ The draft's `unresolved` list is exactly what you answer: every address in it, n
 An address left out is as wrong as one invented. Write `{"<open path>": value, ...}`:
 
 ```bash
-python3 scripts/complete_guide.py work/ref/draft.json --check     # what is open, which core addresses
-python3 scripts/complete_guide.py work/ref/draft.json work/ref/completion.json -o work/ref/guide.json --digest work/ref/digest
+python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" --check     # what is open, which core addresses
+python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/completion.json" -o "$DECK_WORK/ref/guide.json" --digest "$DECK_WORK/ref/digest"
 ```
 
 - A key outside `unresolved` is refused. Always writable: `/description`,
@@ -42,19 +42,46 @@ python3 scripts/complete_guide.py work/ref/draft.json work/ref/completion.json -
 
 ## Value shapes
 
-`null` is an answer where shown, and closes the address; a left-out key never does.
+Every open address takes the value below; `--check` prints the line for each address it
+lists, and `complete_guide.py --shapes` prints this table. `null` is an answer where the
+last column says what it means, and closes the address; where it says "refused", write the
+value instead. A left-out key never closes anything.
 
-| address | value |
-|---|---|
-| `/color/roles/<role>`, `/extra_roles/<name>` | `{"hex": "RRGGBB", "why": "..."}` (a bare `"RRGGBB"` also applies) |
-| `/typography/roles/<role>` | `{"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}` |
-| `/typography/roles/<role>/members` | the members the ladder left open, same keys without `size_pt` |
-| `/typography/roles/<role>/line_spacing` | a multiple of the size, or `null`: single spacing (drawn at 1.2 x size) |
-| `/typography/scale_ratio` | a number, or `null` when the levels are not a geometric ladder |
-| `/spacing/baseline_emu` | an integer, or `null`: no baseline grid |
-| `/density_bands/table_rows_per_inch` | `{"metric", "low", "high", "median", "n"}`, or `null` with no table |
-| `/shape_language/corner_radii` | `{"modal_radius_emu", "rounded_share", "why"}` |
-| `/floors/<family>/floor_pt` | a number, never below `absolute_floor_pt` |
+| address | value | null means |
+|---|---|---|
+| `/color/roles/color.(surface\|ink\|accent1)` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | refused |
+| `/color/roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | the house has no such colour: the role is recorded under absent_roles, and a page that names it is refused |
+| `/extra_roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | refused |
+| `/typography/roles/type.(title\|body)` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt" | refused |
+| `/typography/roles/<name>/members` | the open members only: any of "weight", "italic", "family", "alignment", "case", "ink_role", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", plus "why"; never "size_pt" | refused |
+| `/typography/roles/<name>/line_spacing` | a multiple of the size, e.g. 1.2 | single spacing (drawn at 1.2 x size) |
+| `/typography/roles/<name>` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt" | the house has no such text: recorded under absent_roles; a page that names the role is refused. One of type.caption, type.footnote, type.source_line must stay answered |
+| `/typography/families` | {"major": "<face>", "minor": "<face>"} | refused |
+| `/typography/families/substitutes` | {"<face named in the file>": "<installed face measured in its place>"} | refused |
+| `/typography/scale_ratio` | a number, e.g. 1.25 | the levels are not a geometric ladder |
+| `/spacing/steps/<name>` | an integer EMU | refused |
+| `/spacing/baseline_emu` | an integer EMU | no baseline grid |
+| `/density_bands/table_rows_per_inch` | {"metric": "table_rows_per_inch", "low", "high", "median", "n"} | no table to measure |
+| `/floors/<name>/floor_pt` | a number of points, never below absolute_floor_pt | no run in this family: the absolute floor holds |
+| `/shape_language/corner_radii` | {"modal_radius_emu": int, "rounded_share": 0..1, "why": "..."} | refused |
+| `/shape_language/icon_style` | a string, e.g. "none" or "white line icons in accent circles" | refused |
+| `/imagery/register_kind` | a string, e.g. "photographs, wide crops" or "none" | refused |
+| `/tables` | {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"} | refused |
+| `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|r\|t\|l\|none"}}, "why"} | refused |
+| `/continuation` | {"header_repeat": "full\|none", "contd_mark": "<text>", "takeaway_policy": "repeat\|first_only\|none"} | refused |
+| `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "never_does": [...], "tone"} | refused |
+| `/derivation_rules` | a list of sentences | refused |
+| `/titles/register` | see Titles below | refused |
+| `/variety/content_pages` | a list of page numbers | refused |
+| `/exhibit_habits` | never in the patch: answered by --digest DIR | refused |
+| `/notes/<name>` | a string | refused |
+
+Where the honest answer is that the house has none (no green for `color.positive`, no
+kicker), answer `null`: the guide records the role under `absent_roles`, and a page that
+names it is refused with that reason. Do not borrow another role's colour to fill the
+slot. `why` is accepted everywhere a value is an object, `/members` included, and is kept
+as provenance. A run applies every address it can and reports every refusal at once,
+numbered; the guide is written only when none is left.
 
 ## Description and derivation rules
 
@@ -70,7 +97,10 @@ below it. A size set on two or more pages counts even when the Tukey fence would
 (source lines that are 10 of 44 annotation runs set the floor at 8.0, not the fence's
 9.0); a size on one page under the fence is trimmed, and turned text is never a sample.
 When the body floor equals the body size there is no headroom: density comes from
-arrangement and content. You may lower a floor in the completion when the reference's
+arrangement and content. An observed floor also binds the table roles: when the house's
+own tables are pictures set below its body floor (keybank's are about 10pt over a 12pt
+body floor), native tables will be set at the floor and read larger than the house's; say
+so in the report rather than asking for a smaller size. You may lower a floor in the completion when the reference's
 captions show a smaller size in use, never below `absolute_floor_pt` (7.0pt, measured on
 two screen media by one rater for Arial and Calibri; print was not measured, so for a deck
 that will be printed keep the reference's own floor).
@@ -97,7 +127,7 @@ registers; the plan check and the build hold your titles to those counts and len
 ## Exhibit habits: the digest
 
 ```bash
-python3 scripts/gallery.py digest REF --out work/ref/digest --guide work/ref/draft.json
+python3 scripts/gallery.py digest "$REF" --out "$DECK_WORK/ref/digest" --guide "$DECK_WORK/ref/draft.json"
 ```
 
 Look at every page, content crop and candidate crop (a title or chrome leaf inside a
@@ -106,7 +136,12 @@ content crop is still drawn; the stub names it under `also_draws`). Copy
 the copy replace each page's `exhibits: null` with records in the stub's
 `record_template` (an empty list states the page has none; one candidate may hold several
 exhibits). Every value comes from `references/page_craft_vocabulary.json`; every
-annotation move names its anchor. Answer with `--digest work/ref/digest`: a page dropped,
+annotation move names its anchor. On every page holding a data chart or a table, answer
+the page's `source_line`: `true` when it carries a source or note line naming where its
+figures come from, `false` when not; leave it `null` on other pages. The finalizer counts
+them (`exhibit_habits.source_lines`), and the build refuses a data page without a source
+line only where the house carries one on at least 80% of its data pages (over three or
+more; an unmeasured threshold), and warns elsewhere. Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
 repeated or added, a candidate added and a record repeated are each refused by name, and a
 patch value for `/exhibit_habits` is refused. The finalizer computes every count (types,
 data shapes, moves by data shape and by message, emphasis, number formats, legend, labels,
@@ -124,6 +159,7 @@ house's variety is re-measured over your list on every completion.
 ## Worked completions
 
 `examples/keybank.completion.json` (a pptx reference with no native tables or charts) and
-`examples/mckinsey-pdf.completion.json` (a vector PDF), each with its digest under
+`examples/mckinsey-pdf.completion.json` (a vector PDF: McKinsey's 17-page board discussion
+document for CalSTRS, 2024, from a public board packet; it is not under `refs/`), each with its digest under
 `examples/digests/`. Both apply cleanly to the current extractor's drafts with nothing left
 open.

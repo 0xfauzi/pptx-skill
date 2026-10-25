@@ -31,12 +31,12 @@ Each `NN-*.json` holds:
 |---|---|---|
 | 01-bank-pitchbook-valuation | native pptx pitch books on one master | topic titles, computed claims, football field, comps emphasis, bridge tie-out, pooled house variety |
 | 02-bank-financing | the same house, financing deck type | variety a reader can see: exhibit classes, honest composition names |
-| 03-consulting-navy-serif | vector PDF, navy grounds, serif titles | PDF intake, drawn chrome, mixed title registers, round-trip losses |
-| 04-consulting-low-contrast-signature | vector PDF whose signature colour reads below 3:1 | contrast precedent, sensitivity region, source lines by looking |
-| 05-vector-pdf-title-band | 205-page vector PDF with a title band | font stand-ins, long-deck intake, runs over the house's longest |
+| 03-consulting-working-draft-pdf | a 520-page mixed consulting PDF, vector pages 160 to 226 | triage and a page range, drawn chrome, part-counter titles, declared sibling runs, round-trip losses |
+| 04-house-contrast-precedent | native pptx whose house sets white on its steel blue at 4.33:1 | contrast precedent from --reference, sensitivity region, measured source-line habit |
+| 05-vector-pdf-title-band | a 20-page vector PDF pitch book, no template | blank template, drawn chrome, metric-alias faces, runs over the house's longest, bridge tie-out |
 | 06-scanned-board-book | scanned PDF | raster intake, faces by eye, no variety evidence, judge cannot judge, logos |
 | 07-extend-existing-deck | an existing deck | slides kept byte-identical, origin tags, new pages in its layouts |
-| 08-confidentiality | scenario 01 with a seeded page library | no carry-over of client strings, no network, library hygiene |
+| 08-confidentiality | scenario 01 with a seeded page library | the leakage report (chrome excluded), no network, library hygiene |
 | 09-template-without-past-decks | a template file with several masters | template choice, habits with no evidence flagged |
 
 ## Running a scenario with a fresh agent

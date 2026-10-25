@@ -33,6 +33,7 @@ import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from PIL import Image  # noqa: E402
@@ -487,7 +488,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--max-pages", type=int, default=None)
     ap.add_argument("--page-emu", default=None, help="WxH in EMU for a PNG directory (a PDF carries its own size)")
     args = ap.parse_args(argv)
-    out = Path(args.out)
+    import cli
+    out = cli.out_path(args.out, "raster folder")
     out.mkdir(parents=True, exist_ok=True)
     src = Path(args.source)
     triage = None
@@ -532,4 +534,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

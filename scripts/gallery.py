@@ -23,14 +23,13 @@ Writes DIR/pages/slide-NN.png + fonts.json (render.py's output), then
 DIR/crops/crop-NN.png, DIR/exemplars/ex-NN.png + ex-NN.skeleton.json,
 DIR/manifest.json and DIR/MANIFEST.md.
 
-A port of deckgen's style/gallery.py and style/shapes.py. Every decision is
+A ported gallery (PORT_AUDIT.md). Every decision is
 integer EMU geometry read from the OOXML: the render is only ever CUT, never
 measured, because LibreOffice breaks lines differently from PowerPoint and a
 pixel cannot judge fit or position. Captions are mechanical. No document text
 reaches a caption, a skeleton or the manifest.
 
-The parameters are deckgen's measured values (deckgen
-docs/measurements/S1B3-decision.md parts 2 and 4), cited where declared. They
+The parameters are measured values carried with the port, cited where declared. They
 were CHECKED on a three-deck 4:3 investment-banking corpus, not tuned until the
 output looked nice: no crop is evidence that a component is well designed, only
 that it carries arrangement the numeric guide cannot state and is big enough to
@@ -59,6 +58,7 @@ from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lxml import etree
@@ -739,6 +739,19 @@ def render_fidelity(fonts: dict[str, dict[str, object]]) -> str:
     return "metric_substituted" if "metric_alias" in verdicts else "faithful"
 
 
+def fidelity_why(fonts: dict[str, dict[str, object]]) -> str:
+    """Which faces set the verdict, and what each means for reading the renders."""
+    parts = []
+    for face, e in sorted(fonts.items()):
+        if e.get("bullets_only"):
+            parts.append(f"{face} draws bullet glyphs only and does not count")
+        elif e.get("fidelity") == "metric_alias":
+            parts.append(f"{face} is drawn as {e.get('rendered_with')}, same metrics, so text extents are faithful and letterforms are not")
+        elif e.get("fidelity") == "substituted":
+            parts.append(f"{face} is drawn as {e.get('rendered_with')}, an unrelated face: do not read text fit off these renders")
+    return "; ".join(parts) or "no face vouched for"
+
+
 # --- the pipeline ------------------------------------------------------------------------------
 
 def _sha256(path: Path) -> str:
@@ -807,7 +820,7 @@ def _overlaps(a: Box, b: Box) -> bool:
 
 def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, include_generated: bool = False,
            pages: tuple[int, int] | None = None) -> dict[str, object]:
-    """The house exhibit digest stub (TARGET_SPEC 10.3): for every evidence page, its full
+    """The house exhibit digest stub: for every evidence page, its full
     render, a content crop (the rectangle around every leaf that is neither chrome nor the
     title; a crop is a rectangle, so a title or chrome leaf that falls inside it is still
     drawn, and is named under `also_draws`) and one crop per exhibit
@@ -833,7 +846,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     for slide in sources:
         n = slide.index + 1
         body = [leaf for leaf in content_leaves(slide) if leaf.role not in ("title", "ctrTitle")]
-        entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [], "exhibits": None}
+        entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [], "exhibits": None, "source_line": None}
         if body:
             extents = [extent_of(leaf) for leaf in body]
             left, top = min(e[0] for e in extents), min(e[1] for e in extents)
@@ -877,6 +890,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
                             "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>"}],
                             "emphasis_devices": ["emphasis_device"], "number_formats": ["number_format"], "legend": "legend",
                             "data_labels": "data_labels", "colour_logic": "colour_logic", "why": "<optional>"},
+        "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere",
         "pages": stub_pages,
     }
     (out / "digest.stub.json").write_text(json.dumps(stub, indent=1) + "\n")
@@ -887,7 +901,9 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "leaf inside that rectangle is still drawn, and the stub names it under `also_draws`: it is not an exhibit.",
         "Copy `digest.stub.json` to `digest.json` in this directory and leave the stub as cut; in the copy, replace each",
         "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
-        f"`{vocab_path.name}` (an empty list states the page has no exhibit). Keep every page and its candidates as cut:",
+        f"`{vocab_path.name}` (an empty list states the page has no exhibit). On every page holding a data chart or a",
+        "table, answer `source_line`: true when the page carries a source or note line naming where its figures come",
+        "from, false when it carries none; on other pages leave it null. Keep every page and its candidates as cut:",
         "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
         "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
     return stub
@@ -996,7 +1012,7 @@ def build(
     # No wall-clock timestamp: a rebuild that changed nothing is an empty diff.
     manifest: dict[str, object] = {
         "schema_version": 2,
-        "producer": "pptx-skill/scripts/gallery.py (port of deckgen style/gallery.py)",
+        "producer": "pptx-skill/scripts/gallery.py",
         "reference": deck_path.name,
         "reference_sha256": _sha256(deck_path),
         "render_fidelity": fidelity,
@@ -1167,7 +1183,8 @@ def main(argv: list[str]) -> int:
         ap.add_argument("--include-generated", action="store_true")
         ap.add_argument("--pages", default=None, help="1-based inclusive range, e.g. 30-70 (a large library is sampled; the range is recorded)")
         args = ap.parse_args(argv[1:])
-        out = Path(args.out)
+        import cli
+        out = cli.out_path(args.out, "digest folder")
         out.mkdir(parents=True, exist_ok=True)
         try:
             stub = digest(Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.include_generated,
@@ -1189,7 +1206,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--include-generated", action="store_true", help="let slides carrying the pptx-skill origin tag yield crops and exemplars")
     ap.add_argument("--pages", default=None, help="1-based inclusive range of pages or slides to crop from, e.g. 40-90 (a long deck exceeds the component cap)")
     args = ap.parse_args(argv)
-    out = Path(args.out)
+    import cli
+    out = cli.out_path(args.out, "gallery folder")
     out.mkdir(parents=True, exist_ok=True)
     try:
         manifest = build(
@@ -1201,9 +1219,11 @@ def main(argv: list[str]) -> int:
         return 2
     print(json.dumps({"out": str(out), "render_fidelity": manifest["render_fidelity"], "totals": manifest["totals"]}, indent=1))
     if manifest["render_fidelity"] != "faithful":
-        print(f"WARNING: render fidelity is {manifest['render_fidelity']}; see MANIFEST.md before reading letterforms", file=sys.stderr)
+        print(f"WARNING: render fidelity is {manifest['render_fidelity']}: {fidelity_why(manifest['fonts'])}", file=sys.stderr)
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cli
+    cli.run(main)

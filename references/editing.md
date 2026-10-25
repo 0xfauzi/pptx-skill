@@ -9,7 +9,7 @@
 ```bash
 python3 scripts/pptx_tools.py text deck.pptx                                   # text per slide, tables as rows, layout named
 python3 scripts/pptx_tools.py layouts deck.pptx                                # masters, layouts, placeholders with boxes
-python3 scripts/pptx_tools.py template deck.pptx -o work/tpl.pptx --keep 1,4,7  # a template that keeps chosen pages
+python3 scripts/pptx_tools.py template deck.pptx -o "$DECK_WORK/tpl.pptx" --keep 1,4,7  # a template that keeps chosen pages
 python3 scripts/pptx_tools.py duplicate deck.pptx --slide 3 -o out.pptx --after 5
 python3 scripts/pptx_tools.py delete deck.pptx --slides 2,5 -o out.pptx
 python3 scripts/pptx_tools.py clean deck.pptx -o out.pptx                      # drop unreferenced parts

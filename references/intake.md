@@ -10,9 +10,9 @@
 ## What the three intake commands produce
 
 ```bash
-python3 scripts/render.py REF --out work/ref/renders --width 1600 --grid
-python3 scripts/extract_style.py REF -o work/ref/draft.json --report work/ref/draft.md
-python3 scripts/gallery.py REF --out work/ref/gallery --guide work/ref/draft.json
+python3 scripts/render.py "$REF" --out "$DECK_WORK/ref/renders" --width 1600 --grid
+python3 scripts/extract_style.py "$REF" -o "$DECK_WORK/ref/draft.json" --report "$DECK_WORK/ref/draft.md"
+python3 scripts/gallery.py "$REF" --out "$DECK_WORK/ref/gallery" --guide "$DECK_WORK/ref/draft.json"
 ```
 
 - `renders/grid.png` and one PNG per page; `renders/fonts.json`, the font report.
@@ -66,7 +66,7 @@ layer). Their text layer is browser chrome or OCR output; mining it gives a hous
 Times. So triage first:
 
 ```bash
-python3 scripts/ooxml.py triage REF.pdf      # per-page class and the deck_class; a non-PDF is refused
+python3 scripts/ooxml.py triage "$REF"      # per-page class and the deck_class; a non-PDF is refused
 ```
 
 - `vector` and `vector_with_image` pages carry real type and are mined like a pptx, minus
@@ -82,7 +82,7 @@ python3 scripts/ooxml.py triage REF.pdf      # per-page class and the deck_class
   page size from the image box, and names the next step:
 
 ```bash
-python3 scripts/raster_style.py REF.pdf --out work/ref/raster [--dpi 100]
+python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
 ```
 
   It measures what pixels can tell: palette by painted area, text ink as the modal dark
@@ -102,6 +102,9 @@ python3 scripts/raster_style.py REF.pdf --out work/ref/raster [--dpi 100]
 
 ## Fonts the machine lacks
 
+`python3 scripts/preflight.py --reference "$REF"` lists every face the reference names with
+what this machine draws it as, and prints the install commands for what is missing.
+
 The solver measures with the font files it has (`fc-list`). With no metric alias for the
 reference's face (Arial, Calibri, Cambria, Times New Roman and Courier New have one), the
 solver refuses rather than measure another face under that name. The refusal names the
@@ -115,7 +118,10 @@ reads `status: unfittable`, `reason: font refused` until it is recorded.
 `render.py` and the solver read metric aliases from one table (`textfit.py`, fontconfig's
 17 binding="same" classes). Helvetica is not an alias of Liberation Sans: without Nimbus
 Sans or TeX Gyre Heros installed, a Helvetica deck reports `substituted`. A face that draws
-bullet glyphs only (`bullets_only`) does not set the gallery's verdict. `fonts.json` lists
+bullet glyphs only (`bullets_only`) does not set the gallery's verdict: on keybank the
+verdict `metric_substituted` comes from Arial drawn as Liberation Sans and Calibri as
+Carlito (same metrics, other letterforms), not from Wingdings, and the gallery's warning
+names each face and what it means. `fonts.json` lists
 per face `uncovered_count` and an `uncovered_sample`; the gallery refuses with
 `uncoverable_characters` when any face has one, because a crop in a fallback face teaches
 the wrong letterforms. Install a face that covers the script first.
