@@ -433,16 +433,24 @@ python3 scripts/library.py check --lib <company dir>/library [--seal]
 and proposes a triage: cover (a declared title layout, or page 1), divider (a declared
 section layout, or no exhibit and under a fifth of the deck's median words), disclaimer (a
 legal phrase and no table or chart). Pictures in the same place on half the pages do not
-count as exhibits. These rules are definitions, not measurements. On two decks the triage
-matched 12 of 12 and 36 of 39 pages. The three misses were an agenda, a legal notice whose
-text layer was garbled, and an EDGAR text page. So look at `work/<id>/triage.png` and
-override with `--skip` and `--keep`. Each kept page gets a stub whose tag fields are null.
-Fill them after looking at `look_at`. `[]` means you looked and found none.
+count as exhibits. These rules are definitions, not measurements. A PDF states no tables
+or charts, so on a PDF neither the divider nor the disclaimer rule fires: those pages are
+proposed as content with their word count, and you skip them after looking. On keybank
+(pptx) the triage matched 12 of 12 pages. So look at `work/<id>/triage.png` and
+override with `--skip` and `--keep` (a page outside the deck, a deck not in this build, or
+a page named by both is refused). Each kept page gets a stub whose tag fields are null.
+Fill them after looking at `look_at`. `[]` means you looked and found none. A designer
+question must open with a sentence ending in `?`; a follow-up after it is allowed.
 `--images no` keeps no page image: entries carry tags only, and `check --seal` deletes the
-renders. Every file in the library is listed in its `manifest.json` with the source hash.
-`check` refuses unlisted files, and `forget --deck ID` deletes one deck's files as a set.
-A company library inside the skill directory is refused. One pick never mixes two
-companies' libraries.
+renders. Permitting a deck again with `--images no` deletes its kept images and contact
+sheet at once. `--exclude` deletes every file that shows or lists the page (its image, the
+contact sheet, `triage.json`), and an excluded pptx slide is emptied in a temporary copy
+before rendering, so it is never drawn. Every file in the library is listed in its
+`manifest.json` with the source hash and the pages it derives from. `check` refuses
+unlisted files, files derived from an excluded page, and kept images on a deck whose
+permission keeps none; `forget --deck ID` deletes one deck's files as a set. A company
+library inside the skill directory is refused, and an external one there must sit in a
+directory git ignores as a whole. One pick never mixes two companies' libraries.
 
 A slide-layer logo, rule or label the reference pastes on every page is drawn on every
 generated page in the default `--chrome auto`; chrome the layout already carries is
