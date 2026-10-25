@@ -574,7 +574,7 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
     _, ys = table_geometry(host)
     for st, top, bottom in zip(table_row_styles(host, eg), ys, ys[1:]):
         if bottom > box[1] and top < box[1] + box[3] and st["fill_hex"]:
-            raise AnnotationRefused(f"{where}: table row {st['row']} ({st['class']}) is filled with {st['fill_name']}, which hides a band drawn under it; "
+            raise AnnotationRefused(f"{where}: {'header row ' + str(st['row']) if st['header'] else 'body row ' + str(st['row'] - int(host.get('header_rows', 1)))} ({st['class']}) is filled with {st['fill_name']}, which hides a band drawn under it; "
                                     "colour the row through the table (emphasis_rows, banding_role) instead")
 
 
