@@ -257,7 +257,7 @@ class ChartGeometry:
             c0 = slot_start + sign * ((abs(slot) - cluster) / 2 + j * bar * (1 - o))
         c1 = c0 + sign * bar
         v0, v1 = self.bar_values(j, i)
-        vaxis, p0 = self.value_coord(v0)
+        _, p0 = self.value_coord(v0)
         _, p1 = self.value_coord(v1)
         cat_lo, cat_hi = min(c0, c1), max(c0, c1)
         val_lo, val_hi = min(p0, p1), max(p0, p1)

@@ -727,20 +727,26 @@ def forget(lib: Library, deck_id: str) -> str:
 CORPUS_SPELLING = {name: {spelt: slug for slug, spelt in VOCABULARY["corpus_spelling"][name].items()} for name in ("exhibit_type", "annotation_move")}
 
 
-def _corpus_terms(page: dict) -> list[tuple[str, object]]:
-    """Every family and move a corpus page writes; a list that is not one is a term of its own
-    (refused by name), never read as empty."""
+def _corpus_problems(page: dict) -> list[str]:
+    """Every family and move a corpus page writes that the corpus spelling does not name, and
+    every exhibits or moves value that is not a list (never read as empty)."""
+    where = f"{page.get('deck')}-p{page.get('page')}"
     exhibits = page.get("exhibits")
     if not isinstance(exhibits, list):
-        return [("exhibit_type", exhibits)]
-    out: list[tuple[str, object]] = []
-    for ex in exhibits:
+        return [f"{where}: exhibits {exhibits!r} is not a list"]
+    out: list[str] = []
+    for i, ex in enumerate(exhibits):
         if not isinstance(ex, dict):
-            out.append(("exhibit_type", ex))
+            out.append(f"{where}: exhibit {i} {ex!r} is not an object")
             continue
-        out.append(("exhibit_type", ex.get("family")))
+        if not (isinstance(ex.get("family"), str) and ex["family"] in CORPUS_SPELLING["exhibit_type"]):
+            out.append(f"{where}: exhibit {i} family {ex.get('family')!r}")
         moves = ex.get("annotation_moves")
-        out += [("annotation_move", m) for m in moves] if isinstance(moves, list) else [("annotation_move", moves)]
+        if not isinstance(moves, list):
+            out.append(f"{where}: exhibit {i} annotation_moves {moves!r} is not a list")
+            continue
+        out += [f"{where}: exhibit {i} annotation move {m!r}" for m in moves
+                if not (isinstance(m, str) and m in CORPUS_SPELLING["annotation_move"])]
     return out
 
 
@@ -755,10 +761,9 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
     pages = payload.get("pages") if isinstance(payload, dict) else None
     if not isinstance(pages, list) or not all(isinstance(p, dict) for p in pages):
         raise Refused("corpus_unreadable", f"{source} has no pages list of objects")
-    unknown = sorted({f"{p.get('deck')}-p{p.get('page')}: {what} {value!r}" for p in pages for what, value in _corpus_terms(p)
-                      if not isinstance(value, str) or value not in CORPUS_SPELLING[what]})
+    unknown = [problem for p in pages for problem in _corpus_problems(p)]
     if unknown:
-        raise Refused("corpus_spelling_unknown", f"{len(unknown)} corpus terms page_craft_vocabulary.json corpus_spelling does not spell: {'; '.join(unknown)}")
+        raise Refused("corpus_spelling_unknown", f"nothing imported; {len(unknown)} corpus values refused (not a list, or a term the corpus_spelling of page_craft_vocabulary.json does not name): {'; '.join(unknown)}")
     lines = []
     for page in pages:
         deck_id = page["deck"]

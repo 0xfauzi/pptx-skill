@@ -539,6 +539,9 @@ and a `kind` (`outline_box`, `band`, `reference_line`, `arrow`, `callout`, `brac
 `badge`), every colour, width and distance a role. The full vocabulary, the label
 positions and four worked exhibits are in `references/design/chart_recipes.md`
 ("Annotations"). Placement is computed from the anchor; nothing annotates unasked.
+Which moves a page makes is yours to decide: the guide's `exhibit_habits` counts the
+house's moves by data shape and by message, and a library pick shows the moves of each
+page it returns, both as `annotation_move` slugs of `references/page_craft_vocabulary.json`.
 
 - A chart anchor needs `plot_area` (the inner plot as x, y, w, h fractions of the frame,
   written as a manual layout) and, on the axis it names, `min`, `max` and

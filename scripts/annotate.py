@@ -496,7 +496,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         horizontal = abs(y2 - y1) < 1
         if not horizontal:
             # the line's end is its top
-            (x1, y1), (x2, y2) = ((x1, max(y1, y2)), (x2, min(y1, y2)))
+            y1, y2 = max(y1, y2), min(y1, y2)
         drawn.append({"id": f"{aid}-line", "kind": "rule", "points": [round(x1), round(y1), round(x2), round(y2)],
                       "box": [round(min(x1, x2)), round(min(y1, y2)), round(abs(x2 - x1)), round(abs(y2 - y1))], **stroke})
         footprint.append({"segment": ((x1, y1), (x2, y2)), "width": lw})
@@ -715,7 +715,7 @@ def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: in
 # --- after the render: the host's own text ---------------------------------------------------
 
 _WORD = re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</word>')
-_PAGE = re.compile(r"<page width=\"([\d.]+)\" height=\"([\d.]+)\">(.*?)</page>", re.S)
+_PAGE = re.compile(r"<page width=\"([\d.]+)\" height=\"([\d.]+)\">(.*?)</page>", re.DOTALL)
 
 
 class RenderUnread(RuntimeError):
@@ -725,7 +725,7 @@ class RenderUnread(RuntimeError):
 def pdf_words(pdf: str) -> list[list[tuple[tuple[float, float, float, float], str]]]:
     """Every word LibreOffice drew, per page, as an EMU box (pdftotext -bbox)."""
     try:
-        done = subprocess.run(["pdftotext", "-bbox", pdf, "-"], capture_output=True, text=True, timeout=300)
+        done = subprocess.run(["pdftotext", "-bbox", pdf, "-"], capture_output=True, text=True, timeout=300, check=False)
     except (OSError, subprocess.TimeoutExpired) as error:
         raise RenderUnread(f"pdftotext did not run: {error}") from None
     if done.returncode != 0:

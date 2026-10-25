@@ -111,7 +111,7 @@ CONFIGS = [
 
 
 def chart_el(i: int, spec: dict) -> dict:
-    return {"id": f"probe{i}", "kind": "chart", "box": list(BOX), "plot_area": PLOT, "text": TEXT, "plot_fill_role": "none", "number_format": "0", **{"legend": "none", "title": "none", **spec}}
+    return {"id": f"probe{i}", "kind": "chart", "box": list(BOX), "plot_area": PLOT, "text": TEXT, "plot_fill_role": "none", "number_format": "0", "legend": "none", "title": "none", **spec}
 
 
 TABLE = {"id": "tbl", "kind": "table", "box": [914_400, 914_400, 7_315_200, 0], "header_rows": 1,
@@ -330,7 +330,7 @@ def build(out: Path, with_markers: bool, width_px: int) -> tuple[Path, list[list
 def render(path: Path, width_px: int) -> list[Path]:
     rdir = path.with_suffix("")
     done = subprocess.run([sys.executable, "-I", str(SKILL / "scripts" / "render.py"), str(path), "--out", str(rdir), "--width", str(width_px)],
-                          capture_output=True, text=True, timeout=900)
+                          capture_output=True, text=True, timeout=900, check=False)
     return [Path(p) for p in json.loads(done.stdout)["images"]]
 
 
