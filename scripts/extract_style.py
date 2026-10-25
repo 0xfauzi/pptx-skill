@@ -40,7 +40,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, pdf_triage, visual_extent  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 
@@ -1063,8 +1063,7 @@ class Extractor:
             if not heads:
                 continue
             sh = heads[0]  # one title per page: the topmost title shape
-            text = " ".join(" ".join(r["text"] for r in p["runs"] if not r.get("br")) for p in sh.paragraphs)
-            text = " ".join(text.split())
+            text = paragraphs_words(sh.paragraphs)
             if not text:
                 continue
             sizes = [r["size_pt"] for p in sh.paragraphs for r in p["runs"] if r.get("size_pt") and not r.get("br")]
@@ -1136,9 +1135,9 @@ class Extractor:
         if best is None:
             return None
         sh = best[1]
-        words = " ".join(" ".join(r["text"] for r in p["runs"] if not r.get("br")) for p in sh.paragraphs)
+        words = paragraphs_words(sh.paragraphs)
         sizes = [r["size_pt"] for p in sh.paragraphs for r in p["runs"] if r.get("size_pt") and not r.get("br")]
-        return {"text": " ".join(words.split())[:120], "size_pt": modal([round(v * 2) / 2 for v in sizes]), "paragraphs": len(sh.paragraphs),
+        return {"text": words[:120], "size_pt": modal([round(v * 2) / 2 for v in sizes]), "paragraphs": len(sh.paragraphs),
                 "gap_pt": round(best[0] / EMU_PER_PT, 1), "ref": sh.ref}
 
     # ---- composition, register, density ----
@@ -1616,8 +1615,8 @@ class Extractor:
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
                              ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
             self.open(path, reason)
-        self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, complete "
-                  "every page of the stub in the vocabulary it names, and answer this address with the completed stub",
+        self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, copy the "
+                  "stub to digest.json beside it, complete every page of the copy in the vocabulary it names, and answer with complete_guide.py --digest <dir>",
                   {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json",
                    "vocabulary": "references/page_craft_vocabulary.json"})
         self.notes.append("gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide")

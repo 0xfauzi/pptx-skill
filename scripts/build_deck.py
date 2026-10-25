@@ -61,7 +61,7 @@ import component_api  # noqa: E402
 import layout as L  # noqa: E402
 from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
-from ooxml import visual_extent  # noqa: E402
+from ooxml import paragraphs_words, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
 #: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
@@ -917,13 +917,26 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
 
 
 def title_node(spec_raw: dict) -> dict | None:
-    """The page title by position: the root's first child, when it is a text element whose
-    first paragraph is set in type.title. The title band and the title report read this."""
-    children = spec_raw.get("root", {}).get("children", [])
-    first = children[0] if children else None
-    if first and first.get("kind") == "text" and (first.get("paragraphs") or [{}])[0].get("role") == "type.title":
-        return first
-    return None
+    """The page title by position: the first text element, in reading order (depth first,
+    so a title inside a region counts), whose first paragraph is set in type.title. The
+    title report and the title-lines reason read this; the title band holds it only when it
+    is the root's first child (banded_title)."""
+    def walk(node: dict) -> dict | None:
+        if node.get("kind") == "text" and (node.get("paragraphs") or [{}])[0].get("role") == "type.title":
+            return node
+        for child in node.get("children") or []:
+            found = walk(child)
+            if found is not None:
+                return found
+        return None
+    return walk(spec_raw.get("root") or {})
+
+
+def banded_title(spec_raw: dict) -> dict | None:
+    """title_node when it is the root's first child: the one place the title band applies."""
+    node = title_node(spec_raw)
+    children = (spec_raw.get("root") or {}).get("children") or []
+    return node if node is not None and children and children[0] is node else None
 
 
 def page_title_id(slide: dict, spec_raw: dict) -> str | None:
@@ -948,14 +961,19 @@ def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict,
     register is never read from the words here: the spec states it, or it is reported as
     not stated. Absence of house evidence is reported as such, never as zero."""
     tid = page_title_id(slide, spec_raw)
+    named = (slide.get("title") or {}).get("element")
     stated = (slide.get("title") or {}).get("register")
     vocab = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())["title_register"]
     if stated is not None and stated not in vocab:
         raise SystemExit(f"{slide.get('id')}: title.register {stated!r} is not one of {sorted(vocab)}")
     el = next((e for e in elements if e["id"] == tid and e["kind"] == "text"), None) if tid else None
+    if named and el is None:
+        kinds = sorted({e["kind"] for e in elements if e["id"] == named})
+        raise SystemExit(f"{slide.get('id')}: title.element {named!r} names " + (f"a {'/'.join(kinds)} element, not a text" if kinds else "no element on the page"))
     if el is None:
-        return {"element": tid, "verdict": "no title: the page names none (title.element) and its first element is not a type.title text"}, []
-    text = " ".join(" ".join("".join(r["text"] for r in p["runs"]).split()) for p in el["paragraphs"])
+        return {"element": None, "register_stated": stated,
+                "verdict": "no title: the page names none (title.element) and holds no text element set in type.title"}, []
+    text = paragraphs_words(el["paragraphs"])
     house = guide.get("titles")
     report: dict = {"element": tid, "text": text, "register_stated": stated}
     warnings: list[dict] = []
@@ -1005,7 +1023,7 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None
         spec_raw["bullet_indent_roles"] = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
     band = title_band_emu(guide)
     root_children = spec_raw.get("root", {}).get("children", [])
-    if band and title_node(spec_raw) is not None and "size" not in root_children[0]:
+    if band and banded_title(spec_raw) is not None and "size" not in root_children[0]:
         # the reference keeps its titles above the top rule: a title that needs more
         # lines than the band holds is refused, never pushed under the rule
         pad_top = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 0)
@@ -1203,7 +1221,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
                 report["slides"].append(entry)
                 continue
-            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get(page_title_id(slide, spec_raw) or "", []))
+            banded = banded_title(spec_raw)
+            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get(banded.get("id") or "", [])) if banded else 0
             if outcome.status != "fit" and title_lines > 1 and title_band_emu(guide):
                 # the first cause named first: every other violation on the page follows from a
                 # title that pushed the content down

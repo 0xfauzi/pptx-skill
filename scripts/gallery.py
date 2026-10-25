@@ -800,10 +800,17 @@ def render_setup(deck_path: Path, out: Path, width: int, deck: Deck, shown: list
     return page_of, fonts, raster_w, raster_h
 
 
+def _overlaps(a: Box, b: Box) -> bool:
+    """The two boxes share area (touching edges do not)."""
+    return min(a[0] + a[2], b[0] + b[2]) > max(a[0], b[0]) and min(a[1] + a[3], b[1] + b[3]) > max(a[1], b[1])
+
+
 def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, include_generated: bool = False,
            pages: tuple[int, int] | None = None) -> dict[str, object]:
     """The house exhibit digest stub (TARGET_SPEC 10.3): for every evidence page, its full
-    render, a crop of its content (chrome and the title left out) and one crop per exhibit
+    render, a content crop (the rectangle around every leaf that is neither chrome nor the
+    title; a crop is a rectangle, so a title or chrome leaf that falls inside it is still
+    drawn, and is named under `also_draws`) and one crop per exhibit
     candidate (a substantive component of legible area holding a table, chart, picture or a
     drawn shape with no text), with `exhibits: null` for the model to answer after looking. Candidates
     only aid the eye: the model decides what is an exhibit, and answers [] for a page
@@ -834,7 +841,10 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
             box = crop_box(Component(slide, tuple(body), (left, top, right - left, bottom - top)), pad_floor, deck)
             target = out / "crops" / f"p{n:03d}-content.png"
             size = cut(page_of[slide.index], box, deck, target)
-            entry["content_crop"] = {"file": f"crops/{target.name}", "pixel_size": list(size)}
+            inside = [leaf for leaf in slide.leaves if leaf.bounds is not None and (leaf.chrome or leaf.role in ("title", "ctrTitle"))
+                      and _overlaps(extent_of(leaf), box)]
+            entry["content_crop"] = {"file": f"crops/{target.name}", "pixel_size": list(size),
+                                     "also_draws": [{"ref": leaf.ref, "as": "chrome" if leaf.chrome else "title"} for leaf in inside]}
         k = 0
         for c in by_slide.get(slide.index, []):
             drawn = any(kind in NON_TEXT_KINDS for kind in c.kinds) or any(leaf.runs == 0 for leaf in c.members)
@@ -873,9 +883,12 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     (out / "DIGEST.md").write_text("\n".join([
         f"# Exhibit digest stub: {deck_path.name}", "",
         f"Render fidelity `{stub['render_fidelity']}`; {stub['raster']['px_per_pt']} px per point. Look at each page, its content crop and",
-        "its candidate crops, then replace each page's `exhibits: null` with a list of records in the",
-        f"record_template's shape, every value from `{vocab_path.name}` (an empty list states the page has no exhibit).",
-        "Answer `/exhibit_habits` in the completion with the completed file, or pass it as complete_guide.py --digest.", "",
+        "its candidate crops. A content crop is the rectangle around the page's content; a title or chrome",
+        "leaf inside that rectangle is still drawn, and the stub names it under `also_draws`: it is not an exhibit.",
+        "Copy `digest.stub.json` to `digest.json` in this directory and leave the stub as cut; in the copy, replace each",
+        "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
+        f"`{vocab_path.name}` (an empty list states the page has no exhibit). Keep every page and its candidates as cut:",
+        "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
         "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
     return stub
 

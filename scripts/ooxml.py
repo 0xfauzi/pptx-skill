@@ -51,6 +51,14 @@ DEFAULT_CLR_MAP = {
     "hlink": "hlink", "folHlink": "folHlink",
 }
 TITLE_TYPES = {"title", "ctrTitle"}
+
+
+def paragraphs_words(paragraphs: list[dict]) -> str:
+    """The words a text frame reads as: each paragraph's runs joined as written (a break or
+    a space is in the run text; a run boundary is not a space, "Revenue gr" + "owth" is one
+    word), paragraphs joined by a space, whitespace collapsed. The title text the
+    extractor records and the title text the build reports are this one reading."""
+    return " ".join("".join(r.get("text") or "" for p in paragraphs for r in [*(p.get("runs") or []), {"text": " "}]).split())
 BODY_TYPES = {"body", "subTitle"}
 CHROME_TYPES = {"dt", "ftr", "sldNum"}
 DEFAULT_SIZE_PT = 18.0  # ECMA-376 default when no level declares sz
@@ -871,6 +879,7 @@ class SlideWalker:
                             "line_spacing": lnspc if isinstance(lnspc, float) else None, "space_before": float(before), "space_after": float(after), "runs": []}
                 self._para_capture.append(captured)
             ri = 0
+            gap = ""  # a whitespace-only run before the paragraph's first glyph run
             for r in para:
                 if _local(r) == "br" and captured is not None:
                     # an explicit break: the emitter writes the measured lines this way, and a
@@ -882,6 +891,14 @@ class SlideWalker:
                 t = r.find(_a("t"))
                 text = (t.text or "") if t is not None else ""
                 if not text.strip():
+                    # no glyphs, so no run, but the space is drawn: it stays in the paragraph's
+                    # text (joined to the run before it, or the next one), or a reader joining
+                    # the runs glues "the" and "presentation" into one word (45541 slide 2)
+                    if captured is not None and text:
+                        if captured["runs"] and not captured["runs"][-1].get("br"):
+                            captured["runs"][-1]["text"] += text
+                        else:
+                            gap += text
                     continue
                 rpr = r.find(_a("rPr"))
                 size, size_layer = self._resolve_run(rpr, def_rpr, holders, level, g_size, own_layer)
@@ -910,7 +927,7 @@ class SlideWalker:
                 before_pt = float(before) if before >= 0 else -float(before) * 1.2 * size_pt
                 after_pt = float(after) if after >= 0 else -float(after) * 1.2 * size_pt
                 if captured is not None:
-                    captured["runs"].append({"text": text, "size_pt": float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
+                    captured["runs"].append({"text": gap + text, "size_pt": float(size) if isinstance(size, (int, float)) else DEFAULT_SIZE_PT,
                                              "bold": bool(bold), "italic": bool(italic), "color": color, "caps": bool(caps), "family": face})
                 sink.append(Run(
                     chars=chars, family=face,
@@ -928,6 +945,7 @@ class SlideWalker:
                     mar_l_emu=mar_l if isinstance(mar_l, int) else None, indent_emu=indent if isinstance(indent, int) else None,
                     text=text,
                 ))
+                gap = ""
                 ri += 1
         return total_chars
 
