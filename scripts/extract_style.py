@@ -40,6 +40,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import plan  # noqa: E402
 from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
@@ -1115,6 +1116,29 @@ class Extractor:
                              "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null when it states none"},
                              "why": "..."}})
 
+    def variety(self, archetype_of: dict[int, str]) -> None:
+        """The house's variety over its content pages (plan.py holds the measure): each page's
+        archetype in page order with library.py's triage proposal, which pages are content
+        (the proposal, until /variety/content_pages answers it), and the measure. Exhibit types
+        are not read here: complete_guide.py measures them once /exhibit_habits is answered."""
+        from library import facts_of, propose  # library imports gallery, which imports this module
+        from ooxml import Package
+        facts = facts_of(self.slides, None if self.is_pdf else Package(self.path))
+        triage = {t["page"]: t for t in propose(list(facts.values()))}
+        pages = [{"slide": s.index + 1, "composition": archetype_of[i], "triage": triage[s.index + 1]["proposal"], "why": triage[s.index + 1]["evidence"]}
+                 for i, s in enumerate(self.slides)]
+        content = [p["slide"] for p in pages if p["triage"] == plan.CONTENT]
+        self.guide["variety"] = {
+            "pages": pages,
+            "content_pages": {"pages": content, "basis": "proposal: library.py's triage definitions (unmeasured), not confirmed by looking"},
+            "method": plan.METHOD, "weaknesses": list(plan.WEAKNESSES),
+            "measure": plan.measure_deck(Path(self.path).name, plan.content_segments({"pages": pages, "content_pages": {"pages": content}}, None)),
+        }
+        self.open("/variety/content_pages", "which pages are content is a reading: look at the renders and list the content pages (the triage "
+                  "proposal is in the candidates); the house's variety is measured over them, and stays on the proposal until answered",
+                  {"shape": "[<slide>, ...]: the content pages, in any order, each a page listed here", "pages": [p["slide"] for p in pages if p["triage"] != "hidden"]},
+                  [{"slide": p["slide"], "proposal": p["triage"], "why": p["why"]} for p in pages])
+
     def _title_neighbour(self, s: SlidePrint, title: Shape, pitch: float, above: bool) -> dict | None:
         """The nearest content text block directly above (or below) the title: its gap to
         the title edge within TITLE_COMPANION_GAP_PITCHES title pitches, overlapping the
@@ -1194,6 +1218,7 @@ class Extractor:
                     edges.append({"axis": axis, "edge_kind": kind, "position_emu": max(0, round(lv.representative)), "member_count": lv.count})
         edges.sort(key=lambda e: (-e["member_count"], e["position_emu"]))
         self.guide["composition"] = {"archetypes": archetypes, "bands": bands, "column_grids": grids, "alignment_edges": edges[:ALIGNMENT_EDGE_CAP]}
+        self.variety({m: f"arch-{fi + 1}" for fi, (_, members) in enumerate(fams) for m in members})
         # register and density
         per_kind: dict[str, list[int]] = defaultdict(list)
         decoration: list[int] = []
@@ -1699,6 +1724,7 @@ def _raster_run(self: "Extractor") -> dict:
         "color": {"theme": {}, "roles": {}, "usage": {}},
         "spacing": {"steps": {}, "margins": {}, "baseline_emu": None, "gap_levels": []},
         "composition": {"archetypes": [], "bands": [], "column_grids": [], "alignment_edges": []},
+        "variety": {"pages": [], "why": "a raster reference: its pages are images with no shapes, so no page has a composition archetype"},
         "register_stats": {},
         "density_bands": {},
         "chrome": [],
@@ -1734,6 +1760,30 @@ def _register_kind(sh: Shape) -> str:
 
 
 # --- report ------------------------------------------------------------------------------------
+
+
+def variety_report(v: dict | None) -> list[str]:
+    """The draft's variety section: how it is computed, where it is weak, the page sequence
+    with the triage proposal, and the measure (plan.py's)."""
+    out = ["", "## Variety (content pages)", ""]
+    if not v or not v.get("pages"):
+        return out + [f"No evidence: {(v or {}).get('why') or 'no page sequence'}."]
+    out += [f"How: {v['method']}", "", "Where it is weak:"] + [f"- {w}" for w in v["weaknesses"]] + [""]
+    out.append(f"Content pages ({v['content_pages']['basis']}): {v['content_pages']['pages']}")
+    out.append("| slide | composition | triage | why |")
+    out.append("|---|---|---|---|")
+    out += [f"| {p['slide']} | {p['composition']} | {p['triage']} | {p['why']} |" for p in v["pages"]]
+    m = v["measure"]
+    out.append("")
+    if m["status"] != "measured":
+        return out + [f"Measure: {m['why']}."]
+    out.append(f"V (composition) {m['composition']['V']} ({m['composition']['changed']} of {m['composition']['pairs']} adjacent pairs change); "
+               f"distinct compositions {m['distinct']['compositions']} over {m['distinct']['pages']} pages ({m['distinct']['per_page']} per page); "
+               f"longest run {m['longest_run']}; segments {m['segments']}")
+    out.append(f"Runs of one composition: {m['runs'] or 'none'}")
+    ex = m["exhibits"]
+    out.append(f"V (exhibit-type sets): {ex['V'] if 'V' in ex else ex['why']}")
+    return out
 
 
 def report(guide: dict) -> str:
@@ -1780,6 +1830,7 @@ def report(guide: dict) -> str:
     out.append(f"Column grids: {json.dumps(comp.get('column_grids'))}")
     out.append(f"Bands: {[(b['band_id'], b['top_fraction'], b['height_fraction']) for b in comp.get('bands', [])][:16]}")
     out.append(f"Alignment edges (top): {[(e['axis'], e['edge_kind'], round(e['position_emu'] / EMU_PER_INCH, 2), e['member_count']) for e in comp.get('alignment_edges', [])][:12]}")
+    out += variety_report(g.get("variety"))
     out += ["", "## Chrome and motifs", ""]
     for ch in g.get("chrome", []):
         out.append(f"- {ch['chrome_id']} {ch['kind']} ({ch['shape_kind']}, {ch['source_layer']}) box {ch['box_in']} in"

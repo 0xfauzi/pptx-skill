@@ -359,7 +359,12 @@ def page_facts(deck: Path, excluded: set[int]) -> tuple[dict[int, dict], tuple[i
         raise Refused("no_pages", f"{deck.name} has no pages")
     size = (prints[0].width, prints[0].height)
     prints = [sp for sp in prints if sp.index + 1 not in excluded]
-    pkg = None if gallery.is_pdf(deck) else ooxml.Package(str(deck))
+    return facts_of(prints, None if gallery.is_pdf(deck) else ooxml.Package(str(deck))), size
+
+
+def facts_of(prints: list, pkg) -> dict[int, dict]:
+    """page_facts over prints already read (extract_style.py reads them once for the guide's
+    variety; `pkg` is the pptx package, None for a PDF)."""
     shapes_of = [[sh for sh in sp.shapes if sh.layer == "slide"] if sp.source == "pptx" else sp.shapes for sp in prints]
     # A picture at the same box (extract_style's 6pt position grid) on at least half the pages
     # is furniture or the page itself (a printed deck's page image), not an exhibit.
@@ -385,7 +390,7 @@ def page_facts(deck: Path, excluded: set[int]) -> tuple[dict[int, dict], tuple[i
             "text_elements": sum(1 for sh in slide_shapes if sh.kind in ("text_box", "text_shape")),
             "disclaimer_phrase": (m.group(0) if (m := DISCLAIMER_WORDS.search(text)) else None),
         }
-    return facts, size
+    return facts
 
 
 def propose(facts: list[dict]) -> list[dict]:

@@ -40,6 +40,9 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import plan  # noqa: E402
+
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: TARGET_SPEC Appendix A as closed sets: the title register, the title companions and the exhibit digest fields.
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
@@ -354,6 +357,23 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
     }
 
 
+def content_pages(guide: dict, value) -> dict:
+    """The model's list of the reference's content pages, proven at the boundary: a list of
+    slide numbers, each a page of the draft's variety sequence that is not hidden, each named
+    once. The house's variety is re-measured over it (plan.house_deck)."""
+    listed = {p["slide"]: p["triage"] for p in guide["variety"]["pages"]}
+    if not isinstance(value, list) or not value:
+        raise PatchError("/variety/content_pages: a non-empty list of slide numbers")
+    bad = [v for v in value if not (isinstance(v, int) and not isinstance(v, bool) and v in listed and listed[v] != "hidden")]
+    twice = sorted({v for v in value if value.count(v) > 1 and not isinstance(v, bool)})
+    if bad or twice:
+        raise PatchError(f"/variety/content_pages: {('not visible pages of the sequence ' + str(bad)) if bad else ''}"
+                         f"{'; ' if bad and twice else ''}{('named more than once ' + str(twice)) if twice else ''}; pages {sorted(p for p, t in listed.items() if t != 'hidden')}")
+    changed = sorted(set(value) ^ {p for p, t in listed.items() if t == "content"})
+    return {"pages": sorted(value), "basis": "model reading" + (f"; differs from the triage proposal on {changed}" if changed else "; agrees with the triage proposal"),
+            "provenance": model_prov("content pages read off the renders")}
+
+
 def core_open(guide: dict) -> list[str]:
     """Core addresses still open: absent, partial, or listed in `unresolved` (the address
     itself or its /members). A member refinement that carries a measured default, such as
@@ -436,6 +456,8 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
             guide["titles"]["register"] = title_register(guide, value)
         elif path == "/exhibit_habits":
             guide["exhibit_habits"] = exhibit_habits(guide, value, digest_stub)
+        elif path == "/variety/content_pages":
+            guide["variety"]["content_pages"] = content_pages(guide, value)
         elif path in SECTION_PATHS:
             check_color_refs(guide, value, path)
             if path == "/tables" and isinstance(value, dict):
@@ -482,6 +504,9 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
             if tables.get(k) and tables[k] not in colors:
                 raise PatchError(f"/tables/{k}: {tables[k]} is not a colour role")
     guide["unresolved"] = [u for u in guide.get("unresolved", []) if u["path"] in open_paths]
+    if (guide.get("variety") or {}).get("pages"):
+        # re-measured on every completion: the content pages or the exhibit types may have just been answered
+        guide["variety"]["measure"] = plan.house_deck(guide)
     guide.setdefault("completion", {"applied": []})["applied"].extend(applied)
     return guide, applied
 

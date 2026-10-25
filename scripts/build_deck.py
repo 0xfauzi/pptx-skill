@@ -4,6 +4,7 @@ validate, render and judge. The one command the model runs after writing a deck 
 
     build_deck.py deck.json --guide guide.json --template tpl.pptx -o out.pptx
                   [--reference ref.pptx] [--others a.pptx b.pdf] [--renders DIR] [--no-render]
+                  [--plan plan.json] [--house-deck other.guide.json ...]
 
 deck.json:
 {
@@ -40,9 +41,11 @@ a warning listed first under `problems`), and the source-line rule (a table or c
 with no type.source_line or type.footnote paragraph refuses the page with reason "no
 source line"), and `title` (the page title's characters, words and lines against the house's
 titles, and the register the slide states against the house's register counts; warnings only).
-`repetition` at deck level is the arrangement similarity of each
-consecutive pair of pages (the extractor's own slide_similarity) with any run of
-look-alike pages longer than the reference's longest. After the emit, each page with a
+`repetition` at deck level is the section's realised variety: each page's content (the
+frame left out) assigned a realised composition by the extractor's own leader clustering,
+measured by plan.py (V, distinct per page, runs) against the house's content pages, with
+any run longer than the house's longest flagged and, given --plan, every page whose
+realised composition disagrees with the plan's. After the emit, each page with a
 chart carries `chart_defaults_taken`: every chart choice its spec left out, with the
 value the file got for it.
 
@@ -64,9 +67,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import annotate  # noqa: E402
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
+import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
 from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
-from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, slide_similarity  # noqa: E402
+from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity  # noqa: E402
 from ooxml import paragraphs_words, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
@@ -614,38 +618,76 @@ def frame_tracks(pages: list[tuple[int, list[dict]]], guide: dict) -> list[dict]
     return [t for t in element_tracks(pages, drift_step(guide)) if set(t["pages"]) == every and t["kind"] not in ("table", "chart", "image")]
 
 
-def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
-    """Arrangement similarity of each consecutive pair of emitted pages: the extractor's
-    slide_similarity (Hungarian on box IoU over the larger set) on the flattened
-    elements' boxes with the page frame (frame_tracks) left out, similar at the archetype
-    threshold it clusters the reference with. A run of similar consecutive pages longer
-    than the reference's longest run of one archetype (composition.archetypes
-    consecutive_max) is flagged. The reference's run is the extractor's, which leaves out
-    layout and master chrome and recurring furniture but keeps a repeated title: the
-    house is held to the more lenient count, never the stricter one."""
-    archetypes = (guide.get("composition") or {}).get("archetypes") or []
-    reference_max = max((int(a.get("consecutive_max") or 1) for a in archetypes), default=None)
+def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: list[dict] | None = None, others: list[dict] | None = None,
+                  slide_ids: dict[int, str] | None = None) -> dict:
+    """The built section's realised variety. Each solved page's content is its flattened
+    elements' boxes with the page frame (frame_tracks) left out; pages get a realised
+    composition by the extractor's own leader clustering (leader_clusters on
+    slide_similarity, Hungarian box IoU over the larger set, at the archetype threshold),
+    which is how the house's archetypes were assigned, and are measured by plan.py's one
+    measure: V, distinct compositions per page, the longest run and every run. A page that
+    did not solve breaks the sequence (absence, not a change). Against the house
+    (guide.variety, pooled with `others`), a run longer than the house's longest is flagged;
+    with no house evidence none is judged, and the report says so. Against the plan, each
+    adjacent pair where plan and build disagree (the plan repeats a composition and the
+    build changes it, or the reverse) flags the later page. The house's measure keeps its
+    title as content where the build leaves the frame out: the house is held to the more
+    lenient count, never the stricter one."""
     frame = frame_tracks(pages, guide)
     framed = {(n, tuple(b)) for t in frame for n, b in zip(t["pages"], t["boxes"])}
 
     def content(number: int, els: list[dict]) -> list[tuple]:
         return [tuple(el["box"]) for el in els if (number, tuple(el["box"])) not in framed]
 
-    pairs, runs = [], []
-    run = [pages[0][0]] if pages else []
+    boxes = [content(n, els) for n, els in pages]
+    realised = {pages[m][0]: f"b{fi + 1}" for fi, (_, members) in enumerate(leader_clusters(boxes)) for m in members}
+    segments: list[list[dict]] = []
+    for number, _ in pages:
+        if not segments or segments[-1][-1]["slide"] != number - 1:
+            segments.append([])
+        segments[-1].append({"slide": number, "composition": realised[number], "exhibits": None})
+    pairs = []
     for (pa, ea), (pb, eb) in zip(pages, pages[1:]):
-        sim = slide_similarity(content(pa, ea), content(pb, eb))
-        similar = sim >= ARCHETYPE_IOU_THRESHOLD
-        pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": similar})
-        if similar:
-            run.append(pb)
-        else:
-            runs.append(run)
-            run = [pb]
-    if run:
-        runs.append(run)
-    over = [{"pages": r, "length": len(r)} for r in runs if reference_max is not None and len(r) > reference_max]
-    return {"threshold": ARCHETYPE_IOU_THRESHOLD, "frame_left_out": sorted(t["id"] for t in frame), "pairs": pairs, "reference_consecutive_max": reference_max, "runs_over_reference": over}
+        if pb == pa + 1:
+            sim = slide_similarity(content(pa, ea), content(pb, eb))
+            pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": sim >= ARCHETYPE_IOU_THRESHOLD})
+    built = plan.measure_deck("built", segments)
+    house = plan.house_of([guide, *(others or [])])
+    pooled = house["pooled"]
+    longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
+    runs = built.get("runs") or []
+    over: list[dict] | str = ([{"pages": r["pages"], "length": len(r["pages"]), "realised": r["composition"]} for r in runs if len(r["pages"]) > longest]
+                              if longest is not None else f"not judged: the house's longest run is no evidence ({pooled.get('why')})")
+    out: dict = {"threshold": ARCHETYPE_IOU_THRESHOLD, "frame_left_out": sorted(t["id"] for t in frame), "pairs": pairs,
+                 "realised": [{"page": n, "composition": realised[n]} for n, _ in pages], "measure": built,
+                 "house": {"decks": [{k: d[k] for k in ("deck", "status", "content_pages", "composition", "longest_run", "why") if k in d} for d in house["decks"]],
+                           "pooled": pooled},
+                 "against_house": ({"composition_V": plan.against(built["composition"]["V"], pooled, "composition"),
+                                    "distinct_per_page": {"built": built["distinct"]["per_page"], "house": pooled.get("distinct_per_page", "no evidence")},
+                                    "longest_run": {"built": built["longest_run"], "house": longest if longest is not None else "no evidence"}}
+                                   if built["status"] == "measured" else {"built": built["why"]}),
+                 "house_longest_run": longest if longest is not None else "no evidence", "runs_over_reference": over}
+    if plan_pages is None:
+        out["plan"] = "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
+        return out
+    by_id = {p["id"]: p for p in plan_pages}
+    mine = plan.measure_deck("plan", plan.plan_segments(plan_pages))
+    flags = []
+    for pair in pairs:
+        a, b = (by_id[(slide_ids or {})[n]] for n in pair["pages"])
+        planned_same = a["composition"] == b["composition"]
+        built_same = realised[pair["pages"][0]] == realised[pair["pages"][1]]
+        if planned_same != built_same:
+            flags.append({"page": pair["pages"][1], "id": b["id"], "after": a["id"], "planned": [a["composition"], b["composition"]],
+                          "realised": [realised[pair["pages"][0]], realised[pair["pages"][1]]], "similarity": pair["similarity"],
+                          "detail": (f"planned to repeat {a['composition']} ({b['deliberate_parallel'] or 'undeclared'}) but built differently"
+                                     if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")})
+    out["plan"] = {"measure": mine,
+                   "composition_V": {"planned": (mine.get("composition") or {}).get("V"), "realised": (built.get("composition") or {}).get("V")},
+                   "exhibits_V": {"planned": (mine.get("exhibits") or {}).get("V"),
+                                  "realised": "not measured: the build knows element kinds, not exhibit types; the planned figure is declared"},
+                   "pages_differing_from_plan": flags}
+    return out
 
 
 # --- tie-outs and the source line ------------------------------------------------------------
@@ -1202,7 +1244,8 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
     return out
 
 
-def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto") -> dict:
+def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
+          plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None) -> dict:
     Path(out).parent.mkdir(parents=True, exist_ok=True)  # before the solve: a missing -o directory otherwise fails only at the save
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
@@ -1294,7 +1337,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             annotation_pages[len(emitted)] = entry["annotations"]
         emitted.append(entry)
     report["position_drift"] = position_drift(pages, guide)
-    report["repetition"] = repetition_of(pages, guide)
+    report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages})
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
     report["emitted_slides"] = len(emit_report["slides"])
     # the file as written, measured against the boxes it was solved for
@@ -1384,10 +1427,19 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--renders", default=None)
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"])
+    ap.add_argument("--plan", default=None, help="the section plan (plan.py): realised compositions are compared with the planned ones")
+    ap.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
     args = ap.parse_args(argv)
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
-    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome)
+    plan_pages = None
+    if args.plan:
+        plan_pages = plan.read_plan(json.loads(Path(args.plan).read_text()), guide)
+        planned, built = [p["id"] for p in plan_pages], [s.get("id") for s in deck["slides"]]
+        if planned != built:
+            raise plan.Refused(f"--plan: the plan's page ids {planned} are not the deck's slide ids {built}, in order")
+    house_decks = [json.loads(Path(p).read_text()) for p in args.house_deck]
+    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks)
     shown = ("id", "status", "reason", "problems", "title", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
     brief = {"out": report["out"], "ruler": report["ruler"],
              "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures

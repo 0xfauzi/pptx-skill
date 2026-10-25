@@ -332,7 +332,7 @@ title band; the solver refuses a title the band cannot hold), the one
 message, the exhibit that proves it, the supporting text, the data it needs, the
 composition intent (which element dominates), and the boundaries where the page may
 split if it will not fit. Vary composition across pages unless content demands
-repetition; the reference's families tell you its own range.
+repetition, and write the plan down as `plan.json` and check it (5.3) before any spec.
 
 Numbers: use the user's figures byte for byte. Never invent a number; a figure you do
 not have is a placeholder the user must fill, named as such in the report.
@@ -356,6 +356,52 @@ content, and write a title that fits the reference's band. They were composed fo
 page: on keybank's 4:3 page at 12pt only 2 of 14 fit as written (the bridge fits with its
 chart crushed to 0.29 in, which is not a pass you should accept), so cut an exhibit or
 split before you build, and read the unfittable report rather than forcing the scale.
+
+### 5.3 The variety plan: plan.json against the house
+
+The guide measures the house's own variety (`guide.variety`, and the draft's "Variety"
+section says how and where it is weak): per content page its composition archetype and,
+once `/exhibit_habits` is answered, its exhibit-type set; then V (adjacent pairs whose
+composition differs over the pairs), the same over exhibit-type sets, distinct
+compositions per page, the longest run and every run with its pages. Content pages are
+library.py's triage proposal until you answer `/variety/content_pages` after looking: on a
+PDF no divider or disclaimer is proposed, so a legal page, a letter and a contents page
+count as content until you list the pages that are (bcg: 37 proposed, 31 content). Fewer
+than 3 content pages in a row is `no evidence`, and a raster reference has none.
+
+Write the plan, every key on every page:
+
+```json
+{"schema": "pptx-skill section plan v1", "reference_sha256": "<guide.reference.sha256>",
+ "pages": [{"id": "<deck slide id>", "intent": "...", "message": "...", "composition": "arch-4 | new:<name>",
+            "exhibit_types": ["<exhibit_type>"], "data_shapes": ["<data_shape>"], "title_register": "topic|claim|question",
+            "deliberate_parallel": null}]}
+```
+
+Name the composition honestly: a house archetype when the page is built like one (look at
+the archetype's anchor page), else a named new one, and the SAME name whenever two pages
+share an arrangement, mirrored or not. A page that repeats the previous page's composition
+carries the reason in `deliberate_parallel` (a sibling template: same layout, scale and
+category order, held exactly). Then:
+
+```bash
+python3 scripts/plan.py check work/plan.json --guide work/ref/guide.json [--house-deck other.guide.json ...]
+```
+
+It refuses a plan that is not this shape, a value outside the vocabulary, an archetype the
+guide does not hold, a reason on a page that repeats nothing, and an undeclared repeat that
+makes a run longer than the house's longest (with no house evidence, any undeclared
+repeat). It warns when V falls below the house's 10th percentile deck; that threshold is a
+choice, not a measurement. `--house-deck` pools more of the same house's decks (keybank,
+netflix and jazz are one fictional bank on one master). Measured: the netflix section a
+rater called samey plans at V 0.75 against that house's 10th percentile deck 0.793, with
+three of five pages one table-beside-chart arrangement; its revision (numbered finding rows
+on page 4, bullets over a full-width chart on page 5) plans and builds at 1.0. The bain
+section's three two-column pages in a row are refused against a house longest run of 2.
+
+V counts adjacent pairs only: an arrangement on every other page reads 1.0 (bcg's section
+uses the house's two-column template on pages 1, 3 and 5); read distinct per page too.
+`build_deck.py --plan work/plan.json` then reports what was built against the plan (6, 7).
 
 ## 6. Write the page specs
 
@@ -642,7 +688,7 @@ houses. Read `work/out/deck.build.json`:
 - `contrast` per page: every text run, every table row class, every chart text (data labels per series and per overriding point, axis labels, legend) and every chrome text line the page carries (footer label, page number, at its observed ink) scored WCAG 2.2 against the fill the page draws behind it (the element's own fill, else the nearest enclosing filled region, else a chrome band under it, else `color.surface`; for a chart label inside a bar, slice or bubble, that mark's fill; outside it, the plot fill or the page under the chart; both when the spec left the position open). Below 3.0:1 is a violation and refuses the page; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) is a warning. House precedent comes first: a pair the reference itself draws (the same ink hex over the same backing hex, read from the `--reference` file) at that size or smaller is filed under `house_precedent` with the reference's pages and smallest size, neither refused nor warned. BCG (nystate covid deck) sets its titles and heads in 29BA74 on white, 2.51:1, on 23 pages and at sizes down to 3.5pt; a deck in that house keeps its green. A pair the reference never draws is refused as before, and with no `--reference` nothing can claim precedent. `undecidable` lists text over an image (pixels, not roles, decide that) and labels on a fill left to the renderer; `unbound` lists runs and chart parts with no ink role, which inherit the master's or the theme's colour; `nearest_pass` is the tightest pair that passed. The fix is a role change, never a literal: a muted source line inside an accent band reads 1.6:1 on keybank, and white labels on keybank's light grey bars read 1.54:1. Nothing in the emitter corrects an ink, so the ink scored is the ink drawn.
 - `title` per page: the page's title (`slide.title.element`, which must name a text element on the page or the build exits naming it; else the first text element in reading order, inside regions too, whose first paragraph is type.title) against `guide.titles`: characters, words and solved lines against the house's median, p90 and max (above the max is a warning), and the register the slide states as `"title": {"register": "topic|claim|question"}` against the house's counts (a register on under 10% of the house's titles warns; that line is unmeasured). An unstated register reads `not stated`; a guide without titles reads `no evidence`.
 - `register` per page: `kind_counts` (text, image, shape, table, chart, line), `decoration_count` and `container_ratio` against the reference's `register_stats` bands, each `below`, `in band` or `above`; a native table or chart against a band of 0 to 0 reads `no evidence`, which is what a reference that pastes its exhibits as pictures gives (they count as images). Counted as drawn: a takeaway in a filled region is one shape without text plus one bare text shape; a house that draws filled text shapes wants the fill on the text element itself.
-- `repetition` at deck level: the arrangement similarity of each consecutive pair of pages (the extractor's own slide_similarity on the elements' boxes, similar at 0.5) with the page frame left out (`frame_left_out`: a text, rule or rect element at the same place on every page, such as the title, units line, lead and source line; an exhibit is never frame), and `runs_over_reference`, any run of look-alike consecutive pages longer than the reference's longest run of one archetype. A deck of six pages on one arrangement reads as generated even when every page fits.
+- `repetition` at deck level: the section's realised variety. Each solved page's content (the page frame left out: `frame_left_out`, a text, rule or rect element at the same place on every page, such as the title, units line, lead and source line; an exhibit is never frame) gets a realised composition (`realised`, b1, b2, ...) by the extractor's own leader clustering at 0.5, the way the house's archetypes were assigned, and `measure` is plan.py's (V, distinct per page, runs); `pairs` keeps each adjacent pair's similarity. `against_house` sets it against `guide.variety` (pooled with `--house-deck`), and `runs_over_reference` lists any run longer than the house's longest, or says it was not judged when the house has no evidence. A page that did not solve breaks the sequence. With `--plan`, `plan.pages_differing_from_plan` flags each page where plan and build disagree: planned to repeat and built differently, or planned to change and built alike. Box IoU sees arrangement, not kind: netflix's three table-beside-chart pages, mirrored and re-weighted, score 0.30 to 0.40 and read as different, so the plan is where that sameness shows. A deck of six pages on one arrangement reads as generated even when every page fits.
 - `tieouts` per page: for every table with `totals_last_row`, each number, currency or percent column's body sum against its totals cell at the cell's own decimals ($ , % x stripped, parentheses negative). A row headed median, average or mean is skipped as a statistic; a column with an n.a. cell is skipped and names the cell. A mismatch is a warning under `problems`: a subtotal inside the body or a non-total row styled as the totals row reads as a mismatch, so either compute the figure or take `totals_last_row` off that row.
 - A page with a table or a chart and no paragraph in `type.source_line` or `type.footnote` is refused with reason `no source line`.
 
@@ -838,6 +884,7 @@ again without learning from your pages; `--include-generated` overrides.
 | `scripts/layout.py`, `scripts/textfit.py` | solver, measured text, table fitter, scale descent, capacity |
 | `scripts/emit_pptx.py` | resolved pages to slides on the template |
 | `scripts/chart_geometry.py`, `scripts/annotate.py` | where chart data and table cells land in EMU; annotations resolved, placed and checked against collisions |
+| `scripts/plan.py` | the one variety measure (house, plan, build) and `check`, the section plan against the house |
 | `scripts/build_deck.py` | solve, emit, validate, render, judge, in one command |
 | `scripts/component.py` | component contract check and admission |
 | `scripts/import_slide.py` | a reference slide into a spec of roles, for the round trip and as a seed |
