@@ -67,7 +67,12 @@ keybank (the pages named under "Proven on") and read from the render.
 - `axes.<name>.min`, `max`, `major_unit` and `number_format` belong to a value axis (and
   to both axes of a scatter). `reverse: true` writes maxMin: a horizontal bar then
   lists categories top-down in the order you gave them, and the value axis moves to the
-  far edge.
+  far edge (its tick labels then sit above the plot, where a vertical line's label
+  would go). A hidden axis (`visible: false`) still writes its `min`, `max`, `reverse`
+  and `cross_between`: the plot keeps the scale you gave it.
+- `axes.value.cross_between`: `"between"` (categories are bands; bars and line points
+  sit mid-band) or `"midpoint"` (line points on the band edges, the first and last on
+  the plot's edges). Written as `c:crossBetween`; left out, each renderer picks.
 - `gap_width` (0 to 500, percent of a bar's width) and `overlap` (-100 to 100) belong to
   bar and column types only. A stacked type wants `overlap: 100`; the series stack in
   every renderer only then.
@@ -76,12 +81,9 @@ keybank (the pages named under "Proven on") and read from the render.
 - `plot_area: {"x", "y", "w", "h"}` fixes the inner plot rectangle (inside the axes and
   their labels) as fractions of the chart frame, written as a manual layout. Leave room
   outside it for the tick labels: they are drawn outside the rectangle, not measured.
-- `reference_lines: [{"axis", "at", "line_role", "line_width_pt", "dash"}]` draws a
-  straight line across the plot at a data value: `axis` `"value"`, or `"category"` for
-  the x axis of a scatter or bubble chart. It needs `plot_area` and that axis's `min` and
-  `max`, so the position is computed from the spec; `reverse` is honoured. `dash` is a
-  DrawingML preset (`dash`, `sysDot`, `lgDash`, ...). The line is a connector over the
-  chart, not a series: it does not move if someone edits the chart's data later.
+- A line, box, band, arrow, bracket, callout or badge at a data position is an
+  annotation on the slide, not a chart key (section "Annotations" below). It needs
+  `plot_area` and the axis's `min`, `max` and `cross_between`.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
 - `c:varyColors val="0"` is written on every chart and is not yours to set: PowerPoint
@@ -258,16 +260,10 @@ Proven on keybank (scratch page `ff`, five methods, $20 to $40).
 }
 ```
 
-The offer price as a line across every method: give the chart a `plot_area` and a
-`reference_lines` entry on the value axis. Proven on keybank (the section's football
-field, value axis $16 to $44, plot 0.36 / 0.08 / 0.6 / 0.9 of the frame): the dashed
-line at $36.50 sits an eighth of the way from the $36 tick to the $40 tick in the
-LibreOffice render.
-
-```json
- "plot_area": {"x": 0.36, "y": 0.08, "w": 0.6, "h": 0.9},
- "reference_lines": [{"axis": "value", "at": 36.5, "line_role": "color.accent3", "line_width_pt": 1.5, "dash": "dash"}]
-```
+The offer price as a line across every method, the unaffected price as a second line
+and the committee's range as a shaded zone are annotations on this chart (section
+"Annotations", the football field recipe). Give the chart a `plot_area` and the value
+axis `min`, `max` and `cross_between`.
 
 The `football_field` component (`components/football_field`) draws the same exhibit
 from rects with measured label widths; pick the chart when the page wants native,
@@ -341,6 +337,171 @@ and scratch page `cols` (vertical).
 
 For a horizontal bar write `BAR_CLUSTERED` and `"reverse": true` on the category axis,
 or the first category prints at the bottom.
+
+## Annotations: shapes at data positions
+
+Humans annotate almost every data exhibit (TARGET_SPEC Appendix A.6: 7 of 291 corpus
+charts carry none); most moves are a shape placed at a data position. They are a list
+under the slide, beside `charts` and `styling`:
+
+```json
+"annotations": [
+ {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5},
+  "line_role": "color.negative", "line_width_pt": 1.5, "dash": "dash",
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.negative", "position": "end_outside"}}
+]
+```
+
+`host` is a chart or table element on the page. Nothing annotates by itself: you decide
+whether and what, from the house's habits and the message (A.7 lists the moves by data
+shape and by message).
+
+Anchors, in the host's own data:
+
+| host | anchor | what it names |
+|---|---|---|
+| chart | `{"point": {"series": s, "category": c}}` (XY: `{"series": s, "index": i}`) | one bar, or one point's marker box |
+| chart | `{"categories": [i, j]}` | the category bands i..j across the plot; brackets and arrows use the marks in them |
+| chart | `{"category": c}` | a line at the category's centre (an event marker) |
+| chart | `{"value": v}`, `{"value": v, "axis": "category"}` (XY x) | a line across the plot |
+| chart | `{"values": [a, b]}` | a band across the plot |
+| chart | `{"region": {"categories": [i, j], "values": [a, b]}}` (XY: `{"x": [..], "y": [..]}`) | a rectangle |
+| table | `{"cell": [r, c]}`, `{"cells": [[r0, c0], [r1, c1]]}` | cells; body rows count from 0 as `rows` lists them |
+| table | `{"row": r}`, `{"rows": [r0, r1]}`, `{"column": c}`, `{"columns": [c0, c1]}` | whole rows (all columns) or columns (header included); a column may be named by key |
+| table | `{"header_group": {"row": 0, "columns": [c0, c1]}}` | header cells (a spanner group) |
+
+A chart anchor needs the chart's `plot_area` and, for the axis it names, `min`, `max`
+and `cross_between`; without them the annotation is refused by name (an auto-scaled
+axis has no computable position). Bar, column, line and XY charts only; a pie, area,
+radar, bubble or stacked line is refused. A table anchor uses the fitted column widths
+and row heights.
+
+Kinds (required keys first; every other choice left out is written neutral and listed
+under the page's `annotations[].defaults_taken`):
+
+| kind | required | optional | draws |
+|---|---|---|---|
+| `outline_box` | `line_role`, `line_width_pt` | `pad_role` (outward), `dash`, `shape` (`rect`, `ellipse`, `rounded`) | an unfilled box on the anchor |
+| `band` | `fill_role` | `pad_role`, `label` (`inside_top_left` ...) | a fill UNDER the host (zone shading); a table row with its own fill hides it and is refused |
+| `reference_line` | `line_role`, `line_width_pt` | `dash`, `label` (`end_outside`, `end_above`, `end_below`, `start_above`, `start_below`; vertical: `end_outside`, `end_right`, `end_left`, `start_right`, `start_left`), `gap_role` | a line across the plot at a value or category |
+| `arrow` | `line_role`, `line_width_pt`, `label`, `position`, `gap_role` | `dash` | the label beside the anchor at `gap_role`, an arrow from it to the anchor |
+| `callout` | `line_role`, `line_width_pt`, `fill_role`, `label`, `position`, `gap_role` | `pad_role` (inside the box), `head` (`none`, `arrow`) | a filled box with a leader to the anchor |
+| `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role` | `style` (`square`, `brace`), `label` | a bracket opening toward the span, beyond its marks, label beyond it |
+| `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding one line (a number keyed to text) |
+
+`position` is one of `above`, `below`, `left`, `right`, `above_left`, `above_right`,
+`below_left`, `below_right`. Labels are `{"text", "role", "ink_role"}` plus optional
+`position`, `align` and `max_width_share` (a fraction of the host's width to wrap at,
+for every kind; left out, the label is one line). Every label is measured with the
+solver's ruler at the page's scale and written with its measured lines; a label whose
+word is wider than its line (it would break between characters) is refused, and a band's
+label must fit inside the band.
+
+What the build refuses, by name, under `problems`:
+
+- `annotation refused`: a key, anchor or role it cannot honour (`axes.value needs
+  numeric min < max`, `cross_between ... is required`, `value 45 is outside axes.value
+  20..44`, `value '36.5' on axes.value is not a number`, `'Committee' ... breaks between
+  characters`, a band label wider than its band, `body row 10 (emphasis) is filled with
+  color.accent1, which hides a band drawn under it`).
+- `annotation collides`: the annotation covers another page element, another
+  annotation, the page edge, a reserved chrome zone, or a mark of its host it does not
+  anchor to (`covers mark 'Range' 'Dividend discount model'`). A reference line crosses
+  the marks by design; its label may not. A band's fill is ground and collides with
+  nothing; its label lies under the host, so it may cover no mark at all, and another
+  annotation may not cover it.
+- `annotation covers chart text`: after the render, the words LibreOffice drew in the
+  host (tick labels, data labels, legend, cell text, read with `pdftotext -bbox`) that a
+  stroke crosses or a box covers (`'mean' (reference_line) covers 4 word(s) its host
+  drew: ['1.62x', '1.59x', '1.55x', '1.48x']`). An outline's interior is not a cover, so
+  a box around a cell's text passes; a band's label counts as a box. With `--no-render`
+  the report says `not checked: --no-render`; a render that was asked for and wrote no
+  readable PDF refuses the page (`annotation render check failed`).
+- `contrast`: every label is scored like any text, against its own box's fill, a
+  band, a filled plot (`plot_fill_role` with `plot_area`) or the page.
+
+Positions are computed in EMU from `plot_area`, the axis scale, `gap_width`, `overlap`
+and the series count (`scripts/chart_geometry.py`), and were measured against
+LibreOffice 24.2 renders of 13 chart configurations and a table (408 features, worst
+1.07 px, mean 0.24 px at 1600 px: `oracles/chart_geometry_probe.py`). Whether
+PowerPoint places the inner plot rectangle the same way is not measured.
+
+Proven on: `examples/keybank-annotations.deck.json`, four pages rebuilt from corpus
+exhibits on keybank (all four fit, the judge files the deck under keybank).
+
+### Comps table: the median multiples and the subject row boxed
+
+keybank p5 (red boxes around the median multiples and the subject row; A.7: comps
+tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
+row is shaded with `emphasis_rows`; the boxes are annotations.
+
+```json
+"styling": {"comps": {"emphasis_rows": [10], "emphasis_fill_role": "color.accent1"}},
+"annotations": [
+ {"id": "median-box", "host": "comps", "kind": "outline_box", "anchor": {"cells": [[10, 1], [10, 2]]},
+  "line_role": "color.negative", "line_width_pt": 1.5},
+ {"id": "subject-box", "host": "comps", "kind": "outline_box", "anchor": {"row": 13},
+  "line_role": "color.negative", "line_width_pt": 1.5}]
+```
+
+### Sensitivity grid: the scenario region boxed, a header group bracketed, the base case keyed
+
+keybank p7 (a red box around the realistic region; A.7: boxed cell or region on 17 of
+29 sensitivity grids). The bracket needs room above the header: the table sits in a
+region with `pad_role`, and the collision check refuses it if the lead text is in the
+way.
+
+```json
+"annotations": [
+ {"id": "scenario", "host": "grid", "kind": "outline_box", "anchor": {"cells": [[1, 3], [5, 5]]},
+  "line_role": "color.negative", "line_width_pt": 1.5},
+ {"id": "syn-range", "host": "grid", "kind": "bracket", "anchor": {"header_group": {"columns": [3, 5]}},
+  "side": "above", "gap_role": "space.xs", "depth_role": "space.xs", "line_role": "color.rule", "line_width_pt": 1.0,
+  "label": {"text": "Realistic synergies", "role": "type.caption", "ink_role": "color.ink"}},
+ {"id": "base-key", "host": "grid", "kind": "badge", "anchor": {"row": 3}, "position": "left", "gap_role": "space.xs",
+  "fill_role": "color.accent2", "label": {"text": "1", "role": "type.caption", "ink_role": "color.ink_inverse"}}]
+```
+
+### Football field: the offer and unaffected prices as lines, the selected range as a zone
+
+bmo p125 (the current offer as a labelled dashed line; A.7: a reference line at the
+offer on 4 of 4 football fields). On a horizontal bar with the categories reversed the
+value axis and its tick labels move above the plot, exactly where an `end_outside`
+label goes: the render check caught `Unaffected $27.80` over the `$24` tick, and the
+fix was to hide the value axis (the data labels carry the values). It also caught the
+offer line through the `$35.0` label: move the line's label, or the data, never the
+check.
+
+```json
+"annotations": [
+ {"id": "selected", "host": "ff", "kind": "band", "anchor": {"values": [29, 35]}, "fill_role": "color.accent1"},
+ {"id": "selected-note", "host": "ff", "kind": "callout", "anchor": {"values": [29, 35]}, "position": "below", "gap_role": "space.xs",
+  "pad_role": "space.xs", "fill_role": "color.surface", "line_role": "color.rule", "line_width_pt": 0.75,
+  "label": {"text": "Committee range $29-35", "role": "type.data_label", "ink_role": "color.ink"}},
+ {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5}, "line_role": "color.negative", "line_width_pt": 1.5, "dash": "dash",
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.negative", "position": "end_outside"}}]
+```
+
+### Ranking: the subject highlighted, the mean as a line, an arrow carrying the subject's figure
+
+bcg-dallas p15 and bmo p33 (sorted, labelled, subject highlighted, a dashed mean line;
+A.7: all three on 5 of 5 horizontal-bar rankings in one consulting group). The subject
+bar's own label is hidden (`points[...].label.show: false`) and the arrow's label
+carries its figure; data labels sit at `inside_base`, because at `outside_end` the mean
+line crossed four of them and the render check refused the page.
+
+```json
+"annotations": [
+ {"id": "mean", "host": "rank", "kind": "reference_line", "anchor": {"value": 1.66}, "line_role": "color.ink_muted", "line_width_pt": 1.0, "dash": "dash",
+  "label": {"text": "Mean 1.66x", "role": "type.data_label", "ink_role": "color.ink_muted", "position": "end_outside"}},
+ {"id": "subject", "host": "rank", "kind": "arrow", "anchor": {"point": {"series": 0, "category": 3}}, "position": "right", "gap_role": "space.md",
+  "line_role": "color.accent2", "line_width_pt": 1.0,
+  "label": {"text": "1.71x, +0.05x", "role": "type.data_label", "ink_role": "color.accent2"}}]
+```
+
+Prefer native where a move can be native: a median row is `emphasis_rows`, a highlighted
+bar is a point `fill_role`, a total is a series label. An annotation is a shape over the
+chart: it does not move when someone edits the chart's data.
 
 ## What a default looks like in the report
 

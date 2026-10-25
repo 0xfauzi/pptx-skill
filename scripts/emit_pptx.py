@@ -95,6 +95,9 @@ from pptx.opc.package import Part
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from chart_geometry import chart_family  # noqa: E402
+
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
@@ -375,21 +378,47 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
 
 
 def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
+    """A straight line: across the middle of its box (a layout rule), or between the
+    element's own `points` [x1, y1, x2, y2] (an annotation's line, leader or arrow),
+    with an arrowhead at the second point when `tail_end` names one."""
     x, y, w, h = box
-    horizontal = w >= h
-    line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h)))
+    if el.get("points"):
+        x1, y1, x2, y2 = (int(v) for v in el["points"])
+        line = _without_theme_style(slide.shapes.add_connector(1, Emu(x1), Emu(y1), Emu(x2), Emu(y2)))
+    else:
+        horizontal = w >= h
+        line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h)))
     line.name = el.get("id", "rule")
     hex_color = guide.hex(el.get("line_role") or "color.rule", where=el.get("id", "rule"))
     width = el.get("line_width_emu") or (guide.g.get("motifs") or [{}])[0].get("line_width_pt")
     width_emu = int(round(float(width) * EMU_PER_PT)) if isinstance(width, (int, float)) and width and not el.get("line_width_emu") else (el.get("line_width_emu") or 9525)
     _set_line(line._element.spPr, hex_color, width_emu, el.get("dash"))
+    if el.get("tail_end"):
+        etree.SubElement(line._element.spPr.find(qn("a:ln")), qn("a:tailEnd")).set("type", el["tail_end"])
+
+
+# Preset geometries a rect element may name. A bracket or brace is drawn opening toward
+# what it spans: `rot` 90 turns leftBracket's spine to the top (a bracket above a span)
+# and rightBracket's to the bottom (below it).
+RECT_PRESETS = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
+                "rightArrow": MSO_SHAPE.RIGHT_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
+                "leftBracket": MSO_SHAPE.LEFT_BRACKET, "rightBracket": MSO_SHAPE.RIGHT_BRACKET, "leftBrace": MSO_SHAPE.LEFT_BRACE, "rightBrace": MSO_SHAPE.RIGHT_BRACE}
 
 
 def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     x, y, w, h = box
-    prst = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
-            "rightArrow": MSO_SHAPE.RIGHT_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE}.get(el.get("prst", "rect"), MSO_SHAPE.RECTANGLE)
+    prst = RECT_PRESETS.get(el.get("prst", "rect"), MSO_SHAPE.RECTANGLE)
+    rot = int(el.get("rot") or 0) % 360
+    if rot not in (0, 90, 180, 270):
+        raise SpecError(f"{el.get('id', 'rect')}: rot {rot} is not a quarter turn")
+    if rot in (90, 270):
+        # the box is what the page shows; the shape's own frame is that box turned back
+        # about its centre, so its width and height swap
+        cx, cy = x + w / 2, y + h / 2
+        x, y, w, h = round(cx - h / 2), round(cy - w / 2), h, w
     shape = _without_theme_style(slide.shapes.add_shape(prst, Emu(x), Emu(y), Emu(w), Emu(h)))
+    if rot:
+        shape.rotation = rot
     shape.name = el.get("id", "rect")
     sp_pr = shape._element.spPr
     fill_hex = guide.hex(el.get("fill_role"), where=el.get("id", "rect"))
@@ -677,18 +706,20 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
 # being asked for: it is file safety, not design (E38 class 10, below).
 
 CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title", "foreign",
-              "plot_area", "reference_lines",
+              "plot_area",
               "bridge"}  # bridge: a declaration the build's tie-out reads; nothing here draws from it
 SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth"}
 LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
 POINT_KEYS = {"index", "fill_role", "line_role", "label"}
 POINT_LABEL_KEYS = LABEL_KEYS | {"text"}
-AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels"}
+AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels", "cross_between"}
+# c:crossBetween on the value axis: "between" puts categories in bands (bar centres, line
+# points mid-band), "midpoint" puts line points on band edges (OOXML midCat).
+CROSS_BETWEEN = {"between": "between", "midpoint": "midCat"}
 AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role"}
 TICK_LABEL_POSITIONS = {"next_to": XL_TICK_LABEL_POSITION.NEXT_TO_AXIS, "low": XL_TICK_LABEL_POSITION.LOW, "high": XL_TICK_LABEL_POSITION.HIGH}
 GRIDLINE_KEYS = {"line_role", "line_width_pt"}
 PLOT_AREA_KEYS = {"x", "y", "w", "h"}
-REFERENCE_LINE_KEYS = {"axis", "at", "line_role", "line_width_pt", "dash"}
 DASHES = ("solid", "dot", "dash", "lgDash", "dashDot", "lgDashDot", "lgDashDotDot", "sysDash", "sysDot", "sysDashDot", "sysDashDotDot")
 LEGEND_KEYS = {"position", "hide_entries", "role", "ink_role"}
 TEXT_KEYS = {"role", "ink_role"}
@@ -747,33 +778,15 @@ CHART_DEFAULTS = {
 }
 
 
-def chart_family(type_name: str) -> str:
-    n = type_name
-    if n.startswith(("COLUMN_", "BAR_")) and n != "BAR_OF_PIE":
-        return "bar_stacked" if "STACKED" in n else "bar"
-    if n.startswith("PIE"):
-        return "pie"
-    if n.startswith("DOUGHNUT"):
-        return "doughnut"
-    if n.startswith("LINE"):
-        return "line"
-    if n.startswith("AREA"):
-        return "area"
-    if n.startswith("XY_SCATTER"):
-        return "xy"
-    if n.startswith("BUBBLE"):
-        return "bubble"
-    if n.startswith("RADAR"):
-        return "radar"
-    return "other"
-
-
 def _keys(where: str, obj, allowed: set[str]) -> dict:
     if not isinstance(obj, dict):
         raise SpecError(f"{where}: expected an object, got {obj!r}")
     extra = sorted(set(obj) - allowed)
     if extra:
         hint = " (the chart spec changed: see references/design/chart_recipes.md)" if {"chart_kind", "deltas", "totals", "data_labels", "hide_value_axis"} & set(extra) else ""
+        if "reference_lines" in extra:
+            hint = (" (a line at a data value is a slide-level annotation now: {\"kind\": \"reference_line\", \"host\": <chart id>,"
+                    " \"anchor\": {\"value\": v}}; see references/design/chart_recipes.md)")
         raise SpecError(f"{where}: unknown keys {extra}; allowed {sorted(allowed)}{hint}")
     return obj
 
@@ -939,7 +952,14 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 took(f"axes.{name}", "axis.visible")
                 ax = {}
             _keys(aw, ax, AXIS_KEYS)
+            if "cross_between" in ax:
+                if name != "value" or family in ("xy", "bubble"):
+                    raise SpecError(f"{aw}: cross_between belongs to the value axis of a category chart")
+                _enum(aw, "cross_between", ax["cross_between"], CROSS_BETWEEN)
             if ax.get("visible") is False:
+                # a hidden axis still scales the plot: its min, max and reverse are written
+                if name == "category" and family not in ("xy", "bubble") and {"min", "max", "major_unit", "number_format"} & set(ax):
+                    raise SpecError(f"{aw}: a category axis has no scale or number format")
                 continue
             if "visible" not in ax and name in axes:
                 took(f"axes.{name}.visible", "axis.visible")
@@ -1010,47 +1030,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             raise SpecError(f"{where} plot_area: x, y, w and h are all required, fractions of the chart frame, with x + w and y + h at most 1")
     else:
         took("plot_area", "plot_area")
-    lines = el.get("reference_lines") or []
-    if lines and family in ("pie", "doughnut", "radar", "other"):
-        raise SpecError(f"{where}: reference_lines need a value axis; a {type_name} has none")
-    for li, line in enumerate(lines):
-        lw = f"{where} reference_lines[{li}]"
-        _keys(lw, line, REFERENCE_LINE_KEYS)
-        reference_line_geometry(el, family, line, lw)
-        if _colour(guide, line.get("line_role"), lw) == NONE:
-            raise SpecError(f"{lw}: line_role must be a colour role")
-        if "line_width_pt" not in line:
-            raise SpecError(f"{lw}: line_width_pt is required")
-        if line.get("dash") is not None:
-            _enum(lw, "dash", line["dash"], DASHES)
     return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults}
-
-
-def reference_line_geometry(el: dict, family: str, line: dict, where: str) -> tuple[str, float]:
-    """Where a reference line sits: ("vertical" | "horizontal", its offset as a fraction of
-    the inner plot from the left or the top). The plot's inner rectangle is the spec's
-    plot_area, written as a manual layout, and the axis's min and max are the spec's,
-    so the value maps to a position without reading the renderer."""
-    axis = line.get("axis")
-    if axis not in ("value", "category"):
-        raise SpecError(f"{where}: axis must be \"value\" or \"category\" (the x axis of an XY or bubble chart)")
-    if axis == "category" and family not in ("xy", "bubble"):
-        raise SpecError(f"{where}: a category axis has no scale; a line across categories sits on the value axis")
-    if "plot_area" not in el:
-        raise SpecError(f"{where}: needs the chart's plot_area, so the line's position on the page is computable")
-    ax = (el.get("axes") or {}).get(axis) or {}
-    lo, hi, at = ax.get("min"), ax.get("max"), line.get("at")
-    if not all(isinstance(v, int | float) and not isinstance(v, bool) for v in (lo, hi, at)) or not lo < hi:
-        raise SpecError(f"{where}: needs a numeric `at` and axes.{axis}.min < axes.{axis}.max set in the spec")
-    if not lo <= at <= hi:
-        raise SpecError(f"{where}: at {at} lies outside axes.{axis} {lo}..{hi}")
-    t = (at - lo) / (hi - lo)
-    # a horizontal bar chart lays its value axis across the page; an XY chart lays x across, y up
-    across = (axis == "value" and el["type"].startswith("BAR_")) or (axis == "category")
-    if across:
-        return "vertical", 1 - t if ax.get("reverse") else t
-    return "horizontal", t if ax.get("reverse") else 1 - t
-
 
 
 def _pad_point_counts(chart_space: etree._Element) -> None:
@@ -1087,21 +1067,37 @@ def _write_plot_layout(chart_space: etree._Element, pa: dict) -> None:
     area.insert(0, layout)
 
 
-def _write_reference_line(slide, el: dict, family: str, line: dict, index: int, guide: Guide, box: tuple[int, int, int, int]) -> None:
-    """A straight connector over the chart at the line's data value, across the inner plot."""
-    x, y, w, h = box
-    pa = el["plot_area"]
-    direction, t = reference_line_geometry(el, family, line, f"{el.get('id', 'chart')} reference_lines[{index}]")
-    left, top = x + round(pa["x"] * w), y + round(pa["y"] * h)
-    pw, ph = round(pa["w"] * w), round(pa["h"] * h)
-    if direction == "vertical":
-        at = left + round(t * pw)
-        shape = slide.shapes.add_connector(1, Emu(at), Emu(top), Emu(at), Emu(top + ph))
+def _write_scale(axis, ax: dict) -> None:
+    """An axis's orientation and scale as the spec gives them, shown or hidden."""
+    if "reverse" in ax:
+        axis.reverse_order = bool(ax["reverse"])
+    if ax.get("min") is not None:
+        axis.minimum_scale = float(ax["min"])
+    if ax.get("max") is not None:
+        axis.maximum_scale = float(ax["max"])
+    if ax.get("major_unit") is not None:
+        axis.major_unit = float(ax["major_unit"])
+    if ax.get("cross_between"):
+        _write_cross_between(axis._element, CROSS_BETWEEN[ax["cross_between"]])
+
+
+def _write_cross_between(val_ax: etree._Element, value: str) -> None:
+    """c:crossBetween in its schema place on a c:valAx: after c:crosses or c:crossesAt,
+    before the unit and display elements. python-pptx 1.0.2 writes none on a category
+    chart, so without it each renderer picks its own default."""
+    old = val_ax.find(qn("c:crossBetween"))
+    if old is not None:
+        val_ax.remove(old)
+    cb = etree.Element(qn("c:crossBetween"))
+    cb.set("val", value)
+    anchor = val_ax.find(qn("c:crossesAt"))
+    if anchor is None:
+        anchor = val_ax.find(qn("c:crosses"))
+    if anchor is not None:
+        anchor.addnext(cb)
     else:
-        at = top + round(t * ph)
-        shape = slide.shapes.add_connector(1, Emu(left), Emu(at), Emu(left + pw), Emu(at))
-    shape.name = f"{el.get('id', 'chart')}-reference-{index}"
-    _set_line(shape._element.spPr, guide.hex(line["line_role"], where=shape.name), int(round(float(line["line_width_pt"]) * EMU_PER_PT)), line.get("dash"))
+        later = [c for c in val_ax if etree.QName(c).localname in ("majorUnit", "minorUnit", "dispUnits", "extLst")]
+        (later[0].addprevious(cb) if later else val_ax.append(cb))
 
 
 def _write_vary_colors(chart_space: etree._Element) -> None:
@@ -1278,6 +1274,9 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if ax.get("visible") is False:
                 axis.visible = False
                 axis.has_major_gridlines = False
+                # deleted, the axis still sets the plot's scale; without its min and max the
+                # renderer autoscales and every computed data position is wrong
+                _write_scale(axis, ax)
                 continue
             # python-pptx's chart part writes value-axis gridlines; an omitted choice is none
             axis.has_major_gridlines = False
@@ -1301,23 +1300,14 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 axis.major_tick_mark = TICK_MARKS[ax["tick_marks"]]
             else:
                 taken[f"axes.{name}.tick_marks"] = f"{axis.major_tick_mark.name.lower()} ({CHART_DEFAULTS['axis.tick_marks']})"
-            if "reverse" in ax:
-                axis.reverse_order = bool(ax["reverse"])
             if ax.get("number_format"):
                 axis.tick_labels.number_format = ax["number_format"]
                 axis.tick_labels.number_format_is_linked = False
-            if ax.get("min") is not None:
-                axis.minimum_scale = float(ax["min"])
-            if ax.get("max") is not None:
-                axis.maximum_scale = float(ax["max"])
-            if ax.get("major_unit") is not None:
-                axis.major_unit = float(ax["major_unit"])
+            _write_scale(axis, ax)
     _write_vary_colors(chart._chartSpace)
     _pad_point_counts(chart._chartSpace)
     if el.get("plot_area"):
         _write_plot_layout(chart._chartSpace, el["plot_area"])
-    for li, line in enumerate(el.get("reference_lines") or []):
-        _write_reference_line(slide, el, family, line, li, guide, box)
     return {"id": where, "type": parsed["type_name"], "defaults_taken": [f"{k}: {v}" for k, v in taken.items()]}
 
 

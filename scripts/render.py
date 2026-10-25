@@ -282,6 +282,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--width", type=int, default=None, help="pixel width per slide instead of dpi")
     ap.add_argument("--slides", default=None, help="e.g. 1,3,5-8")
     ap.add_argument("--grid", action="store_true")
+    ap.add_argument("--keep-pdf", default=None, help="also write the PDF LibreOffice made (a pptx source) to this path: the build reads the words it drew")
     args = ap.parse_args(argv)
     src = Path(args.deck).resolve()
     out = Path(args.out) if args.out else src.with_name(src.stem + "-renders")
@@ -300,6 +301,8 @@ def main(argv: list[str]) -> int:
             report["fonts"] = fonts
             (out / "fonts.json").write_text(json.dumps(fonts, indent=1))
             pdf = to_pdf(src, work)
+            if args.keep_pdf:
+                shutil.copyfile(pdf, args.keep_pdf)
         n = page_count(pdf)
         slides = parse_slides(args.slides, n)
         images = rasterize(pdf, out, args.dpi, slides, args.width)
