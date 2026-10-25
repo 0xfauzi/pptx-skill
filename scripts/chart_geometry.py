@@ -111,7 +111,10 @@ class ChartGeometry:
             raise GeometryRefused(f"{self.where}: a stacked line's point positions are not computed here (unmeasured)")
         rect = plot_rect(el, box)
         if rect is None:
-            raise GeometryRefused(f"{self.where}: needs plot_area {{x, y, w, h}}, written as the manual inner layout, so data positions are computable")
+            raise GeometryRefused(f"{self.where}: needs plot_area, the inner plot rectangle as fractions of the chart frame, so data positions "
+                                  f"are computable; write it in the chart's entry under slide.charts, beside its type and series: "
+                                  f"\"charts\": {{\"{self.where}\": {{..., \"plot_area\": {{\"x\": 0.08, \"y\": 0.05, \"w\": 0.9, \"h\": 0.8}}}}}} "
+                                  f"(four numbers; leave room on the left and below for the tick labels)")
         self.box = tuple(float(v) for v in box)
         self.plot = Plot(*rect, self.type.startswith("BAR_"))
         self.axes = el.get("axes") or {}

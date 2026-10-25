@@ -878,11 +878,15 @@
    },
    "styling": {
     "walk": {
-     "emphasis_rows": [
-      4,
-      5
-     ],
-     "emphasis_fill_role": "color.surface_alt"
+     "emphasis": [
+      {
+       "rows": [
+        4,
+        5
+       ],
+       "fill_role": "color.surface_alt"
+      }
+     ]
     }
    },
    "charts": {

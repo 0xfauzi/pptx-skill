@@ -75,14 +75,20 @@ habits recorded on 35 pages; the house's own appear in `exhibit_habits.number_fo
 - A column may carry `width_share` (its exact share of the table width) or
   `min_width_role` (a spacing role it never narrows below); the fitter honours both, still
   measures every cell, and reports a share below a column's widest word as a width deficit.
-- `emphasis_rows` need `emphasis_fill_role` (a role, or `"none"` for bold on the row's own
-  ground) and may take `emphasis_ink_role`; there is no default fill. Several styles of
-  emphasis on one table are written as several roles, and cell-level marks (a boxed
-  median, a bracketed group) are annotations with a table anchor.
+- `emphasis` is the table's list of emphasis groups, each marking body rows (data-row
+  indices) or columns (column keys), with a `fill_role` (a colour role; `"none"`, no
+  fill; `"keep"`, the banding or data fill the cells have anyway; there is no default) and
+  an optional `ink_role`. Emphasised cells are written bold and measured bold. Several
+  emphases on one table are several groups: the subject row shaded and the row labels
+  bold is `[{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"],
+  "fill_role": "keep"}]`; where two groups meet, the later one's fill and ink are drawn.
+  Cell-level marks (a boxed median, a bracketed group) are annotations with a table
+  anchor. (`emphasis_rows`, `emphasis_fill_role` and `emphasis_ink_role` were replaced
+  by `emphasis`, and are refused with the new spelling.)
 - The guide's table look is the default; each table may override it as roles:
   `header_fill_role`, `header_ink_role`, `banding_role`, `data_fill_role` (a colour role or
-  `"none"`), `header_bold`, `header_align`, and `align` per column. These keys and
-  `totals_last_row` may sit on the element, inside its `table` spec or under
+  `"none"`), `header_bold`, `header_align`, and `align` per column. These keys,
+  `emphasis` and `totals_last_row` may sit on the element, inside its `table` spec or under
   `styling.<id>`; a key written twice with different values, or an unknown key, is refused.
 - `header_role` and `cell_role` are the roles the solver measures and the file is written
   in, with nothing substituted; a bold header is measured bold.

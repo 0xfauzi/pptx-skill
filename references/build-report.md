@@ -10,6 +10,7 @@
 - Titles, register and density
 - Repetition (the section's variety)
 - Leakage
+- Firm chrome
 - Position drift, tie-outs, chart defaults, label breaks
 - The judge
 - Density is a loop
@@ -28,8 +29,19 @@ slide. Any other set is refused, naming the plan's ids. The plan check covers th
 plan; the realised variety covers only the pages built (`repetition.plan.check.subset`).
 
 One command solves every page with measured fit, emits on the template, reads the file
-back, validates, renders, and judges. It prints a brief and writes `deck.build.json` beside
-the deck; exit 0 means every page fit and the package is valid. Leave `--others` alone: the
+back, validates, renders, and judges. It prints a brief (the verdict, the report's path,
+the deck and renders paths, each page's status with its first problems, one line each for
+variety, leakage, firm chrome and the judge) and writes the whole report as
+`deck.build.json` beside the deck; exit 0 means every page fit and the package is valid.
+
+`outputs` says where the files are. Only a passing build writes the deck and renders at
+the paths given (they are made at staging paths and moved there). A refused build writes
+`<stem>.refused.pptx` and `<renders>.refused`, and moves an earlier build's deck and
+renders at the asked-for paths to `<stem>.stale.pptx` and `<renders>.stale`
+(`outputs.moved_aside`), so a file at the asked-for path is never older than the spec. A
+refusal before solving (a malformed spec) writes a report holding only `outputs.verdict:
+"refused before building"` and the refusal; the next passing build removes the `.refused`
+files. Leave `--others` alone: the
 judge's panel is every deck under `refs/files` (fetch once with `refs/fetch.sh`), the
 reference's twin removed by hash, scans skipped, decks inside the reference's own spread
 reported as the same house. The panel is not yours to choose.
@@ -42,7 +54,8 @@ solver stepped the whole ladder down toward the floor; say so in the report belo
 ## Unfittable pages: your moves, in order
 
 `status: unfittable` names the smallest admitted scale, every violation, and for each
-table `rows_to_fit_slide`, the body-row count at which to split. A title that needs two
+table `rows_to_fit_slide`, the body-row count at which to split (`layout.py capacity`
+prints the same count as `rows_to_fit`, and the causes in words, before you build). A title that needs two
 lines is named first, because every other violation on that page follows from it. Nothing
 is dropped. Your moves: re-arrange (two columns instead of one, a table beside the chart
 instead of below, a compact component variant), cut words, split at a declared boundary
@@ -57,8 +70,10 @@ refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `cont
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
 `annotation collides`, `annotation covers chart text`, `annotation render check failed`;
 `font refused`; `no source line` where the house carries source lines as a rule (below).
-Warnings never refuse: `tieout` (a totals cell that does not equal its column), and `no
-source line` elsewhere.
+Warnings never refuse: `tieout` (a totals cell that does not equal its column), `no
+source line` elsewhere, and `plan figure not on the page` (a figure the plan's message
+for the page states that the page does not carry: the plan was written before the
+numbers moved, or the page lost its claim).
 
 `no source line` is a page with a table or chart and no `type.source_line` or
 `type.footnote` paragraph. The house's habit is the digest's count of data pages that
@@ -111,8 +126,12 @@ composition by the extractor's own clustering, and `measure` is plan.py's: compo
 class V (the exhibit classes the page realises), distinct per page, runs. `against_house`
 sets each against the house (pooled with `--house-deck`), `runs_over_reference` lists runs
 longer than the house's longest, and `warnings` lists every figure below the house's 10th
-percentile. With `--plan`, `plan.check` repeats the plan check and
-`pages_differing_from_plan` flags each page where plan and build disagree. A plan the check
+percentile; a composition V warning names each repeat the plan declared a deliberate
+parallel, with its reason, and V over the other pairs. With `--plan`, `plan.check` repeats
+the plan check, `realised_by_page` sets each page's planned composition beside its
+realised one (realised names, b1, b2, ..., are this build's own clusters: two pages share
+one when they share an arrangement), and `pages_differing_from_plan` flags each page where
+plan and build disagree. A plan the check
 refuses is not built.
 
 ## Leakage
@@ -124,10 +143,31 @@ carries, with the past page it is on. The past decks are `--reference` and each
 `unread`, never taken as clean). Left out: the house's chrome (text a past deck repeats on
 half its pages or more, and the template's own text), and every word of a `--brief` file
 (the user's brief and data, as text). Pictures are compared by hash, the template's own
-excepted. `verdict` is `clean` or `possible carry-over`: remove each finding, or confirm the
-user supplied it for this deck, in the final report. The thresholds are unmeasured. The
+excepted.
+
+Each finding is ranked by rarity against the public decks of other houses in
+`refs/files` (`rarity_basis`; the past decks and their twins left out). Low: a name or
+phrase whose words run in that order in such a deck, a name every word of which they use
+(senior notes, debt / EBITDA: products and ratios), a round figure (two significant
+digits at most, the second 0 or 5: 10%, $1,000, 4.0x) and a year. These are listed once
+each under `low_findings`, with why: keep every one your own data or brief produces, and
+check any figure among them you did not compute. Everything else is distinctive and
+listed per page under `pages`, rarest first (most words no public deck uses): remove each,
+or confirm the user supplied it for this deck, in the final report. `what_to_do` says the
+same in the report. `verdict` is `clean`, `no distinctive carry-over` (low findings only)
+or `possible carry-over`. The thresholds are unmeasured. The
 same report runs on any deck: `python3 scripts/leakage.py DECK.pptx --past PAST.pptx
 [--brief brief.txt] [--template tpl.pptx]`.
+
+## Firm chrome
+
+`chrome.firm` lists every chrome entry a generated page carries that can name the
+reference's firm (on-page text with words in it, page numbers excluded, and pictures),
+with the `decision` taken (`keep`, `drop`, `replace with ...`) and `chosen`: false when
+the deck's `firm_chrome` did not name it and the default, keep, was taken. A deck for
+another firm or a fictional one chooses for each (SKILL.md step 3). Inherited chrome is
+changed in this deck's own copy of the master; an entry the template does not draw where
+the guide says is refused by name.
 
 ## Position drift, tie-outs, chart defaults, label breaks
 

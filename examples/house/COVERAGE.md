@@ -23,7 +23,7 @@ sizes; on another reference they are a starting arrangement, not a page that fit
 | `05-margin-trend.deck.json` | Text-plus-chart composite; line chart | title, el-kicker, el-argument (body) + rule, el-trend-table (table 7x5), el-argument-note (caption), el-margin-chart (line, two series), source |
 | `06-revenue-mix.deck.json` | Mekko (composite of natives) | title, el-kicker, three named columns el-mekko-name-N (h2) / el-mekko-size-N (caption) over el-mekko-N (`COLUMN_STACKED_100`, one category, three region series), colour key el-key-* (emphasis) + el-key-note, el-mekko-reading (emphasis), source |
 | `07-ebitda-bridge.deck.json` | Waterfall | title, el-kicker, grp-adds / grp-takes (h2 + rule + body), el-bridge (`COLUMN_STACKED`: invisible base, step series with per-point fills, a zero series carrying the signed labels), el-bridge-drivers (table 7x4), source |
-| `08-trading-comparables.deck.json` | Comps table; totals row; emphasis row; splittable group; takeaway band | title, el-kicker, el-comps (table 17x10; peer-median row 8 as emphasis_rows, row 16 as totals_last_row), el-comps-basis (footnote), el-takeaway (emphasis, in a filled band), source; splittable group grp-comps-blocks |
+| `08-trading-comparables.deck.json` | Comps table; totals row; emphasis row; splittable group; takeaway band | title, el-kicker, el-comps (table 17x10; peer-median row 8 as an emphasis group, row 16 as totals_last_row), el-comps-basis (footnote), el-takeaway (emphasis, in a filled band), source; splittable group grp-comps-blocks |
 | `09-football-field.deck.json` | Football field (as the `football_field` component); takeaway band | title, el-kicker, grp-overlap (h1 + rule + body), el-range-chart (component football_field, six methods from cig-football-field, axis $30 to $55), el-method-table (table 6x4), el-range-note (emphasis, in a filled band), source |
 | `10-buyer-screen.deck.json` | Framework matrix; takeaway band | title, el-kicker, el-screen (table 6x8, graded dot ratings as text), five criterion notes grp-criterion-N (emphasis + rule + caption), three shortlist groups (h2 + rule + body), el-takeaway (filled band), source |
 | `11-credentials.deck.json` | Tombstone / credentials grid; credential card | title, el-kicker, eight cards (filled, ruled region): el-cred-price-N (h2) + rule + el-cred-N (mixed caption, emphasis, body, footnote), el-cred-rule-1 (rule between card rows), three reading groups (h2 + rule + body), source |
@@ -69,8 +69,8 @@ are absent here too; the specimen's coverage record says why for each.
 - **Ink and emphasis.** Element ink slots other than color.ink become paragraph
   `ink_role` in `styling`; emphasis runs become `styling.<id>.paragraphs.<n>.runs`.
 - **Tables.** A totals index on the last row becomes `totals_last_row`; any other totals
-  index (the comps peer median, row 8) becomes `emphasis_rows` with
-  `emphasis_fill_role: color.surface_alt` written out (the emitter has no default fill). The specimen's column
+  index (the comps peer median, row 8) becomes an `emphasis` group,
+  `{"rows": [8], "fill_role": "color.surface_alt"}`, its fill written out (the emitter has no default fill). The specimen's column
   alignment and rule overrides are not carried (this emitter reads neither).
 - **Source line.** The specimen computes it from the citations behind each page;
   its output is written as

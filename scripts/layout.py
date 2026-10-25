@@ -375,6 +375,7 @@ class Table:
     cell_padding_role: str | None
     totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
     emphasis_rows: frozenset = frozenset()  # data-row indices the emitter bolds (the subject deal on a comps page)
+    emphasis_columns: frozenset = frozenset()  # column indices whose body cells the emitter bolds (row labels)
     header_bold: bool = False  # the emitter bolds the header row (the guide's or the table's header_bold), so it is measured bold
 
 @dataclass(frozen=True)
@@ -478,7 +479,8 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         if not 0 <= header_rows <= 4 or (not rows and not header_rows):
             raise LayoutContractError(f"table {node_id!r}: header_rows outside 0..4 or no rows at all")
         table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"),
-                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])), bool(t.get("header_bold")))
+                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])),
+                      emphasis_columns=frozenset(int(i) for i in (t.get("emphasis_columns") or [])), header_bold=bool(t.get("header_bold")))
     elif kind not in ("image", "chart", "rule"):
         raise LayoutContractError(f"element {node_id!r}: kind must be text, table, image, chart or rule")
     size = raw.get("size") or {}
@@ -1146,7 +1148,7 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     natural, minimum = {}, {}
     last = len(table.rows) - 1
     for ci, column in enumerate(table.columns):
-        texts = ([(labels[ci], header, False)] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows) else cell, True) for ri, row in enumerate(table.rows)]
+        texts = ([(labels[ci], header, False)] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows or ci in table.emphasis_columns) else cell, True) for ri, row in enumerate(table.rows)]
         widest = widest_segment = widest_value = 0
         for text, kind, is_value in texts:
             if not text.strip():
@@ -1186,13 +1188,14 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     row_heights: list[int] = []
     for ri, texts in enumerate(grid):
         data_ri = ri - table.header_rows
-        kind = header if (ri < table.header_rows and header) else (cell_bold if ((table.totals_last_row and ri == len(grid) - 1) or data_ri in table.emphasis_rows) else cell)
+        row_kind = header if (ri < table.header_rows and header) else (cell_bold if ((table.totals_last_row and ri == len(grid) - 1) or data_ri in table.emphasis_rows) else cell)
         counts = []
-        for key, text in zip(keys, texts):
+        for ci, (key, text) in enumerate(zip(keys, texts)):
+            kind = cell_bold if (row_kind is cell and ci in table.emphasis_columns) else row_kind
             lines = wrapped_lines(ctx, text, max(1, widths[key] - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
             cell_lines[(ri, key)] = lines
             counts.append(len(lines))
-        row_heights.append(required_row_height_emu(counts, hundredths(kind.entry.size_pt), hundredths(kind.entry.line_spacing * kind.entry.size_pt), padding, padding))
+        row_heights.append(required_row_height_emu(counts, hundredths(row_kind.entry.size_pt), hundredths(row_kind.entry.line_spacing * row_kind.entry.size_pt), padding, padding))
     total, budget = sum(row_heights), box.height + EMIT_SLACK_EMU
     return TableFit(widths, column_deficits, tuple(row_heights), cell_lines, total, total > budget or deficit > 0, deficit, fitting_prefix(row_heights, table.header_rows, budget), box.width, table.header_rows, padding, header, cell)
 
@@ -1486,6 +1489,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                   f"  free {e['chars_free']} chars" + (f" (+{e['lines_free']} lines)" if "lines_free" in e else f"  ({e.get('why')})"))
         for c in payload.get("components", []):
             print(f"  {c['id']:<18} component {c['kind']}: {c['budget']}")
+        for t in payload.get("tables", []):
+            print(f"  {t['id']:<18} table: {t['body_rows']} body rows need {t['rows_need_in']} in, box {t['box_in']} in; "
+                  f"rows_to_fit {t['rows_to_fit']}" + (f", {t['height_free_in']} in free" if "height_free_in" in t else "")
+                  + "; tallest rows " + ", ".join(f"{x['row']} ({x['lines']} lines)" for x in t["tallest_rows"]))
+        for cause in payload.get("why_not_full_scale", []):
+            print(f"  why not at full scale: {cause}")
         if args.out:
             Path(args.out).parent.mkdir(parents=True, exist_ok=True)
             Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")

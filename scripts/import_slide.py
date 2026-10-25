@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Import a reference slide into a page spec of roles, for the round trip.
 
+    python3 scripts/import_slide.py ref.pptx --survey --guide guide.json           # which page to round-trip
     python3 scripts/import_slide.py ref.pptx --slide 3 --guide guide.json -o page.deck.json
     python3 scripts/build_deck.py page.deck.json --guide guide.json --template tpl.pptx -o rt.pptx --reference ref.pptx
 
@@ -13,9 +14,12 @@ starts inside the house's own bands and columns.
 
 What survives the import: the title, every text shape's paragraphs with their bullet
 levels, bold runs, fills and inverse ink, the row and column arrangement (shapes that
-overlap vertically share a row, weights follow widths) and pictures (as sized images
-without their bytes, so the render shows an empty frame). What does not: charts and
-tables are left as notes in the spec for the agent to rebuild from data.
+overlap vertically share a row, weights follow widths), pictures (a pptx picture with its
+own bytes, a PDF picture cut from the page render) and a pptx's native tables (as table
+specs, a column or row bold throughout as an emphasis group). What does not: charts (and
+a PDF's tables) become a placeholder line to rebuild from data; turned text is left out;
+merged cells are written unmerged. Each slide's `import_lost` lists these; `--survey`
+lists them for every page, with whether each imported page fits, to choose the page.
 
 A PDF page imports from ooxml.py's text blocks (`--slide` is the page number): the title
 is the block at the deck's recurring title position, a block's fill is the filled
@@ -227,6 +231,77 @@ def pdf_picture(path: str, index: int, box: tuple[int, int, int, int], out_dir: 
     return str(target)
 
 
+def _pptx_shape(path: str, index: int, ref: str):
+    """The python-pptx shape a fingerprint ref names (`pic[id=3]`, `graphicFrame[id=5]`)
+    on slide `index`, searched through groups; None when the ref names no id."""
+    import re
+
+    from pptx import Presentation
+    m = re.search(r"\[id=(\d+)\]", ref or "")
+    if not m:
+        return None
+    want = int(m.group(1))
+
+    def walk(shapes):
+        for sh in shapes:
+            if sh.shape_id == want:
+                return sh
+            if sh.shape_type is not None and getattr(sh, "shapes", None) is not None:
+                found = walk(sh.shapes)
+                if found is not None:
+                    return found
+        return None
+
+    return walk(Presentation(path).slides[index].shapes)
+
+
+def pptx_picture(path: str, index: int, ref: str, out_dir: Path, ident: str) -> str | None:
+    """The picture's own bytes, written beside the imported spec: the house pastes its
+    exhibits as pictures, and a round trip without them draws empty frames."""
+    sh = _pptx_shape(path, index, ref)
+    if sh is None or not hasattr(sh, "image"):
+        return None
+    out = out_dir / f"rt-s{index + 1}-{ident}.{sh.image.ext}"
+    out.write_bytes(sh.image.blob)
+    return str(out)
+
+
+def pptx_table(path: str, index: int, ref: str, ident: str, notes: list[str], lost: list[str]) -> dict | None:
+    """A native table as a table spec: the first row its header, every other row a body
+    row, the cell text as written; a column or row whose every body cell is bold is an
+    emphasis group that keeps its fill. Fills, rules and merged cells are the guide's
+    table look, not the reference's: the notes say so."""
+    sh = _pptx_shape(path, index, ref)
+    if sh is None or not getattr(sh, "has_table", False):
+        return None
+    grid = [[cell for cell in row.cells] for row in sh.table.rows]
+    if len(grid) < 2:
+        return None
+    text = [[" ".join(c.text_frame.text.split()) for c in row] for row in grid]
+    # a cell's weight as written on its runs: True, False, or None for an empty cell, which
+    # says nothing about its column's or row's weight
+    bold = [[None if not c.text_frame.text.strip() else all(bool(r.font.bold) for p in c.text_frame.paragraphs for r in p.runs if r.text.strip())
+             for c in row] for row in grid]
+    columns = [{"key": f"c{i}", "label": t or " ", "value_kind": "text"} for i, t in enumerate(text[0])]
+    body, body_bold = text[1:], bold[1:]
+    def all_bold(cells: list) -> bool:
+        written = [c for c in cells if c is not None]
+        return bool(written) and all(written)
+
+    every = all_bold([c for row in body_bold for c in row])  # a table bold throughout marks nothing
+    emphasis = [] if every else [{"columns": [f"c{i}"], "fill_role": "keep"} for i in range(len(columns)) if all_bold([row[i] for row in body_bold])]
+    emphasis += [] if every else [{"rows": [r], "fill_role": "keep"} for r, row in enumerate(body_bold) if all_bold(row)]
+    merged = sum(1 for row in grid for c in row if c.is_merge_origin or c.is_spanned)
+    notes.append(f"{ident}: native table {len(grid)} x {len(columns)} imported as a table spec (header row 1); its fills and rules are the "
+                 f"guide's table look, not this table's own" + (f"; {merged} merged cells written unmerged" if merged else ""))
+    if merged:
+        lost.append(f"table {ident}'s {merged} merged cells (written unmerged)")
+    el = {"type": "element", "id": ident, "kind": "table", "table": {"columns": columns, "rows": [[c or " " for c in row] for row in body]}}
+    if emphasis:
+        el["emphasis"] = emphasis
+    return el
+
+
 def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = None) -> dict:
     slides = fingerprint_deck(path)  # every page: a PDF title is found from the position titles recur at
     if not 0 <= index < len(slides):
@@ -236,6 +311,7 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
     colours = colour_roles(guide)
     extra = tuple(name for name, spec in (guide.get("extra_roles") or {}).items() if spec.get("hex"))
     notes: list[str] = []
+    lost: list[str] = []  # what the build cannot draw from this page, in words: the round trip's own loss list
     styling: dict = {}
     images: dict = {}
     chrome = chrome_boxes(guide) if s.source == "pdf" else []
@@ -248,6 +324,7 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
             continue
         if sh.rotation:
             notes.append(f"{sh.ref}: text turned {sh.rotation // 60000} degrees ({sh.text!r}); a page spec sets text upright, so it is not imported")
+            lost.append(f"turned text {sh.text!r}")
             continue
         content.append(sh)
     title = next((sh for sh in content if sh.ph_type == "title"), None)
@@ -263,15 +340,25 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
             ident = f"e{n}"
             if sh.kind == "picture":
                 elems.append({"type": "element", "id": ident, "kind": "image", "size": {"width_emu": sh.box[2], "height_emu": sh.box[3]}})  # type: ignore[index]
-                crop = pdf_picture(path, index, sh.box, image_dir, ident) if s.source == "pdf" and image_dir is not None else None  # type: ignore[arg-type]
+                if image_dir is None:
+                    crop = None
+                elif s.source == "pdf":
+                    crop = pdf_picture(path, index, sh.box, image_dir, ident)  # type: ignore[arg-type]
+                else:
+                    crop = pptx_picture(path, index, sh.ref, image_dir, ident)
                 if crop:
                     images[ident] = {"path": crop}
-                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, cut from the page render: {crop}")  # type: ignore[index]
+                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, "  # type: ignore[index]
+                                 f"{'cut from the page render' if s.source == 'pdf' else 'its own bytes'}: {crop}")
                 else:
                     notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, bytes not imported")  # type: ignore[index]
+                    lost.append(f"picture {ident}'s bytes (an empty frame)")
+            elif sh.kind == "table" and s.source != "pdf" and (table := pptx_table(path, index, sh.ref, ident, notes, lost)) is not None:
+                elems.append(table)
             elif sh.kind in ("table", "chart"):
                 elems.append({"type": "element", "id": ident, "kind": "text", "paragraphs": [{"role": "type.body", "text": f"[{sh.kind} to rebuild from data]"}]})
                 notes.append(f"{ident}: {sh.kind} left as a placeholder; rebuild it from the dataset")
+                lost.append(f"{sh.kind} {ident} (a placeholder line; rebuild it from data)")
             else:
                 elems.append(text_element(sh, ident, roles, colours, styling, notes, fill_under(sh, s) if s.source == "pdf" else None, extra))
         if len(elems) == 1:
@@ -301,28 +388,95 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
             "children": ([title_el] if title_el else []) + [body]}
     slide = {"id": f"import-{index + 1}", "layout": s.layout_name or "Title and Content",
              "notes": f"round trip of {Path(path).name} slide {index + 1}: roles and weights only, no coordinates",
-             "spec": {"root": root, "splittable_groups": []}, "styling": styling, "import_notes": notes}
+             "spec": {"root": root, "splittable_groups": []}, "styling": styling, "import_notes": notes,
+             "import_lost": lost + ["each element's exact position and size (rebuilt from roles and weights)",
+                                    "each table's own fills, rules and column widths (the guide's table look; widths measured)"
+                                    if any('"kind": "table"' in json.dumps(c) for c in body_children) else None]}
+    slide["import_lost"] = [x for x in slide["import_lost"] if x]
     if images:
         slide["images"] = images
     return {"slides": [slide]}
 
 
+def survey(path: str, guide: dict, chrome: str = "auto") -> list[dict]:
+    """Every page of the reference as the round trip would rebuild it: what it holds, what
+    the build cannot draw from it (import_lost), and whether the imported page solves at
+    full scale. The page to round-trip is a content page the build can draw: one with a
+    title, text and an exhibit, losing least, that fits."""
+    import tempfile
+
+    import component_api
+    import layout as L
+    from build_deck import solve_slide
+    lg = L.load_guide(guide)
+    ruler, index = L.default_ruler(), L.default_index()
+    api = component_api.make_api(guide, lg, ruler, index)
+    content = set((((guide.get("variety") or {}).get("content_pages")) or {}).get("pages") or [])
+    triage = {p["slide"]: p.get("triage") for p in (guide.get("variety") or {}).get("pages") or []}
+    out = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for i in range(len(fingerprint_deck(path))):
+            sl = import_slide(path, i, guide, Path(tmp))["slides"][0]
+            kinds: dict[str, int] = {}
+            for node in json.dumps(sl["spec"]).split('"kind": "')[1:]:
+                k = node.split('"', 1)[0]
+                if k in ("text", "table", "image", "chart", "rule"):
+                    kinds[k] = kinds.get(k, 0) + 1
+            try:
+                _, _, outcome = solve_slide(json.loads(json.dumps(sl)), guide, chrome, lg, ruler, index, api, L.Fraction(1))
+                fits = outcome.status
+            except (SystemExit, L.LayoutContractError) as error:
+                fits = f"refused: {error}"[:160]
+            has_title = '"id": "title"' in json.dumps(sl["spec"])
+            exhibit = kinds.get("table", 0) + kinds.get("image", 0)
+            lost = [x for x in sl["import_lost"] if not x.startswith(("each element", "each table"))]
+            page = i + 1
+            out.append({"slide": page, "layout": sl["layout"], "content": (page in content) if content else triage.get(page) == "content",
+                        "title": has_title, "text": kinds.get("text", 0) - int(has_title), "exhibits": exhibit, "fits_full_scale": fits,
+                        "lost": lost})
+    for p in out:
+        p["candidate"] = bool(p["content"] and p["title"] and p["text"] > 0 and p["exhibits"] > 0 and not p["lost"] and p["fits_full_scale"] == "fit")
+    return out
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("reference")
-    ap.add_argument("--slide", type=int, required=True, help="1-based slide number")
+    ap.add_argument("--slide", type=int, help="1-based slide number")
+    ap.add_argument("--survey", action="store_true", help="list every page: what it holds, what the round trip would lose, whether it fits")
     ap.add_argument("--guide", required=True, help="the completed guide (roles and colours to bind to)")
-    ap.add_argument("-o", "--out", required=True)
+    ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="with --survey: as the build will run")
+    ap.add_argument("-o", "--out")
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out")
-    guide = json.loads(Path(args.guide).read_text())
+    guide = json.loads(cli.in_path(args.guide, "--guide").read_text())
+    cli.in_path(args.reference, "reference")
+    if args.survey:
+        pages = survey(args.reference, guide, args.chrome)
+        layouts: dict[str, int] = {}
+        for p in pages:
+            if p["content"]:
+                layouts[p["layout"]] = layouts.get(p["layout"], 0) + 1
+        common = max(layouts, key=layouts.get) if layouts else None
+        for p in pages:
+            mark = "CANDIDATE" if p["candidate"] and p["layout"] == common else ("candidate" if p["candidate"] else "")
+            print(f"slide {p['slide']:>3} {mark:<9} {p['layout']!s:<24} content={p['content']!s:<5} title={p['title']!s:<5} text={p['text']} "
+                  f"exhibits={p['exhibits']} fits={p['fits_full_scale']}" + (f"  loses: {'; '.join(p['lost'])}" if p["lost"] else ""))
+        best = [p["slide"] for p in pages if p["candidate"] and p["layout"] == common] or [p["slide"] for p in pages if p["candidate"]]
+        print(f"round-trip candidates (content, title, text and an exhibit, nothing lost, fits; on the house's most used layout {common!r} first): "
+              f"{best or 'none: pick the content page that loses least and name every loss in the report'}")
+        if args.out:
+            Path(args.out).write_text(json.dumps(pages, indent=1))
+        return 0
+    if args.slide is None or not args.out:
+        ap.error("--slide and -o are required (or --survey)")
     Path(args.out).resolve().parent.mkdir(parents=True, exist_ok=True)  # a new work directory, as build_deck makes for -o
     deck = import_slide(args.reference, args.slide - 1, guide, Path(args.out).resolve().parent)
     Path(args.out).write_text(json.dumps(deck, indent=1))
     sl = deck["slides"][0]
     print(json.dumps({"out": args.out, "layout": sl["layout"], "elements": sum(1 for _ in json.dumps(sl["spec"]).split('"kind":')) - 1,
-                      "styled": sorted(sl["styling"]), "notes": sl["import_notes"]}, indent=1))
+                      "styled": sorted(sl["styling"]), "lost": sl["import_lost"], "notes": sl["import_notes"]}, indent=1))
     return 0
 
 

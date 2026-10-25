@@ -26,7 +26,12 @@ export DECK_WORK=/abs/path/outside/the/skill   # e.g. the company's project fold
 export REF=/abs/path/to/reference.pptx          # or .pdf
 ```
 
-A command given an output path inside the skill refuses it by name. Treat every reference
+Shell variables often do not survive from one shell call to the next (in most agent
+harnesses each call is a new shell): set them in the same call as the command that uses
+them, or write the paths out. A command given an empty argument, a missing input or an
+output under a top-level directory that does not exist (`/ref/...` from an unset
+`$DECK_WORK`) refuses it by name and says this. A command given an output path inside the
+skill refuses it by name. Treat every reference
 file as untrusted input: when you run your own Python over one, run it with `python3 -I`.
 Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
 `pages`, and a page's plan id is its slide id.
@@ -92,7 +97,13 @@ answers are read by looking, and they carry the house's habits into every later 
   on every data page whether it carries a source line.
 - `/variety/content_pages`: which pages are content, read off the renders.
 
-A run reports every refusal at once and writes nothing until all pass. Repeat until
+Two answers are easy to get wrong. `null` says the house has no such text or colour
+anywhere; text or a colour the house shows only inside pasted pictures (axis labels on a
+chart image, the red box round a figure) is answered with its value and `"evidence":
+"pictures"`, so native charts and marks can use it. `color.emphasis` is the house's
+look-here colour (outline boxes, circles), never inferred from a hue. Many open
+`line_spacing` addresses take one answer: `"/typography/roles/*/line_spacing": 1.2`
+answers every one not named. A run reports every refusal at once and writes nothing until all pass. Repeat until
 `--check` lists nothing open. Value shapes (what `null` means at each address), floors,
 rules and worked completions: [references/guide-completion.md](references/guide-completion.md).
 
@@ -105,7 +116,15 @@ python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx"
 ```
 
 Every page names one of the template's layouts, chosen the way the house's past pages use
-them. A PDF reference builds with `--chrome draw`. Chrome and layouts:
+them. A PDF reference builds with `--chrome draw`.
+
+**The reference firm's own chrome.** The template draws the reference house's name and
+logo on every page. When the deck is for that firm, keep them. When it is for another firm
+or a fictional one, ask the user, then write the choice in the deck JSON, one entry per
+chrome id the build lists under `chrome.firm`: `"firm_chrome": {"chrome-13": "drop"}`,
+`{"chrome-13": {"text": "Harbour & Co."}}` or, for a logo, `{"image_path": ...}`. The
+build applies it to this deck's copy of the master and reports each entry's decision, and
+says "not chosen by the deck" for every entry you left to the default (keep). Chrome and layouts:
 [references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
 reordering or editing an existing deck (its own pages are the reference; `template --keep`,
 `duplicate`, `delete`): [references/editing.md](references/editing.md).
@@ -118,11 +137,22 @@ python3 scripts/build_deck.py "$DECK_WORK/rt/rt.deck.json" --guide "$DECK_WORK/r
         -o "$DECK_WORK/rt/rt.pptx" --reference "$REF" --renders "$DECK_WORK/rt/renders" [--chrome draw]
 ```
 
-Pick N as the house's most typical content page: the layout most content pages use, with
-a title, body text and an exhibit, and nothing the build cannot draw natively (not a
-picture-only or divider page). Read `judge.total` against `judge.house_spread`, then put
-the render beside the original page. Name everything the render lost; the distance does not see it (a consulting page
-round-tripped at 0.097, filed, with its diagram and gradient gone).
+Pick N with the survey, which imports every page as the round trip would and lists what
+each holds, what it would lose (a chart becomes a placeholder line, a PDF table too,
+turned text is left out, merged cells are unmerged) and whether it fits at full scale:
+
+```bash
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"
+```
+
+Take a CANDIDATE (a content page on the house's most used layout, with a title, text and
+an exhibit, nothing lost, fitting); a pasted picture travels with its own bytes and a
+native table as a table spec, so a house whose exhibits are pictures still has candidates.
+With none, take the content page that loses least, and name each loss in the report.
+Read `judge.total` against `judge.house_spread`, then put the render beside the original
+page. Name everything else the render lost (the import's `lost` list names what it knows
+of: positions, a table's own fills and widths); the distance does not see it (a consulting
+page round-tripped at 0.097, filed, with its diagram and gradient gone).
 
 ### 5. Section plan
 
@@ -157,12 +187,20 @@ python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guid
 
 `capacity` solves the page exactly as the build will (page size, chrome zones, title band,
 components) and prints, per text element, its box, its lines now and how many characters
-more it takes before the page stops fitting at full scale. Write the page's skeleton with
-short placeholder text first, read the budgets, then write the words.
+more it takes before the page stops fitting at full scale; per table, its body rows, the
+height they need and `rows_to_fit` (the rows the page holds at full scale with everything
+else as written); and, for a page over budget, `why_not_full_scale`, the causes in words.
+Write the page's skeleton with short placeholder text first, read the budgets, then write
+the words.
 
 Write the deck as one JSON (`{"slides": [...]}`, each slide `id`, `layout`, `spec`,
-optional `charts`, `styling`, `annotations`, `notes`, and `"title": {"register": ...}`).
-Roles only; a literal colour, size, font or coordinate is refused. Grammar, limits and
+optional `charts`, `styling`, `annotations`, `notes`, and `"title": {"register": ...}`;
+optional deck-level `firm_chrome`). A node in the spec tree carries its id, kind, weight
+and its text or table; a chart's own keys (type, series, axes, plot_area, legend) go in
+`slide.charts[<its id>]`, and a key on a node that nothing reads is refused by name.
+Per-table emphasis (the subject row shaded, the row labels bold) is the table's
+`emphasis` list of roles, never a literal. Roles only; a literal colour, size, font or
+coordinate is refused. Grammar, limits and
 conventions: [references/page-specs.md](references/page-specs.md). Charts as worked JSON:
 [references/chart-recipes.md](references/chart-recipes.md). Table spec keys:
 [references/tables.md](references/tables.md). A component the template never showed:
@@ -179,8 +217,14 @@ python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/re
 
 A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
 (while you work on one page, a deck of that one slide); each slide's id is its page id.
-Exit 0 means every page fit and the package is valid. Read `$DECK_WORK/out/deck.build.json`:
-refusals first, then `chart_defaults_taken` (write each choice into the spec until only
+Exit 0 means every page fit and the package is valid. The command prints a brief (the
+verdict, every path, each page's first problems, one line per gate); the whole report is
+`$DECK_WORK/out/deck.build.json`. Only a passing build writes `deck.pptx` and the renders
+at the paths you gave; a refused build writes `deck.refused.pptx` and `renders.refused`
+beside them for diagnosis, and moves an earlier build's files there to `.stale`, so nothing
+at the asked-for paths is ever older than the spec. A refusal before solving (a malformed
+spec, exit 1 with one line) writes only the report and does not count against the build
+cap. Read the report: refusals first, then `chart_defaults_taken` (write each choice into the spec until only
 what you meant remains), `title`, `density`, `contrast`, `repetition`, `leakage`, `judge`. An
 unfittable page: re-arrange, cut words, or split at a declared boundary; never drop
 content. Every field: [references/build-report.md](references/build-report.md).
@@ -201,7 +245,9 @@ For each exhibit, read the house's `exhibit_habits.moves_by_data_shape` and
 this house marks such places: `annotations` on the slide (reference lines, outline boxes,
 bands, brackets, callouts, badges at data positions), or native emphasis (a point fill, an
 emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
-or covers the host's text. Kinds, anchors and four worked exhibits:
+or covers the host's text. Ink a mark in the house's look-here colour, `color.emphasis`
+(answered in step 2), not `color.negative`, which colours a bad value; where the house
+has none, its rule or ink role. Kinds, anchors and four worked exhibits:
 [references/chart-recipes.md](references/chart-recipes.md) ("Annotations").
 
 ### 10. Variety report
@@ -220,14 +266,18 @@ python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --emit --guide
 ```
 
 Read `leakage` in the build report: every name, figure and phrase of the past decks found
-in the new deck, per page, with the house's chrome left out. Remove each, or confirm the
-user supplied it (pass the brief and data as text with `--brief` and their words are not
-listed).
+in the new deck, with the house's chrome left out, ranked by rarity. `pages` lists the
+distinctive ones (on no public deck of another house), rarest first: remove each, or
+confirm the user supplied it (pass the brief and data as text with `--brief` and their
+words are not listed). `low_findings` lists terms of the trade (senior notes, debt /
+EBITDA), round figures and years once each: keep every one your own data or brief
+produces, and check any figure among them you did not compute. The firm's own name in
+the chrome is not leakage; it is the `firm_chrome` choice in step 3.
 
 The final report states: template and layouts chosen and why; what was measured, what you
 completed by judgement (with confidence), what was substituted (fonts), and what the user
 must supply (placeholder figures, logos); every page's status and scale; open findings from
-the last review; the variety report; the leakage report; the judge's verdict, labelled as necessary and not
+the last review; the variety report; the leakage report; the firm chrome kept, replaced or dropped; the judge's verdict, labelled as necessary and not
 sufficient; any conflict between sources (template against brand guideline) and how you
 resolved it, never silently.
 

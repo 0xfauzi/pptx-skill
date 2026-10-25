@@ -49,13 +49,14 @@ value instead. A left-out key never closes anything.
 
 | address | value | null means |
 |---|---|---|
-| `/color/roles/color.(surface\|ink\|accent1)` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | refused |
-| `/color/roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | the house has no such colour: the role is recorded under absent_roles, and a page that names it is refused |
-| `/extra_roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies) | refused |
+| `/color/roles/color.(surface\|ink\|accent1)` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | refused |
+| `/color/roles/color.emphasis` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the house marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, and an annotation names the ink or rule role instead |
+| `/color/roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the house has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is refused. A colour seen only inside pasted pictures is not absent: answer it with "evidence": "pictures" |
+| `/extra_roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | refused |
 | `/typography/roles/type.(title\|body)` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt" | refused |
 | `/typography/roles/<name>/members` | the open members only: any of "weight", "italic", "family", "alignment", "case", "ink_role", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", plus "why"; never "size_pt" | refused |
-| `/typography/roles/<name>/line_spacing` | a multiple of the size, e.g. 1.2 | single spacing (drawn at 1.2 x size) |
-| `/typography/roles/<name>` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt" | the house has no such text: recorded under absent_roles; a page that names the role is refused. One of type.caption, type.footnote, type.source_line must stay answered |
+| `/typography/roles/<name>/line_spacing` | a multiple of the size, e.g. 1.2 ("/typography/roles/*/line_spacing": v answers every open one not named) | single spacing (drawn at 1.2 x size) |
+| `/typography/roles/<name>` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"; add "evidence": "pictures" when the house sets such text only inside pasted pictures | the house has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is refused. Text the house sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off the pictures with "evidence": "pictures". One of type.caption, type.footnote, type.source_line must stay answered |
 | `/typography/families` | {"major": "<face>", "minor": "<face>"} | refused |
 | `/typography/families/substitutes` | {"<face named in the file>": "<installed face measured in its place>"} | refused |
 | `/typography/scale_ratio` | a number, e.g. 1.25 | the levels are not a geometric ladder |
@@ -67,7 +68,7 @@ value instead. A left-out key never closes anything.
 | `/shape_language/icon_style` | a string, e.g. "none" or "white line icons in accent circles" | refused |
 | `/imagery/register_kind` | a string, e.g. "photographs, wide crops" or "none" | refused |
 | `/tables` | {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"} | refused |
-| `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|r\|t\|l\|none"}}, "why"} | refused |
+| `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|t\|r\|l\|tr\|none"}}, "why"} | refused |
 | `/continuation` | {"header_repeat": "full\|none", "contd_mark": "<text>", "takeaway_policy": "repeat\|first_only\|none"} | refused |
 | `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "never_does": [...], "tone"} | refused |
 | `/derivation_rules` | a list of sentences | refused |
@@ -79,7 +80,27 @@ value instead. A left-out key never closes anything.
 Where the honest answer is that the house has none (no green for `color.positive`, no
 kicker), answer `null`: the guide records the role under `absent_roles`, and a page that
 names it is refused with that reason. Do not borrow another role's colour to fill the
-slot. `why` is accepted everywhere a value is an object, `/members` included, and is kept
+slot.
+
+`null` means none anywhere, pictures included. A house that pastes its exhibits as
+pictures still sets axis labels, data labels and emphasis marks in them: answer those
+with the value read off the pictures and `"evidence": "pictures"` (recorded as `seen_in:
+pictures`, so the report can say the value was read at camera precision). A `null` for
+`type.axis_label` or `type.data_label` is refused when the digest records exhibits with
+axes or labelled marks, since native charts would then have no role to set them in.
+
+`color.emphasis` is the house's look-here colour: the outline box round a figure, the
+circle, the highlighted bar. It is always open (no hue band decides it) and is not
+`color.negative`, which colours a bad value; annotations take it. `null` there says the
+house marks emphasis in its ink or rule colour, or not at all.
+
+Many open `line_spacing` addresses (one per role) usually share one answer:
+`"/typography/roles/*/line_spacing": 1.2` answers every open one the patch does not name,
+and a named one keeps its own answer. It closes only open addresses.
+
+The table lists the value each address takes when it is open; `--check` lists which are
+open. A `/tables` or `/charts` the draft observed is not open, and a patch for it is
+refused with its evidence. `why` is accepted everywhere a value is an object, `/members` included, and is kept
 as provenance. A run applies every address it can and reports every refusal at once,
 numbered; the guide is written only when none is left.
 

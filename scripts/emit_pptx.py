@@ -87,7 +87,7 @@ from pptx.enum.chart import (
     XL_TICK_LABEL_POSITION,
     XL_TICK_MARK,
 )
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import CONTENT_TYPE as CT
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
@@ -542,8 +542,63 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
 # lifts them there from the tree node, its table spec or slide.styling, refusing a key
 # given twice). Each fill or ink key, when present, replaces the guide's tables value
 # for this table only; "none" means no fill.
-TABLE_STYLE_KEYS = {"totals_last_row", "emphasis_rows", "emphasis_fill_role", "emphasis_ink_role", "header_align",
+TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align",
                     "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role"}
+#: One emphasis group: the body rows (data-row indices) or the columns (column keys) it
+#: marks, the fill under them (a colour role; "none", no fill, the page shows; "keep", the
+#: banding or data fill the cell has without emphasis: there is no default) and
+#: optionally their ink. Emphasised cells are written and measured
+#: bold. Several groups mark several things (the subject row shaded, the row labels bold);
+#: where two groups meet, the later one's fill and ink are drawn.
+EMPHASIS_KEYS = {"rows", "columns", "fill_role", "ink_role"}
+#: the keys `emphasis` replaced, refused with the new spelling
+OLD_EMPHASIS_KEYS = {"emphasis_rows", "emphasis_fill_role", "emphasis_ink_role"}
+EMPHASIS_EXAMPLE = ('"emphasis": [{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"], "fill_role": "keep"}] '
+                    '(rows by data-row index, columns by key; fill_role a colour role, "none" or "keep"; optional ink_role)')
+
+
+def table_emphasis(el: dict) -> list[dict]:
+    """The table's emphasis groups, proven once: a list of objects, each naming rows or
+    columns that exist, and a fill_role."""
+    where = el.get("id", "table")
+    old = sorted(OLD_EMPHASIS_KEYS & set(el))
+    if old:
+        raise SpecError(f"{where}: {old} became one key, emphasis, a list of groups: {EMPHASIS_EXAMPLE}")
+    raw = el.get("emphasis")
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise SpecError(f"{where}: emphasis is a list of groups: {EMPHASIS_EXAMPLE}")
+    keys = [c.get("key") for c in el.get("columns") or []]
+    n_rows = len(el.get("rows") or [])
+    groups = []
+    for i, g in enumerate(raw):
+        gw = f"{where} emphasis[{i}]"
+        if not isinstance(g, dict) or set(g) - EMPHASIS_KEYS or ("rows" in g) == ("columns" in g):
+            raise SpecError(f"{gw}: an object with exactly one of rows or columns, a fill_role, and optionally an ink_role: {EMPHASIS_EXAMPLE}")
+        if "fill_role" not in g:
+            raise SpecError(f"{gw}: needs fill_role: a colour role from the guide, \"none\" (no fill: the page shows) or \"keep\" (the banding or "
+                            "data fill the cells have without emphasis); there is no default fill")
+        if "rows" in g:
+            rows = g["rows"]
+            if not isinstance(rows, list) or not rows or any(not isinstance(r, int) or isinstance(r, bool) or not 0 <= r < n_rows for r in rows):
+                raise SpecError(f"{gw}: rows {rows!r} must be data-row indices 0..{n_rows - 1}")
+            groups.append({"rows": frozenset(rows), "columns": None, "fill_role": g["fill_role"], "ink_role": g.get("ink_role")})
+        else:
+            cols = g["columns"]
+            if not isinstance(cols, list) or not cols or any(c not in keys for c in cols):
+                raise SpecError(f"{gw}: columns {cols!r} must be column keys of this table ({keys})")
+            groups.append({"rows": None, "columns": frozenset(keys.index(c) for c in cols), "fill_role": g["fill_role"], "ink_role": g.get("ink_role")})
+    return groups
+
+
+def emphasised(groups: list[dict], data_row: int, column: int) -> dict | None:
+    """The group that draws a body cell, the last one that marks it."""
+    hit = None
+    for g in groups:
+        if (g["rows"] is not None and data_row in g["rows"]) or (g["columns"] is not None and column in g["columns"]):
+            hit = g
+    return hit
 # Keys of a table's column entries; `align` overrides the guide's
 # alignment_by_column_type for that column (header_align still sets the header row).
 TABLE_COLUMN_KEYS = {"key", "label", "value_kind", "width_share", "min_width_role", "align"}
@@ -567,13 +622,14 @@ def table_roles(el: dict, guide: Guide) -> tuple[dict, dict]:
 
 
 def table_row_styles(el: dict, guide: Guide) -> list[dict]:
-    """The fill, ink and weight of every row of a table. Each comes from the table's
-    own key when it has one (header_fill_role, header_ink_role, header_bold,
-    banding_role, data_fill_role: a colour role or "none"), else from the guide's
-    table section. Emphasis rows take the spec's `emphasis_fill_role` (a role or
-    "none") and `emphasis_ink_role`, else the cell ink. Nothing here picks an ink for
-    a fill: a pair that reads below 3:1 is the build's contrast gate's to refuse. The
-    emitter and that gate both read rows through this one function."""
+    """The fill, ink and weight of every row of a table, and of every cell in it. Each
+    comes from the table's own key when it has one (header_fill_role, header_ink_role,
+    header_bold, banding_role, data_fill_role: a colour role or "none"), else from the
+    guide's table section. A body cell an emphasis group marks (table_emphasis) takes the
+    group's fill_role (a role or "none") and ink_role, else the cell ink, and is bold.
+    Nothing here picks an ink for a fill: a pair that reads below 3:1 is the build's
+    contrast gate's to refuse. The emitter, that gate and the annotation layer all read
+    cells through this one function: each row's `cells` holds one style per column."""
     where = el.get("id", "table")
     t = guide.tables
     header_rows = int(el.get("header_rows", 1))
@@ -586,9 +642,7 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
             raise SpecError(f"{where} column {col.get('key')!r}: align {col['align']!r} not in {list(TABLE_ALIGNS)}")
     if el.get("header_align") is not None and el["header_align"] not in TABLE_ALIGNS:
         raise SpecError(f"{where}: header_align {el['header_align']!r} not in {list(TABLE_ALIGNS)}")
-    emphasis_rows = {int(i) for i in (el.get("emphasis_rows") or [])}
-    if emphasis_rows and "emphasis_fill_role" not in el:
-        raise SpecError(f"{where}: emphasis_rows {sorted(emphasis_rows)} need emphasis_fill_role, a colour role from the guide or \"none\" (bold on the row's own ground)")
+    groups = table_emphasis(el)
 
     def role_hex(role: str | None, literal: str | None, label: str) -> tuple[str | None, str | None]:
         if literal:
@@ -606,12 +660,12 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
     header_ink = pick("header_ink_role", t.get("header_ink_role"), None, "header ink")
     band = pick("banding_role", t.get("banding_role"), t.get("banding_hex"), "banding")
     data = pick("data_fill_role", None, t.get("data_fill_hex"), "data fill")
-    emphasis_fill = role_hex(el.get("emphasis_fill_role"), None, "emphasis fill")
     _, cell_spec = table_roles(el, guide)
     cell_ink_role = cell_spec.get("ink_role")
     cell_ink = (guide.hex(cell_ink_role, where=f"{where} cell ink"), cell_ink_role) if cell_ink_role else \
         ((cell_spec["ink"], f"{el['cell_role']} observed ink") if HEX_RE.match(cell_spec.get("ink") or "") else (None, None))
-    emphasis_ink = role_hex(el.get("emphasis_ink_role"), None, "emphasis ink") if el.get("emphasis_ink_role") else cell_ink
+    styles = {id(g): (None if g["fill_role"] == "keep" else role_hex(g["fill_role"], None, f"emphasis[{k}] fill"),
+                      role_hex(g["ink_role"], None, f"emphasis[{k}] ink") if g["ink_role"] else cell_ink) for k, g in enumerate(groups)}
     totals = bool(el.get("totals_last_row"))
     header_bold = table_header_bold(el, guide)
     rows = []
@@ -619,16 +673,24 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
         is_header = ri < header_rows
         data_index = ri - header_rows
         is_totals = totals and ri == n_rows - 1
-        is_emphasis = not is_header and data_index in emphasis_rows
         if is_header:
             fill, ink, klass, bold = header_fill, header_ink, "header", header_bold
-        elif is_emphasis:
-            fill, ink, klass, bold = emphasis_fill, emphasis_ink, "emphasis", True
         else:
             fill = band if (band[0] and data_index % 2 == 0) else data
             ink, bold = cell_ink, is_totals or cell_spec.get("weight", 400) >= 700
             klass = "totals" if is_totals else ("body even" if data_index % 2 == 0 else "body odd")
-        rows.append({"row": ri, "class": klass, "header": is_header, "fill_hex": fill[0], "fill_name": fill[1], "ink_hex": ink[0], "ink_name": ink[1], "bold": bold})
+        base = {"fill_hex": fill[0], "fill_name": fill[1], "ink_hex": ink[0], "ink_name": ink[1], "bold": bold, "class": klass}
+        cells = []
+        for ci in range(len(el["columns"])):
+            g = None if is_header else emphasised(groups, data_index, ci)
+            if g is None:
+                cells.append(base)
+            else:
+                fill_style, (ih, iname) = styles[id(g)]
+                fh, fn = fill_style if fill_style is not None else (base["fill_hex"], base["fill_name"])
+                cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname, "bold": True,
+                              "class": "emphasis " + ("rows" if g["rows"] is not None else "columns") + f" {groups.index(g)}"})
+        rows.append({"row": ri, "header": is_header, **base, "cells": cells})
     return rows
 
 
@@ -685,9 +747,10 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if is_header and el.get("header_align"):
                 align = el["header_align"]
             p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
-            fill_hex = st["fill_hex"]
+            cs = st["cells"][ci]
+            fill_hex = cs["fill_hex"]
             # the ink is declared on the run so a dark reference does not inherit black
-            _style_run(run, spec, guide, emphasis=st["bold"], ink_hex=st["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"))
+            _style_run(run, spec, guide, emphasis=cs["bold"], ink_hex=cs["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"))
             ln = p._p.get_or_add_pPr()
             for tag in ("a:lnSpc", "a:spcBef", "a:spcAft"):
                 for old in ln.findall(qn(tag)):
@@ -737,6 +800,18 @@ LABEL_POSITIONS = {"center": XL_LABEL_POSITION.CENTER, "inside_end": XL_LABEL_PO
                    "outside_end": XL_LABEL_POSITION.OUTSIDE_END, "above": XL_LABEL_POSITION.ABOVE, "below": XL_LABEL_POSITION.BELOW,
                    "left": XL_LABEL_POSITION.LEFT, "right": XL_LABEL_POSITION.RIGHT, "best_fit": XL_LABEL_POSITION.BEST_FIT}
 LEGEND_POSITIONS = {"b": XL_LEGEND_POSITION.BOTTOM, "t": XL_LEGEND_POSITION.TOP, "r": XL_LEGEND_POSITION.RIGHT, "l": XL_LEGEND_POSITION.LEFT, "tr": XL_LEGEND_POSITION.CORNER}
+#: what a guide's charts.per_kind.<kind>.legend_position takes: a chart legend position
+#: (OOXML c:legendPos, as extract_style reads it) or "none"
+GUIDE_LEGEND_POSITIONS = (*LEGEND_POSITIONS, NONE)
+
+
+def chart_legend(el: dict):
+    """The chart's legend as drawn: None (not written), "none", or its object. A legend
+    object whose position is "none" (the guide's spelling) is no legend."""
+    legend = el.get("legend")
+    if isinstance(legend, dict) and legend.get("position") == NONE:
+        return NONE
+    return legend
 TICK_MARKS = {"none": XL_TICK_MARK.NONE, "out": XL_TICK_MARK.OUTSIDE, "in": XL_TICK_MARK.INSIDE, "cross": XL_TICK_MARK.CROSS}
 MARKER_STYLES = {m.name.lower(): m for m in XL_MARKER_STYLE if m.name not in ("PICTURE", "AUTOMATIC")}
 # Label positions PowerPoint's label menu offers per family. A dLblPos outside the menu
@@ -771,7 +846,7 @@ CHART_DEFAULTS = {
     "axis.line_role": "no stroke written: each renderer reads the theme's line style, and they differ (E38 class 5)",
     "axis.gridlines": "none (OOXML absence)",
     "axis.number_format": "linked to the source data",
-    "axis.reverse": "minMax: from the origin outward (a horizontal bar lists its categories bottom-up)",
+    "axis.reverse": "minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)",
     "axis.scale": "automatic minimum, maximum and major unit",
     "axis.tick_marks": "python-pptx's chart part",
     "axis.labels": "tick labels next to the axis in the chart text",
@@ -1012,6 +1087,17 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     if legend is None:
         took("legend", "legend")
     elif legend != NONE:
+        if not isinstance(legend, dict):
+            raise SpecError(f"{where} legend: {legend!r} is neither \"none\" nor an object; write \"legend\": \"none\" for no legend, or "
+                            f"\"legend\": {{\"position\": one of {sorted(LEGEND_POSITIONS)}, \"role\": ..., \"ink_role\": ...}}")
+        if legend.get("position") == NONE:
+            # the guide's legend_position vocabulary (GUIDE_LEGEND_POSITIONS) writes no
+            # legend as position "none"; the chart takes the same word in the same place
+            extra = sorted(set(legend) - {"position"})
+            if extra:
+                raise SpecError(f"{where} legend: position \"none\" draws no legend, so {extra} would style nothing; write \"legend\": \"none\"")
+            legend = NONE
+    if legend not in (None, NONE):
         _keys(f"{where} legend", legend, LEGEND_KEYS)
         _enum(f"{where} legend", "position", legend.get("position"), LEGEND_POSITIONS)
         _text_style(guide, legend, f"{where} legend")
@@ -1200,7 +1286,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         tspec, ink = _text_style(guide, title, f"{where} title")
         for run in chart.chart_title.text_frame.paragraphs[0].runs:
             _font(run.font, guide, tspec, ink)
-    legend = el.get("legend")
+    legend = chart_legend(el)
     chart.has_legend = bool(legend and legend != NONE)
     if chart.has_legend:
         chart.legend.position = LEGEND_POSITIONS[legend["position"]]
@@ -1380,7 +1466,7 @@ def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
                 continue
             ink, ink_name, tspec = ink_of(ax.get("labels") or {})
             out.append({"element": where, "part": f"{name} axis labels", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": [("plot",)]})
-    legend = el.get("legend")
+    legend = chart_legend(el)
     if legend and legend != NONE:
         ink, ink_name, tspec = ink_of(legend)
         out.append({"element": where, "part": "legend", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": [("plot",)]})
@@ -1601,6 +1687,146 @@ def _layers(ch: dict) -> list[str]:
     return sorted(set(ch.get("layers") or [ch.get("source_layer") or "slide"]))
 
 
+# --- the reference firm's own chrome: keep, replace or drop ---------------------------------
+
+#: A deck's `firm_chrome` choice per entry: "keep", "drop", {"text": "..."} or
+#: {"image_path": "..."}.
+FIRM_DECISIONS = ("keep", "drop", "replace")
+
+
+def firm_chrome(guide_data: dict, mode: str) -> list[dict]:
+    """The chrome a generated page carries that can name the reference's firm: every entry
+    chrome_on_page draws on the page that holds words (a label, or a footer the page
+    actually draws, with two letters in a row; page numbers excluded) or a picture (kind
+    logo). A deck for another firm, or for a made-up one, must not wear the reference's
+    name: these are the entries the deck chooses for, by chrome_id, in `firm_chrome`."""
+    page = (guide_data.get("reference") or {}).get("page") or {}
+    pw, ph = page.get("width_in"), page.get("height_in")
+    out = []
+    for ch in chrome_on_page(guide_data, mode):
+        x, y, w, h = ch["box_in"]
+        if pw is not None and ph is not None and not (x < pw and y < ph and x + w > 0 and y + h > 0):
+            continue  # off the page: a note on the master's pasteboard, never seen
+        layers = _layers(ch)
+        if ch["kind"] == "footer" and mode != "draw" and "slide" not in layers:
+            continue  # a layout's footer placeholder is drawn only when copied onto the slide
+        words = re.search(r"[A-Za-z]{2}", chrome_text(ch) or "") is not None
+        if ch["kind"] == "logo" or (ch["kind"] in ("label", "footer") and words):
+            out.append(ch)
+    return out
+
+
+def firm_choices(spec: dict, candidates: list[dict]) -> dict[str, tuple[str, dict]]:
+    """The deck's choices, proven at the boundary: each names a candidate once, with a
+    decision in FIRM_DECISIONS; a replacement text for a text entry, an existing picture
+    for a logo."""
+    raw = spec.get("firm_chrome")
+    if raw is None:
+        return {}
+    by_id = {ch["chrome_id"]: ch for ch in candidates}
+    listing = ", ".join(f"{ch['chrome_id']} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''})" for ch in candidates) or "none"
+    if not isinstance(raw, dict):
+        raise SpecError(f"firm_chrome: an object {{chrome_id: \"keep\" | \"drop\" | {{\"text\": ...}} | {{\"image_path\": ...}}}}; the firm's chrome on this template: {listing}")
+    out: dict[str, tuple[str, dict]] = {}
+    for cid, choice in raw.items():
+        ch = by_id.get(cid)
+        if ch is None:
+            raise SpecError(f"firm_chrome: {cid!r} is not chrome that names a firm on these pages; the entries are: {listing}")
+        if choice in ("keep", "drop"):
+            out[cid] = (choice, {})
+        elif isinstance(choice, dict) and set(choice) == {"text"} and isinstance(choice["text"], str) and choice["text"].strip():
+            if ch["kind"] == "logo":
+                raise SpecError(f"firm_chrome {cid}: a logo is replaced by {{\"image_path\": ...}}, not text")
+            out[cid] = ("replace", {"text": choice["text"].strip()})
+        elif isinstance(choice, dict) and set(choice) == {"image_path"} and isinstance(choice["image_path"], str):
+            if ch["kind"] != "logo":
+                raise SpecError(f"firm_chrome {cid}: a {ch['kind']} is replaced by {{\"text\": ...}}, not a picture")
+            if not Path(choice["image_path"]).is_file():
+                raise SpecError(f"firm_chrome {cid}: image_path {choice['image_path']} is not a file")
+            out[cid] = ("replace", {"image_path": choice["image_path"]})
+        else:
+            raise SpecError(f"firm_chrome {cid}: {choice!r} is not \"keep\", \"drop\", {{\"text\": \"...\"}} or {{\"image_path\": \"...\"}}")
+    return out
+
+
+def _norm_words(text: str | None) -> str:
+    return " ".join((text or "").split())
+
+
+def _template_shapes_of(prs, ch: dict) -> list[tuple]:
+    """(container part, shape) on the template's masters and layouts that draw a chrome
+    entry: same box within a twentieth of an inch, and the entry's words or its picture."""
+    found = []
+    tol = 0.05 * 914400
+    want = [v * 914400 for v in ch["box_in"]]
+    text = _norm_words(chrome_text(ch))
+    containers = [m for m in prs.slide_masters] + [lay for m in prs.slide_masters for lay in m.slide_layouts]
+    for container in containers:
+        for shape in container.shapes:
+            box = [shape.left, shape.top, shape.width, shape.height]
+            if any(v is None for v in box) or any(abs(a - b) > tol for a, b in zip(box, want)):
+                continue
+            if ch["kind"] == "logo":
+                if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                    found.append((container, shape))
+            elif shape.has_text_frame and text and _norm_words(shape.text_frame.text).startswith(text[:40]):
+                found.append((container, shape))
+    return found
+
+
+def apply_firm_chrome(prs, choices: dict, candidates: list[dict]) -> list[dict]:
+    """Every candidate with the decision taken for it. Inherited chrome (on a master or a
+    layout) is changed in this deck's own copy of the template; slide-layer chrome is
+    changed where draw_chrome paints it (firm_entries)."""
+    report = []
+    for ch in candidates:
+        decision, detail = choices.get(ch["chrome_id"], ("keep", {}))
+        entry = {"chrome_id": ch["chrome_id"], "kind": ch["kind"], "text": chrome_text(ch), "layers": _layers(ch),
+                 "decision": decision if decision != "replace" else f"replace with {detail.get('text') or detail.get('image_path')!r}",
+                 "chosen": ch["chrome_id"] in choices}
+        if decision != "keep" and _layers(ch) != ["slide"]:
+            shapes = _template_shapes_of(prs, ch)
+            if not shapes:
+                raise SpecError(f"firm_chrome {ch['chrome_id']}: no shape on the template's masters or layouts draws it at {ch['box_in']} in "
+                                f"({entry['text'] or 'a picture'!r}); the template is not the reference's, so the entry cannot be changed there")
+            for container, shape in shapes:
+                if decision == "drop":
+                    shape._element.getparent().remove(shape._element)
+                elif "text" in detail:
+                    paragraphs = shape.text_frame.paragraphs
+                    runs = paragraphs[0].runs
+                    if runs:
+                        runs[0].text = detail["text"]
+                        for r in runs[1:]:
+                            r._r.getparent().remove(r._r)
+                    else:
+                        paragraphs[0].text = detail["text"]
+                    for para in paragraphs[1:]:
+                        para._p.getparent().remove(para._p)
+                else:
+                    blip = shape._element.find(".//" + qn("a:blip"))
+                    image_part = container.part.related_part(blip.get(qn("r:embed")))
+                    new = Path(detail["image_path"])
+                    if new.suffix.lower().lstrip(".").replace("jpeg", "jpg") != Path(str(image_part.partname)).suffix.lower().lstrip(".").replace("jpeg", "jpg"):
+                        raise SpecError(f"firm_chrome {ch['chrome_id']}: the template's picture is {Path(str(image_part.partname)).suffix}; give an image_path of the same type")
+                    image_part._blob = new.read_bytes()
+            entry["changed_on"] = sorted({f"{type(c).__name__} {getattr(c, 'name', '')}".strip() for c, _ in shapes})
+        report.append(entry)
+    return report
+
+
+def firm_entries(entries: list[dict], choices: dict) -> list[dict]:
+    """Slide-layer chrome as the deck chose it: a dropped entry is not drawn, a replaced
+    one draws the deck's text or picture."""
+    out = []
+    for ch in entries:
+        decision, detail = choices.get(ch["chrome_id"], ("keep", {}))
+        if decision == "drop":
+            continue
+        out.append({**ch, **detail} if decision == "replace" else ch)
+    return out
+
+
 def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> dict:
     guide = Guide(guide_data)
     prs = Presentation(template)
@@ -1618,7 +1844,11 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
                 # nothing inherits it from the layout, so it is drawn on every generated
                 # slide; an entry with a layout or master layer is inherited and never redrawn
                 slide_only.append(ch)
-    chrome_report: dict = {"mode": chrome, "placeholders_copied": sorted(wanted_chrome), "slide_layer_entries": [ch["chrome_id"] for ch in slide_only], "notes": []}
+    candidates = firm_chrome(guide_data, chrome)
+    choices = firm_choices(spec, candidates)
+    slide_only = firm_entries(slide_only, choices)
+    chrome_report: dict = {"mode": chrome, "placeholders_copied": sorted(wanted_chrome), "slide_layer_entries": [ch["chrome_id"] for ch in slide_only], "notes": [],
+                           "firm": apply_firm_chrome(prs, choices, candidates)}
     report = {"out": out, "slides": [], "chrome": chrome_report}
     for si, sd in enumerate(spec["slides"], 1):
         layout = _layout_named(prs, sd.get("layout"))
@@ -1682,7 +1912,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             if surface and surface.upper() != "FFFFFF":
                 slide.background.fill.solid()
                 slide.background.fill.fore_color.rgb = RGBColor.from_string(surface.upper())
-            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, notes=chrome_report["notes"])
+            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, entries=firm_entries(chrome_on_page(guide_data, "draw"), choices), notes=chrome_report["notes"])
         elif chrome == "auto" and slide_only:
             # a slide-layer page number, footer or date whose placeholder the layout carries
             # was copied above; the rest is drawn, each entry once, named by its chrome_id

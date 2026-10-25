@@ -32,8 +32,37 @@ def inside_skill(path: str | Path) -> bool:
     return any(p == s or s in p.parents for p in (as_written, as_written.resolve()) for s in skill)
 
 
+#: Shell variables do not persist between separate shell calls in most agent harnesses: a
+#: command written as "$REF" or "$DECK_WORK/..." in a later call then receives "" or
+#: "/...". Every refusal of a path that looks like that says so.
+UNSET_HINT = ("if this path came from a shell variable ($REF, $DECK_WORK), the variable is not set in this shell: variables set "
+              "with export in one call do not reach the next call. Write the path itself, or set the variables in the same call")
+
+
+def in_path(path: str | Path, what: str = "input", directory: bool = False) -> Path:
+    """An input path that exists and is a file (a directory when `directory`), refused by
+    name otherwise: never a traceback from deep inside a reader."""
+    text = str(path)
+    if not text.strip():
+        raise SystemExit(f"refused: the {what} is an empty path; {UNSET_HINT}")
+    p = Path(text).expanduser()
+    if not p.exists():
+        raise SystemExit(f"refused: the {what} {text} does not exist; {UNSET_HINT}")
+    if directory and not p.is_dir():
+        raise SystemExit(f"refused: the {what} {text} is a file, not a directory")
+    if not directory and p.is_dir():
+        raise SystemExit(f"refused: the {what} {text} is a directory, not a file; {UNSET_HINT}")
+    return p
+
+
 def out_path(path: str | Path, what: str = "output") -> Path:
-    """The output path, refused when it lies inside the skill directory."""
+    """The output path, refused when it lies inside the skill directory, and when it hangs
+    off a top-level directory that does not exist ("/ref/guide.json": "$DECK_WORK/ref/..."
+    with DECK_WORK unset)."""
+    absolute = Path(os.path.abspath(Path(path).expanduser()))
+    if not str(path).strip() or (len(absolute.parts) > 2 and not Path(absolute.anchor, absolute.parts[1]).exists()):
+        raise SystemExit(f"refused: the {what} {str(path)!r} would be created under {Path(absolute.anchor, *absolute.parts[1:2])}, "
+                         f"a top-level directory that does not exist; {UNSET_HINT}")
     if inside_skill(path):
         work = os.environ.get(WORK_ENV)
         hint = (f"{WORK_ENV} is {work}" + (", which is itself inside the skill" if inside_skill(work) else "")
@@ -45,13 +74,23 @@ def out_path(path: str | Path, what: str = "output") -> Path:
 
 
 def run(main: Callable[[list[str]], int | None]) -> None:
+    argv = sys.argv[1:]
+    empty = [i for i, a in enumerate(argv) if not a.strip()]
+    if empty:
+        # an empty argument is a path or value that came from an unset variable
+        where = ", ".join(f"argument {i + 1}" + (f" (after {argv[i - 1]})" if i else "") for i in empty)
+        raise SystemExit(f"refused: {where} is empty; {UNSET_HINT}")
     try:
-        code = main(sys.argv[1:])
+        code = main(argv)
         sys.stdout.flush()
     except BrokenPipeError:
         # the reader stopped reading (head, a closed pager): not an error of this command
         os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
         code = 0
+    except (FileNotFoundError, IsADirectoryError, NotADirectoryError, PermissionError) as error:
+        # a path a command was given cannot be opened: named, never a traceback
+        name = error.filename if error.filename is not None else ""
+        raise SystemExit(f"refused: {error.strerror or error}: {name!r}; {UNSET_HINT}") from None
     sys.exit(code)
 
 

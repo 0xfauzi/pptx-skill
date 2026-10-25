@@ -71,7 +71,7 @@ import component_api  # noqa: E402
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
-from emit_pptx import HEX_RE, TABLE_STYLE_KEYS, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, table_emphasis, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import paragraphs_words, visual_extent  # noqa: E402
 
@@ -175,6 +175,8 @@ def lift_table_style(node: dict, styling: dict) -> None:
     for keys, allowed, label in ((set(node), TABLE_NODE_KEYS, "table element"), (set(table), TABLE_SPEC_KEYS, "table spec"),
                                  (set(st), TABLE_STYLE_KEYS | set(PRESENTATION_KEYS), f"slide.styling.{nid}")):
         unknown = sorted(keys - allowed)
+        if unknown and set(unknown) & OLD_EMPHASIS_KEYS:
+            raise SystemExit(f"table {nid!r}: {sorted(set(unknown) & OLD_EMPHASIS_KEYS)} became one key, emphasis, a list of groups: {EMPHASIS_EXAMPLE}")
         if unknown:
             raise SystemExit(f"table {nid!r}: unknown keys {unknown} on the {label}. The {label} takes {sorted(allowed)}; "
                              f"drawing keys {sorted(TABLE_STYLE_KEYS)} may sit on the element, in its table spec or under slide.styling.{nid}")
@@ -197,8 +199,44 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
     elif node.get("kind") == "table":
         table = node.setdefault("table", {})
         table["totals_last_row"] = bool(st.get("totals_last_row"))
-        table["emphasis_rows"] = list(st.get("emphasis_rows") or [])
+        # the cells the emitter bolds, as the emitter reads them (emit_pptx.table_emphasis)
+        groups = table_emphasis({"id": node.get("id"), "columns": table.get("columns") or [], "rows": table.get("rows") or [], **st})
+        table["emphasis_rows"] = sorted({r for g in groups if g["rows"] is not None for r in g["rows"]})
+        table["emphasis_columns"] = sorted({c for g in groups if g["columns"] is not None for c in g["columns"]})
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
+
+
+#: What the solver reads on an element node, by kind (layout._parse_node); a presentation
+#: key (PRESENTATION_KEYS) is lifted into styling first. Anything else on a node is read by
+#: nothing, so it is refused by name instead of being dropped in silence: a chart's
+#: plot_area written on its tree node left the chart auto-placed and every annotation on
+#: it refused for a plot_area the spec seemed to hold.
+NODE_KEYS = {"type", "node_type", "id", "kind", "weight", "scale_class", "size"}
+NODE_KIND_KEYS = {"text": {"paragraphs"}, "table": {"table"}, "chart": set(), "image": set(), "rule": set(), "rect": set()}
+#: where each element kind's own data lives on the slide, for the refusal's instruction
+NODE_DATA_HOME = {"chart": "slide.charts", "image": "slide.images", "rule": "slide.rules"}
+
+
+def check_node_keys(node: dict) -> None:
+    kind = node.get("kind")
+    if kind not in NODE_KIND_KEYS or kind == "table":
+        return  # an unknown kind is layout's to refuse; a table's keys are lift_table_style's
+    stray = sorted(set(node) - NODE_KEYS - NODE_KIND_KEYS[kind] - set(PRESENTATION_KEYS))
+    if not stray:
+        return
+    nid = node.get("id")
+    home = NODE_DATA_HOME.get(kind)
+    if kind == "chart":
+        from emit_pptx import CHART_KEYS
+        chart_keys = sorted(set(stray) & CHART_KEYS)
+        if chart_keys:
+            raise SystemExit(f"chart {nid!r}: {chart_keys} {'is' if len(chart_keys) == 1 else 'are'} written on the chart's node in the spec "
+                             f"tree, where nothing reads {'it' if len(chart_keys) == 1 else 'them'}. Move every chart key into "
+                             f"slide.charts[{nid!r}] (the node keeps only id, kind and weight): "
+                             f"\"charts\": {{\"{nid}\": {{\"type\": ..., \"categories\": ..., \"series\": ..., \"plot_area\": ..., \"axes\": ...}}}}")
+    raise SystemExit(f"{kind} {nid!r}: unknown keys {stray} on its node in the spec tree; a {kind} node takes "
+                     f"{sorted(NODE_KEYS | NODE_KIND_KEYS[kind])} plus the styling keys {sorted(k for k in PRESENTATION_KEYS if not k.startswith('_'))}"
+                     + (f", and its data goes under {home}[{nid!r}]" if home else ""))
 
 
 def normalise(node: dict, slide: dict) -> dict:
@@ -215,6 +253,7 @@ def normalise(node: dict, slide: dict) -> dict:
         return node
     if node.get("type") == "component":
         return node
+    check_node_keys(node)
     st = {k: node.pop(k) for k in list(node) if k in PRESENTATION_KEYS}
     if node.get("kind") == "rect":
         node["kind"] = "image"
@@ -592,13 +631,15 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
         cell_sz = (measured.get("cell") or {}).get("sz")
         _, cell_spec = table_roles(el, eg)
         classes: dict[tuple, dict] = {}
-        for st in table_row_styles(el, eg):
-            if st["fill_hex"]:
-                names.setdefault(st["fill_hex"], f"{st['fill_name']} of {el['id']}")
-            size_pt = ((header_sz if st["header"] else cell_sz) or round(float(cell_spec["size_pt"]) * 100)) / 100
-            key = (st["class"], st["ink_hex"], st["fill_hex"], st["bold"])
-            entry = classes.setdefault(key, {"element": el["id"], "row_class": st["class"], "rows": [], "ink": st["ink_name"], "fill": names.get(st["fill_hex"]) if st["fill_hex"] else None, "size_pt": size_pt, "bold": st["bold"]})
-            entry["rows"].append(st["row"])
+        for row in table_row_styles(el, eg):
+            size_pt = ((header_sz if row["header"] else cell_sz) or round(float(cell_spec["size_pt"]) * 100)) / 100
+            for st in row["cells"]:
+                if st["fill_hex"]:
+                    names.setdefault(st["fill_hex"], f"{st['fill_name']} of {el['id']}")
+                key = (st["class"], st["ink_hex"], st["fill_hex"], st["bold"])
+                entry = classes.setdefault(key, {"element": el["id"], "row_class": st["class"], "rows": [], "ink": st["ink_name"], "fill": names.get(st["fill_hex"]) if st["fill_hex"] else None, "size_pt": size_pt, "bold": st["bold"]})
+                if row["row"] not in entry["rows"]:
+                    entry["rows"].append(row["row"])
         for (_, ink_hex, fill_hex, _), entry in classes.items():
             if ink_hex is None:
                 out["unbound"].append({"element": el["id"], "row_class": entry["row_class"], "why": "no ink role bound; the cells inherit the master's text colour"})
@@ -761,7 +802,16 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
                           "realised": [realised[pair["pages"][0]], realised[pair["pages"][1]]], "similarity": pair["similarity"],
                           "detail": (f"planned to repeat {a['composition']} ({b['deliberate_parallel'] or 'undeclared'}) but built differently"
                                      if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")})
+    ids = slide_ids or {}
+    repeats = [{"pages": [ids.get(pair["pages"][0]), ids.get(pair["pages"][1])], "deliberate_parallel": by_id[ids[pair["pages"][1]]]["deliberate_parallel"]}
+               for pair in pairs if realised[pair["pages"][0]] == realised[pair["pages"][1]] and ids.get(pair["pages"][1]) in by_id]
+    if built["status"] == "measured":
+        out["warnings"] = [w + plan.parallels_note(repeats, built["composition"]) if w.startswith("composition_V") else w for w in warnings]
     out["plan"] = {"check": {k: (plan_check or {}).get(k) for k in ("status", "refusals", "warnings", "subset")}, "measure": mine,
+                   "realised_by_page": [{"page": n, "id": ids.get(n), "planned": (by_id.get(ids.get(n)) or {}).get("composition"), "realised": realised[n]}
+                                        for n, _ in pages],
+                   "names": "realised names (b1, b2, ...) are this build's own clusters of pages with alike boxes, not the plan's names: "
+                            "two pages share a realised name when they share an arrangement",
                    "composition_V": {"planned": (mine.get("composition") or {}).get("V"), "realised": (built.get("composition") or {}).get("V")},
                    "exhibits_V": {"planned": (mine.get("exhibits") or {}).get("V"), "realised": "not measured: " + BUILD_UNREAD["exhibits"]},
                    "classes_V": {"planned": "not declared: " + plan.PLAN_UNREAD["classes"], "realised": (built.get("classes") or {}).get("V", (built.get("classes") or {}).get("why"))},
@@ -1386,6 +1436,61 @@ FILLER = (L.REFERENCE_ALPHABET + " ") * 200
 CAPACITY_MAX_CHARS = 4000
 
 
+def table_budgets(ctx, outcome) -> list[dict]:
+    """Every table on the page solved at full scale: its box, the height its rows need,
+    and how many body rows fit. Tables are not budgeted in characters: a table's rows are
+    measured cell by cell, so its budget is rows. `rows_to_fit` is the body-row count the
+    page holds at full scale with everything else as written (layout.outcome_json's
+    rows_to_fit_slide: the split cut); `rows_fitting_box` counts rows that fit the table's
+    own box."""
+    resolved = outcome.resolved
+    if resolved is None:
+        return []
+    split = (L.outcome_json(ctx, outcome).get("unfittable") or {}).get("tables") or {}
+    out = []
+    for nid, fit in resolved.table_fits.items():
+        box = resolved.boxes.get(nid)
+        body = len(fit.row_heights) - fit.header_rows
+        tallest = sorted(range(fit.header_rows, len(fit.row_heights)), key=lambda i: -fit.row_heights[i])[:3]
+        lines = {i - fit.header_rows: max(len(v) for (r, _), v in fit.cell_lines.items() if r == i) for i in tallest}
+        entry = {"id": nid, "body_rows": body, "header_rows": fit.header_rows,
+                 "box_in": None if box is None else [round(v / EMU_PER_INCH, 2) for v in (box.left, box.top, box.width, box.height)],
+                 "rows_need_in": round(fit.total_height_emu / EMU_PER_INCH, 2),
+                 "rows_fitting_box": fit.fitting_row_prefix,
+                 "rows_to_fit": (split.get(nid) or {}).get("rows_to_fit_slide", body if not fit.overflow else fit.fitting_row_prefix),
+                 "tallest_rows": [{"row": r, "lines": n} for r, n in lines.items()],
+                 "column_deficits_in": {k: round(v / EMU_PER_INCH, 2) for k, v in fit.column_deficits.items()}}
+        if box is not None and fit.total_height_emu <= box.height:
+            entry["height_free_in"] = round((box.height - fit.total_height_emu) / EMU_PER_INCH, 2)
+        out.append(entry)
+    return out
+
+
+def full_scale_cause(ctx, outcome) -> list[str]:
+    """Why the page does not fit at full scale, in words: each violation the full-scale
+    solve found, with its element and shortfall, and for each table what it needs against
+    what it has."""
+    resolved = outcome.resolved
+    if resolved is None:
+        return [outcome.reason or "the page does not solve at full scale"]
+    causes = [f"{v.code}: {v.node_id}{' and ' + v.related_node_id if v.related_node_id else ''}"
+              f"{f' short by {v.shortfall_emu / EMU_PER_INCH:.2f} in' if v.shortfall_emu else ''}: {v.detail}" for v in resolved.violations]
+    over = (L.outcome_json(ctx, outcome).get("unfittable") or {}).get("overshoot_emu") or 0
+    for t in table_budgets(ctx, outcome):
+        if t["rows_to_fit"] < t["body_rows"]:
+            causes.insert(0, f"table {t['id']}: the page is {over / EMU_PER_INCH:.2f} in over at full scale, and {t['rows_to_fit']} of its "
+                             f"{t['body_rows']} body rows fit with everything else as written (rows_to_fit): cut rows, shorten the cells "
+                             f"that wrap, cut other text, or split the table after row {max(0, t['rows_to_fit'] - 1)} at a declared boundary")
+        if t["box_in"] and t["rows_need_in"] > t["box_in"][3]:
+            causes.append(f"table {t['id']}: its {t['body_rows']} body rows need {t['rows_need_in']} in, its box is {t['box_in'][3]} in; "
+                          f"{t['rows_to_fit']} body rows fit the page as written; its tallest rows wrap to "
+                          + ", ".join(f"{x['lines']} lines (row {x['row']})" for x in t["tallest_rows"])
+                          + ": shorten those cells, widen their columns (width_share), cut rows, or split the table at a declared boundary")
+        for k, v in t["column_deficits_in"].items():
+            causes.append(f"table {t['id']} column {k}: {v} in narrower than its widest word or figure")
+    return causes or [outcome.reason or "unfittable at full scale"]
+
+
 def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     """The text budget of every text element the slide's spec names, on the page the build
     solves (solve_slide): its solved box, lines and characters now, and how many characters
@@ -1407,9 +1512,12 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     if outcome.resolved is None:
         out["reason"] = outcome.reason
         return out
-    _, _, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, one)
+    _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, one)
     fits_full = full.status == "fit"
     texts: list[dict] = []
+    out["tables"] = table_budgets(full_ctx, full)
+    if not fits_full:
+        out["why_not_full_scale"] = full_scale_cause(full_ctx, full)
 
     def walk(node: dict, path: tuple) -> None:
         if node.get("type") == "region":
@@ -1449,8 +1557,8 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
                  "lines_now": sum(len(m.lines) for m in meas), "chars_now": sum(len(p.get("text") or "") for p in node["paragraphs"])}
         if not fits_full:
             entry["chars_free"] = 0
-            entry["why"] = (f"the page fits only at scale {out['scale']}: it is already over its full-scale budget; cut words or re-arrange"
-                            if outcome.status == "fit" else "the page does not fit: " + (outcome.reason or "see the build report"))
+            entry["why"] = (f"the page fits only at scale {out['scale']}: it is already over its full-scale budget; see why_not_full_scale"
+                            if outcome.status == "fit" else "the page does not fit: see why_not_full_scale")
             out["elements"].append(entry)
             continue
         lo, hi, best = 0, 64, full
@@ -1500,15 +1608,133 @@ def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs:
     return {**leakage.leakage(out, past, briefs, template, ids), **({"unread": unread} if unread else {})}
 
 
+def plan_message_figures(slide: dict, elements: list[dict], plan_pages: list[dict] | None) -> list[dict]:
+    """A figure the plan's message for this page states that the built page does not
+    carry: the plan was written before the numbers moved, or the page dropped its claim.
+    A warning, located: the plan or the page is changed, whichever is wrong."""
+    import leakage
+    page = next((p for p in plan_pages or [] if p.get("id") == slide.get("id")), None)
+    if not page or not page.get("message"):
+        return []
+    drawn = " ".join(r.get("text", "") for el in elements if el.get("kind") == "text" for p in el.get("paragraphs", []) for r in p.get("runs", []))
+    drawn += " " + " ".join(str(c) for el in elements if el.get("kind") == "table" for row in el.get("rows", []) for c in row)
+    have = {leakage.norm(w) for w in leakage.tokens(drawn)}
+    missing = [w for w in leakage.tokens(page["message"]) if leakage._FIGURE.search(w) and leakage.norm(w) not in have]
+    return [{"kind": "plan figure not on the page", "severity": "warning",
+             "detail": f"the plan's message for {slide.get('id')!r} states {missing}, which the page does not carry; update the plan's message "
+                       "to the computed figure, or put the claim on the page"}] if missing else []
+
+
+def passed(report: dict) -> bool:
+    """The build's verdict, the one definition: every page fit and the package is valid.
+    The exit code, the brief and where the outputs land all read it."""
+    return bool(report.get("slides")) and all(s.get("status") == "fit" for s in report["slides"]) and bool((report.get("validation") or {}).get("ok"))
+
+
+class Outputs:
+    """Where a build writes, so that only a passing build leaves files that look current.
+    The deck and its renders are made at staging paths beside the asked-for ones and moved
+    to them only when the build passes. A refused build's deck and renders land beside
+    them as <stem>.refused.pptx and <renders>.refused; a deck and renders an earlier build
+    left at the asked-for paths no longer match the spec, so they are moved aside to
+    <stem>.stale.pptx and <renders>.stale. The report (<stem>.build.json) is always this
+    build's, refused or not, and names every path it wrote or moved."""
+
+    def __init__(self, out: str, renders: str | None, do_render: bool) -> None:
+        self.out = Path(out)
+        self.renders = (Path(renders) if renders else self.out.with_name(self.out.stem + "-renders")) if do_render else None
+        self.stage_out = self.out.with_name(f".{self.out.stem}.building{self.out.suffix}")
+        self.stage_renders = self.renders.with_name(f".{self.renders.name}.building") if self.renders else None
+        self.report_path = self.out.with_suffix(".build.json")
+
+    @staticmethod
+    def _beside(path: Path, tag: str) -> Path:
+        return path.with_name(f"{path.stem}.{tag}{path.suffix}") if path.suffix else path.with_name(f"{path.name}.{tag}")
+
+    @staticmethod
+    def _move(src: Path, dst: Path) -> None:
+        import shutil
+        if dst.is_dir():
+            shutil.rmtree(dst)
+        elif dst.exists():
+            dst.unlink()
+        shutil.move(str(src), str(dst))
+
+    def start(self) -> None:
+        import shutil
+        self.out.parent.mkdir(parents=True, exist_ok=True)
+        if self.stage_out.exists():
+            self.stage_out.unlink()
+        if self.stage_renders and self.stage_renders.exists():
+            shutil.rmtree(self.stage_renders)
+
+    def _set_aside_earlier(self) -> list[str]:
+        moved = []
+        for path in (self.out, self.renders):
+            if path is not None and path.exists():
+                stale = self._beside(path, "stale")
+                self._move(path, stale)
+                moved.append(f"{path} -> {stale}: an earlier build's output, which does not match this spec")
+        return moved
+
+    def finish(self, ok: bool) -> dict:
+        """Move the staged files to where they belong for this verdict."""
+        import shutil
+        written: dict = {"verdict": "built" if ok else "refused", "moved_aside": []}
+        pairs = [(self.stage_out, self.out)] + ([(self.stage_renders, self.renders)] if self.renders else [])
+        if ok:
+            for path in (self.out, self.renders):
+                refused = self._beside(path, "refused") if path is not None else None
+                if refused is not None and refused.exists():
+                    shutil.rmtree(refused) if refused.is_dir() else refused.unlink()
+            for src, dst in pairs:
+                if src.exists():
+                    self._move(src, dst)
+            written["deck"], written["renders"] = str(self.out), str(self.renders) if self.renders else None
+        else:
+            written["moved_aside"] = self._set_aside_earlier()
+            for src, dst in pairs:
+                if src.exists():
+                    self._move(src, self._beside(dst, "refused"))
+            written["deck"] = str(self._beside(self.out, "refused")) if self._beside(self.out, "refused").exists() else None
+            written["renders"] = str(self._beside(self.renders, "refused")) if self.renders and self._beside(self.renders, "refused").exists() else None
+            written["note"] = ("refused: the deck and renders of this build are written as .refused beside the asked-for paths, for diagnosis; "
+                               "nothing at the asked-for paths is current")
+        return written
+
+    def refuse_early(self, message: str) -> None:
+        """A refusal before anything was written: the report says so, and an earlier
+        build's deck and renders at these paths are moved aside."""
+        import shutil
+        if self.stage_out.exists():
+            self.stage_out.unlink()
+        if self.stage_renders and self.stage_renders.exists():
+            shutil.rmtree(self.stage_renders)
+        self.out.parent.mkdir(parents=True, exist_ok=True)
+        report = {"outputs": {"verdict": "refused before building", "refusal": message, "deck": None, "renders": None,
+                              "moved_aside": self._set_aside_earlier()}}
+        self.report_path.write_text(json.dumps(report, indent=1))
+
+    def rewrite(self, report: dict, written: dict) -> dict:
+        """The report with the staging paths replaced by where the files now are."""
+        text = json.dumps(report, default=str)
+        for stage, final in ((self.stage_out, written.get("deck")), (self.stage_renders, written.get("renders"))):
+            if stage is not None:
+                text = text.replace(json.dumps(str(stage))[1:-1], json.dumps(final or "")[1:-1] if final else "(not kept)")
+        return json.loads(text)
+
+
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
           plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None, house_names: list[str] | None = None,
-          plan_check: dict | None = None, briefs: list[str] | None = None) -> dict:
-    Path(out).parent.mkdir(parents=True, exist_ok=True)  # before the solve: a missing -o directory otherwise fails only at the save
+          plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None) -> dict:
+    outputs = outputs or Outputs(out, renders, do_render)
+    outputs.start()  # before the solve: a missing -o directory otherwise fails only at the save
+    out = str(outputs.stage_out)
     lg = L.load_guide(guide)
     ruler = L.default_ruler()
     index = L.default_index()
     api = component_api.make_api(guide, lg, ruler, index)
-    emit_spec = {"slides": []}
+    emit_spec: dict = {"slides": [], **({"firm_chrome": deck["firm_chrome"]} if "firm_chrome" in deck else {})}
     report = {"out": out, "ruler": ruler.name, "slides": []}
     ref_slides = None
     precedent = None
@@ -1563,7 +1789,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks], chrome, precedent)
             entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
-            entry["problems"][:0] = title_warnings  # warnings first, as the tie-outs are
+            entry["problems"][:0] = title_warnings + plan_message_figures(slide, elements, plan_pages)  # warnings first, as the tie-outs are
         except L.FaceRefused as error:
             # the guide's faces cannot measure this page as the renderer draws it: the page is
             # refused by name in the report, not solved in another face and not a traceback
@@ -1598,7 +1824,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     report["leakage"] = leakage_of(out, reference, house_decks or [], briefs or [], template, [e.get("id") for e in emitted])
     if do_render:
         import subprocess
-        rdir = renders or str(Path(out).with_name(Path(out).stem + "-renders"))
+        rdir = str(outputs.stage_renders)
         pdf = str(Path(rdir) / "deck.pdf")
         completed = subprocess.run([sys.executable, str(Path(__file__).with_name("render.py")), out, "--out", rdir, "--width", "1600", "--keep-pdf", pdf],
                                    capture_output=True, text=True, timeout=900)
@@ -1654,7 +1880,11 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             bool(judge["nearest_is_reference"]) and bool(judge["within_house_spread"]) and judge["layout_clean"]
             and all_fit and bool(report.get("validation", {}).get("ok")))
         report["judge"] = judge
-    Path(out).with_suffix(".build.json").write_text(json.dumps(report, indent=1, default=str))
+    written = outputs.finish(passed(report))
+    report = outputs.rewrite(report, written)
+    report["out"] = written["deck"]
+    report["outputs"] = written
+    outputs.report_path.write_text(json.dumps(report, indent=1, default=str))
     return report
 
 
@@ -1675,6 +1905,25 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out", "renders")
+    outputs = Outputs(args.out, args.renders, not args.no_render)
+    try:
+        report = _run(args, outputs)
+    except (SystemExit, L.LayoutContractError) as error:
+        message = str(error.code if isinstance(error, SystemExit) else error)
+        if isinstance(error, SystemExit) and (error.code is None or isinstance(error.code, int)):
+            raise
+        outputs.refuse_early(message)
+        raise SystemExit(f"refused before building: {message}\nreport: {outputs.report_path}") from None
+    print(brief_text(report, outputs))
+    return 0 if passed(report) else 1
+
+
+def _run(args, outputs: Outputs) -> dict:
+    for name in ("deck", "guide", "template", "plan", "reference"):
+        value = getattr(args, name, None)
+        if value is not None:
+            import cli
+            cli.in_path(value, f"--{name}" if name != "deck" else "the deck spec")
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     plan_pages = None
@@ -1702,16 +1951,62 @@ def main(argv: list[str]) -> int:
             "note": "a run of the plan: the plan check covers the whole plan, the realised variety covers only the pages built"}
     else:
         plan.house_of([guide, *house_decks], house_names)  # the house decks proven before the solve, not after it
-    report = build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
-                   house_names, plan_check, args.brief)
-    shown = ("id", "status", "reason", "problems", "title", "scale", "violations", "text_lines", "tables", "density", "contrast", "register", "tieouts", "component_notes", "chart_defaults_taken", "annotations")
-    brief = {"out": report["out"], "ruler": report["ruler"],
-             "slides": [{k: s[k] for k in shown if k in s} for s in report["slides"]],  # problems first: the warnings and refusals before the figures
-             "position_drift": report.get("position_drift"), "repetition": report.get("repetition"),
-             "validation_ok": report.get("validation", {}).get("ok"), "problems": report.get("validation", {}).get("problems"),
-             "leakage": report.get("leakage"), "judge": report.get("judge"), "renders": (report.get("renders") or {}).get("images")}
-    print(json.dumps(brief, indent=1, default=str))
-    return 0 if all(s["status"] == "fit" for s in report["slides"]) and report.get("validation", {}).get("ok") else 1
+    return build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
+                 house_names, plan_check, args.brief, outputs)
+
+
+def brief_text(report: dict, outputs: Outputs) -> str:
+    """The build in a few lines: the verdict, where everything is, each page's status and
+    first problems, and one line per gate. The whole report is the JSON file."""
+    slides = report.get("slides") or []
+    ok = passed(report)
+    unfit = [s for s in slides if s.get("status") != "fit"]
+    written = report.get("outputs") or {}
+    lines = [(f"build: {'PASS' if ok else 'REFUSED'}: {len(slides) - len(unfit)} of {len(slides)} page(s) fit; package "
+              f"{'valid' if (report.get('validation') or {}).get('ok') else 'NOT valid: ' + '; '.join(map(str, (report.get('validation') or {}).get('problems') or []))[:300]}"),
+             f"report: {outputs.report_path}  (read it for every figure; this is a brief)",
+             f"deck: {written.get('deck')}" + (f"  renders: {written.get('renders')}" if written.get("renders") else "")]
+    if written.get("note"):
+        lines.append(f"note: {written['note']}")
+    lines += [f"moved aside: {m}" for m in written.get("moved_aside") or []]
+    for s in slides:
+        problems = s.get("problems") or []
+        refusals = [p for p in problems if p.get("severity") == "refusal"]
+        warns = [p for p in problems if p.get("severity") != "refusal"]
+        scale = f" scale {s['scale']:.2f}" if isinstance(s.get("scale"), float) else ""
+        lines.append(f"page {s.get('id')}: {s.get('status')}{scale}" + (f" ({s['reason']})" if s.get("reason") else "")
+                     + (f"; {len(refusals)} refusal(s), {len(warns)} warning(s)" if problems else ""))
+        for p in (refusals + warns)[:4]:
+            lines.append(f"  {p.get('severity', 'note')}: {p.get('kind')}: {str(p.get('detail', ''))[:240]}")
+        if len(problems) > 4:
+            lines.append(f"  ... {len(problems) - 4} more in the report (slides[].problems)")
+        taken = sum(len(v) for v in (s.get("chart_defaults_taken") or {}).values())
+        if taken:
+            lines.append(f"  chart defaults taken: {taken} (slides[].chart_defaults_taken): write each choice you mean")
+    rep = report.get("repetition") or {}
+    ah = rep.get("against_house") or {}
+    if isinstance(ah.get("composition_V"), dict):
+        cv, kv = ah["composition_V"], ah.get("classes_V") or {}
+        lines.append(f"variety: composition V {cv.get('value')} (house p10 {cv.get('house_p10_deck')}), class V {kv.get('value')} "
+                     f"(house p10 {kv.get('house_p10_deck')}), longest run {(ah.get('longest_run') or {}).get('built')} "
+                     f"(house {(ah.get('longest_run') or {}).get('house')})")
+    lines += [f"  variety warning: {w}" for w in rep.get("warnings") or []]
+    differing = ((rep.get("plan") or {}) if isinstance(rep.get("plan"), dict) else {}).get("pages_differing_from_plan") or []
+    lines += [f"  differs from plan: {d.get('id')}: {d.get('detail')}" for d in differing]
+    leak = report.get("leakage") or {}
+    if leak:
+        lines.append(f"leakage: {leak.get('verdict')}" + (f"; {leak.get('distinctive', leak.get('findings'))} distinctive, {leak.get('low', 0)} low" if "findings" in leak else ""))
+    firm = (report.get("chrome") or {}).get("firm") or []
+    for f in firm:
+        lines.append(f"firm chrome: {f.get('chrome_id')} {f.get('text') or f.get('kind')!r}: {f.get('decision')}" + ("" if f.get("chosen") else " (not chosen by the deck)"))
+    judge = report.get("judge") or {}
+    if "total" in judge:
+        hs = judge.get("house_spread") or {}
+        lines.append(f"judge: total {judge['total']} (house median {hs.get('median')}, p90 {hs.get('p90')}, max {hs.get('max')}); nearest is the reference: "
+                     f"{judge.get('nearest_is_reference')}; filed under the reference: {judge.get('filed_under_reference')} (necessary, not sufficient)")
+    elif judge.get("cannot_judge"):
+        lines.append(f"judge: cannot judge: {judge['cannot_judge']}")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":

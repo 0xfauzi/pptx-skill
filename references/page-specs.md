@@ -26,6 +26,14 @@ A slide carries `id`, `layout` (one of the template's layout names), optional `n
 `"title": {"register": "topic|claim|question", "element": "<id>"}` (the element is
 optional; without it the first text whose first paragraph is `type.title` is the title).
 
+A node in the tree carries `type`, `id`, `kind`, `weight`, `scale_class`, `size` and its
+own content (`paragraphs` for text, `table` for a table) plus the styling keys the build
+lifts (`fill_role`, `line_role`, `pad_role`, `anchor`, ...). A chart's own keys (`type`,
+`categories`, `series`, `axes`, `plot_area`, `legend`, ...) live under `slide.charts[<the
+node's id>]`, a picture's path under `slide.images`. Any other key on a node is read by
+nothing and is refused by name; a chart key written on the chart's node names the move.
+The deck may carry `firm_chrome` beside `slides` (templates-and-chrome.md).
+
 ## Limits
 
 Each refused with its own message: node ids unique on the page; at most 400 nodes; at most

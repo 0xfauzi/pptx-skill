@@ -91,7 +91,15 @@ keybank (the pages named under "Proven on") and read from the render.
   the report names the value the file got.
 - `plot_area: {"x", "y", "w", "h"}` fixes the inner plot rectangle (inside the axes and
   their labels) as fractions of the chart frame, written as a manual layout. Leave room
-  outside it for the tick labels: they are drawn outside the rectangle, not measured.
+  outside it for the tick labels: they are drawn outside the rectangle, not measured. A
+  reference line's `end_outside` label is drawn right of the plot (above it on a
+  horizontal bar), so leave that room too: `x + w` well under 1 for a label beside the
+  line. Like every chart key it is written in `slide.charts[<chart id>]`; the chart's node
+  in the spec tree carries only `id`, `kind` and `weight`, and a chart key written there
+  is refused by name.
+- `legend`: `"none"` (no legend; `{"position": "none"}` is read the same, the guide's
+  spelling) or `{"position": "b" | "t" | "r" | "l" | "tr", "role", "ink_role",
+  "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
 - A line, box, band, arrow, bracket, callout or badge at a data position is an
   annotation on the slide, not a chart key (section "Annotations" below). It needs
   `plot_area` and the axis's `min`, `max` and `cross_between`.
@@ -358,8 +366,8 @@ under the slide, beside `charts` and `styling`:
 ```json
 "annotations": [
  {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5},
-  "line_role": "color.negative", "line_width_pt": 1.5, "dash": "dash",
-  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.negative", "position": "end_outside"}}
+  "line_role": "color.emphasis", "line_width_pt": 1.5, "dash": "dash",
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside"}}
 ]
 ```
 
@@ -444,15 +452,16 @@ exhibits on keybank (all four fit, the judge files the deck under keybank).
 
 keybank p5 (red boxes around the median multiples and the subject row; in the coded
 corpus, comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
-row is shaded with `emphasis_rows`; the boxes are annotations.
+row is shaded with an `emphasis` group; the boxes are annotations in the house's
+look-here colour, `color.emphasis`.
 
 ```json
-"styling": {"comps": {"emphasis_rows": [10], "emphasis_fill_role": "color.accent1"}},
+"styling": {"comps": {"emphasis": [{"rows": [10], "fill_role": "color.accent1"}]}},
 "annotations": [
  {"id": "median-box", "host": "comps", "kind": "outline_box", "anchor": {"cells": [[10, 1], [10, 2]]},
-  "line_role": "color.negative", "line_width_pt": 1.5},
+  "line_role": "color.emphasis", "line_width_pt": 1.5},
  {"id": "subject-box", "host": "comps", "kind": "outline_box", "anchor": {"row": 13},
-  "line_role": "color.negative", "line_width_pt": 1.5}]
+  "line_role": "color.emphasis", "line_width_pt": 1.5}]
 ```
 
 ### Sensitivity grid: the scenario region boxed, a header group bracketed, the base case keyed
@@ -465,7 +474,7 @@ way.
 ```json
 "annotations": [
  {"id": "scenario", "host": "grid", "kind": "outline_box", "anchor": {"cells": [[1, 3], [5, 5]]},
-  "line_role": "color.negative", "line_width_pt": 1.5},
+  "line_role": "color.emphasis", "line_width_pt": 1.5},
  {"id": "syn-range", "host": "grid", "kind": "bracket", "anchor": {"header_group": {"columns": [3, 5]}},
   "side": "above", "gap_role": "space.xs", "depth_role": "space.xs", "line_role": "color.rule", "line_width_pt": 1.0,
   "label": {"text": "Realistic synergies", "role": "type.caption", "ink_role": "color.ink"}},
@@ -489,8 +498,8 @@ check.
  {"id": "selected-note", "host": "ff", "kind": "callout", "anchor": {"values": [29, 35]}, "position": "below", "gap_role": "space.xs",
   "pad_role": "space.xs", "fill_role": "color.surface", "line_role": "color.rule", "line_width_pt": 0.75,
   "label": {"text": "Committee range $29-35", "role": "type.data_label", "ink_role": "color.ink"}},
- {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5}, "line_role": "color.negative", "line_width_pt": 1.5, "dash": "dash",
-  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.negative", "position": "end_outside"}}]
+ {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5}, "line_role": "color.emphasis", "line_width_pt": 1.5, "dash": "dash",
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside"}}]
 ```
 
 ### Ranking: the subject highlighted, the mean as a line, an arrow carrying the subject's figure
@@ -510,7 +519,7 @@ line crossed four of them and the render check refused the page.
   "label": {"text": "1.71x, +0.05x", "role": "type.data_label", "ink_role": "color.accent2"}}]
 ```
 
-Prefer native where a move can be native: a median row is `emphasis_rows`, a highlighted
+Prefer native where a move can be native: a median row is an `emphasis` group, a highlighted
 bar is a point `fill_role`, a total is a series label. An annotation is a shape over the
 chart: it does not move when someone edits the chart's data.
 

@@ -19,7 +19,9 @@ Counts are pages carrying each device, of 578 coded content pages (bank 231, con
 - Which device does this house use for that job (spacing, a hairline, a heavier rule, a
   fill, a box)? Use the house's, at every recurrence, the same way.
 - What is the scarce device in this house: one emphasis colour on one item (88 pages), not
-  every fill. What is it pointing at, and is that the claim?
+  every fill. What is it pointing at, and is that the claim? The house's look-here colour
+  is the guide's `color.emphasis` (answered from the renders, pictures included); a red
+  box round a figure is emphasis, not `color.negative`, which says a value is bad.
 - Does every connector, bracket and arrow visibly join the two things it relates?
 - Does the house show gradients, shadows, rounded corners, icons? If not, neither should
   this page.

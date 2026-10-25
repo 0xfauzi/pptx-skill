@@ -195,10 +195,14 @@
    },
    "styling": {
     "comps": {
-     "emphasis_rows": [
-      10
-     ],
-     "emphasis_fill_role": "color.accent1"
+     "emphasis": [
+      {
+       "rows": [
+        10
+       ],
+       "fill_role": "color.accent1"
+      }
+     ]
     }
    },
    "annotations": [
@@ -218,7 +222,7 @@
        ]
       ]
      },
-     "line_role": "color.negative",
+     "line_role": "color.emphasis",
      "line_width_pt": 1.5
     },
     {
@@ -228,7 +232,7 @@
      "anchor": {
       "row": 13
      },
-     "line_role": "color.negative",
+     "line_role": "color.emphasis",
      "line_width_pt": 1.5
     }
    ]
@@ -488,10 +492,14 @@
    },
    "styling": {
     "grid": {
-     "emphasis_rows": [
-      3
-     ],
-     "emphasis_fill_role": "none"
+     "emphasis": [
+      {
+       "rows": [
+        3
+       ],
+       "fill_role": "none"
+      }
+     ]
     }
    },
    "annotations": [
@@ -511,7 +519,7 @@
        ]
       ]
      },
-     "line_role": "color.negative",
+     "line_role": "color.emphasis",
      "line_width_pt": 1.5
     },
     {
@@ -858,13 +866,13 @@
      "anchor": {
       "value": 36.5
      },
-     "line_role": "color.negative",
+     "line_role": "color.emphasis",
      "line_width_pt": 1.5,
      "dash": "dash",
      "label": {
       "text": "Offer $36.50",
       "role": "type.data_label",
-      "ink_role": "color.negative",
+      "ink_role": "color.emphasis",
       "position": "end_outside"
      }
     },

@@ -425,6 +425,20 @@ def against(value: float | None, house: dict, key: str) -> dict:
             "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"}
 
 
+def parallels_note(repeats: list[dict], measured: dict) -> str:
+    """What a low composition V owes to repeats the plan declared: each declared pair with
+    its reason, and V over the other pairs. A declared parallel is the model's reason; the
+    warning stands, and names it, so the report answers it with the plan's own words."""
+    declared = [r for r in repeats if r.get("deliberate_parallel")]
+    if not declared:
+        return "; no repeat in it is a declared parallel"
+    pairs, changed = measured.get("pairs") or 0, measured.get("changed") or 0
+    rest = pairs - len(declared)
+    cited = "; ".join(f"{r['pages'][0]!r} to {r['pages'][1]!r} ({r['deliberate_parallel']})" for r in declared)
+    without = f"; over the other {rest} pair(s) V is {round(changed / rest, 3)}" if rest > 0 else ""
+    return f"; {len(declared)} of its unchanged pairs {'is a' if len(declared) == 1 else 'are'} declared parallel{'s' if len(declared) > 1 else ''}: {cited}{without}"
+
+
 def check(plan, guide: dict, others: list[dict], names: list[str] | None = None) -> dict:
     pages = read_plan(plan, guide)
     house = house_of([guide, *others], names)
@@ -470,7 +484,7 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
             if comparison[key]["verdict"].startswith("below"):
                 c = comparison[key]
                 warnings.append(f"{key} {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
-                                "the threshold is unmeasured")
+                                "the threshold is unmeasured" + (parallels_note(repeats, mine["composition"]) if key == "composition_V" else ""))
         d = comparison["distinct_per_page"]
         if d["verdict"].startswith("below"):
             warnings.append(f"distinct compositions per page {d['value']} is below the house's 10th percentile window of {d['window_pages']} pages "

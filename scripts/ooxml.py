@@ -1320,8 +1320,12 @@ class SlideWalker:
                         axis_line = r[0]
         dl = root.find(f".//{_c('dLbls')}/{_c('showVal')}")
         data_labels = dl is not None and dl.get("val") in ("1", "true")
-        legend = root.find(f".//{_c('legend')}/{_c('legendPos')}")
-        legend_pos = legend.get("val") if legend is not None else None
+        # the guide's legend_position vocabulary (emit_pptx.GUIDE_LEGEND_POSITIONS): no
+        # c:legend draws none; a c:legend without c:legendPos sits right (ECMA-376
+        # 21.2.2.95, the val default)
+        legend_el = root.find(f".//{_c('legend')}")
+        pos_el = legend_el.find(_c("legendPos")) if legend_el is not None else None
+        legend_pos = "none" if legend_el is None else (pos_el.get("val", "r") if pos_el is not None else "r")
         has_title = root.find(f".//{_c('title')}") is not None
         tsize: float | None = None
         tcolor: str | None = None

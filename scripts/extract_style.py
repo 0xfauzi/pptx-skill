@@ -81,7 +81,7 @@ PRODUCT_SAFETY_FLOOR_PT = {"body": 7.0, "annotation": 7.0, "display": 7.0, "char
 CORE_TYPE_ROLES = ("type.title", "type.kicker", "type.h1", "type.h2", "type.body", "type.emphasis", "type.caption",
                    "type.footnote", "type.source_line", "type.table_header", "type.table_cell", "type.axis_label", "type.data_label")
 CORE_COLOR_ROLES = ("color.surface", "color.surface_alt", "color.ink", "color.ink_muted", "color.accent1", "color.accent2",
-                    "color.accent3", "color.rule", "color.positive", "color.negative")
+                    "color.accent3", "color.rule", "color.positive", "color.negative", "color.emphasis")
 STEP_NAMES = ("space.xs", "space.sm", "space.md", "space.lg", "space.xl")
 FLOOR_FAMILIES = {
     "body": ("type.body", "type.emphasis", "type.h1", "type.h2", "type.table_header", "type.table_cell"),
@@ -897,6 +897,13 @@ class Extractor:
                 put(role, h, inferred([f"hue {sat[h][0]:.0f} sat {sat[h][1]:.2f}"], pool[h], False, pool[h] / max(1, sum(pool.values()))))
             else:
                 self.open(f"/color/roles/{role}", "no saturated colour in the hue band was used", {"hue_band": POSITIVE_HUE if role.endswith("positive") else NEGATIVE_HUE})
+        # the house's "look here" colour (the red box round a figure, the circle, the
+        # highlight bar) is a reading of what the house marks and how, which no hue band
+        # decides: it is always the model's to answer from the renders and the digest, and
+        # it is not color.negative, which colours a bad value
+        self.open("/color/roles/color.emphasis", "the colour the house marks emphasis with (outline boxes, circles, a highlighted bar, an "
+                  "emphasis rule) is read off the renders, never inferred from a hue band; it is not color.negative, which colours a bad value",
+                  {"saturated_inks_and_accents": sorted((h for h in pool if sat[h][1] >= SEMANTIC_MIN_SATURATION), key=lambda h: -pool[h])[:5]})
         usage = {
             "surface_area_fraction": {h: round(a / max(1.0, sum(surface_area.values())), 4) for h, a in sorted(surface_area.items(), key=lambda kv: -kv[1])[:10]},
             "ink_runs": {h: v.count for h, v in sorted(votes_ink.items(), key=lambda kv: -kv[1].count)[:10]},

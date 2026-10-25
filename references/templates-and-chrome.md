@@ -2,6 +2,7 @@
 
 ## Contents
 - Making the template
+- The reference firm's own chrome
 - How chrome is drawn
 - The round trip: prove the chain on the house's own page
 
@@ -24,6 +25,23 @@ slide's layout).
 For a PDF reference the template is blank at the reference's page size, and
 `build_deck.py --chrome draw` paints the guide's chrome (rules, bands, footer labels, a
 page-number field) and the surface colour on every slide.
+
+## The reference firm's own chrome
+
+The template carries the reference house's name and logo on its master. For a deck of that
+firm, keep them. For a deck of another firm, or of a made-up one, they would put the wrong
+name on every page: ask the user whether to keep, replace or drop each, and write the
+answer in the deck JSON by chrome id (the ids are in the build report's `chrome.firm`,
+and in `draft.md`'s chrome list):
+
+```json
+"firm_chrome": {"chrome-13": {"text": "Harbour & Co."}, "chrome-9": "drop"}
+```
+
+`"keep"`, `"drop"`, `{"text": "..."}` for a text entry, `{"image_path": "..."}` (same
+image type) for a logo. An id that is not firm chrome on these pages is refused, listing
+the ones that are. The build reports every entry's decision, and marks each one the deck
+left to the default.
 
 ## How chrome is drawn
 
@@ -50,7 +68,20 @@ page-number field) and the surface colour on every slide.
 ## The round trip: prove the chain on the house's own page
 
 Before a page of your own, import one of the reference's into a spec of roles and weights
-(no coordinates survive), build it on the template and compare:
+(no coordinates survive), build it on the template and compare. Choose the page with the
+survey: it imports every page and says what each holds, what the import loses (a chart
+becomes a placeholder line, a PDF table too, turned text is left out, merged cells are
+unmerged) and whether it fits at full scale, and marks the candidates (content, title,
+text and an exhibit, nothing lost, fitting, on the house's most used layout first). A
+pptx picture travels with its own bytes and a native table as a table spec (a column or
+row bold throughout becomes an `emphasis` group), so a house that pastes its exhibits as
+pictures still has candidates.
+
+```bash
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"
+```
+
+Then import and build the one you chose:
 
 ```bash
 python3 scripts/import_slide.py "$REF" --slide 3 --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/rt3.deck.json"

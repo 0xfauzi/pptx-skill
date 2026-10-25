@@ -273,5 +273,9 @@
    "12": "the labels of four numbered rows"
   },
   "why": "Read off the renders: titles are short topic phrases or questions; slide 3's below-block is the first label cell of the assumptions column and slide 10's is a column header, not companions of the title; slides 4, 5 and 7 carry a units line under the title. The claim sits in a lead-in bullet on argument pages and in numbered row labels on the summary."
+ },
+ "/color/roles/color.emphasis": {
+  "hex": "FF0000",
+  "why": "the red outline boxes round the figures the claim rests on (slides 5, 7, 8, 9, 10); the house's look-here mark, read off the renders"
  }
 }

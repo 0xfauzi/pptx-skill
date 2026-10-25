@@ -42,6 +42,7 @@ from pathlib import Path
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
+from emit_pptx import GUIDE_LEGEND_POSITIONS  # noqa: E402
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: TARGET_SPEC Appendix A as closed sets: the title register, the title companions and the exhibit digest fields.
@@ -75,18 +76,29 @@ class PatchError(SystemExit):
 #: references/guide-completion.md carries this table as printed by `--shapes`.
 TYPE_ROLE_SHAPE = ('{"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional '
                    '"line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"')
+COLOR_SHAPE = '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures'
+PICTURES_NOTE = '; add "evidence": "pictures" when the house sets such text only inside pasted pictures'
+#: the one value of a completion's "evidence" member: the answer is read off pictures the
+#: house pasted (a chart or table as an image), not off its text or shapes
+PICTURES = "pictures"
 VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
-    (r"/color/roles/color\.(surface|ink|accent1)", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)', None),
-    (r"/color/roles/[^/]+", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)',
-     'the house has no such colour: the role is recorded under absent_roles, and a page that names it is refused'),
-    (r"/extra_roles/[^/]+", '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies)', None),
+    (r"/color/roles/color\.(surface|ink|accent1)", COLOR_SHAPE, None),
+    (r"/color/roles/color\.emphasis", COLOR_SHAPE,
+     ('the house marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, '
+      'and an annotation names the ink or rule role instead')),
+    (r"/color/roles/[^/]+", COLOR_SHAPE,
+     ('the house has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is '
+      'refused. A colour seen only inside pasted pictures is not absent: answer it with "evidence": "pictures"')),
+    (r"/extra_roles/[^/]+", COLOR_SHAPE, None),
     (r"/typography/roles/type\.(title|body)", TYPE_ROLE_SHAPE, None),
     (r"/typography/roles/[^/]+/members", ('the open members only: any of "weight", "italic", "family", "alignment", "case", "ink_role", '
      '"line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", plus "why"; never "size_pt"'), None),
-    (r"/typography/roles/[^/]+/line_spacing", "a multiple of the size, e.g. 1.2", "single spacing (drawn at 1.2 x size)"),
-    (r"/typography/roles/[^/]+", TYPE_ROLE_SHAPE,
-     ('the house has no such text: recorded under absent_roles; a page that names the role is refused. One of '
-     'type.caption, type.footnote, type.source_line must stay answered')),
+    (r"/typography/roles/[^/]+/line_spacing", 'a multiple of the size, e.g. 1.2 ("/typography/roles/*/line_spacing": v answers every open one not named)',
+     "single spacing (drawn at 1.2 x size)"),
+    (r"/typography/roles/[^/]+", TYPE_ROLE_SHAPE + PICTURES_NOTE,
+     ('the house has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is '
+      'refused. Text the house sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off '
+      'the pictures with "evidence": "pictures". One of type.caption, type.footnote, type.source_line must stay answered')),
     (r"/typography/families", '{"major": "<face>", "minor": "<face>"}', None),
     (r"/typography/families/substitutes", '{"<face named in the file>": "<installed face measured in its place>"}', None),
     (r"/typography/scale_ratio", "a number, e.g. 1.25", "the levels are not a geometric ladder"),
@@ -101,7 +113,7 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
      '"row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, '
      '"cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"}'), None),
     (r"/charts", ('{"series_color_roles": [roles in order], "per_kind": {"<bar|column|line|...>": {"gridlines_major": 0..1, '
-     '"data_labels": 0..1, "legend_position": "b|r|t|l|none"}}, "why"}'), None),
+     '"data_labels": 0..1, "legend_position": "' + "|".join(GUIDE_LEGEND_POSITIONS) + '"}}, "why"}'), None),
     (r"/continuation", '{"header_repeat": "full|none", "contd_mark": "<text>", "takeaway_policy": "repeat|first_only|none"}', None),
     (r"/description", '{"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "never_does": [...], "tone"}', None),
     (r"/derivation_rules", "a list of sentences", None),
@@ -143,6 +155,13 @@ def shape_error(path: str, value) -> str | None:
         if stray:
             return (f"{path}: {stray} {'is' if len(stray) == 1 else 'are'} read by nothing; {path} takes {sorted(keys - {'provenance'})}. "
                     "A source-line habit is not a chart setting: it is measured from the digest (each page's source_line)")
+        if path == "/charts":
+            per_kind = value.get("per_kind") or {}
+            bad = {k: v.get("legend_position") for k, v in per_kind.items() if isinstance(v, dict) and "legend_position" in v
+                   and v["legend_position"] not in GUIDE_LEGEND_POSITIONS}
+            if bad:
+                return (f"/charts: legend_position {bad} not in {list(GUIDE_LEGEND_POSITIONS)}; a chart spec writes the same "
+                        "word as legend.position, and \"none\" as legend: \"none\"")
     return None
 
 
@@ -485,6 +504,7 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
     refused without it."""
     guide = copy.deepcopy(guide)
     open_paths = {u["path"]: u for u in guide.get("unresolved", [])}
+    patch, bulk_notes = expand_bulk(patch, open_paths)
     applied: list[str] = []
     # colour roles first, so later references resolve
     ordered = sorted(patch.items(), key=lambda kv: (0 if kv[0].startswith("/color/roles/") or kv[0].startswith("/extra_roles/") else 1, kv[0]))
@@ -504,6 +524,8 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
         # re-measured on every completion: the content pages or the exhibit types may have just been answered
         guide["variety"]["measure"] = plan.house_deck(guide)
     guide.setdefault("completion", {"applied": []})["applied"].extend(applied)
+    if bulk_notes:
+        guide["completion"].setdefault("bulk", []).extend(bulk_notes)
     return guide, applied, refusals
 
 
@@ -522,6 +544,57 @@ def record_absent(guide: dict, path: str, role: str, why: str) -> None:
     guide.setdefault(ABSENT_SHAPE, {})[role] = {"address": path, "why": why, "provenance": model_prov(why)}
 
 
+#: chart text roles, and the digest records that show the house draws such text: an
+#: axis on every exhibit of these types, a data label wherever the record says marks are
+#: labelled
+AXIS_TYPES = {"line", "column", "stacked", "horizontal_bar", "combo", "football_field_or_range_bars", "waterfall_or_bridge",
+              "scatter_or_bubble", "histogram"}
+
+
+def chart_text_in_digest(guide: dict, role: str) -> str | None:
+    """Where the completed digest records the house drawing a chart text role, or None."""
+    records = (guide.get("exhibit_habits") or {}).get("records") or []
+    if role == "type.axis_label":
+        hits = [r for r in records if r.get("type") in AXIS_TYPES]
+        what = "exhibits with axes"
+    elif role == "type.data_label":
+        hits = [r for r in records if r.get("data_labels") in ("all", "selective")]
+        what = "exhibits with labelled marks"
+    else:
+        return None
+    return f"{len(hits)} {what} (slides {sorted({r['slide'] for r in hits})})" if hits else None
+
+
+def seen_in(path: str, value: dict) -> dict:
+    """{"seen_in": "pictures"} for an answer read off pasted pictures, {} otherwise; any
+    other evidence value is refused."""
+    if "evidence" not in value:
+        return {}
+    if value["evidence"] != PICTURES:
+        raise PatchError(f"{path}: evidence {value['evidence']!r}; the one value is \"{PICTURES}\" (read off pictures the house pasted)")
+    return {"seen_in": PICTURES}
+
+
+def expand_bulk(patch: dict, open_paths) -> tuple[dict, list[str]]:
+    """A bulk answer for every open line_spacing address: "/typography/roles/*/line_spacing"
+    answers each one the patch does not answer by name. It closes only open addresses, so
+    it can never overwrite an observed value."""
+    out = dict(patch)
+    notes: list[str] = []
+    if BULK_LINE_SPACING in out:
+        value = out.pop(BULK_LINE_SPACING)
+        covered = [p for p in open_paths if re.fullmatch(r"/typography/roles/[^/]+/line_spacing", p) and p not in patch]
+        for p in covered:
+            out[p] = value
+        notes.append(f"{BULK_LINE_SPACING} answered {len(covered)} open line_spacing address(es)"
+                     + (f"; named ones kept their own answer: {sorted(p for p in patch if p.endswith('/line_spacing') and p != BULK_LINE_SPACING)}"
+                        if any(p.endswith("/line_spacing") and p != BULK_LINE_SPACING for p in patch) else ""))
+    return out, notes
+
+
+BULK_LINE_SPACING = "/typography/roles/*/line_spacing"
+
+
 def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict | None) -> None:
     check_writable(guide, path, value, open_paths)
     err = shape_error(path, value)
@@ -532,6 +605,11 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         guide["color"]["roles"].pop(parts[2], None)
         record_absent(guide, path, parts[2], "answered null: the house shows no such colour")
     elif parts[0] == "typography" and parts[1] == "roles" and len(parts) == 3 and value is None:
+        drawn = chart_text_in_digest(guide, parts[2])
+        if drawn:
+            raise PatchError(f"{path}: null says the house sets no such text, but the digest records it drawn: {drawn}. Text the house "
+                             f"sets only inside pasted pictures is not absent: answer the value read off those pictures with "
+                             f"\"evidence\": \"pictures\", so native charts can set it")
         guide["typography"]["roles"].pop(parts[2], None)
         record_absent(guide, path, parts[2], "answered null: the house sets no such text")
     elif parts[0] == "color" and parts[1] == "roles":
@@ -539,7 +617,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         if isinstance(value, str) and HEX_RE.match(value):
             guide["color"]["roles"][role] = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
         elif isinstance(value, dict) and HEX_RE.match(value.get("hex", "")):
-            guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value)}
+            guide["color"]["roles"][role] = {"hex": value["hex"].upper(), "provenance": model_prov(value.get("why", ""), value),
+                                             **seen_in(path, value)}
         else:
             raise PatchError(f"{path}: expected a hex colour")
     elif parts[0] == "extra_roles":
@@ -571,6 +650,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
                                     "native tables will read larger than they do: say so in the report" if observed else ""))
             spec.setdefault("weight", 400)
             spec["provenance"] = model_prov(value.get("why", ""), value)
+            spec.update(seen_in(path, value))
             roles[role] = spec
         elif parts[3] == "members":
             if role not in roles:

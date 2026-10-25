@@ -595,11 +595,14 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
     """A band is drawn under the table; a row the table fills itself hides it
     (emit_pptx.table_row_styles, the rows as the emitter writes them)."""
     from emit_pptx import table_row_styles
-    _, ys = table_geometry(host)
+    xs, ys = table_geometry(host)
     for st, top, bottom in zip(table_row_styles(host, eg), ys, ys[1:]):
-        if bottom > box[1] and top < box[1] + box[3] and st["fill_hex"]:
-            raise AnnotationRefused(f"{where}: {'header row ' + str(st['row']) if st['header'] else 'body row ' + str(st['row'] - int(host.get('header_rows', 1)))} ({st['class']}) is filled with {st['fill_name']}, which hides a band drawn under it; "
-                                    "colour the row through the table (emphasis_rows, banding_role) instead")
+        if not (bottom > box[1] and top < box[1] + box[3]):
+            continue
+        for cs, left, right in zip(st["cells"], xs, xs[1:]):
+            if right > box[0] and left < box[0] + box[2] and cs["fill_hex"]:
+                raise AnnotationRefused(f"{where}: {'header row ' + str(st['row']) if st['header'] else 'body row ' + str(st['row'] - int(host.get('header_rows', 1)))} ({cs['class']}) is filled with {cs['fill_name']}, which hides a band drawn under it; "
+                                        "colour the cells through the table (emphasis, banding_role) instead")
 
 
 # --- the collision contract --------------------------------------------------------------

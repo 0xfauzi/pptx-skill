@@ -16,6 +16,14 @@ where it appears:
 - figure: a number with a unit or of three or more digits ($4.1, 40%, 2016, 11.40) that a
   past page also carries.
 
+Each finding is ranked by rarity. A name or phrase whose words run in that order in a
+public deck of another house (the judge's panel in refs/files, past decks and their twins
+left out), or a name every word of which those decks use, is a term of the trade, not
+this house's content; a round figure (at most two significant
+digits, the second 0 or 5: 10%, 15%, $1,000, 4.0x) and a year carry no information about
+where they came from. Those are listed once under `low`, with what to do; everything else
+is `distinctive`, listed per page, rarest first (most words no public deck uses).
+
 Not reported: chrome, which is any text a past deck repeats on at least CHROME_SHARE of its
 pages (the bank name in the footer, a confidentiality line) and the text the template
 itself draws; and anything found in a --brief file (the user's brief and data, as text).
@@ -106,6 +114,78 @@ def chrome_of(pages: list[dict[str, set]]) -> dict[str, set]:
     return out
 
 
+BACKGROUND_DIR = Path(__file__).resolve().parent.parent / "refs" / "files"
+
+
+def _twin_key(path: str | Path) -> str:
+    return Path(path).stem.lower()
+
+
+def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
+    """The public decks of other houses (refs/files, fetched by refs/fetch.sh), each as
+    its words normalised and joined (" w1 w2 ... ", one line break between strings),
+    with the past decks and their twins (the same stem: a pptx and its PDF rendition)
+    left out; and a note naming the basis. A finding is a term of the trade when its words
+    run in that order in such a deck, in any case and inside any longer name."""
+    skip = {_twin_key(p) for p in past} | {str(Path(p).resolve()) for p in past}
+    decks: list[tuple[str, str]] = []
+    unread: list[str] = []
+    if BACKGROUND_DIR.is_dir():
+        for f in sorted(BACKGROUND_DIR.iterdir()):
+            if f.suffix.lower() not in (".pptx", ".pdf") or _twin_key(f) in skip or str(f.resolve()) in skip:
+                continue
+            try:
+                strings = [x for page in page_texts(str(f)) for x in page]
+            except Exception as error:  # noqa: BLE001 - an unreadable public deck is left out, and named in the note
+                unread.append(f"{f.name} ({type(error).__name__})")
+                continue
+            words = "\n".join(" " + " ".join(norm(w) for w in tokens(line)) + " " for x in strings for line in x.split("\n"))
+            decks.append((f.name, words))
+    note = (f"{len(decks)} public decks of other houses in {BACKGROUND_DIR}" + (f"; not read: {', '.join(unread)}" if unread else "") if decks
+            else f"not measured: no public decks in {BACKGROUND_DIR} (run refs/fetch.sh); terms of the trade cannot be told from this house's own words")
+    return decks, note
+
+
+def _figure_value(text: str) -> float | None:
+    t = text.replace("$", "").replace("€", "").replace("£", "").replace(",", "").rstrip("%x").rstrip(".")
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def round_or_year(text: str) -> str | None:
+    """Why a figure says nothing about its source: a year, or a round figure."""
+    if re.fullmatch(r"(19|20)\d\d", text):
+        return "a year"
+    v = _figure_value(text)
+    if v is None or v == 0:
+        return None
+    digits = re.sub(r"[^0-9]", "", f"{abs(v):.10g}").strip("0")
+    if len(digits) <= 1 or (len(digits) == 2 and digits[1] in "05"):
+        return "a round figure"
+    return None
+
+
+def rarity(kind: str, key: tuple, text: str, decks: list[tuple[str, str]], vocabulary: set[str]) -> dict:
+    """low or distinctive, with the reason. A figure: low when round or a year. A name or
+    phrase: low when its words run in that order in a public deck of another house; a name
+    is low too when every one of its words is in those decks' vocabulary (senior notes,
+    debt ebitda: products and ratios), and distinctive when any word is not (a company, a
+    place, a person). `rare_words` ranks the distinctive ones."""
+    if kind == "figure":
+        why = round_or_year(text)
+        return {"tier": "low", "why": why} if why else {"tier": "distinctive", "rare_words": 1}
+    needle = " " + " ".join(key) + " "
+    found = [name for name, words in decks if needle in words]
+    if found:
+        return {"tier": "low", "why": f"a term of the trade: also in {len(found)} public deck(s) of other houses ({', '.join(found[:2])})"}
+    rare = [w for w in key if w not in vocabulary]
+    if kind == "name" and decks and not rare:
+        return {"tier": "low", "why": "a term of the trade: every word of it is in the public decks of other houses"}
+    return {"tier": "distinctive", "rare_words": len(rare)}
+
+
 def media_hashes(path: str) -> dict[str, str]:
     if not path.lower().endswith(".pptx"):
         return {}
@@ -130,27 +210,54 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
         for k, v in chrome.items():
             excluded[k] |= v
         past_pages += [(Path(deck).name, i + 1, p) for i, p in enumerate(pages)]
+    decks, basis = background(past)
+    vocabulary = {w for _, words in decks for w in words.split()}
     report_pages = []
+    low: dict[str, dict] = {}
     for i, strings in enumerate(page_texts(new)):
         mine = features(strings)
         found = []
-        for kind in ("name", "figure", "phrase"):
+        for kind in ("name", "phrase", "figure"):
             for f in sorted(mine[kind] - excluded[kind]):
                 where = [f"{d} p{n}" for d, n, p in past_pages if f in p[kind]]
-                if where:
-                    found.append({"kind": kind, "text": " ".join(f), "past": where[:3] + ([f"and {len(where) - 3} more"] if len(where) > 3 else [])})
+                if not where:
+                    continue
+                text = " ".join(f)
+                rank = rarity(kind, f, text, decks, vocabulary)
+                if rank["tier"] == "low":
+                    entry = low.setdefault(text, {"kind": kind, "text": text, "why": rank["why"], "pages": []})
+                    entry["pages"].append(i + 1)
+                    continue
+                found.append({"kind": kind, "text": text, "past": where[:3] + ([f"and {len(where) - 3} more"] if len(where) > 3 else []),
+                              "past_pages": len(where), "rare_words": rank["rare_words"]})
         if found:
+            # rarest first: most words no public deck uses, then a name before a phrase before a figure
+            found.sort(key=lambda x: (-x["rare_words"], ("name", "phrase", "figure").index(x["kind"]), x["past_pages"]))
             report_pages.append({"page": i + 1, **({"id": page_ids[i]} if page_ids and i < len(page_ids) else {}), "findings": found})
     template_media = set(media_hashes(template)) if template else set()
     past_media = {h: f"{Path(d).name}:{n}" for d in past for h, n in media_hashes(d).items()}
     images = [{"new": n, "past": past_media[h]} for h, n in media_hashes(new).items() if h in past_media and h not in template_media]
+    distinctive = sum(len(p["findings"]) for p in report_pages)
+    if report_pages or images:
+        verdict = (f"possible carry-over: {distinctive} distinctive finding(s){' and ' + str(len(images)) + ' picture(s)' if images else ''}: "
+                   "remove each, or confirm the user supplied it for this deck")
+    elif low:
+        verdict = f"no distinctive carry-over; {len(low)} low finding(s): keep each that your own data or brief produces"
+    else:
+        verdict = "clean"
     return {"past_decks": [Path(d).name for d in past], "briefs": [Path(b).name for b in briefs],
-            "findings": sum(len(p["findings"]) for p in report_pages), "pages": report_pages, "images": images,
+            "findings": distinctive, "distinctive": distinctive, "low": len(low), "pages": report_pages, "images": images,
+            "low_findings": sorted(low.values(), key=lambda x: x["text"]),
+            "what_to_do": {"distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, "
+                                          "or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+                           "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from "
+                                  "your data; keep each one your data or brief produces, and check any figure you did not compute"},
+            "rarity_basis": basis,
             "chrome_excluded": chrome_counts,
             "images_checked": "pptx media by sha256" + ("" if all(d.lower().endswith(".pptx") for d in past) else "; a PDF's pictures are not checked"),
             "method": f"names (2+ capitalised words), figures and {PHRASE_WORDS}-word phrases of each new page found on a past page; "
                       f"chrome (on {CHROME_SHARE:.0%}+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
-            "verdict": "clean" if not report_pages and not images else "possible carry-over: remove each, or confirm the user supplied it for this deck"}
+            "verdict": verdict}
 
 
 def main(argv: list[str]) -> int:
