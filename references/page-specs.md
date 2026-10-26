@@ -4,6 +4,7 @@
 - The tree
 - Limits
 - Capacity before text
+- Pictures: logos, icons and the user's files
 - Conventions the build enforces
 - Looking before writing: the reference's gallery
 - Looking before writing: the page library
@@ -69,6 +70,88 @@ re-arrange first. A component's own text is measured by the component, not here.
 filler is mean-advance English with figures, so a run of capitals or wide figures takes
 fewer characters than `free` says. Write the skeleton with short placeholder text, read
 the budgets, then write the words.
+
+## Pictures: logos, icons and the user's files
+
+A picture is an `image` node in the tree with its source under `slide.images[<id>]`,
+one of:
+
+- `{"path": "/abs/file.png"}`: a PNG, JPEG or GIF the user supplied, or one taken from
+  the reference (below). Anything else (a BMP, a damaged file, a text file named .png,
+  more than 40 MP declared) is refused by name before the solve.
+- `{"svg": "/abs/icon.svg"}`: an icon you write in the SVG subset: `<svg viewBox>` with
+  only `path`, `rect`, `circle`, `line` and `polygon` as its direct children, every
+  `fill` and `stroke` a colour role or `none` (both required), plain numbers, nothing
+  else (no `g`, `text`, `style`, `transform`, `image`, units, DOCTYPE; UTF-8 only; a
+  shape that draws nothing is refused). The file is
+  written natively (an SVG part on the picture's svgBlip extension, which PowerPoint
+  2016+ draws) with a PNG fallback rasterised from the same shapes; the roles become the
+  guide's colours when the file is written. `python3 scripts/images.py check ICON.svg
+  --guide guide.json --png preview.png` refuses or previews it.
+
+and, optionally, its box in the house's measures: `height_role` (a spacing role, or a
+type role's line pitch times `lines`), `width_role`, or both (a box the picture is
+fitted inside, so a column of icons of different shapes lines up), plus `align`
+(left, center, right) and `valign` (top, middle, bottom). Without a role the node is a
+flexible box like a chart's. A picture is never stretched: it is drawn at its own aspect,
+as large as its box allows, and every choice you left out is listed under the page's
+`image_defaults_taken`.
+
+After the render the build compares what LibreOffice drew in each picture's box with the
+picture as written (the icon rasterised at the render's size, the file scaled to it) and
+refuses a page where more than 5% of the box differs (`picture not drawn as written`),
+or where the picture is drawn under 4 px on a side (`picture too small to check`: a
+20000 x 1 logo in a square box);
+`pictures` in the report gives every share. Measured: LibreOffice 24.2 draws the SVG
+part itself (with a blank PNG fallback the icon still drew), so the check reads the SVG
+path; PowerPoint's drawing is not measured.
+
+Taking a logo from the reference (run on an untrusted file with `python3 -I`):
+
+```bash
+python3 -I scripts/images.py list "$REF"                                        # every picture with an id, its slides or page and size
+python3 -I scripts/images.py extract "$REF" --id image14.png -o "$DECK_WORK/img/vertex.png"       # a .pptx picture's own bytes
+python3 -I scripts/images.py extract "$REF" --id p15-Im8 -o "$DECK_WORK/img/nys.png"              # a PDF picture, rendered at 600 dpi
+python3 -I scripts/images.py extract "$REF" --page 15 --bbox 40,230,100,275 -o "$DECK_WORK/img/x.png"  # a vector mark, PDF points
+```
+
+A company's logo is the user's or the reference's, never one you draw. An icon (a
+person, a flag, a factory, a check) is yours to draw in the subset when the house uses
+icons and the user supplied none.
+
+Proven on: BCG New York page 15 rebuilt on its guide, an icon-led row page (a star of
+life drawn in the subset, a flag and the state's outline taken from the PDF), each
+picture in a box of `"height_role": "type.body", "lines": 3, "width_role": "space.xl"`:
+
+```json
+{"type": "region", "id": "epi-row",
+ "layout": {"kind": "flex", "direction": "row", "gap_role": "space.md", "pad_role": null, "align": "center", "justify": "start"},
+ "children": [
+  {"type": "element", "id": "epi-icon", "kind": "image"},
+  {"type": "element", "id": "epi-label", "kind": "text", "weight": 0.14,
+   "paragraphs": [{"role": "type.body_large", "text": "Epidemic", "ink_role": "color.accent1", "align": "center"}]},
+  {"type": "element", "id": "epi-rule", "kind": "rule", "size": {"width_emu": 12700, "height_emu": null}, "line_role": "color.ink_muted"},
+  {"type": "element", "id": "epi-text", "kind": "text", "weight": 0.86,
+   "paragraphs": [{"role": "type.body_large", "text": "Covid epidemic continues to spread ...", "bullet_level": 0}]}]}
+```
+
+```json
+"images": {
+ "epi-icon": {"svg": "/abs/work/img/star.svg", "height_role": "type.body", "lines": 3, "width_role": "space.xl", "align": "center", "valign": "middle"},
+ "us-icon": {"path": "/abs/work/img/flag.png", "height_role": "type.body", "lines": 3, "width_role": "space.xl", "align": "center", "valign": "middle"}}
+```
+
+The star, `examples/icons/star-of-life.svg` (the union of three bars as one outline,
+its points computed, not traced):
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <polygon points="6.02,65.83 14.30,80.17 41.72,64.34 41.72,96.00 58.28,96.00 58.28,64.34 85.70,80.17 93.98,65.83 66.56,50.00 93.98,34.17 85.70,19.83 58.28,35.66 58.28,4.00 41.72,4.00 41.72,35.66 14.30,19.83 6.02,34.17 33.44,50.00" fill="color.accent1" stroke="color.ink" stroke-width="2.5" stroke-linejoin="miter"/>
+</svg>
+```
+
+Logos and icons placed along a chart's categories are a `category_row` annotation
+(chart-recipes.md, "Category rows").
 
 ## Conventions the build enforces
 

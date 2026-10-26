@@ -203,7 +203,11 @@ Per-table emphasis (the subject row shaded, the row labels bold) is the table's
 coordinate is refused. Grammar, limits and
 conventions: [references/page-specs.md](references/page-specs.md). Charts as worked JSON:
 [references/chart-recipes.md](references/chart-recipes.md). Table spec keys:
-[references/tables.md](references/tables.md). A component the template never showed:
+[references/tables.md](references/tables.md). Logos, icons and the user's pictures
+(a file, a logo taken from the reference with `images.py extract`, or an icon you write
+as a small SVG in colour roles), in boxes sized by roles: page-specs.md, "Pictures". A
+line and columns on two axes, data rows or logos aligned under a chart's categories:
+chart-recipes.md, "Combo" and "Category rows". A component the template never showed:
 [references/components.md](references/components.md). Building a company page library:
 [references/page-library.md](references/page-library.md).
 
@@ -243,7 +247,8 @@ last one. What to look for and in what order:
 For each exhibit, read the house's `exhibit_habits.moves_by_data_shape` and
 `moves_by_message_kind`, decide where the claim lives on the exhibit, and mark it the way
 this house marks such places: `annotations` on the slide (reference lines, outline boxes,
-bands, brackets, callouts, badges at data positions), or native emphasis (a point fill, an
+bands, brackets, callouts, badges at data positions, rows of figures or logos under the
+categories), or native emphasis (a point fill, an
 emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
 or covers the host's text. Ink a mark in the house's look-here colour, `color.emphasis`
 (answered in step 2), not `color.negative`, which colours a bad value; where the house
@@ -357,6 +362,7 @@ around a refusal by changing the guide.
 | `scripts/layout.py` | run `capacity`; read its docstring for the page grammar |
 | `scripts/build_deck.py` | run: solve, emit, read back, validate, render, judge, leakage |
 | `scripts/leakage.py` | run on any deck: past decks' content found in it (the build runs it too) |
+| `scripts/images.py` | run: `list` and `extract` the reference's pictures; `check` an icon in the SVG subset |
 | `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
 | `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
 | [references/editing.md](references/editing.md) | read to extend, reorder or edit an existing deck |

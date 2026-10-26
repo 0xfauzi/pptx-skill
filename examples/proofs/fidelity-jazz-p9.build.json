@@ -1,0 +1,653 @@
+{
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/deck.pptx",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "p9",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "sub": 2,
+    "units": 1,
+    "banner": 1,
+    "src": 1
+   },
+   "tables": {},
+   "annotations": [
+    {
+     "id": "logos",
+     "kind": "category_row",
+     "host": "rev",
+     "anchor": {
+      "categories": [
+       0,
+       10
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      1219200,
+      5149325,
+      7292340,
+      227112
+     ],
+     "drawn": [
+      "logos-0",
+      "logos-1",
+      "logos-2",
+      "logos-3",
+      "logos-4",
+      "logos-5",
+      "logos-6",
+      "logos-7",
+      "logos-8",
+      "logos-9",
+      "logos-10"
+     ],
+     "defaults_taken": [
+      "cell_width: uniform: every cell of the row as wide as its widest (one oval or box size along the row)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 31,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 44,
+    "elements": 17,
+    "covered_area_fraction": 0.592,
+    "text_boxes_mostly_empty": "none",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "words_per_slide": {
+     "value": 44,
+     "band": [
+      55.6,
+      180.8
+     ],
+     "verdict": "below"
+    },
+    "elements_per_slide": {
+     "value": 17,
+     "band": [
+      2.0,
+      13.0
+     ],
+     "verdict": "above"
+    },
+    "content_area_fraction": {
+     "value": 0.592,
+     "band": [
+      0.4133,
+      0.7034
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 10,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "banner",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.body",
+     "ink": "color.ink_inverse",
+     "text": "Comparable Public Companies - Revenue, C",
+     "ratio": 11.22,
+     "threshold": 4.5,
+     "size_pt": 12.0,
+     "bold": false,
+     "backing": "color.rule of banner",
+     "ink_hex": "FFFFFF",
+     "backing_hex": "113D63"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 5,
+      "band": [
+       2.0,
+       13.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 11,
+      "band": [
+       0.0,
+       1.0
+      ],
+      "verdict": "above"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       1.2
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "line": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     }
+    },
+    "decoration_count": {
+     "value": 0,
+     "band": [
+      0.0,
+      1.2
+     ],
+     "verdict": "in band"
+    },
+    "container_ratio": {
+     "value": 0.2,
+     "band": [
+      0.0,
+      0.9231
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Jaguar Comparable Public Companies",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 34,
+      "house": {
+       "median": 39.0,
+       "p90": 48.2,
+       "max": 50,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 4,
+      "house": {
+       "median": 5.0,
+       "p90": 7.4,
+       "max": 8,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 1,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 14,
+      "claim": 0,
+      "question": 0
+     },
+     "share": 1.0,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
+    }
+   },
+   "chart_defaults_taken": {
+    "rev": [
+     "axes.category.title: none: no axis title",
+     "axes.value.title: none: no axis title"
+    ]
+   },
+   "pictures": [
+    {
+     "id": "logos-0",
+     "box_px": [
+      228,
+      901,
+      86,
+      40
+     ],
+     "differ_share": 0.0145,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-1",
+     "box_px": [
+      339,
+      907,
+      96,
+      28
+     ],
+     "differ_share": 0.0056,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-2",
+     "box_px": [
+      455,
+      909,
+      96,
+      24
+     ],
+     "differ_share": 0.0035,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-3",
+     "box_px": [
+      571,
+      905,
+      96,
+      32
+     ],
+     "differ_share": 0.0078,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-4",
+     "box_px": [
+      687,
+      912,
+      96,
+      18
+     ],
+     "differ_share": 0.0058,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-5",
+     "box_px": [
+      803,
+      911,
+      96,
+      20
+     ],
+     "differ_share": 0.0146,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-6",
+     "box_px": [
+      940,
+      901,
+      55,
+      40
+     ],
+     "differ_share": 0.0,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-7",
+     "box_px": [
+      1035,
+      908,
+      96,
+      26
+     ],
+     "differ_share": 0.0028,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-8",
+     "box_px": [
+      1173,
+      901,
+      53,
+      40
+     ],
+     "differ_share": 0.0028,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-9",
+     "box_px": [
+      1283,
+      901,
+      64,
+      40
+     ],
+     "differ_share": 0.0,
+     "status": "drawn as written"
+    },
+    {
+     "id": "logos-10",
+     "box_px": [
+      1383,
+      908,
+      96,
+      26
+     ],
+     "differ_share": 0.002,
+     "status": "drawn as written"
+    }
+   ]
+  }
+ ],
+ "position_drift": {},
+ "repetition": {
+  "threshold": 0.5,
+  "frame_left_out": [],
+  "pairs": [],
+  "realised": [
+   {
+    "page": 1,
+    "composition": "b1"
+   }
+  ],
+  "measure": {
+   "deck": "built",
+   "content_pages": 1,
+   "segments": [
+    [
+     1
+    ]
+   ],
+   "pairs": 0,
+   "status": "no evidence",
+   "why": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house": {
+   "decks": [
+    {
+     "deck": "mi_netflix_financing_pitchbook.pptx",
+     "status": "measured",
+     "content_pages": 14,
+     "composition": {
+      "V": 0.769,
+      "changed": 10,
+      "pairs": 13
+     },
+     "longest_run": 2
+    }
+   ],
+   "pooled": {
+    "status": "measured",
+    "decks": 1,
+    "decks_without_evidence": [],
+    "composition": {
+     "V": 0.769,
+     "changed": 10,
+     "pairs": 13,
+     "p10_deck_V": 0.769,
+     "deck_V": [
+      0.769
+     ],
+     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
+    },
+    "exhibits": {
+     "V": 0.923,
+     "changed": 12,
+     "pairs": 13,
+     "p10_deck_V": 0.923,
+     "deck_V": [
+      0.923
+     ],
+     "decks_unread": []
+    },
+    "classes": {
+     "V": 0.615,
+     "changed": 8,
+     "pairs": 13,
+     "p10_deck_V": 0.615,
+     "deck_V": [
+      0.615
+     ],
+     "decks_unread": []
+    },
+    "distinct_per_page": {
+     "mi_netflix_financing_pitchbook.pptx": 0.357
+    },
+    "longest_run": 2,
+    "sequences": [
+     [
+      "arch-2",
+      "arch-2",
+      "arch-3",
+      "arch-4",
+      "arch-5",
+      "arch-4",
+      "arch-6",
+      "arch-4",
+      "arch-5",
+      "arch-2",
+      "arch-2",
+      "arch-4",
+      "arch-4",
+      "arch-5"
+     ]
+    ]
+   }
+  },
+  "against_house": {
+   "built": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house_longest_run": 2,
+  "runs_over_reference": [],
+  "warnings": [],
+  "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
+ },
+ "emitted_slides": 1,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [
+   "SLIDE_NUMBER"
+  ],
+  "slide_layer_entries": [],
+  "notes": [],
+  "firm": [
+   {
+    "chrome_id": "chrome-13",
+    "kind": "label",
+    "text": "Goldman Stanley",
+    "layers": [
+     "master"
+    ],
+    "decision": "keep",
+    "chosen": false
+   }
+  ],
+  "drawn": [
+   []
+  ]
+ },
+ "validation": {
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/deck.pptx",
+  "slides": 1,
+  "problems": [],
+  "ok": true
+ },
+ "leakage": {
+  "past_decks": [
+   "mi_netflix_financing_pitchbook.pptx"
+  ],
+  "briefs": [],
+  "findings": 0,
+  "distinctive": 0,
+  "low": 0,
+  "pages": [],
+  "images": [],
+  "low_findings": [],
+  "what_to_do": {
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
+  },
+  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files",
+  "chrome_excluded": {
+   "mi_netflix_financing_pitchbook.pptx": {
+    "phrase": 0,
+    "name": 0,
+    "figure": 0
+   }
+  },
+  "images_checked": "pptx media by sha256",
+  "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
+  "verdict": "clean"
+ },
+ "renders": {
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/deck.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 70,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 12,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Wingdings": {
+    "rendered_with": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+    "fidelity": "substituted",
+    "codepoints_checked": 1,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": true
+   }
+  },
+  "pages": 1,
+  "images": [
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/renders/slide-01.png"
+  ]
+ },
+ "judge": {
+  "reference": "/home/user/pptx-skill/refs/files/mi_netflix_financing_pitchbook.pptx",
+  "total": 0.112,
+  "components": {
+   "families": 0.003,
+   "size_hist": 0.266,
+   "size_ladder": 0,
+   "title_size": 0,
+   "bold_ratio": 0.118,
+   "text_colors": 0.0,
+   "fills": 0.0,
+   "lines": null,
+   "aligns": 0.187,
+   "kinds": 0.571,
+   "background": 0.0,
+   "margins": 0.447,
+   "coverage": 0.185,
+   "count": 0.63,
+   "overlap": 0.0,
+   "overflow": 0.0
+  },
+  "per_slide": [
+   {
+    "slide": 1,
+    "total": 0.112,
+    "worst": [
+     [
+      "count",
+      0.63
+     ],
+     [
+      "kinds",
+      0.571
+     ],
+     [
+      "margins",
+      0.447
+     ]
+    ]
+   }
+  ],
+  "overflow_where": [],
+  "house_spread": {
+   "n": 15,
+   "min": 0.055,
+   "median": 0.084,
+   "p90": 0.212,
+   "max": 0.388
+  },
+  "renditions": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx in another format"
+  },
+  "others": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/45541_Header.pptx": 0.55,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.632,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/themes.pptx": 0.518
+  },
+  "panel_skipped": {
+   "reason": "no type evidence (a scan, a browser print or an empty deck)",
+   "files": [
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/perella_weinberg_pitch.pdf"
+   ]
+  },
+  "same_house_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.073,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.101,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.068
+  },
+  "panel": "refs/files (default)",
+  "nearest_is_reference": true,
+  "reference_rank": 1,
+  "within_house_spread": true,
+  "layout_clean": true,
+  "filed_under_reference": true
+ },
+ "outputs": {
+  "verdict": "built",
+  "moved_aside": [],
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p9/renders"
+ }
+}

@@ -68,6 +68,7 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import annotate  # noqa: E402
 import component_api  # noqa: E402
+import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
@@ -184,13 +185,25 @@ def lift_table_style(node: dict, styling: dict) -> None:
 
 def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
     """The emitter bolds emphasis runs, totals and emphasis rows and a bold header; the
-    solver must measure them bold, so the table spec it parses gets what the emitter reads."""
+    solver must measure them bold, so the table spec it parses gets what the emitter reads.
+    A picture sized by a role (images.box_size) gets that size as a fixed box here, so the
+    solver places the box the emitter fills."""
     styling = slide.get("styling", {})
     if node.get("type") == "region":
         for c in node.get("children", []):
             mark_measured_weights(c, slide, guide)
         return
     st = styling.get(node.get("id"), {})
+    if node.get("kind") == "image" and node.get("id") in (slide.get("images") or {}):
+        pic = slide_picture(slide, node["id"], guide)
+        size = images.box_size(pic, guide)
+        if size is not None:
+            if node.get("size") not in (None, size):
+                raise SystemExit(f"image {node['id']!r}: its size comes from slide.images[{node['id']!r}]'s "
+                                 f"{'height_role' if 'height_role' in pic.entry else 'width_role'}; remove the node's own size")
+            node["size"] = size
+            node["scale_class"] = "fixed"
+        return
     if node.get("kind") == "text":
         for i, p in enumerate(node.get("paragraphs", [])):
             ps = (st.get("paragraphs") or {}).get(str(i), {})
@@ -204,6 +217,18 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
         table["emphasis_rows"] = sorted({r for g in groups if g["rows"] is not None for r in g["rows"]})
         table["emphasis_columns"] = sorted({c for g in groups if g["columns"] is not None for c in g["columns"]})
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
+
+
+def slide_picture(slide: dict, nid: str, guide: dict) -> images.Picture:
+    """slide.images[nid] validated once per build (images.picture: the source read and
+    refused at the boundary by name)."""
+    cache = slide.setdefault("_pictures", {})
+    if nid not in cache:
+        try:
+            cache[nid] = images.picture(slide["images"][nid], f"slide.images[{nid!r}]", guide)
+        except images.ImageRefused as error:
+            raise SystemExit(f"image {nid!r}: {error}") from None
+    return cache[nid]
 
 
 #: What the solver reads on an element node, by kind (layout._parse_node); a presentation
@@ -614,11 +639,16 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
                         if plot is lower and image_below:
                             unknown.append("an image lies under the chart; contrast needs pixels")
                         backings.extend(plot)
+                spec = item["spec"] or {}
+                over = label_overflows_bar(el, item, spec) if backings and "series" in item else []
+                if over:
+                    # a label taller than its bar spills onto the plot: scored there too
+                    backings.extend(plot)
+                    where["overflows_bar_at_points"] = over
                 if unknown or not backings:
                     out["undecidable"].append({**where, "why": "; ".join(unknown) or "no backing"})
                     if not backings:
                         continue
-                spec = item["spec"] or {}
                 size_pt = float(spec.get("size_pt") or 0) or None
                 bold = spec.get("weight", 400) >= 700
                 finding = {**where, "ink": item["ink_name"] or "chart text ink", **_score(item["ink"], list(dict.fromkeys(backings)), size_pt or 0.0, bold, names)}
@@ -1078,6 +1108,26 @@ def label_text(value: float, number_format: str | None) -> str | None:
     return lit(m["pre"]) + body + m["pct"] + lit(m["post"])
 
 
+def label_overflows_bar(el: dict, item: dict, spec: dict) -> list[int]:
+    """The points whose label, set on its column's fill, is taller than the column's
+    segment along the value axis (horizontal bars are not measured here): one line of the
+    label's role at its size (1.2 x size, PowerPoint's single line) against the segment
+    chart_geometry computes. Empty when the chart's geometry is not computable (no
+    plot_area or no axis range): nothing is claimed then."""
+    from chart_geometry import ChartGeometry, GeometryRefused
+    size_pt = float(spec.get("size_pt") or 0)
+    if not size_pt or not str(el.get("type", "")).startswith("COLUMN_"):
+        return []
+    try:
+        geo = ChartGeometry(el, el["box"])
+        if geo.series_family(item["series"]) not in ("bar", "bar_stacked"):
+            return []
+        line = size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
+        return [i for i in item["points"] if geo.bar_rect(item["series"], i)[3] < line]
+    except GeometryRefused:
+        return []
+
+
 def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict], list[dict]]:
     """Chart text a renderer must break between characters, measured with the solver's
     ruler and faces at the size the emitter writes (the guide role, scale 1). A bar or
@@ -1101,9 +1151,15 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
             continue
         horizontal = str(el["type"]).startswith("BAR_")
         extent = el["box"][3] if horizontal else el["box"][2]
+        pr = plot_rect(el, el["box"])
+        if pr is not None:
+            # a fixed plot rectangle is the categories' own extent, not the frame's
+            extent = pr[3] if horizontal else pr[2]
         slot = extent / len(cats)
         # gap and overlap at their thickest when left out: an upper bound
-        bar = bar_thickness(slot, el["type"], len(el["series"]), float(el.get("gap_width", 0)), float(el.get("overlap", 100)))
+        # the chart type's own plot group (a combo's other series are another group)
+        own = [x for x in el["series"] if x.get("plot_type", el["type"]) == el["type"] and x.get("axis", "primary") == "primary"] or el["series"]
+        bar = bar_thickness(slot, el["type"], len(own), float(el.get("gap_width", 0)), float(el.get("overlap", 100)))
 
         def words_over(text: str, role: str | None, limit: float, part: str) -> None:
             role = role or (el.get("text") or {}).get("role")
@@ -1122,6 +1178,8 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
             for c in cats:
                 words_over(c, (cat_axis.get("labels") or {}).get("role"), slot, f"category {c!r}")
         for si, s in enumerate(el["series"]):
+            if s.get("plot_type", el["type"]) != el["type"]:
+                continue  # a combo's line or area series: its labels are not in a bar
             labels = s.get("labels") or {}
             points = {p["index"]: p for p in s.get("points") or []}
             for pi, value in enumerate(s["values"]):
@@ -1329,12 +1387,12 @@ def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None, 
     return visit(tree), pending
 
 
-def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
+def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[dict]:
     """The solver's boxes and measured lines, joined with the slide's styling, charts,
     images and rules, into the emitter's flat element list."""
     styling = slide.get("styling", {})
     charts = slide.get("charts", {})
-    images = slide.get("images", {})
+    images_ = slide.get("images", {})
     rules = slide.get("rules", {})
     rects = slide.get("rects", {})
     out = []
@@ -1385,13 +1443,15 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
                 raise SystemExit(f"{nid}: chart element without chart data under slide.charts")
             out.append({"id": nid, "kind": "chart", "box": b, **c, **extra})
         elif kind == "image":
-            img = images.get(nid)
-            if img and img.get("path"):
-                out.append({"id": nid, "kind": "image", "box": b, **img, **extra})
+            if nid in images_:
+                pic = slide_picture(slide, nid, guide)
+                out.append({"id": nid, "kind": "image", "box": b, **pic.emit_fields(), **extra})
+                if pic.defaults_taken:
+                    slide.setdefault("_image_defaults", {})[nid] = pic.defaults_taken
             elif nid in rects or extra.get("fill_role"):
                 out.append({"id": nid, "kind": "rect", "box": b, **rects.get(nid, {}), **extra})
             else:
-                raise SystemExit(f"{nid}: image element needs slide.images[{nid}].path or a fill under slide.rects")
+                raise SystemExit(f"{nid}: image element needs slide.images[{nid!r}] ({{\"path\": ...}} or {{\"svg\": ...}}) or a fill under slide.rects")
         elif kind == "rule":
             out.append({"id": nid, "kind": "rule", "box": b, **rules.get(nid, {}), **extra})
         else:
@@ -1773,7 +1833,9 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                                for k, v in resolved["elements"].items() if v.get("kind") == "table"}
             if outcome.status == "unfittable":
                 entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
-            elements = flatten(slide, resolved, spec_raw)
+            elements = flatten(slide, resolved, spec_raw, guide)
+            if slide.get("_image_defaults"):
+                entry["image_defaults_taken"] = slide["_image_defaults"]
             annotation_problems: list[dict] = []
             if slide.get("annotations") is not None:
                 # resolved on the solved page: anchored to the hosts' boxes, measured at the page's scale
@@ -1863,6 +1925,36 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 entry["problems"].extend(found)
                 if found and entry["status"] == "fit":
                     entry["status"], entry["reason"] = "unfittable", "annotation covers chart text"
+    picture_pages = {i: [el for el in page["elements"] if el.get("kind") == "image" and (el.get("path") or el.get("svg_source"))]
+                     for i, page in enumerate(emit_spec["slides"])}
+    picture_pages = {i: els for i, els in picture_pages.items() if els}
+    if picture_pages:
+        pngs = (report.get("renders") or {}).get("images") or [] if do_render else []
+        for index, els in picture_pages.items():
+            entry = emitted[index]
+            png_index = len(pngs) - len(emitted) + index
+            if not do_render:
+                entry["pictures"] = [{"id": el["id"], "status": "not checked: --no-render"} for el in els]
+                continue
+            if not 0 <= png_index < len(pngs) or not Path(pngs[png_index]).exists():
+                entry["pictures"] = [{"id": el["id"], "status": "not checked: the render wrote no page image"} for el in els]
+                entry["problems"].append({"kind": "picture render check failed", "severity": "refusal", "detail": "the render wrote no page image, so whether each picture was drawn is unknown"})
+                if entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", "picture render check failed"
+                continue
+            found = images.render_check(els, pngs[png_index], guide["reference"]["page"]["width_emu"], guide)
+            entry["pictures"] = found
+            bad = [f for f in found if f["status"] == "not drawn as written"]
+            for f in bad:
+                entry["problems"].append({"kind": "picture not drawn as written", "severity": "refusal",
+                                          "detail": f"{f['id']}: {f['differ_share']:.1%} of its box's pixels differ from the picture as written (at most {images.RENDER_TOLERANCE:.0%})"})
+            small = [f for f in found if f["status"] == "too small to check"]
+            for f in small:
+                w, h = f["box_px"][2], f["box_px"][3]
+                entry["problems"].append({"kind": "picture too small to check", "severity": "refusal",
+                                          "detail": f"{f['id']}: drawn {w} x {h} px on the render, under {images.MIN_CHECK_PX} px on a side; at its aspect it does not show in its box (give it a box it shows in)"})
+            if (bad or small) and entry["status"] == "fit":
+                entry["status"], entry["reason"] = "unfittable", "picture not drawn as written" if bad else "picture too small to check"
     for placed in annotation_pages.values():
         for e in placed:
             if e.get("status") == "placed" and "render_check" not in e:
