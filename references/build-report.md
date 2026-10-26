@@ -272,6 +272,12 @@ the guide says is refused by name.
 - None of the defaults-taken lists is the reference's style: write each choice into the spec
   until the lists hold only what you meant, or name what is left in the report as
   intended. The brief prints each page's counts.
+- With no reference, a default that is a look (a face, size, weight, alignment, colour,
+  fill, stroke or bar geometry falling to the blank template's stock Office theme, a
+  renderer's own style or a constant in the emitter) is refused before building, by
+  element and choice: "with no reference nothing is drawn in a look nobody chose". The
+  lists then hold only what draws nothing or is placed from the data (no axis title, an
+  automatic plot area, no padding, OOXML's own cell inset).
 - `layout_depth`: the page tree's deepest chain of ids and its depth (the runaway bound,
   12, is a guard against a looping generator, never a design limit).
 - `chart_label_breaks`: words a renderer must break between characters at the chart

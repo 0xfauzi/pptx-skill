@@ -83,6 +83,10 @@
    "check": "Pass or fail: deck.build.json every page fit, contrast.violations empty, validate --render and validate --emit --guide pass; the routes table's total ties out (203.4, 1,358)."
   },
   {
+   "statement": "No look is left to the blank template's stock theme, a renderer's own style or a constant: every fill, stroke, chart text, gap width and rule width on the pages is written.",
+   "check": "Pass or fail: the build exits 0 (a look left out is refused before building on a guide with no reference); no slides[].*_defaults_taken line names a fill, stroke, face, size, weight, alignment or bar geometry."
+  },
+  {
    "statement": "Nothing is compared with a reference: the report reads 'no reference' wherever it would.",
    "check": "Pass or fail: judge.verdict, repetition.against_reference.*.verdict, slides[].title.length.*.verdict, source_lines.reference.habit, contrast.precedent_source and leakage.verdict read 'no reference'; no warning names a reference."
   },

@@ -83,9 +83,9 @@ drawn, and the look in words. The questions in typography.md, composition.md, ch
 tables.md, emphasis-and-decoration.md and titles-and-text.md carry corpus counts as
 evidence for your reasoning, never a value to copy. Then steps 5 to 11, with no
 `--reference`, with `--chrome draw`, a null `reference_sha256` and no `in_reference_look`.
-The build runs every hard limit and reports "no reference" wherever it would compare
-(titles, variety, source-line and mark habits, contrast precedent, judge, leakage). Worked:
-`examples/no-reference.*`, `examples/proofs/no-reference.build.json`.
+The build runs every hard limit, refuses a look left to the stock theme or a constant (a
+series fill, chart text, a rule width) and reports "no reference" wherever it compares.
+Worked: `examples/no-reference.*`, `examples/proofs/no-reference.build.json`.
 
 ## Workflow
 

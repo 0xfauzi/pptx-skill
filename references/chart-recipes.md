@@ -29,7 +29,9 @@ every choice into the spec. The build then measures: contrast of every label aga
 the fill it sits on (below 3.0:1 refuses the page), the stroke floor (`validate
 --emit`), fit, the judge. What you leave out is written as a neutral value and listed
 per page under `chart_defaults_taken` in the build report. Read that list after every
-build: each line is a decision you did not make.
+build: each line is a decision you did not make. With no reference, a left-out fill,
+stroke, marker, smoothing, tick mark, gap width, overlap, chart text or axis title style
+is refused instead: there is no reference theme for it to fall to (build-report.md).
 
 Everything below is a recipe in that spec, not a code path. Each one has been built on
 keybank (the pages named under "Proven on") and read from the render.

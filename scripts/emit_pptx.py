@@ -150,9 +150,24 @@ class Guide:
         #: guide states; emit() resets it per slide and reports it as `defaults_taken`
         self.taken: list[tuple[str, str]] = []
 
-    def take(self, where: str, what: str) -> None:
+    def take(self, where: str, what: str, *, look: bool = False) -> None:
+        """List a value written that neither the spec nor the guide states; a `look` is
+        refused first where nobody chose it (unchosen)."""
+        if look:
+            self.unchosen(where, what)
         if (where, what) not in self.taken:
             self.taken.append((where, what))
+
+    def unchosen(self, where: str, what: str) -> None:
+        """A look (a face, size, weight, alignment, colour, fill, stroke or bar geometry) that
+        neither the spec nor the guide states falls to the template's theme, a renderer's own
+        style or a constant here. A guide made with no reference has no theme of anyone's to
+        fall to (the blank template's is python-pptx's stock Office theme), so it is refused
+        by name there; with a reference it is listed like any other default."""
+        import plan
+        if not plan.has_reference(self.g):
+            raise SpecError(f"{where}: {what}: with no reference nothing is drawn in a look nobody chose (the template's theme, "
+                            "a renderer's own style or a constant in the emitter); write this choice")
 
     def hex(self, role: str | None, *, where: str) -> str | None:
         if role is None:
@@ -334,7 +349,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
         glyph = entry.get("glyph")
         if not glyph:
             glyph = "\u2022"
-            guide.take(where, f"bullet level {level}: glyph \u2022 (the guide's typography.bullets name no glyph for it)")
+            guide.take(where, f"bullet level {level}: glyph \u2022 (the guide's typography.bullets name no glyph for it)", look=True)
         bufont = entry.get("font")
         # the solver measured every line at width - indent_emu (the reference's own marL for
         # the level); the file carries that marL, so the literal breaks were computed for the
@@ -343,7 +358,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
         if not indent:
             role = para.get("indent_role") or ("space.sm" if "space.sm" in guide.spacing else None)
             indent = guide.space(role, 228600)
-            guide.take(where, f"bullet level {level}: indent {indent} EMU ({role or 'no spacing step: 0.25 in'}; no measured indent was given)")
+            guide.take(where, f"bullet level {level}: indent {indent} EMU ({role or 'no spacing step: 0.25 in'}; no measured indent was given)", look=role is None)
         hanging_role = entry.get("hanging_indent_role") or entry.get("indent_role")
         hanging = guide.space(hanging_role, indent) if hanging_role else indent
         # the glyph needs its own width plus a word space: a 5pt step on a 12pt body would
@@ -464,7 +479,7 @@ def outline_width(el: dict, guide: Guide) -> int:
     """An element's outline width: its line_width_emu, else DEFAULT_LINE_EMU, listed."""
     if el.get("line_width_emu"):
         return int(el["line_width_emu"])
-    guide.take(el.get("id", "shape"), "outline width 0.75pt (line_width_emu left out)")
+    guide.take(el.get("id", "shape"), "outline width 0.75pt (line_width_emu left out)", look=True)
     return DEFAULT_LINE_EMU
 
 
@@ -503,7 +518,7 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
             width_emu = int(round(float(motif["line_width_pt"]) * EMU_PER_PT))
         else:
             width_emu = DEFAULT_LINE_EMU
-            guide.take(el.get("id", "rule"), f"line width 0.75pt (left out, and the guide's motifs draw no {role} line)")
+            guide.take(el.get("id", "rule"), f"line width 0.75pt (left out, and the guide's motifs draw no {role} line)", look=True)
     _set_line(line._element.spPr, hex_color, width_emu, el.get("dash"))
     for key, tag in (("head_end", "a:headEnd"), ("tail_end", "a:tailEnd")):
         if el.get(key) not in (None, "none"):
@@ -957,17 +972,24 @@ def table_banding_phase(el: dict, guide: Guide) -> int:
 def table_defaults_taken(el: dict, guide: Guide) -> list[str]:
     """Every table choice neither the table nor the guide states, with the value written
     for it: the readers above (table_row_styles, table_totals_bold, table_banding_phase)
-    and write_table's padding and alignment fall back to these."""
+    and write_table's padding and alignment fall back to these. A look among them (the
+    totals row's weight, which rows are banded, a column's alignment) is refused where
+    nobody chose it (Guide.unchosen)."""
     out: list[str] = []
+    where = f"table {el.get('id')!r}"
+
+    def look(what: str) -> None:
+        guide.unchosen(where, what)
+        out.append(what)
     groups = table_emphasis(el)
     for i, g in enumerate(groups):
         if g["bold"] is None:
             out.append(f"emphasis[{i}].bold left out: the cells keep their own weight (the cell role's, and a totals row's totals_bold)")
     if el.get("totals_last_row") and el.get("totals_bold") is None and guide.tables.get("totals_bold") is None:
-        out.append("totals_bold: the totals row is bold (neither the table nor the guide's tables says)")
+        look("totals_bold: the totals row is bold (neither the table nor the guide's tables says)")
     band = el.get("banding_role") if "banding_role" in el else guide.tables.get("banding_role") or guide.tables.get("banding_hex")
     if band and band != "none" and el.get("banding_phase") is None and guide.tables.get("banding_phase") is None:
-        out.append("banding_phase: 0, the banding fill on the first body row and every second one after (neither the table nor the guide's tables says)")
+        look("banding_phase: 0, the banding fill on the first body row and every second one after (neither the table nor the guide's tables says)")
     if "header_bold" not in el and guide.tables.get("header_bold") is None and int(el.get("header_rows", 1)):
         out.append("header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)")
     if guide.tables.get("cell_padding_emu") is None and guide.tables.get("cell_padding_role") is None and not el.get("cell_padding_role"):
@@ -976,7 +998,7 @@ def table_defaults_taken(el: dict, guide: Guide) -> list[str]:
     for col in el.get("columns") or []:
         numeric = col.get("value_kind") in ("number", "percent", "currency")
         if not col.get("align") and not align_by_kind.get("numeric" if numeric else "text"):
-            out.append(f"column {col.get('key')!r} align: {'right' if numeric else 'left'} (a {'figure' if numeric else 'text'} column; the guide's "
+            look(f"column {col.get('key')!r} align: {'right' if numeric else 'left'} (a {'figure' if numeric else 'text'} column; the guide's "
                        "alignment_by_column_type states none)")
     n_header = int(el.get("header_rows", 1))
     spanned = n_header > 1 and any(c1 > c0 for row in header_spans([header_labels(c, n_header, f"table {el.get('id')!r}") for c in el.get("columns") or []], n_header)
@@ -1182,6 +1204,11 @@ CHART_DEFAULTS = {
     "axis.title.orientation": "along: the title runs along its axis, turned a quarter on a vertical axis",
     "series.axis": "primary",
 }
+#: the CHART_DEFAULTS that are a look: written as the theme's, a renderer's own or
+#: python-pptx's, never anyone's choice (Guide.take refuses them with no reference). The
+#: rest draw nothing (absence), take the chart's own text or are placed from the data.
+CHART_LOOK_DEFAULTS = {"series.fill_role", "series.line_role", "series.line_width_pt", "series.marker", "series.smooth", "axis.line_role",
+                       "axis.tick_marks", "gap_width", "overlap", "text", "axis.title.role", "axis.title.ink_role"}
 
 
 def _keys(where: str, obj, allowed: set[str]) -> dict:
@@ -1281,6 +1308,8 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     defaults: list[tuple[str, str]] = []
 
     def took(path: str, key: str) -> None:
+        if key in CHART_LOOK_DEFAULTS:
+            guide.take(f"{where} {path}", CHART_DEFAULTS[key], look=True)
         defaults.append((path, CHART_DEFAULTS[key]))
 
     series = el.get("series")
@@ -2274,13 +2303,14 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                 width_emu = int(round(float(ch["line_width_pt"]) * EMU_PER_PT))
             else:
                 width_emu = DEFAULT_LINE_EMU
-                guide.take(ch["chrome_id"], "chrome rule width 0.75pt (the entry records no line_width_pt)")
+                guide.take(ch["chrome_id"], "chrome rule width 0.75pt (the entry records no line_width_pt)", look=True)
             line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2)))
             line.name = ch["chrome_id"]
             ink = chrome_hex(ch, guide, "line") or chrome_hex(ch, guide, "fill")
             if not ink:
                 ink = guide.colors.get("color.rule", {}).get("hex") or "000000"
-                guide.take(ch["chrome_id"], f"chrome rule colour {ink} ({'color.rule' if guide.colors.get('color.rule') else 'black: the guide has no color.rule'}; the entry records no line or fill)")
+                guide.take(ch["chrome_id"], f"chrome rule colour {ink} ({'color.rule' if guide.colors.get('color.rule') else 'black: the guide has no color.rule'}; the entry records no line or fill)",
+                           look=not guide.colors.get("color.rule"))
             _set_line(line._element.spPr, ink, width_emu)
         elif kind == "band" and chrome_hex(ch, guide, "fill"):
             shape = _without_theme_style(slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h)))
@@ -2309,7 +2339,7 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                 else:
                     _insert_fill_first(shape._element.spPr, etree.Element(qn("a:noFill")))
                 if line_hex and not ch.get("line_width_pt"):
-                    guide.take(ch["chrome_id"], "logo placeholder outline 0.75pt (the entry records no line_width_pt)")
+                    guide.take(ch["chrome_id"], "logo placeholder outline 0.75pt (the entry records no line_width_pt)", look=True)
                 _set_line(shape._element.spPr, line_hex, round(float(ch.get("line_width_pt") or 0.75) * EMU_PER_PT) if line_hex else None)
                 if notes is not None and not noted:
                     notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": "rect placeholder", "fill_hex": fill_hex, "line_hex": line_hex,
@@ -2332,7 +2362,7 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
             size_pt = float(style.get("size_pt") or guide.roles.get("type.caption", {}).get("size_pt") or 9)
             for key, value in (("family", f"{face} (the guide's minor face)"), ("size_pt", f"{size_pt}pt (type.caption's size, else 9pt)"), ("bold", "regular")):
                 if style.get(key) is None:
-                    guide.take(ch["chrome_id"], f"chrome text {key}: {value}; the entry's text_style records none")
+                    guide.take(ch["chrome_id"], f"chrome text {key}: {value}; the entry's text_style records none", look=key == "size_pt" and not guide.roles.get("type.caption", {}).get("size_pt"))
             if text:
                 run = p.add_run()
                 # the space the reference sets between its words and the page number stays
