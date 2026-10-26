@@ -308,6 +308,9 @@ def title_register(guide: dict, value) -> dict:
             "claims_elsewhere": claims, "why": value.get("why"), "provenance": model_prov(value.get("why") or "")}
 
 
+#: the moves an annotation can draw with no words of its own (outline, fill, line,
+#: bracket): on these the digest answers whether the house labelled the mark
+MARK_MOVE_SET = frozenset(m for moves in VOCABULARY["annotation_kind_moves"].values() for m in moves)
 EXHIBIT_KEYS = {"candidate", "class", "type", "data_shape", "message", "message_kind", "annotation_moves", "emphasis_devices",
                 "number_formats", "legend", "data_labels", "colour_logic", "why"}
 EXHIBIT_SCALARS = (("class", "exhibit_class"), ("type", "exhibit_type"), ("data_shape", "data_shape"), ("message_kind", "message_kind"),
@@ -418,9 +421,14 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
                     errors.append(f"{where} annotation_moves: a list of {{\"move\", \"anchor\"}} (empty when the exhibit carries none)")
                 else:
                     for j, m in enumerate(moves):
-                        if not isinstance(m, dict) or set(m) != {"move", "anchor"}:
-                            errors.append(f"{where} annotation_moves[{j}]: exactly {{\"move\", \"anchor\"}}")
+                        if not isinstance(m, dict) or set(m) - {"labelled"} != {"move", "anchor"}:
+                            errors.append(f"{where} annotation_moves[{j}]: exactly {{\"move\", \"anchor\"}}, plus \"labelled\" on a mark")
                             continue
+                        if m.get("move") in MARK_MOVE_SET and not isinstance(m.get("labelled"), bool):
+                            errors.append(f"{where} annotation_moves[{j}]: {m['move']} is a mark: answer labelled, true when words on the exhibit "
+                                          "say what it marks (a label beside it, or the figure it rings), false when it stands alone")
+                        elif "labelled" in m and m.get("move") not in MARK_MOVE_SET:
+                            errors.append(f"{where} annotation_moves[{j}]: labelled is answered only on a mark move ({sorted(MARK_MOVE_SET)})")
                         e = _vocab_error("annotation_move", m["move"], f"{where} annotation_moves[{j}]")
                         if e:
                             errors.append(e)
@@ -452,6 +460,9 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
         "annotation_moves": count(m for _, m in moves),
         "moves_by_data_shape": {shape: count(m for r, m in moves if r["data_shape"] == shape) for shape in sorted({r["data_shape"] for r in records})},
         "moves_by_message_kind": {kind: count(m for r, m in moves if r["message_kind"] == kind) for kind in sorted({r["message_kind"] for r in records})},
+        "marks_labelled": {state: [{"slide": r["slide"], "type": r["type"], "class": r["class"], "move": m["move"], "anchor": m["anchor"]}
+                                   for r in records for m in r["annotation_moves"] if m["move"] in MARK_MOVE_SET and m["labelled"] is want]
+                           for state, want in (("labelled", True), ("unlabelled", False))},
         "mean_moves_per_exhibit": round(len(moves) / len(records), 2) if records else None,
         "exhibits_without_moves": [f"{r['slide']}:{r.get('candidate')}" for r in records if not r["annotation_moves"]],
         "emphasis_devices": count(d for r in records for d in r["emphasis_devices"]),
@@ -756,9 +767,16 @@ def main(argv: list[str]) -> int:
             print(f"| `{cell(address)}` | {cell(shape)} | {cell(null or 'refused')} |")
         return 0
     if args.check or not args.patch:
+        # each value shape is printed once, under every open address it answers
+        groups: dict[tuple | None, list[dict]] = {}
         for u in guide.get("unresolved", []):
             found = value_shape(u["path"])
-            print(f"- {u['path']}: {u['reason']}" + (f"\n    value: {found[0]}; null: {found[1] or 'refused'}" if found else ""))
+            groups.setdefault(tuple(found) if found else None, []).append(u)
+        for found, items in groups.items():
+            for u in items:
+                print(f"- {u['path']}: {u['reason']}")
+            if found:
+                print(f"    value{' (each of the ' + str(len(items)) + ' above)' if len(items) > 1 else ''}: {found[0]}; null: {found[1] or 'refused'}")
         print(f"{len(guide.get('unresolved', []))} open; core open: {core_open(guide) or 'none'}")
         return 0
     patch = load_json(Path(args.patch))
@@ -787,8 +805,19 @@ def main(argv: list[str]) -> int:
     out = cli.out_path(Path(args.out) if args.out else Path(args.guide).with_name(Path(args.guide).stem.replace(".style", "") + ".guide.json"), "guide")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(guide, indent=1, default=str))
-    print(json.dumps({"out": str(out), "applied": applied, "core_open": core,
-                      "still_open": [u["path"] for u in guide["unresolved"]]}, indent=1))
+    summary: dict = {"out": str(out), "applied": applied, "core_open": core, "still_open": [u["path"] for u in guide["unresolved"]]}
+    eh = guide.get("exhibit_habits")
+    if isinstance(eh, dict):
+        # the habits every later step reads, with their counts, where the model sees them first
+        sl = eh["source_lines"]
+        summary["house_habits"] = {
+            "source_lines": f"{sl['with_source_line']} of {sl['data_pages']} data pages carry a source or note line"
+                            + (f" (pages {sl['pages_with']})" if sl["pages_with"] else "") + ": put one where the house would",
+            "marks": f"{len(eh['marks_labelled']['labelled'])} labelled, {len(eh['marks_labelled']['unlabelled'])} unlabelled "
+                     f"(unlabelled on slides {sorted({m['slide'] for m in eh['marks_labelled']['unlabelled']})}): an unlabelled mark on a new page "
+                     "names what explains it (annotation explained_by)",
+            "annotation_moves": eh["annotation_moves"]}
+    print(json.dumps(summary, indent=1))
     return 0
 
 

@@ -39,8 +39,10 @@ page with reason "contrast", below AA warns; no ink is ever swapped to pass it),
 reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
 a warning listed first under `problems`), the source-line check (a table or chart with
 no type.source_line or type.footnote paragraph refuses the page where the house's digest
-shows source lines on at least 80% of its data pages, unmeasured threshold, and warns
-elsewhere), and `title` (the page title's characters, words and lines against the house's
+shows source lines on at least 80% of its data pages and warns where 50% or more do or
+the habit is unmeasured; a page WITH one warns where under 50% of the house's data pages
+carry one; both lines unmeasured, and the deck-level `source_lines` sets the deck's count
+beside the house's), and `title` (the page title's characters, words and lines against the house's
 titles, and the register the slide states against the house's register counts; warnings only).
 `repetition` at deck level is the section's realised variety: each page's content (the
 frame left out) assigned a realised composition by the extractor's own leader clustering,
@@ -928,34 +930,60 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
     return out
 
 
-def source_line_missing(elements: list[dict]) -> bool:
-    """A data page (a table or a chart, plan.REALISED_CLASS) with no type.source_line or
-    type.footnote paragraph."""
-    exhibit = any(el["kind"] in REALISED_CLASS for el in elements)
-    sourced = any(p["role"] in SOURCE_ROLES for el in elements if el["kind"] == "text" for p in el["paragraphs"])
-    return exhibit and not sourced
+def source_line_of(elements: list[dict]) -> dict:
+    """Whether the page holds a data exhibit (a table or a chart, plan.REALISED_CLASS) and
+    whether it carries a type.source_line or type.footnote paragraph of its own (an
+    annotation's label is not one)."""
+    return {"data_page": any(el["kind"] in REALISED_CLASS for el in elements),
+            "source_line": any(p["role"] in SOURCE_ROLES for el in elements if el["kind"] == "text" and not el.get("annotation")
+                               for p in el["paragraphs"])}
 
 
 #: Unmeasured: the house carries source lines "as a rule" when at least this share of its
-#: data pages does, read from the completed digest over at least SOURCE_LINE_MIN_PAGES data
-#: pages. Both numbers are choices; no reader has been asked where the rule begins.
+#: data pages does, and "rarely" below SOURCE_LINE_RARE, read from the completed digest
+#: over at least SOURCE_LINE_MIN_PAGES data pages. The numbers are choices; no reader has
+#: been asked where a rule begins.
 SOURCE_LINE_HOUSE_SHARE = 0.8
+SOURCE_LINE_RARE = 0.5
 SOURCE_LINE_MIN_PAGES = 3
 
 
 def source_line_habit(guide: dict) -> dict:
-    """The house's source-line habit from the digest: refuse when it is the rule, warn
-    otherwise. A guide whose digest has no source-line answers has no evidence, which is
-    never read as 'the house carries none'."""
+    """The house's source-line habit from the digest, with its count: `rule` (refuse a data
+    page without one), `common` (warn without one), `rare` (warn WITH one: the house's
+    data pages mostly carry none), or `unmeasured` (no answers, or too few data pages to
+    say: warn without one, never read as 'the house carries none')."""
     lines = (guide.get("exhibit_habits") or {}).get("source_lines")
     if not isinstance(lines, dict) or lines.get("share") is None:
-        return {"severity": "warning", "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"}
+        return {"habit": "unmeasured", "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"}
     n, k = lines["data_pages"], lines["with_source_line"]
     if n < SOURCE_LINE_MIN_PAGES:
-        return {"severity": "warning", "evidence": f"{k} of {n} data pages carry one: fewer than {SOURCE_LINE_MIN_PAGES} data pages is no evidence of a rule"}
-    rule = lines["share"] >= SOURCE_LINE_HOUSE_SHARE
-    return {"severity": "refusal" if rule else "warning",
-            "evidence": f"{k} of {n} house data pages carry one ({lines['share']:.0%}; the rule threshold {SOURCE_LINE_HOUSE_SHARE:.0%} is unmeasured)"}
+        return {"habit": "unmeasured", "evidence": f"{k} of {n} data pages carry one: fewer than {SOURCE_LINE_MIN_PAGES} data pages is no evidence of a habit"}
+    share = lines["share"]
+    habit = "rule" if share >= SOURCE_LINE_HOUSE_SHARE else "common" if share >= SOURCE_LINE_RARE else "rare"
+    return {"habit": habit, "share": share, "pages_with": lines.get("pages_with"),
+            "evidence": f"{k} of {n} house data pages carry one ({share:.0%}"
+                        + (f": pages {', '.join(str(x) for x in lines.get('pages_with') or [])}" if 0 < k <= 5 else "")
+                        + f"; the lines at {SOURCE_LINE_HOUSE_SHARE:.0%} and {SOURCE_LINE_RARE:.0%} are unmeasured)"}
+
+
+def source_line_problem(elements: list[dict], guide: dict) -> dict | None:
+    """The page's source line against the house's habit: a data page without one where the
+    house carries them as a rule (refusal) or commonly or unmeasured (warning); a page
+    with one where the house rarely carries one (warning, `source line the house rarely
+    carries`). A page that does what the house mostly does is no problem."""
+    page = source_line_of(elements)
+    habit = source_line_habit(guide)
+    if page["data_page"] and not page["source_line"] and habit["habit"] != "rare":
+        refuse = habit["habit"] == "rule"
+        return {"kind": "no source line", "severity": "refusal" if refuse else "warning",
+                "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; house: " + habit["evidence"]
+                          + ("; the house carries them as a rule, so the page is refused: add one" if refuse else "; add one where the house would")}
+    if page["source_line"] and habit["habit"] == "rare":
+        return {"kind": "source line the house rarely carries", "severity": "warning",
+                "detail": "the page carries a type.source_line or type.footnote paragraph; house: " + habit["evidence"]
+                          + ". Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"}
+    return None
 
 
 def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
@@ -980,12 +1008,10 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
     entry["bridge_ties"] = bridge_ties(elements)
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in entry["bridge_ties"])
     problems.extend(measured or [])
-    if source_line_missing(elements):
-        habit = source_line_habit(guide)
-        problems.append({"kind": "no source line", "severity": habit["severity"],
-                         "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; house: "
-                                   + habit["evidence"] + ("; the house carries them as a rule, so the page is refused: add one" if habit["severity"] == "refusal"
-                                                          else "; add one where the house would")})
+    entry["source_line"] = source_line_of(elements)
+    found = source_line_problem(elements, guide)
+    if found:
+        problems.append(found)
     refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
     entry["solver_status"] = entry["status"]  # the geometry verdict alone; component.py's harness page reads it
     if refusals and entry["status"] == "fit":
@@ -1777,8 +1803,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             annotation_problems: list[dict] = []
             if slide.get("annotations") is not None:
                 # resolved on the solved page: anchored to the hosts' boxes, measured at the page's scale
+                planned = next((p for p in plan_pages or [] if p.get("id") == slide.get("id")), None)
                 elements, placed, annotation_problems = annotate.resolve(slide["annotations"], elements, ctx, outcome.resolved.scale, guide,
-                                                                         spec_raw["page"].get("reserved_zones") or [])
+                                                                         spec_raw["page"].get("reserved_zones") or [],
+                                                                         list(planned["exhibit_types"]) if planned else None)
                 entry["annotations"] = placed
             entry["density"] = density_of(elements, resolved, guide, spec_raw)
             breaks, unread = chart_label_breaks(elements, ctx)
@@ -1802,6 +1830,11 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         if "annotations" in entry:
             annotation_pages[len(emitted)] = entry["annotations"]
         emitted.append(entry)
+    sourced = [(e["id"], e["source_line"]) for e in emitted if "source_line" in e]
+    report["source_lines"] = {"house": source_line_habit(guide),
+                              "deck": {"data_pages": sum(1 for _, s in sourced if s["data_page"]),
+                                       "with_source_line": [i for i, s in sourced if s["source_line"]],
+                                       "data_pages_without": [i for i, s in sourced if s["data_page"] and not s["source_line"]]}}
     report["position_drift"] = position_drift(pages, guide)
     report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages},
                                          {n: realised_classes(deck["slides"][n - 1]["spec"]["root"]) for n, _ in pages}, house_names, plan_check)
@@ -1993,6 +2026,11 @@ def brief_text(report: dict, outputs: Outputs) -> str:
     lines += [f"  variety warning: {w}" for w in rep.get("warnings") or []]
     differing = ((rep.get("plan") or {}) if isinstance(rep.get("plan"), dict) else {}).get("pages_differing_from_plan") or []
     lines += [f"  differs from plan: {d.get('id')}: {d.get('detail')}" for d in differing]
+    src = report.get("source_lines") or {}
+    if src:
+        deck_src = src["deck"]
+        lines.append(f"source lines: house {src['house']['habit']}: {src['house']['evidence']}; this deck: {len(deck_src['with_source_line'])} page(s) carry one "
+                     f"({', '.join(map(str, deck_src['with_source_line'])) or 'none'}), {deck_src['data_pages']} data page(s)")
     leak = report.get("leakage") or {}
     if leak:
         lines.append(f"leakage: {leak.get('verdict')}" + (f"; {leak.get('distinctive', leak.get('findings'))} distinctive, {leak.get('low', 0)} low" if "findings" in leak else ""))

@@ -39,6 +39,7 @@ a word between characters (layout.split_words, the solver's own test).
 from __future__ import annotations
 
 import html
+import json
 import re
 import subprocess
 import sys
@@ -56,12 +57,12 @@ EMU_PER_PT = 12_700
 KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge")
 COMMON_KEYS = {"id", "host", "kind", "anchor"}
 KIND_KEYS = {
-    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape"},
-    "band": {"fill_role", "label", "pad_role"},
-    "reference_line": {"line_role", "line_width_pt", "dash", "label", "gap_role"},
+    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape", "label", "gap_role", "explained_by"},
+    "band": {"fill_role", "label", "pad_role", "explained_by"},
+    "reference_line": {"line_role", "line_width_pt", "dash", "label", "gap_role", "explained_by"},
     "arrow": {"line_role", "line_width_pt", "dash", "label", "position", "gap_role"},
     "callout": {"line_role", "line_width_pt", "fill_role", "label", "position", "gap_role", "pad_role", "head"},
-    "bracket": {"line_role", "line_width_pt", "style", "side", "gap_role", "depth_role", "label"},
+    "bracket": {"line_role", "line_width_pt", "style", "side", "gap_role", "depth_role", "label", "explained_by"},
     "badge": {"fill_role", "label", "position", "gap_role", "pad_role"},
 }
 REQUIRED = {
@@ -93,6 +94,11 @@ DEFAULTS = {
     "label.position.reference_line": "end_outside: past the plot's far edge, centred on the line",
     "label.position.band": "inside_top_left",
 }
+
+
+#: a spacing key's explicit zero: "pad_role": "none" draws on the anchor's own edge as a
+#: choice, so it is not listed under defaults_taken as the key left out is
+NO_SPACE = "none"
 
 
 class AnnotationRefused(ValueError):
@@ -132,6 +138,29 @@ def drawn_marks(geo: ChartGeometry) -> list[tuple[int, int, tuple]]:
             m = geo.mark_rect(j, i)
             if m[2] > 0 and m[3] > 0:
                 out.append((j, i, m))
+    return out
+
+
+#: a line series written with no width is drawn at the renderer's default stroke; Office's
+#: default line-series width, taken as the stroke a label must clear (not measured on LibreOffice)
+DEFAULT_LINE_PT = 2.25
+
+
+def line_strokes(geo: ChartGeometry) -> list[tuple[str, tuple, float]]:
+    """(name, segment, width EMU) of every stroked segment of a line chart's series, between
+    consecutive points that both carry a number."""
+    if geo.family != "line":
+        return []
+    out = []
+    for j, s in enumerate(geo.series):
+        if s.get("line_role") == "none":
+            continue
+        width = float(s.get("line_width_pt") or DEFAULT_LINE_PT) * EMU_PER_PT
+        vals = s.get("values") or []
+        pts = [geo.point(j, i) if i < len(vals) and _num(vals[i]) else None for i in range(len(geo.categories))]
+        for i in range(len(pts) - 1):
+            if pts[i] is not None and pts[i + 1] is not None:
+                out.append((f"line {s.get('name')!r} {geo.categories[i]!r}-{geo.categories[i + 1]!r}", (pts[i], pts[i + 1]), width))
     return out
 
 
@@ -210,7 +239,8 @@ def table_anchor(el: dict, anchor: dict, where: str) -> dict:
     def rect(r0: int, r1: int, c0: int, c1: int) -> dict:
         r0, r1 = sorted((r0, r1))
         c0, c1 = sorted((c0, c1))
-        return {"rect": (xs[c0], ys[r0], xs[c1 + 1] - xs[c0], ys[r1 + 1] - ys[r0])}
+        # cells: the table rows (header rows first) and columns the anchor spans
+        return {"rect": (xs[c0], ys[r0], xs[c1 + 1] - xs[c0], ys[r1 + 1] - ys[r0]), "cells": (r0, r1, c0, c1)}
 
     keys = set(anchor)
     if keys == {"cell"}:
@@ -253,7 +283,7 @@ class Labeller:
         self.ctx, self.scale = ctx, scale
 
     def space(self, role: str | None, where: str) -> int:
-        if role is None:
+        if role is None or role == NO_SPACE:
             return 0
         try:
             return L.space_emu(self.ctx.guide, role, self.scale, "x")
@@ -355,10 +385,14 @@ def _check_keys(ann: dict, where: str) -> str:
     return kind
 
 
-def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Fraction, guide: dict, zones: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
+def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Fraction, guide: dict, zones: list[dict],
+            plan_types: list[str] | None = None) -> tuple[list[dict], list[dict], list[dict]]:
     """The page's elements with every annotation's elements inserted (a band before its
     host, everything else after the page's own elements, in the spec's order), the
-    per-annotation report, and the refusals."""
+    per-annotation report, and the refusals. An unlabelled mark that names nothing
+    explaining it (explanation) is drawn, so the render shows it, and refuses the page
+    as `annotation unexplained`; plan_types are the exhibit types the plan lists for the
+    page, against which a house precedent's exhibit type is checked."""
     eg = EmitGuide(guide)
     by_id = {el["id"]: el for el in elements}
     lab = Labeller(ctx, scale)
@@ -386,6 +420,12 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
             if "label" in ann:
                 eg.hex(ann["label"]["ink_role"], where=f"{where} label")
             drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where)
+            try:
+                siblings = {a["id"]: a for a in annotations if isinstance(a, dict) and isinstance(a.get("id"), str)}
+                entry["explained_by"] = explanation(ann, kind, host, by_id, guide, plan_types, where, siblings) or "its own label"
+            except AnnotationUnexplained as error:
+                entry["explained_by"] = f"unexplained: {error}"
+                problems.append({"kind": "annotation unexplained", "severity": "refusal", "detail": str(error)})
         except (AnnotationRefused, GeometryRefused) as error:
             problems.append({"kind": "annotation refused", "severity": "refusal", "detail": str(error)})
             report.append({"id": ann.get("id") if isinstance(ann, dict) else ai, "status": "refused", "why": str(error)})
@@ -417,8 +457,10 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         taken.append(f"{key}: {DEFAULTS[label_key or key]}")
 
     other_marks: list[tuple[str, tuple]] = []
+    strokes: list[tuple[str, tuple, float]] = []
     if host["kind"] == "chart":
         geo = ChartGeometry(host, host["box"])
+        strokes = line_strokes(geo)
         a = chart_anchor(geo, ann["anchor"], where)
         # every drawn mark the anchor does not take in: an annotation may not cover them. A
         # band's label lies under its host, so every mark in it hides it: none is its own
@@ -436,7 +478,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     if "pad_role" not in ann and kind in ("outline_box", "band", "callout", "badge"):
         default("pad_role")
     gap = lab.space(ann.get("gap_role"), where)
-    if "gap_role" not in ann and kind in ("reference_line", "badge") and (kind == "badge" or "label" in ann):
+    if "gap_role" not in ann and kind in ("reference_line", "badge", "outline_box") and (kind == "badge" or "label" in ann):
         default("gap_role")
     label = ann.get("label")
     stroke = {"line_role": ann.get("line_role"), "line_width_emu": lw, "dash": ann.get("dash")}
@@ -469,6 +511,16 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
         drawn.append({"id": f"{aid}-box", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": SHAPES[shape], **stroke})
         footprint += [{"outline": box, "width": lw}]
+        if label:
+            # the label says what the box marks, beside it: where is a choice with no neutral value
+            pos = label.get("position")
+            if pos not in AROUND:
+                raise AnnotationRefused(f"{where} label: an outline box's label needs position, one of {list(AROUND)} (beside the box, at gap_role)")
+            lines, w, h, fit = label_box()
+            hw = lw / 2  # the label stands clear of the stroke, not of the anchor
+            lb = _placed(pos, (box[0] - hw, box[1] - hw, box[2] + lw, box[3] + lw), w, h, gap)
+            drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, align("left")))
+            footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
     elif kind == "band":
         box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
         if host["kind"] == "table":
@@ -587,7 +639,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         footprint += [{"rect": box}, {"rect": tb, "text": True, "tokens": label["text"].split()}]
     entry = {"id": aid, "kind": kind, "host": host["id"], "anchor": ann["anchor"], "status": "placed",
              "anchor_emu": [round(v) for v in r], "drawn": [d["id"] for d in drawn], "defaults_taken": taken,
-             "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks}
+             "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks, "_lines": strokes}
     return drawn, entry
 
 
@@ -603,6 +655,231 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
             if right > box[0] and left < box[0] + box[2] and cs["fill_hex"]:
                 raise AnnotationRefused(f"{where}: {'header row ' + str(st['row']) if st['header'] else 'body row ' + str(st['row'] - int(host.get('header_rows', 1)))} ({cs['class']}) is filled with {cs['fill_name']}, which hides a band drawn under it; "
                                         "colour the cells through the table (emphasis, banding_role) instead")
+
+
+# --- what a mark means ------------------------------------------------------------------
+
+VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
+#: the kinds that can be drawn saying nothing (an outline, a fill, a line, a bracket), and
+#: the digest's annotation moves each one draws, which a house precedent must show
+MARK_MOVES: dict[str, list[str]] = VOCABULARY["annotation_kind_moves"]
+EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "house_precedent")
+EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words naming what the mark encloses>"}, '
+                     '{"annotation": "<a labelled annotation on the same host and anchor: a callout or arrow saying what it marks>"}, '
+                     '{"legend": "<series name the host chart\'s legend shows in the mark\'s ink>"}, '
+                     '{"footnote": {"marker": "*", "note": "<text element id whose paragraph starts with the marker>"}} or '
+                     '{"house_precedent": {"slide": N}} (a digest record on reference slide N with the same move drawn unlabelled)')
+FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
+_TOKEN = re.compile(r"[A-Za-z][A-Za-z'&]*|\d[\d,]*(?:\.\d+)?")
+_STOP = {"the", "and", "for", "with", "from", "that", "this", "are", "was", "its", "per", "than", "into", "over", "all", "but", "not", "has", "have"}
+
+
+class AnnotationUnexplained(AnnotationRefused):
+    """A mark that says nothing about what it marks."""
+
+
+def _words(text: str) -> tuple[set[str], list[tuple[float, int]]]:
+    """The words (three letters or more, lower case, common joiners left out) and the
+    numbers (value, decimals as written) of a text."""
+    words: set[str] = set()
+    numbers: list[tuple[float, int]] = []
+    for tok in _TOKEN.findall(text):
+        if tok[0].isdigit():
+            plain = tok.replace(",", "")
+            numbers.append((float(plain), len(plain.split(".")[1]) if "." in plain else 0))
+        elif len(tok) >= 3 and tok.lower() not in _STOP:
+            words.add(tok.lower())
+    return words, numbers
+
+
+def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], list[float]]:
+    """What the mark encloses, as the host draws it: the texts (cell text, row labels and
+    column heads of a table anchor; category and series names on a chart) and the numbers
+    (the values of the marks spanned, or the value a line or band stands at)."""
+    texts: list[str] = []
+    numbers: list[float] = []
+    if host["kind"] == "table":
+        r0, r1, c0, c1 = table_anchor(host, anchor, where)["cells"]
+        h = int(host.get("header_rows", 1))
+        cols = host["columns"]
+        texts += [str(cols[c].get("label") or "") for c in range(c0, c1 + 1)]
+        for r in range(max(r0, h), r1 + 1):
+            row = host["rows"][r - h]
+            texts.append(str(row[0]))
+            texts += [str(row[c]) for c in range(c0, c1 + 1)]
+        return texts, numbers
+    geo = ChartGeometry(host, host["box"])
+    keys = set(anchor)
+    series = list(range(len(geo.series)))
+    cats: list[int] = []
+    if keys == {"point"}:
+        pt = anchor["point"]
+        series = [geo._series_index(pt["series"])]
+        if geo.family != "xy":
+            cats = [geo._category_index(pt.get("category", pt.get("index")))]
+        else:
+            numbers += [float(v) for v in geo.series[series[0]]["values"][pt["index"]][:2] if _num(v)]
+    elif keys == {"categories"} or (keys == {"region"} and geo.family != "xy"):
+        span = anchor["categories"] if keys == {"categories"} else anchor["region"]["categories"]
+        i0, i1 = sorted(geo._category_index(c) for c in _pair(span, where, "categories"))
+        cats = list(range(i0, i1 + 1))
+        if keys == {"region"}:
+            numbers += [float(v) for v in anchor["region"]["values"] if _num(v)]
+    elif keys == {"category"}:
+        texts.append(str(geo.categories[geo._category_index(anchor["category"])]))
+    elif "value" in keys:
+        numbers.append(float(anchor["value"]))
+    elif "values" in keys:
+        numbers += [float(v) for v in anchor["values"] if _num(v)]
+    elif keys == {"region"}:
+        numbers += [float(v) for k in ("x", "y") for v in anchor["region"].get(k, []) if _num(v)]
+    texts += [str(geo.series[j].get("name") or "") for j in series]
+    for i in cats:
+        texts.append(str(geo.categories[i]))
+        for j in series:
+            vals = geo.series[j].get("values") or []
+            if i < len(vals) and _num(vals[i]):
+                numbers.append(float(vals[i]))
+    return texts, numbers
+
+
+def _ties(quote: str, texts: list[str], numbers: list[float]) -> list[str]:
+    """What the quote shares with the anchor: a word, or a number equal to an anchored
+    value at the quote's own rounding (a value of 0.1 also reads as 10%)."""
+    q_words, q_numbers = _words(quote)
+    a_words: set[str] = set()
+    a_numbers = list(numbers)
+    for t in texts:
+        w, n = _words(t)
+        a_words |= w
+        a_numbers += [v for v, _ in n]
+    shared = sorted(q_words & a_words)
+    for v, d in q_numbers:
+        tol = 0.5 * 10 ** -d + 1e-9
+        if any(abs(abs(a) - v) <= tol or abs(abs(a) * 100 - v) <= tol for a in a_numbers):
+            shared.append(f"{v:g}")
+    return shared
+
+
+def _paragraph_texts(el: dict) -> list[str]:
+    return ["".join(r.get("text") or "" for r in p.get("runs") or []) for p in el.get("paragraphs") or []]
+
+
+def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan_types: list[str] | None, where: str,
+                siblings: dict | None = None) -> dict | None:
+    """How a mark says what it means, proven, or AnnotationUnexplained. A mark that carries
+    a label says it itself (None: nothing to prove). Otherwise `explained_by` names one of:
+    a text element on the page and the words in it that name what the mark encloses (a
+    word or figure of the anchored cells, categories, series or values); another
+    annotation of the page (siblings, by id) on the same host and anchor that carries a
+    label (a callout or arrow saying what the band or box marks); a legend entry of
+    the host chart drawn in the mark's own ink; a footnote marker that ends a text the
+    mark encloses and starts a paragraph of the named note; or a page of the house's
+    digest where the same move is drawn unlabelled on an exhibit of the host's class (and
+    of a type the plan lists for this page, given --plan). The model decides which; this
+    only checks that what it names is there."""
+    if kind not in MARK_MOVES:
+        return None
+    if "label" in ann:
+        if "explained_by" in ann:
+            raise AnnotationRefused(f"{where}: a label says what the mark means; explained_by beside it is a second answer, give one")
+        return None
+    how = ann.get("explained_by")
+    if how is None:
+        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} says nothing about what it marks (a reader sees a shape and no reason). "
+                                    f"Give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
+    shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"house_precedent"})
+    if not isinstance(how, dict) or set(how) not in shapes:
+        raise AnnotationRefused(f"{where}: explained_by is one of {EXPLAINED_EXAMPLE}; got {how!r}")
+    if "text" in how:
+        el = by_id.get(how["text"])
+        if el is None or el.get("kind") != "text":
+            raise AnnotationUnexplained(f"{where}: explained_by.text {how['text']!r} is not a text element of this page")
+        quote = how["quote"]
+        if not isinstance(quote, str) or not quote.strip():
+            raise AnnotationRefused(f"{where}: explained_by.quote is the words of {how['text']!r} that say what the mark encloses")
+        body = " ".join(" ".join(t.split()) for t in _paragraph_texts(el))
+        if " ".join(quote.split()) not in body:
+            raise AnnotationUnexplained(f"{where}: the quote {quote!r} is not in {how['text']!r} (it reads {body[:160]!r})")
+        texts, numbers = anchor_content(host, ann["anchor"], where)
+        shared = _ties(quote, texts, numbers)
+        if not shared:
+            raise AnnotationUnexplained(f"{where}: the quote {quote!r} names nothing the mark encloses; the anchor holds {[t for t in texts if t][:8]} "
+                                        f"and values {[round(v, 4) for v in numbers][:8]}: quote the words that name it")
+        return {"by": "text", "element": how["text"], "quote": quote, "shares": shared}
+    if "annotation" in how:
+        other = (siblings or {}).get(how["annotation"])
+        if not isinstance(other, dict) or other is ann:
+            raise AnnotationUnexplained(f"{where}: explained_by.annotation {how['annotation']!r} is not another annotation of this page")
+        if not isinstance(other.get("label"), dict) or other.get("host") != ann.get("host") or other.get("anchor") != ann.get("anchor"):
+            raise AnnotationUnexplained(f"{where}: annotation {how['annotation']!r} explains this mark only with a label, on the same host and the same anchor "
+                                        f"(it has {'a' if isinstance(other.get('label'), dict) else 'no'} label, host {other.get('host')!r}, anchor {other.get('anchor')!r})")
+        return {"by": "annotation", "annotation": how["annotation"], "says": other["label"].get("text")}
+    if "legend" in how:
+        from emit_pptx import chart_legend
+        name = how["legend"]
+        if host["kind"] != "chart":
+            raise AnnotationUnexplained(f"{where}: explained_by.legend names a legend entry, and the host {host['id']!r} is a table")
+        legend = chart_legend(host)
+        if not isinstance(legend, dict):
+            raise AnnotationUnexplained(f"{where}: the host chart draws no legend, so no entry explains the mark")
+        names = [s.get("name") for s in host.get("series") or []]
+        hidden = {int(i) for i in legend.get("hide_entries") or []}
+        if names.count(name) != 1 or names.index(name) in hidden:
+            raise AnnotationUnexplained(f"{where}: the legend shows no one entry {name!r} (entries {[n for i, n in enumerate(names) if i not in hidden]})")
+        s = host["series"][names.index(name)]
+        ink = ann.get("line_role") or ann.get("fill_role")
+        if ink not in (s.get("fill_role"), s.get("line_role")):
+            raise AnnotationUnexplained(f"{where}: legend entry {name!r} is drawn in {s.get('fill_role') or s.get('line_role')!r} and the mark in {ink!r}; "
+                                        "a legend explains a mark drawn in its swatch's ink")
+        return {"by": "legend", "entry": name}
+    if "footnote" in how:
+        fn = how["footnote"]
+        if not isinstance(fn, dict) or set(fn) != {"marker", "note"}:
+            raise AnnotationRefused(f"{where}: explained_by.footnote is {{\"marker\", \"note\"}}")
+        mk = fn["marker"]
+        if not isinstance(mk, str) or not FOOTNOTE_MARKER.match(mk):
+            raise AnnotationRefused(f"{where}: footnote marker {mk!r} is not a marker (*, **, †, ‡, §, (1), [a])")
+        note = by_id.get(fn["note"])
+        if note is None or note.get("kind") != "text":
+            raise AnnotationUnexplained(f"{where}: footnote note {fn['note']!r} is not a text element of this page")
+        if not any(t.lstrip().startswith(mk) for t in _paragraph_texts(note)):
+            raise AnnotationUnexplained(f"{where}: no paragraph of {fn['note']!r} starts with {mk!r}")
+        texts, _ = anchor_content(host, ann["anchor"], where)
+        if not any(t.rstrip().endswith(mk) for t in texts):
+            raise AnnotationUnexplained(f"{where}: no text the mark encloses ends with {mk!r} (it holds {[t for t in texts if t][:8]}); "
+                                        "put the marker on the figure or label it explains")
+        return {"by": "footnote", "marker": mk, "note": fn["note"]}
+    hp = how["house_precedent"]
+    slide = hp.get("slide") if isinstance(hp, dict) and set(hp) == {"slide"} else None
+    if not isinstance(slide, int) or isinstance(slide, bool):
+        raise AnnotationRefused(f"{where}: explained_by.house_precedent is {{\"slide\": N}}, a reference page of the digest")
+    records = (guide.get("exhibit_habits") or {}).get("records")
+    if not isinstance(records, list):
+        raise AnnotationUnexplained(f"{where}: the guide holds no completed digest (/exhibit_habits), so no house precedent can be read")
+    klass = {"table": "table", "chart": "data_chart"}[host["kind"]]
+    moves = MARK_MOVES[kind]
+    seen: list[str] = []
+    for r in records:
+        if not isinstance(r, dict) or r.get("slide") != slide:
+            continue
+        for m in r.get("annotation_moves") or []:
+            if not isinstance(m, dict) or m.get("move") not in moves:
+                continue
+            what = f"slide {slide} {r.get('type')} ({r.get('class')}): {m['move']} on {m.get('anchor')!r}"
+            if r.get("class") != klass:
+                seen.append(f"{what}: a {r.get('class')}, the host is a {klass}")
+            elif "labelled" not in m:
+                seen.append(f"{what}: the digest does not say whether it is labelled (answer labelled on the move and re-run --digest)")
+            elif m["labelled"] is not False:
+                seen.append(f"{what}: labelled there, so it is precedent for a labelled mark only")
+            elif plan_types is not None and r.get("type") not in plan_types:
+                seen.append(f"{what}: a {r.get('type')}, and the plan lists {plan_types} for this page")
+            else:
+                return {"by": "house_precedent", "slide": slide, "type": r.get("type"), "move": m["move"], "anchor": m.get("anchor"),
+                        "type_checked": plan_types is not None}
+    raise AnnotationUnexplained(f"{where}: reference slide {slide} shows no unlabelled {' or '.join(moves)} on a {klass}"
+                                + (f" ({'; '.join(seen)})" if seen else " (the digest records no such move there)"))
 
 
 # --- the collision contract --------------------------------------------------------------
@@ -704,6 +981,9 @@ def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: in
             if e["kind"] == "reference_line" and "segment" in fp:
                 continue
             hits += [name for name, m in e.get("_other_marks", []) if covers(fp, m)]
+            if fp.get("text"):
+                # a label lies on the page's ink: a line series stroked through it hides words
+                hits += [name for name, seg, width in e.get("_lines", []) if _segment_hits(seg, width, fp["rect"])]
         for other in placed:
             if other is e:
                 continue

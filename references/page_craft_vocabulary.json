@@ -1,5 +1,5 @@
 {
- "about": "Closed vocabulary for title registers, the house exhibit digest and the page library's tags: the terms the 578-page coded corpus was tagged in. Each slug names one term; the label is its wording. Two annotation moves are terms the corpus coders used under no row of their own (their labels say so). complete_guide.py and library.py refuse any value outside these lists, so a new term enters here first.",
+ "about": "Closed vocabulary for title registers, the house exhibit digest and the page library's tags: the terms the 578-page coded corpus was tagged in. Each slug names one term; the label is its wording. Two annotation moves are terms the corpus coders used under no row of their own (their labels say so). complete_guide.py and library.py refuse any value outside these lists, so a new term enters here first. annotation_kind_moves maps each annotation kind that can be drawn with no words of its own to the digest moves it draws: a house precedent for an unlabelled mark (annotate.py) is a digest move of that list answered labelled false.",
  "title_register": {
   "topic": "Topic phrase",
   "claim": "Claim sentence",
@@ -236,5 +236,25 @@
    "shared_scale_across_panels": "shared scale / order held across panels",
    "reading_key": "reading key / how-to-read note"
   }
+ },
+ "annotation_kind_moves": {
+  "outline_box": [
+   "circled_or_boxed_mark"
+  ],
+  "band": [
+   "forecast_demarcation",
+   "zone_shading",
+   "highlight_one_mute_rest",
+   "statistic_row_emphasis",
+   "total_row_emphasis"
+  ],
+  "reference_line": [
+   "reference_line",
+   "forecast_demarcation",
+   "event_markers"
+  ],
+  "bracket": [
+   "bracket_or_brace"
+  ]
  }
 }

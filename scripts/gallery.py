@@ -887,7 +887,8 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "generated_slides_skipped": skipped,
         "record_template": {"candidate": "<a candidate id on this page, or null>", "class": "exhibit_class", "type": "exhibit_type",
                             "data_shape": "data_shape", "message": "<the one message, in words>", "message_kind": "message_kind",
-                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>"}],
+                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>",
+                                                  "labelled": "<on a mark move only (" + ", ".join(sorted({m for ms in json.loads(vocab_path.read_text())["annotation_kind_moves"].values() for m in ms})) + "): true or false>"}],
                             "emphasis_devices": ["emphasis_device"], "number_formats": ["number_format"], "legend": "legend",
                             "data_labels": "data_labels", "colour_logic": "colour_logic", "why": "<optional>"},
         "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere",
@@ -903,7 +904,11 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
         f"`{vocab_path.name}` (an empty list states the page has no exhibit). On every page holding a data chart or a",
         "table, answer `source_line`: true when the page carries a source or note line naming where its figures come",
-        "from, false when it carries none; on other pages leave it null. Keep every page and its candidates as cut:",
+        "from, false when it carries none; on other pages leave it null. On every mark move (a ring or box, a band or",
+        "shading, a reference or event line, a bracket) answer `labelled`: true when words on the exhibit say what the mark",
+        "marks (a label beside it, the figure it rings), false when it stands alone and only the text around it explains it.",
+        "An unlabelled mark on a new page is refused unless it names its explanation, and this answer is the house's precedent.",
+        "Keep every page and its candidates as cut:",
         "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
         "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
     return stub

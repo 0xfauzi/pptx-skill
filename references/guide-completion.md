@@ -157,12 +157,20 @@ content crop is still drawn; the stub names it under `also_draws`). Copy
 the copy replace each page's `exhibits: null` with records in the stub's
 `record_template` (an empty list states the page has none; one candidate may hold several
 exhibits). Every value comes from `references/page_craft_vocabulary.json`; every
-annotation move names its anchor. On every page holding a data chart or a table, answer
+annotation move names its anchor. A mark move (a ring or box, a band or shading, a
+reference or event line, a bracket: the moves under `annotation_kind_moves` in the
+vocabulary) also answers `labelled`: `true` when words on the exhibit say what it marks (a
+label beside it, or the figure or words it rings), `false` when it stands alone and only
+the text around it explains it; a mark move without it is refused. `false` answers are
+the house's precedent for an unlabelled mark on a new page (`explained_by:
+{"house_precedent": {"slide": N}}`), and the finalizer lists both under
+`exhibit_habits.marks_labelled`. On every page holding a data chart or a table, answer
 the page's `source_line`: `true` when it carries a source or note line naming where its
 figures come from, `false` when not; leave it `null` on other pages. The finalizer counts
-them (`exhibit_habits.source_lines`), and the build refuses a data page without a source
-line only where the house carries one on at least 80% of its data pages (over three or
-more; an unmeasured threshold), and warns elsewhere. Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
+them (`exhibit_habits.source_lines`) and prints the count under `house_habits`; the build
+refuses a data page without a source line where the house carries one on at least 80% of
+its data pages, and warns on a page WITH one where under 50% do (over three or more data
+pages; both lines unmeasured: build-report.md). Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
 repeated or added, a candidate added and a record repeated are each refused by name, and a
 patch value for `/exhibit_habits` is refused. The finalizer computes every count (types,
 data shapes, moves by data shape and by message, emphasis, number formats, legend, labels,
@@ -183,4 +191,5 @@ house's variety is re-measured over your list on every completion.
 `examples/mckinsey-pdf.completion.json` (a vector PDF: McKinsey's 17-page board discussion
 document for CalSTRS, 2024, from a public board packet; it is not under `refs/`), each with its digest under
 `examples/digests/`. Both apply cleanly to the current extractor's drafts with nothing left
-open.
+open. They show the shape of an answer; they are not answers for another deck, and an
+evaluation on either deck holds them out (`evals/holdout.py`).

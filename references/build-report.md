@@ -68,19 +68,29 @@ Listed per page before the figures. A refusal turns a fit page `unfittable` with
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
-`annotation collides`, `annotation covers chart text`, `annotation render check failed`;
+`annotation unexplained` (a ring, box, band, line or bracket with no label and no proven
+`explained_by`: chart-recipes.md, "A mark says what it means"), `annotation collides`,
+`annotation covers chart text`, `annotation render check failed`;
 `font refused`; `no source line` where the house carries source lines as a rule (below).
 Warnings never refuse: `tieout` (a totals cell that does not equal its column), `no
-source line` elsewhere, and `plan figure not on the page` (a figure the plan's message
+source line` where the habit is common or unmeasured, `source line the house rarely
+carries`, and `plan figure not on the page` (a figure the plan's message
 for the page states that the page does not carry: the plan was written before the
 numbers moved, or the page lost its claim).
 
-`no source line` is a page with a table or chart and no `type.source_line` or
-`type.footnote` paragraph. The house's habit is the digest's count of data pages that
-carry one (`exhibit_habits.source_lines`). Where at least 80% of three or more house data
-pages carry one, the page is refused; otherwise it warns, with the house's count in the
-detail (keybank: 1 of 5, so it warns). A guide whose digest answered no `source_line`
-warns and says the habit is not measured. The 80% line is unmeasured.
+The house's source-line habit is the digest's count of data pages that carry a source
+or note line (`exhibit_habits.source_lines`), over three or more data pages: `rule` at 80%
+or more, `common` from 50%, `rare` below. `no source line` is a data page (a table or
+chart) with no `type.source_line` or `type.footnote` paragraph: refused where the habit is
+a rule, warned where it is common. Where it is rare, a page without one matches the house
+and nothing is said, and a page WITH one warns `source line the house rarely carries`
+(keybank: 1 of 5 data pages, so a keybank page with a source line warns). A guide whose
+digest answered no `source_line`, or fewer than three data pages, is `unmeasured`: a data
+page without one warns, never read as "the house carries none". Both lines are
+unmeasured. The deck-level `source_lines` sets the house's habit beside the deck's pages
+with one, and the brief prints both counts. In round 2 the old rule (warn on every data
+page without one, whatever the house did) told agents on keybank and netflix, houses with
+1 of 5 and 1 of 8, to add source lines to every page.
 
 ## What the file is written at
 

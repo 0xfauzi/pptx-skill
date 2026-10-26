@@ -225,7 +225,8 @@
      "annotation_moves": [
       {
        "move": "event_markers",
-       "anchor": "five board eras placed on a rising line"
+       "anchor": "five board eras placed on a rising line",
+       "labelled": true
       }
      ],
      "emphasis_devices": [
@@ -629,7 +630,8 @@
      "annotation_moves": [
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the induction-training column, 24% against 43%"
+       "anchor": "the induction-training column, 24% against 43%",
+       "labelled": true
       },
       {
        "move": "footnote_markers",

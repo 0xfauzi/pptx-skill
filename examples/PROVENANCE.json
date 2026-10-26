@@ -1,0 +1,59 @@
+{
+ "about": "Every file under examples/ and the reference deck it was made from, by sha256, so an evaluation can hold out the worked examples of the very deck it tests (evals/holdout.py). A file made from no particular reference is listed under independent. evals/holdout.py refuses a skill tree holding an example file this list does not name. aliases are the words other skill files use for that deck: evals/holdout.py lists every line of the held-out tree that still names one.",
+ "references": {
+  "mi_keybank_first_niagara_fig_ma.pptx": {
+   "sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad",
+   "aliases": ["keybank", "first niagara", "kb3"],
+   "examples": [
+    "keybank.completion.json",
+    "digests/keybank.digest.json",
+    "keybank-annotations.deck.json",
+    "keybank-bridge.deck.json",
+    "keybank-roundtrip-slide3.deck.json",
+    "keybank-section.deck.json",
+    "keybank-section.plan.json",
+    "proofs/kb3-rt.build.json",
+    "proofs/keybank-annotations.build.json",
+    "proofs/keybank-bridge.build.json",
+    "proofs/keybank-section.build.json",
+    "proofs/keybank-raster-oracle.md"
+   ]
+  },
+  "mckinsey-calstrs-future-of-boards-2024.pdf": {
+   "sha256": "027980b216c18c6ed36e816f3b9d5bd986f6cffda1b842e8c53970fccf92937c",
+   "aliases": ["calstrs", "mckinsey-pdf"],
+   "examples": [
+    "mckinsey-pdf.completion.json",
+    "digests/mckinsey-pdf.digest.json",
+    "mckinsey-pdf.deck.json",
+    "mckinsey-pdf.plan.json",
+    "proofs/mckinsey-pdf.build.json"
+   ]
+  },
+  "goldman_airvana_why_goldman_2009.pdf": {
+   "sha256": "71c0906a0756485b759950ae766f2d855bb8138247b90065d630be237f562b77",
+   "aliases": ["airvana", "goldman-raster"],
+   "examples": [
+    "proofs/goldman-raster.md"
+   ]
+  }
+ },
+ "independent": [
+  "PROVENANCE.json",
+  "house/01-section-opener.deck.json",
+  "house/02-agenda.deck.json",
+  "house/03-company-profile.deck.json",
+  "house/04-headline-metrics.deck.json",
+  "house/05-margin-trend.deck.json",
+  "house/06-revenue-mix.deck.json",
+  "house/07-ebitda-bridge.deck.json",
+  "house/08-trading-comparables.deck.json",
+  "house/09-football-field.deck.json",
+  "house/10-buyer-screen.deck.json",
+  "house/11-credentials.deck.json",
+  "house/12-league-table.deck.json",
+  "house/13-process-timeline.deck.json",
+  "house/14-recommendation.deck.json",
+  "house/COVERAGE.md"
+ ]
+}
