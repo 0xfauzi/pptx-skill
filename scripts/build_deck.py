@@ -1683,9 +1683,15 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
     out_pages = []
     for i, page in enumerate(emit_pages):
         solved = {el["id"] for el in page["elements"] if el["kind"] == "text"}
+        tables = {el["id"] for el in page["elements"] if el["kind"] == "table"}
         page_words = words[i] if i < len(words) else []
         checked, wrapped = {}, []
         for shape in slides[offset + i].shapes:
+            if shape.name in tables and shape.has_table:
+                found_cells, wrapped_cells = _table_cells_drawn(shape, page_words)
+                checked[shape.name] = found_cells
+                wrapped += wrapped_cells
+                continue
             if shape.name not in solved or not shape.has_text_frame:
                 continue
             paras = shape.text_frame.paragraphs
@@ -1719,6 +1725,62 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
                                "Shorten the text or widen its box, so the line that wrapped has room")
         out_pages.append({"checked": checked, "wrapped": wrapped})
     return out_pages
+
+
+def _table_cells_drawn(shape, page_words: list[tuple]) -> tuple[dict, list[str]]:
+    """Each table cell as the renderer drew it: the render's words in its column, below the
+    table's top, in reading order (lines top down, words left to right); the cell's
+    characters found there in row order as consecutive words (spaces aside), and the lines
+    they sit on counted against the lines the cell writes. A spanner and a cell whose words
+    are not found are counted, never refused (round 7 open item: the check read text boxes
+    only, not table cells)."""
+    from pptx.oxml.ns import qn as pqn
+    table = shape.table
+    widths = [c.width for c in table.columns]
+    edges = [shape.left + sum(widths[:k]) for k in range(len(widths) + 1)]
+    counts = {"cells": 0, "drawn as written": 0, "not found": 0}
+    wrapped: list[str] = []
+    for ci in range(len(widths)):
+        col = [(b, t) for b, t in page_words if edges[ci] - annotate.EMU_PER_PT <= b[0] + b[2] / 2 <= edges[ci + 1] + annotate.EMU_PER_PT
+               and b[1] + b[3] / 2 >= shape.top]
+        col.sort(key=lambda w: (round((w[0][1] + w[0][3] / 2) / max(1.0, w[0][3] / 2)), w[0][0]))
+        at = 0
+        for ri, row in enumerate(table.rows):
+            cell = row.cells[ci]
+            if cell.is_spanned or (cell.is_merge_origin and cell.span_width > 1):
+                continue
+            paras = cell.text_frame.paragraphs
+            target = "".join(" ".join(p.text for p in paras).split())
+            if not target:
+                continue
+            counts["cells"] += 1
+            written = sum(1 + len(p._p.findall(pqn("a:br"))) for p in paras if p.text.strip())
+            hit = None
+            for k in range(at, len(col)):
+                spelled, j = "", k
+                while j < len(col) and target.startswith(spelled + col[j][1]):
+                    spelled += col[j][1]
+                    j += 1
+                    if spelled == target:
+                        break
+                if spelled == target:
+                    hit = (k, j)
+                    break
+            if hit is None:
+                counts["not found"] += 1
+                continue
+            at = hit[1]
+            lines: list[float] = []
+            for box, _ in col[hit[0]:hit[1]]:
+                cy = box[1] + box[3] / 2
+                if not any(abs(cy - y) < box[3] / 2 for y in lines):
+                    lines.append(cy)
+            if len(lines) > written:
+                wrapped.append(f"{shape.name} row {ri} column {ci}: written in {written} line(s) the fitter measured, drawn in {len(lines)} by the "
+                               "renderer; widen the column (width_share) or shorten the cell, so the line that wrapped has room")
+            else:
+                counts["drawn as written"] += 1
+    return counts, wrapped
 
 
 def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: dict, ctx: L.Context) -> list[list[dict]]:
