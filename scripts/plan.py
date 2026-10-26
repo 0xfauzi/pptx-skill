@@ -37,8 +37,10 @@ repeat the previous page's composition, and the reason in words on one that does
  "schema": "pptx-skill section plan v2",
  "reference_sha256": "<the guide's reference.sha256: archetype ids belong to one reference>",
  "pages": [
-  {"id": "<the deck slide id it becomes>", "intent": "...", "message": "the one message",
-   "composition": "arch-3 | new:<name>", "title_register": "topic|claim|question",
+  {"id": "<the deck slide id it becomes>", "intent": "...",
+   "message": "the page's message, or what the reader looks up on a reference page",
+   "composition": "arch-3 | new:<name>",
+   "title_register": "the title's register in words, or a term the house's titles are coded in",
    "deliberate_parallel": null,
    "exhibits": [<one brief per exhibit; [] on a page that holds none>]}
  ]
@@ -64,16 +66,23 @@ is one of them, a nearest page that is a content page of the reference (1 to
 reference.slides, and not a cover, divider or disclaimer where the guide says which pages
 are content) or a reason why none is near, and no brief given twice across the plan.
 
+A title register is the model's words. When it names a term the house's titles are coded
+in (references/page_craft_vocabulary.json, by slug or label: register_term), it is held to
+the house's count of that term; otherwise it is reported as no house count, with the
+house's counts beside it. Only a register that is not words is refused.
+
 `check` refuses (exit 1), by name: a guide made before the current readings
-(old_guide_error), a plan that is not this shape, a brief that is not complete, a title register outside the title vocabulary, an archetype the guide does not
-hold, a reason on a page that repeats nothing,
-and an UNDECLARED repeat that makes a run longer than the house's longest (with no house
-evidence for the longest run, every undeclared repeat is refused: there is nothing to hold
-it to). It warns when the plan's V falls below the house's 10th percentile deck, when its
-distinct compositions per page fall below the house's 10th percentile window, and when a
-DECLARED run is longer than the house's longest (the reason is the model's; the length is
-the house's measure). Those thresholds are choices, not measurements: nothing has measured
-what V a reader calls samey.
+(old_guide_error), a plan that is not this shape, a brief that is not complete, a title
+register that is not words, an archetype the guide does not hold, a reason on a page that
+repeats nothing, and an UNDECLARED repeat that makes a run longer than the house's longest.
+With no house evidence for its longest run, the corpus's measure stands in
+(CORPUS_LONGEST_RUN): an undeclared run of that length warns, a longer one is refused, and
+a reason in deliberate_parallel clears it. It warns when the plan's V falls below the
+house's 10th percentile deck, when its distinct compositions per page fall below the
+house's 10th percentile window, when a DECLARED run is longer than the house's longest (or
+the corpus's, where the house has none: the reason is the model's; the length is the
+measure), and when a coded register is one the house never writes. Those thresholds are
+choices, not measurements: nothing has measured what V a reader calls samey.
 """
 
 from __future__ import annotations
@@ -105,6 +114,11 @@ def nearest(value, vocab) -> str:
     near += [w for w in words if w.split("_")[0] == head and w not in near][:3]
     return f" (nearest: {', '.join(near[:4])})" if near else ""
 VARIETY_MIN_PAGES = 3  # definition: two pages make one pair, which is one observation, not a rate
+#: The longest run of one composition the corpus shows without a declared reason, and where
+#: it was measured: the evidence a plan is held to when its house has no run evidence of its own
+CORPUS_LONGEST_RUN = 2
+CORPUS_RUN_BASIS = ("references/planning-and-variety.md, measured tendencies: three native-pptx bank pitch books never ran one composition longer than 2 pages, and every longer run in the "
+                    "23 coded decks was a deliberate sibling template; no coder found an accidental one")
 WARN_PERCENTILE = 0.1  # unmeasured: the house's 10th percentile deck, a choice and not a reader's threshold
 PLAN_SCHEMA = "pptx-skill section plan v2"
 PAGE_KEYS = ("id", "intent", "message", "composition", "title_register", "deliberate_parallel", "exhibits")
@@ -413,7 +427,6 @@ def read_plan(plan, guide: dict) -> list[dict]:
         raise Refused("guide: composition.archetypes is not a list of {\"archetype_id\": \"arch-N\", ...}; answer /composition with "
                       "complete_guide.py, which checks that shape")
     archetypes = {a["archetype_id"] for a in raw_archetypes}
-    registers = VOCABULARY["title_register"]
     ids: list[str] = []
     briefed: dict[str, list[str]] = {}
     for i, page in enumerate(plan["pages"]):
@@ -447,8 +460,9 @@ def read_plan(plan, guide: dict) -> list[dict]:
                     errors += brief_errors(brief, f"{where} exhibits[{j}]", guide)
                     if isinstance(brief, dict):
                         briefed.setdefault(_brief_key(brief), []).append(f"{where} exhibits[{j}]")
-        if "title_register" in page and not (isinstance(page["title_register"], str) and page["title_register"] in registers):
-            errors.append(f"{where} title_register: {page['title_register']!r}{nearest(page['title_register'], registers)} not in {'|'.join(registers)}")
+        if "title_register" in page and not (isinstance(page["title_register"], str) and _words(page["title_register"]) >= 1):
+            errors.append(f"{where} title_register: the title's register in words (or a term the house's titles are coded in: "
+                          f"{'|'.join(VOCABULARY['title_register'])}), not {page['title_register']!r}")
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
             errors.append(f"{where} deliberate_parallel: null, or the reason in words")
@@ -653,7 +667,12 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
     mine = measure_deck("plan", plan_segments(pages), PLAN_UNREAD)
     refusals: list[str] = []
     warnings: list[str] = []
-    longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
+    house_longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
+    # the measure a run is held to: the house's own longest run, or the corpus's where the
+    # house has no run evidence (never nothing: no evidence is not a licence and not a ban)
+    longest, whose = (house_longest, "the house's") if house_longest is not None else (CORPUS_LONGEST_RUN, "the corpus's")
+    basis = ("the house's own content pages" if house_longest is not None
+             else f"the corpus, since the house has no run evidence ({pooled.get('why')}): {CORPUS_RUN_BASIS}")
     repeats = []
     run = 1
     for prev, page in pairwise(pages):
@@ -662,23 +681,21 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
             continue
         declared = page["deliberate_parallel"]
         rec = {"pages": [prev["id"], page["id"]], "composition": page["composition"], "run_length": run, "deliberate_parallel": declared,
-               "house_longest_run": longest if longest is not None else "no evidence"}
+               "house_longest_run": house_longest if house_longest is not None else "no evidence",
+               "held_to": {"longest_run": longest, "basis": basis}}
         if declared:
-            rec["verdict"] = "declared" + (f"; the run of {run} is longer than the house's {longest}" if longest is not None and run > longest else "")
-            if longest is None or run > longest:
-                warnings.append(f"page {page['id']!r} makes a declared run of {run} of {page['composition']}, longer than the house's longest "
-                                f"({longest if longest is not None else 'no evidence'}): the reason is the model's, the length is the house's measure")
-        elif longest is None:
-            rec["verdict"] = "refused: undeclared, and the house has no evidence for its longest run to hold it to"
-            refusals.append(f"page {page['id']!r} repeats {page['composition']} undeclared and the house's longest run is no evidence "
-                            f"({pooled.get('why')}): declare it in deliberate_parallel or vary the composition")
+            rec["verdict"] = "declared" + (f"; the run of {run} is longer than {whose} {longest}" if run > longest else "")
+            if run > longest:
+                warnings.append(f"page {page['id']!r} makes a declared run of {run} of {page['composition']}, longer than {whose} longest "
+                                f"({longest}): the reason is the model's, the length is the measure ({basis})")
         elif run > longest:
-            rec["verdict"] = f"refused: undeclared, and the run of {run} is longer than the house's longest {longest}"
-            refusals.append(f"page {page['id']!r} repeats {page['composition']} undeclared, making a run of {run} where the house's longest is "
-                            f"{longest}: declare the parallel in deliberate_parallel or vary the composition")
+            rec["verdict"] = f"refused: undeclared, and the run of {run} is longer than {whose} longest {longest}"
+            refusals.append(f"page {page['id']!r} repeats {page['composition']} undeclared, making a run of {run} where {whose} longest is "
+                            f"{longest} ({basis}): declare the parallel in deliberate_parallel or vary the composition")
         else:
-            rec["verdict"] = f"undeclared repeat within the house's longest run ({longest})"
-            warnings.append(f"page {page['id']!r} repeats {page['composition']} without a deliberate_parallel reason")
+            rec["verdict"] = f"undeclared repeat within {whose} longest run ({longest})"
+            warnings.append(f"page {page['id']!r} repeats {page['composition']} without a deliberate_parallel reason"
+                            + ("" if house_longest is not None else f"; held to {basis}"))
         repeats.append(rec)
     comparison = {}
     if mine["status"] == "measured":
@@ -688,7 +705,8 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
                                         if pooled["status"] == "measured" else "no evidence"} for name, _ in FACT_MEASURES},
                       "distinct_per_page": {**distinct_against(mine["distinct"]["per_page"], mine["content_pages"], pooled),
                                             "house_decks": pooled.get("distinct_per_page") if pooled["status"] == "measured" else "no evidence"},
-                      "longest_run": {"plan": mine["longest_run"], "house": longest if longest is not None else "no evidence"}}
+                      "longest_run": {"plan": mine["longest_run"], "house": house_longest if house_longest is not None else "no evidence",
+                                      "held_to": longest, "basis": basis}}
         c = comparison["composition_V"]
         if c["verdict"].startswith("below"):
             warnings.append(f"composition_V {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
@@ -702,17 +720,39 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
     archetypes = {a["archetype_id"]: a for a in (guide.get("composition") or {}).get("archetypes") or []}
     new = sorted({p["composition"] for p in pages if p["composition"] not in archetypes})
     house_registers = (((guide.get("titles") or {}).get("register")) or {}).get("counts")
+    per_page = {}
     for p in pages:
+        term = register_term(p["title_register"])
         if house_registers is None:
-            continue
-        if not house_registers.get(p["title_register"]):
-            warnings.append(f"page {p['id']!r} title_register {p['title_register']!r}: the house writes none ({house_registers})")
+            per_page[p["id"]] = {"stated": p["title_register"], "term": term, "verdict": "no evidence: /titles/register not completed"}
+        elif term is None:
+            per_page[p["id"]] = {"stated": p["title_register"], "term": None, "house_counts": house_registers,
+                                 "verdict": "no house count: the register is in words, none of the terms the house's titles are coded in"}
+        else:
+            per_page[p["id"]] = {"stated": p["title_register"], "term": term, "house_count": house_registers.get(term, 0), "house_counts": house_registers,
+                                 "verdict": "the house writes none" if not house_registers.get(term) else "a register the house writes"}
+            if not house_registers.get(term):
+                warnings.append(f"page {p['id']!r} title_register {p['title_register']!r}: the house writes none ({house_registers})")
+    coded = [register_term(p["title_register"]) for p in pages]
     return {"status": "refused" if refusals else "pass", "refusals": refusals, "warnings": warnings,
             "plan": mine, "house": house, "comparison": comparison, "repeats": repeats,
             "exhibit_briefs": {p["id"]: len(p["exhibits"]) for p in pages},
             "compositions": {"house_archetypes_used": sorted({p["composition"] for p in pages} - set(new), key=_arch_order), "new": new},
             "title_registers": {"house": house_registers if house_registers is not None else "no evidence: /titles/register not completed",
-                                "plan": {r: sum(1 for p in pages if p["title_register"] == r) for r in VOCABULARY["title_register"]}}}
+                                "plan": {**{r: coded.count(r) for r in VOCABULARY["title_register"]},
+                                         "in_words": {p["id"]: p["title_register"] for p, t in zip(pages, coded, strict=True) if t is None}},
+                                "pages": per_page}}
+
+
+def register_term(stated: str) -> str | None:
+    """The term of the title vocabulary a stated register names, by its slug or its label
+    (folded as forms are: case, punctuation, a leading article, a plural s), or None when it
+    names none: then it is the model's own words, with no house count to hold it to."""
+    key = _form_key(stated)
+    for slug, label in VOCABULARY["title_register"].items():
+        if key in (_form_key(slug), _form_key(label)):
+            return slug
+    return None
 
 
 def load(path: str):

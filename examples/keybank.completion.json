@@ -162,9 +162,8 @@
   "why": "no native chart; the pasted exhibits on slides 7 (clustered columns, deep blue against a second series, legend below, no gridlines) and 9 (horizontal deep-blue bars, value labels at the bar end, no value axis, no gridlines, 'Source:' line under) set the language"
  },
  "/continuation": {
-  "header_repeat": "full",
-  "contd_mark": " (cont'd)",
-  "takeaway_policy": "repeat"
+  "contd_mark": null,
+  "why": "none seen: no page of the reference's 12 continues onto the next, so the house shows no continuation mark; a page that splits says how it marks the continuation in the report"
  },
  "/shape_language/icon_style": "none",
  "/imagery/register_kind": "screenshots and logos, wide crops, no frames",
@@ -176,7 +175,7 @@
   "tables": "Flat grids: blue header band with white bold text, thin grey interior rules, no outer border, figures right-aligned, labels left.",
   "imagery": "Pasted exhibits (screenshots of models) spanning the content width, no frames or shadows.",
   "motifs": "The top rule and the left block are the page signature; label boxes are solid blue rectangles with white text; nothing is rounded, nothing has an effect.",
-  "never_does": [
+  "not_seen": [
    "rounded corners",
    "shadows or gradients",
    "colour bars that are not the top rule or left block",

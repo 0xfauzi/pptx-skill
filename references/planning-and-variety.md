@@ -13,7 +13,8 @@
 
 ## The page plan
 
-Before any page spec, write for each page: the one message, the evidence that proves it,
+Before any page spec, write for each page: its message (on a reference page, which states
+no claim, what the reader looks it up for), the evidence that proves it,
 the exhibit, the supporting text, the data it needs, the composition intent (which element
 dominates, or how co-equal blocks divide the page), the layout, the split boundaries if it
 will not fit, and the title in the HOUSE's register and length (`guide.titles`).
@@ -95,7 +96,7 @@ Every key on every page:
 {"schema": "pptx-skill section plan v2", "reference_sha256": "<guide.reference.sha256>",
  "pages": [{"id": "<the page's slide id in the deck JSON>", "intent": "...", "message": "...",
             "composition": "arch-4 | new:<lowercase-name>",
-            "title_register": "topic|claim|question", "deliberate_parallel": null,
+            "title_register": "<the title's register in words>", "deliberate_parallel": null,
             "exhibits": [<one exhibit brief per exhibit; [] on a page with none>]}]}
 ```
 
@@ -105,6 +106,13 @@ share an arrangement, mirrored or re-weighted. A page that repeats the previous 
 composition carries the reason in `deliberate_parallel` (a sibling template: same layout,
 scale and category order, held exactly). Worked plans: `examples/keybank-section.plan.json`,
 `examples/mckinsey-pdf.plan.json`.
+
+`title_register` is your words for the title's register. When they name a term the house's
+titles are coded in (topic, claim, question, other: `references/page_craft_vocabulary.json`,
+by its slug or its label, case and plurals aside), the check sets the house's count of that
+term beside it (`title_registers.pages`); otherwise it reports "no house count", with the
+house's counts beside it. A hybrid ("topic: claim", a label and a figure) is stated as it
+is, never bent to a term.
 
 ## plan.py check: what it refuses and what it warns
 
@@ -125,17 +133,19 @@ facts read under another definition, or none, or a digest still in the closed li
 not of this shape; an incomplete exhibit brief (a field missing, a phrase under three
 distinct words, fewer than two distinct forms, a chosen form none of those considered, a
 nearest page that is not a content page of the reference, one brief pasted for two
-exhibits); a title register outside the title vocabulary
-(`references/page_craft_vocabulary.json`), including a non-string register; an archetype the
-guide does not hold, or a `new:` name that is not lowercase letters, digits, `-` and `_`; a
-reason on a page that repeats nothing; a plan for another reference; an UNDECLARED repeat
-that makes a run longer than the house's longest (with no house evidence, any undeclared
-repeat).
+exhibits); a title register that is not words (a number, an empty string, a placeholder);
+an archetype the guide does not hold, or a `new:` name that is not lowercase letters,
+digits, `-` and `_`; a reason on a page that repeats nothing; a plan for another
+reference; an UNDECLARED repeat that makes a run longer than the house's longest. Where
+the house has no run evidence (no stretch of 3 content pages, a raster reference), the
+corpus's measure stands in rather than nothing (`plan.CORPUS_LONGEST_RUN`, 2, from the
+tendencies below): an undeclared run of 2 warns and says so, a longer one is refused, and
+a reason in `deliberate_parallel` clears it.
 
 Warned: V below the house's 10th percentile deck; distinct compositions per page below the
 house's 10th percentile window of the same number of pages (an A B A B A plan); a DECLARED
-run longer than the house's longest; an undeclared repeat within it; a title register the
-house never writes. These thresholds are choices, not measurements: nobody has measured
+run longer than the house's longest (or the corpus's, where the house has none); an
+undeclared repeat within it; a coded title register the house never writes. These thresholds are choices, not measurements: nobody has measured
 where V reads as samey. Answer every warning in the plan or in your report.
 
 ## What the build reports against the plan

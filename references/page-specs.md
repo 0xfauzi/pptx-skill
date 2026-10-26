@@ -24,7 +24,7 @@ is refused by name. The full grammar with a worked example is the docstring of
 
 A slide carries `id`, `layout` (one of the template's layout names), optional `notes`,
 `spec` (`{"root": ...}`), optional `styling`, `charts`, `annotations`, and
-`"title": {"register": "topic|claim|question", "element": "<id>"}` (the element is
+`"title": {"register": "topic|claim|question|other", "element": "<id>"}` (the element is
 optional; without it the first text whose first paragraph is `type.title` is the title).
 
 A node in the tree carries `type`, `id`, `kind`, `weight`, `scale_class`, `size` and its
@@ -232,7 +232,7 @@ stronger evidence.
 
 ```bash
 python3 scripts/library.py pick --intent "each valuation method's range against the offer" \
-  [--composition C] [--data-shape "seven low and high pairs and one offer value"] \
+  [--composition "words"] [--data-shape "seven low and high pairs and one offer value"] \
   [--aspect 4:3] --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
 python3 scripts/library.py vocab        # the tag fields, and the few tags that are slugs
 ```

@@ -140,9 +140,8 @@
   "why": "no native chart in the PDF; the figure pages use large accent numerals and no gridlines"
  },
  "/continuation": {
-  "header_repeat": "full",
-  "contd_mark": " (continued)",
-  "takeaway_policy": "repeat"
+  "contd_mark": null,
+  "why": "none seen: no page of the reference's 17 continues onto the next, so the house shows no continuation mark; a page that splits says how it marks the continuation in the report"
  },
  "/shape_language/icon_style": "white line icons in accent-blue circles",
  "/imagery/register_kind": "photographs in circles and wide crops, blue tinted",
@@ -154,7 +153,7 @@
   "tables": "No ruled tables observed; frameworks are rows with a numbered circle, a label and a short description.",
   "imagery": "Circular photo crops and icon circles.",
   "motifs": "Numbered blue circles, thin white rules between rows.",
-  "never_does": [
+  "not_seen": [
    "light backgrounds on content pages",
    "colour bars",
    "gradients",

@@ -1239,10 +1239,12 @@ class Extractor:
             self.notes.append("no page title found by position (no title placeholder, no recurring title slot): /titles has no evidence and register cannot be read")
             return
         companions = {str(r["slide"]): {k: r[k]["text"] for k in ("above", "below") if r[k]} for r in pages if r["above"] or r["below"]}
-        self.open("/titles/register", "register is a reading of each title's words (topic phrase, claim sentence, question), and what the "
+        self.open("/titles/register", "register is a reading of each title's words (topic phrase, claim sentence, question, or other in your "
+                  "own words for a title none of those names), and what the "
                   "blocks above and below the title are: judgment, so the model classifies every title listed here",
                   {"titles": {str(r["slide"]): r["text"] for r in pages}, "companions": companions,
-                   "shape": {"per_title": {"<slide>": "|".join(VOCABULARY["title_register"])},
+                   "shape": {"per_title": {"<slide>": "|".join(t for t in VOCABULARY["title_register"] if t != "other")
+                                           + ' | {"other": "<the register in words>"}'},
                              "companions": {"<slide>": {"above": "|".join(VOCABULARY["title_companion_above"]), "below": "|".join(VOCABULARY["title_companion_below"])}},
                              "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null when it states none"},
                              "why": "..."}})
@@ -1799,9 +1801,9 @@ class Extractor:
             spec["ink_role"] = self.role_of(spec.get("ink"), "ink") if spec.get("ink") else None
         for b in self._bullets.values():
             b["ink_role"] = self.role_of(b.get("ink_hex")) if b.get("ink_hex") else None
-        for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
+        for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the house was not seen doing: evidence, never a rule), tone"),
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
-                             ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
+                             ("/continuation", "what the house does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
             self.open(path, reason)
         self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, copy the "
                   "stub to digest.json beside it, describe every exhibit of every page of the copy in your own words (what it is, what the "
@@ -1868,9 +1870,9 @@ def _raster_run(self: "Extractor") -> dict:
     tri = self.triage or {}
     for path, reason in RASTER_OPEN:
         self.open(path, f"raster reference: {reason}", {"provenance": "raster_inference", "max_confidence": 0.5})
-    for path, reason in (("/description", "written by the model from the page images: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
+    for path, reason in (("/description", "written by the model from the page images: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the house was not seen doing: evidence, never a rule), tone"),
                          ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
-                         ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
+                         ("/continuation", "what the house does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
         self.open(path, reason)
     self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at its pages: the digest of a raster reference "
               "cuts whole pages (no shapes to crop); copy the stub to digest.json beside it, complete every page, and answer with "

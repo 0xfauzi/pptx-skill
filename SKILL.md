@@ -105,7 +105,7 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 Answer exactly the open addresses, no others; observed values are never overwritten. Three
 answers are read by looking, and they carry the house's habits into every later step:
 
-- `/titles/register`: each title topic, claim or question; each companion block named;
+- `/titles/register`: each title topic, claim, question, or other in your words; each companion block named;
   where a topic-title page states its claim.
 - `/exhibit_habits`: the digest, one record per exhibit in your own words after looking at
   its crop: what it is, its message, how the house draws it, what it marks and whether

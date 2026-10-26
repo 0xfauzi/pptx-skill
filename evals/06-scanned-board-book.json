@@ -117,8 +117,8 @@
    "check": "guide provenance raster_inference; the report names the faces and why."
   },
   {
-   "statement": "The plan declares any repeated composition, because the house has no variety evidence to hold an undeclared repeat to.",
-   "check": "plan.check.json: no refusal; every repeat declared."
+   "statement": "With no variety evidence in the house, the plan is held to the corpus's longest run (plan.CORPUS_LONGEST_RUN, 2): no undeclared run longer than that, and every repeat it warns about is answered.",
+   "check": "plan.check.json: no refusal; each repeats[] entry's held_to basis names the corpus; each warning answered in the plan or the report."
   },
   {
    "statement": "The style verdict is given from the renders side by side, not from a judge number.",

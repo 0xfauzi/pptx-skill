@@ -15,7 +15,12 @@ python3 scripts/library.py build --lib LIB DECK [--skip ID:PAGES] [--keep ID:PAG
 python3 scripts/library.py tag --lib LIB tags.json            # {entry_id: {tag fields}}
 python3 scripts/library.py check --lib LIB [--seal]
 python3 scripts/library.py forget --lib LIB --deck ID
+python3 scripts/library.py pick --intent "..." [--composition "words"] [--data-shape "..."] [--aspect W:H] --gallery DIR --guide GUIDE [--own LIB]
 ```
+
+`pick --composition` takes words. Words that name a family (`library.py vocab`) match
+entries filed under it; any other words are matched against what each entry records of its
+composition, and the pick says it did so.
 
 `LIB` lives in the company's working area, outside the skill directory: a company library
 inside the skill directory is refused, and an external one there must sit in a directory
@@ -42,8 +47,12 @@ Each kept page gets a stub whose tag fields are null (`house_type`, `composition
 `why_instructive`, `designer_questions`). Fill them after looking at `look_at`. `[]` means
 you looked and found none. A designer question opens with a sentence ending in `?`. An
 exhibit is tagged in your own words (what it is, its data, its message, each annotation as
-you would describe it); nothing about an exhibit is chosen from a list. The title register
-is the title vocabulary's slug. A library built before exhibits were tagged in words
+you would describe it); nothing about an exhibit is chosen from a list. `house_type` and
+`composition_family` are the families the development corpus was coded in, kept so pages
+can be searched together; each ends in `other`, and a page none of them names (a
+placemat, a map page, a left-third title panel) is `other` with its words in
+`house_type_as_recorded` or `composition_as_recorded`. The title register is the title
+vocabulary's slug, `other` among them. A library built before exhibits were tagged in words
 (manifest schema 3) is refused: build or import it again. `check` exits 1 while
 any kept page is untagged and names each; `pick` ranks only tagged entries and says how many
 were left out.

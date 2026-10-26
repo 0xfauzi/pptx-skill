@@ -22,8 +22,12 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 
 - A key outside `unresolved` is refused. Always writable: `/description`,
   `/derivation_rules`, `/continuation`, `/typography/families/substitutes`, `/notes/*`, a
-  new `/extra_roles/<name>`, and a new type role at a size the levels table shows (on a
-  raster reference, one whose value carries `"provenance": "raster_inference"`).
+  new `/extra_roles/<name>`, and a new type role at a size the levels table shows, or at
+  another size with a `why` of three words or more (then tagged `off_ladder` and listed
+  under `completion.off_ladder`: a weaker model given continuous sizes drifted to 8.5,
+  9.5, 20 and 22pt, so the house's levels are the first evidence, and a departure is
+  answered in the report); on a raster reference, one whose value carries
+  `"provenance": "raster_inference"`. Every role you add states its `weight`.
 - A key whose target is observed or deterministically inferred is refused with its
   provenance and evidence. If you think an observed value is wrong, say so in the report;
   never patch over it.
@@ -60,21 +64,24 @@ value instead. A left-out key never closes anything.
 | `/typography/families` | {"major": "<face>", "minor": "<face>"} | refused |
 | `/typography/families/substitutes` | {"<face named in the file>": "<installed face measured in its place>"} | refused |
 | `/typography/scale_ratio` | a number, e.g. 1.25 | the levels are not a geometric ladder |
-| `/spacing/steps/<name>` | an integer EMU, at least 12700 (one point; a smaller answer is a value in points or pixels, refused) | refused |
+| `/spacing/steps/<name>` | an integer EMU, 12700 (one point) or more | refused |
+| `/spacing/steps` | {"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} (integers of 12700 EMU, one point, or more; space.xs, space.sm, space.margin and space.gutter are required: the round trip and the components read them) | refused |
 | `/spacing/baseline_emu` | an integer EMU | no baseline grid |
 | `/density_bands/table_rows_per_inch` | {"metric": "table_rows_per_inch", "low", "high", "median", "n"} | no table to measure |
 | `/floors/<name>/floor_pt` | a number of points, never below absolute_floor_pt | no run in this family: the absolute floor holds |
 | `/shape_language/corner_radii` | {"modal_radius_emu": int, "rounded_share": 0..1, "why": "..."} | refused |
 | `/shape_language/icon_style` | a string, e.g. "none" or "white line icons in accent circles" | refused |
 | `/imagery/register_kind` | a string, e.g. "photographs, wide crops" or "none" | refused |
-| `/tables` | {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"} | refused |
+| `/tables` | {"header_fill_role", "header_ink_role", "banding_role" (each a colour role, or null when the house has none: never left out), "header_bold", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role" (a spacing step) or, when no step is near the house's inset, "cell_padding_role": null with "cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"} | refused |
 | `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|t\|r\|l\|tr\|none"}}, "why"} | refused |
-| `/continuation` | {"header_repeat": "full\|none", "contd_mark": "<text>", "takeaway_policy": "repeat\|first_only\|none"} | refused |
-| `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "never_does": [...], "tone"} | refused |
+| `/continuation` | what the house does when a page continues onto the next, read off its pages: in words ("none seen" is an answer), or {"contd_mark": "<the mark as the house writes it>" or null, "why": "where it is seen, or that none is"} | refused |
+| `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the house was not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never a prohibition | refused |
 | `/derivation_rules` | a list of sentences | refused |
 | `/titles/register` | see Titles below | refused |
 | `/variety/content_pages` | a list of page numbers | refused |
 | `/exhibit_habits` | never in the patch: answered by --digest DIR | refused |
+| `/chrome` | a list of {"chrome_id": "chrome-1", "kind": "rule\|band\|logo\|label\|page_number\|footer\|date", "box_in": [left, top, width, height] (inches on the page), "slides_present": <pages it is on, at least half the reference's to be drawn>, and as the kind needs: "text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"} (every text kind, page_number included, all four), "fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or "line_role" with "line_width_pt" (rule; a logo placeholder drawn as a line), "image_path" (logo), "anchor": "slide_top\|slide_bottom\|slide_left\|slide_right", "rotation_deg", "why"}. Nothing is filled in for you: the width, colour and text style the emitter would otherwise fall back on are refused by name when left out | refused |
+| `/composition` | {"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"} | refused |
 | `/notes/<name>` | a string | refused |
 
 Where the honest answer is that the house has none (no green for `color.positive`, no
@@ -111,7 +118,9 @@ numbered; the guide is written only when none is left.
 ## Description and derivation rules
 
 Write `/description` (summary, typography, color, layout, tables, imagery, motifs,
-`never_does`, tone) and `/derivation_rules` (how the palette and the type ladder extend to
+`not_seen`, tone; `not_seen` is what you did not see the house do, stored with the pages
+it was read over, "icons: on 0 of 12 pages", a tendency to weigh and never a rule; the old
+`never_does` is refused by name) and `/derivation_rules` (how the palette and the type ladder extend to
 roles the reference never showed). You read these back while designing; write them for
 yourself, from what you saw.
 
@@ -153,7 +162,7 @@ render and answer:
 
 ```json
 {"/titles/register": {
-  "per_title": {"<slide>": "topic|claim|question"},
+  "per_title": {"<slide>": "topic|claim|question" or {"other": "<the register in words>"}},
   "companions": {"<slide>": {"above": "kicker|section_tag|exhibit_label|status_tag|other",
                              "below": "subtitle|units_line|lead_in|other"}},
   "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null"},
@@ -161,8 +170,11 @@ render and answer:
 ```
 
 Every listed title and every listed companion is named; a block the reader found below a
-title that is really the first cell of a table is `other`. The finalizer counts the
-registers; the plan check and the build hold your titles to those counts and lengths.
+title that is really the first cell of a table is `other`. A title none of the registers
+names (a label and a figure, "Topic: claim") is `{"other": "..."}` in your words; a bare
+`"other"` is refused. The finalizer counts the registers, `other` among them, and lists
+the words under `other_in_words`; the plan check and the build report your titles against
+those counts and lengths.
 
 ## Exhibit habits: the digest
 

@@ -391,3 +391,48 @@ summary (status and scale per page, judge total, filing) is identical on all thr
 builds at scale 0.95 and judge 0.149 on main and on the branch alike, where the round-2
 guide it was first built on gave 1.0 and 0.117; bcg p24 0.108, netflix p5 0.058, jazz p9
 0.112 as before. ruff over `scripts/`: 120 on main and on the branch.
+
+## Design freedom, WP1: plan, guide and library vocabularies
+
+The merged design-freedom audit's first work package: where the model names a plan, a
+guide or a library value, a closed list became the model's words, and a default the code
+filled in silently became a refusal by name. Each case ran first on the tree before the
+change (854c40b), then on the change; every gate added or changed was then taken out in
+a scratch copy of the changed tree and its case run again.
+
+| Item | Before | Change | After | Gate removed |
+|---|---|---|---|---|
+| V1 plan register | `"other"`, `"a label and a figure"`, `"Claim sentences"` refused: not in topic\|claim\|question | `plan.read_plan` refuses only a register that is not words; `plan.register_term` names the coded term a register states (slug or label, folded as forms are) | `other` and `Claim sentences` pass, each warned "the house writes none" with the counts; the words pass, reported "no house count" beside the counts (`title_registers.pages`, `plan.in_words`); `3` and `TBD` still refused | words refused again |
+| V1 guide register | `{"other": "a label and a figure"}` and bare `"other"` refused | `title_register` gains `other`; `complete_guide._register_error` takes `{"other": words}`, refuses a bare `other`; counts carry `other`, the words go to `other_in_words` | the words apply (counts topic 8, question 2, other 1); bare `other` refused: "say what the register is" | bare `other` applies, counted with no words |
+| V3 library families | tagging `other` refused; `pick --composition placemat` refused, `not_in_vocabulary` | `COMPOSITIONS` ends in `other` (needs `composition_as_recorded`); `library.composition_asked`: words naming a family match it, other words are matched against each entry's own record, and the pick says so; the closed `_vocab` lookup removed | `other` with words tags; `other` without words refused by name; `placemat` ranks the placemat page first, "matched as words"; a family name still matches its family | `other` with no words tags |
+| V8 off-ladder size | a new role at 13pt (levels 10, 12, 18, 24) refused, with or without a why | `check_writable` admits an off-level new role with a why of `BRIEF_MIN_WORDS` words; `apply_one` tags `provenance.off_ladder` (levels, nearest), lists it under `completion.off_ladder` and in the summary | with a why: applied and tagged; without: refused, naming the measured drift (8.5, 9.5, 20, 22pt) | applied with no why |
+| V9 continuation | `{"header_repeat", "contd_mark", "takeaway_policy"}` applied; nothing reads either enum | `continuation_error`: words, or `{"contd_mark": text or null, "why"}`; the two closed choices refused by name | enums refused; "none seen" applies | enums apply |
+| K3 never_does | applied and stored as a list read back while designing | `description_error` refuses `never_does` by name; `not_seen` is stored with the reference's page count, `seen_on 0 of 12` each, as "a starting tendency, never a prohibition" | refused; `not_seen` stored with counts | `never_does` applies |
+| C4 table roles | `/tables` without `header_fill_role` applied as null (`setdefault`) | `TABLE_ROLE_KEYS` each answered, null meaning the house has none; the `setdefault` removed | refused by name | applies with the key absent |
+| C5 role weight | a new role without weight stored `weight: null` (the `setdefault(400)` never fired: the key was already there as None) | a whole role answer states a weight 100 to 900 | refused by name | stored `weight: null` |
+| C6 chrome defaults | a hand-written rule without `line_width_pt`, a label without (or with half) a `text_style` applied, drawn later at 0.75pt, Arial 9pt | `chrome_entries` refuses a rule or placeholder line with no width, and a text kind (`emit_pptx.CHROME_TEXT_KINDS`) missing any of family, size, bold, ink | each refused by name | each applies |
+| T3 run rule, no house evidence | on the goldman raster draft (no run evidence) every undeclared repeat refused, a run of 2 included; a declared run of 2 warned | `plan.CORPUS_LONGEST_RUN` (2) with its basis (planning-and-variety.md, measured tendencies) stands in where the house has none; each repeat records `held_to` | undeclared run of 2 warns, citing the corpus; run of 3 refused; declared run of 3 warns | corpus measure 1: run of 2 refused again |
+| D7 | "the one message" | plan docstring and planning-and-variety.md: the page's message, or what a reference page is looked up for | read | |
+
+Docs changed with the code they describe: planning-and-variety.md (register in words, the
+run rule), page-library.md and composition.md (`--composition` words, `other`),
+guide-completion.md (the shapes table regenerated from `--shapes`, which was already
+missing `/chrome`, `/composition` and `/spacing/steps`; `not_seen`; the register shape;
+off-ladder roles), page-specs.md and SKILL.md (one line each), eval 06 (the run rule).
+The two example completions answer `/continuation` from the reference (neither keybank's
+12 pages nor mckinsey's 17 continue a page: `contd_mark` null, the old marks were never
+seen) and rename `never_does` to `not_seen`.
+
+Rebuilt from a FRESH extraction on main (3952e74), on 854c40b and on this change: the 23
+builds (keybank section, annotations, bridge, round trip, 14 house specimens, mckinsey
+PDF section, four fidelity pages) give the same status and scale per page, judge total
+and filing on all three. The fidelity completions are the round-2 ones with
+`/continuation` and `never_does` migrated mechanically to the new shapes. Both example
+plans pass with the same warnings; their reports gain `title_registers.pages` and
+`held_to`. ruff over `scripts/`: 120 on main and on this change.
+
+Left to later packages: the build's own register check still refuses a page spec register
+outside the vocabulary (`build_deck.title_report`, WP2); off-ladder roles are listed at
+completion but not yet warned in the build with the judge's size_hist distance (WP2);
+`totals_bold` and the banding phase need the emitter to read them before the guide can
+carry them (`shape_error` refuses keys nothing reads) (WP2); chrome per page (WP2).

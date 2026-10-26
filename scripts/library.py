@@ -7,7 +7,7 @@ when a page is planned.
     library.py build   --lib LIB DECK... [--keep ID:PAGES] [--skip ID:PAGES] [--exclude ID[:PAGES]]
     library.py tag     --lib LIB TAGS.json
     library.py check   --lib LIB [--seal]
-    library.py pick    --intent TEXT [--composition C] [--data-shape TEXT]
+    library.py pick    --intent TEXT [--composition WORDS] [--data-shape TEXT]
                        [--aspect W:H] [--gallery DIR] [--own LIB] [--library LIB] [--exclude ID] [--top N]
     library.py import  --lib LIB SRC/library.json --by WHO --basis TEXT
     library.py forget  --lib LIB --deck ID
@@ -47,7 +47,11 @@ owners' libraries.
 pick searches the reference's own gallery first (gallery.py's word-overlap ranking:
 gallery exemplars carry no tags), then the owner's library, then the external library, and
 says where each result came from. Library entries rank by composition, aspect, then
-data-shape words and intent words over what the model wrote of each exhibit. An exhibit
+data-shape words and intent words over what the model wrote of each exhibit. A composition
+is asked in words: words that name a family the corpus was coded in match that family,
+and any other words (a placemat, a map page) are matched as words against what each entry
+records of its composition (composition_as_recorded), and the pick says which it did. A
+page filed under no family is tagged `other` with its composition in words. An exhibit
 is tagged in the model's own words (what it is, its data, its message, how it is
 annotated), never from a list of exhibit types or moves.
 """
@@ -93,6 +97,8 @@ WITHHELD_KIND = "withheld_render"
 # House type and composition: the synthesis taxonomy that tagged the 578-page development
 # corpus (pagecraft synth/analyze_all.py: page_family); TARGET_SPEC A.2 counts these
 # compositions under longer spellings. The corpus starter set uses exactly these strings.
+# They are a coder's families for search, never a menu: each list ends in "other", whose
+# words (house_type_as_recorded, composition_as_recorded) say what the page is.
 
 HOUSE_TYPES = ("investment bank", "consulting", "chart book", "other")
 COMPOSITIONS = (
@@ -106,6 +112,7 @@ COMPOSITIONS = (
     "image / logo / evidence wall",
     "exhibit + text above or below",
     "big numbers / KPI panel",
+    "other",
 )
 # The title register is the title vocabulary's (references/page_craft_vocabulary.json). An
 # exhibit is tagged in words: what it is, its data, its message and how it is annotated.
@@ -596,6 +603,8 @@ def check_entry(entry: dict) -> list[str]:
     if entry.get("house_type") == "other" and not entry.get("house_type_as_recorded"):
         problems.append("house_type 'other' needs house_type_as_recorded")
     one_of("composition_family", entry.get("composition_family"), COMPOSITIONS)
+    if entry.get("composition_family") == "other" and not entry.get("composition_as_recorded"):
+        problems.append("composition_family 'other' needs composition_as_recorded (the composition in words)")
     one_of("title_register", entry.get("title_register"), TITLE_REGISTERS)
     for field in ("composition_as_recorded", "title", "why_instructive"):
         value = entry.get(field)
@@ -803,17 +812,22 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
 
 # --- pick ------------------------------------------------------------------------------------
 
-def _vocab(value: str | None, allowed: tuple[str, ...] | dict[str, str], flag: str) -> str | None:
-    """The term asked, by its slug or its label; the slug is what entries store."""
+def composition_asked(value: str | None) -> tuple[str | None, frozenset[str], str | None]:
+    """--composition in words: (the family its words name, by slug or label, or None; the
+    words matched against each entry's own record of its composition when they name none;
+    the line the pick prints). Words that name no family are never refused: a page filed
+    under none is still found by what was recorded of it."""
     if value is None:
-        return None
-    labels = allowed if isinstance(allowed, dict) else {a: a for a in allowed}
+        return None, frozenset(), None
     asked = value.strip().lower()
-    hit = [slug for slug, label in labels.items() if asked in (slug.lower(), label.lower())]
-    if not hit:
-        near = sorted(labels, key=lambda a: -len(gallery.words(labels[a]) & gallery.words(value)))[:4]
-        raise Refused("not_in_vocabulary", f"{flag} {value!r}; nearest: {' | '.join(f'{a} ({labels[a]})' if a != labels[a] else a for a in near)} (library.py vocab lists all)")
-    return hit[0]
+    hit = [c for c in COMPOSITIONS if asked == c.lower()]
+    if hit:
+        return hit[0], frozenset(), None
+    words = gallery.words(value)
+    near = [c for c in sorted(COMPOSITIONS, key=lambda a: -len(gallery.words(a) & words)) if gallery.words(c) & words][:3]
+    return None, words, (f"   --composition {value!r} names no family the corpus was coded in "
+                         f"({'families sharing a word: ' + ' | '.join(near) if near else 'no family shares a word with it'}); "
+                         "matched as words against what each entry records of its composition, never as a family")
 
 
 def _aspect(value: str | None) -> float | None:
@@ -851,9 +865,9 @@ def score(entry: dict, intent: frozenset[str], composition: str | None, shape: f
 
 def pick(intent_text: str, composition: str | None, data_shape: str | None, aspect_text: str | None,
          gallery_dir: Path | None, own: Path | None, external: list[Path], exclude: set[str], top: int, guide: dict | None = None) -> str:
-    composition = _vocab(composition, COMPOSITIONS, "--composition")
+    composition, composition_words, composition_note = composition_asked(composition)
     aspect = _aspect(aspect_text)
-    intent, shape = gallery.words(intent_text), gallery.words(data_shape or "")
+    intent, shape = gallery.words(intent_text) | composition_words, gallery.words(data_shape or "")
     libraries: list[tuple[str, Library]] = []
     if gallery_dir is not None and not (gallery_dir / "manifest.json").is_file():
         raise Refused("no_gallery", f"--gallery {gallery_dir} holds no gallery.py manifest.json")
@@ -872,6 +886,8 @@ def pick(intent_text: str, composition: str | None, data_shape: str | None, aspe
              "searched in order: " + "; ".join(
                  ([f"the reference's own gallery {gallery_dir}"] if gallery_dir else ["no reference gallery given"])
                  + [f"{label} {lib.root} ({len(lib.pages)} entries)" for label, lib in libraries])]
+    if composition_note:
+        lines.insert(1, composition_note)
     if not external:
         lines.append(f"   not searched: no external library ({EXTERNAL_LIBRARY} does not exist; build it with library.py import, "
                      "or pass --library DIR)")
@@ -1023,7 +1039,9 @@ def main(argv: list[str]) -> int:
             print(forget(Library(Path(args.lib)), args.deck))
         elif args.cmd == "vocab":
             print(json.dumps({"house_type": HOUSE_TYPES, "title_register": TITLE_REGISTERS, "composition_family": COMPOSITIONS,
-                              "spelling": "a title register is the slug; an exhibit is tagged in words, never from a list",
+                              "spelling": ("a title register is the slug; a family is a coder's grouping for search, and other with words "
+                                           "(house_type_as_recorded, composition_as_recorded) files a page none names; an exhibit is "
+                                           "tagged in words, never from a list"),
                               "tag_fields": TAG_FIELDS, "exhibit_fields": EXHIBIT_FIELDS}, indent=1))
     except Refused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)

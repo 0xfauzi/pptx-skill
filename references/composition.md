@@ -33,8 +33,10 @@ pages decide. Counts are from 578 coded content pages (bank 231, consulting 317,
 ## What coders counted, by house type
 
 The rows are the corpus coders' composition families with counts: evidence of how houses
-arrange pages, never a set to choose from. (`library.py pick --composition` still filters
-the page library by these families; that filter is a search over coded examples.)
+arrange pages, never a set to choose from. (`library.py pick --composition` takes words:
+words that name one of these families match the library pages filed under it, any other
+words are matched against what each page records of its composition. It is a search over
+coded examples, and a page none of the families names is filed as `other` in words.)
 
 | Family | Total | Bank | Consulting | Chart book |
 |---|---|---|---|---|
