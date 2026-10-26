@@ -544,6 +544,19 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
             after.extend(drawn)
         report.append(entry)
     placed = {e["id"]: e for e in report if e.get("status") == "placed"}
+    brackets = [e for e in placed.values() if e.get("kind") == "bracket" and e["_footprint"]]
+    for i, a in enumerate(brackets):
+        for b in brackets[i + 1:]:
+            ra, rb = a["_footprint"][0]["rect"], b["_footprint"][0]["rect"]
+            across = ra[2] >= ra[3]  # above or below: the bracket runs along x
+            lo_a, hi_a, lo_b, hi_b = (ra[0], ra[0] + ra[2], rb[0], rb[0] + rb[2]) if across else (ra[1], ra[1] + ra[3], rb[1], rb[1] + rb[3])
+            other = (ra[1], ra[1] + ra[3], rb[1], rb[1] + rb[3]) if across else (ra[0], ra[0] + ra[2], rb[0], rb[0] + rb[2])
+            gap_between = max(lo_b - hi_a, lo_a - hi_b)
+            depth = min(ra[3], rb[3]) if across else min(ra[2], rb[2])
+            if min(other[1], other[3]) > max(other[0], other[2]) and gap_between < depth:
+                problems.append({"kind": "brackets meet end to end", "severity": "warning",
+                                 "detail": f"annotation {a['id']!r} and {b['id']!r}: two brackets at one height {max(0, round(gap_between))} EMU apart, "
+                                           "less than a bracket's depth, read as one; set one at another depth (gap_role) or leave a gap between their groups"})
     for e in placed.values():
         how = e.get("explained_by")
         if isinstance(how, dict) and "_placement" in how:
@@ -726,7 +739,11 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             if style not in BRACKET_STYLES:
                 raise AnnotationRefused(f"{where}: style {style!r} not in {list(BRACKET_STYLES)}")
         depth = lab.space(ann["depth_role"], where)
-        span, extent = r, a.get("marks", r)
+        # the bracket spans the marks it groups, not their category bands: two groups of
+        # adjacent categories then keep the gap between their bars, and their brackets do not
+        # meet end to end (round 7: two brackets at one height read as one)
+        extent = a.get("marks", r)
+        span = extent
         if side in ("above", "below"):
             y = extent[1] - gap - depth if side == "above" else extent[1] + extent[3] + gap
             box = (span[0], y, span[2], depth)
