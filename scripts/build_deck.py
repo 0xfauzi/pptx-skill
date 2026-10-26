@@ -1498,6 +1498,8 @@ def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: di
             for ri, row in enumerate(shape.table.rows):
                 counts, size_h = [], 0
                 for ci, cell in enumerate(row.cells):
+                    if cell.is_spanned:
+                        continue  # covered by a spanner to its left: the origin cell draws the text
                     runs = [r for p in cell.text_frame.paragraphs for r in p.runs]
                     text = "".join(r.text for r in runs)
                     if not runs:
@@ -1514,7 +1516,10 @@ def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: di
                     kind = L.DrawnRole(entry, ctx.face(entry).path)
                     ppr = cell.text_frame.paragraphs[0]._p.pPr
                     indent = int(ppr.get("marL") or 0) if ppr is not None else 0
-                    budget = max(1, shape.table.columns[ci].width - (cell.margin_left or 0) - (cell.margin_right or 0) - indent - ctx.ruler.fit_epsilon_emu)
+                    # a spanner (gridSpan) wraps at the width of every column it covers
+                    span = cell.span_width if cell.is_merge_origin else 1
+                    width = sum(shape.table.columns[c].width for c in range(ci, ci + span))
+                    budget = max(1, width - (cell.margin_left or 0) - (cell.margin_right or 0) - indent - ctx.ruler.fit_epsilon_emu)
                     counts.append(len(L.wrapped_lines(ctx, text, budget, kind)))
                     size_h = max(size_h, sz)
                 margins = (row.cells[0].margin_top or 0) + (row.cells[0].margin_bottom or 0)
