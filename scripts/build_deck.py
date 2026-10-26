@@ -2047,11 +2047,15 @@ def table_budgets(ctx, outcome) -> list[dict]:
         body = len(fit.row_heights) - fit.header_rows
         tallest = sorted(range(fit.header_rows, len(fit.row_heights)), key=lambda i: -fit.row_heights[i])[:3]
         lines = {i - fit.header_rows: max(len(v) for (r, _), v in fit.cell_lines.items() if r == i) for i in tallest}
+        # counted in the box the page was solved to; the fit's own fitting_row_prefix and
+        # overflow were read against the probe box the solver measured in (layout.outcome_json),
+        # which reported 0 rows for a table that fits its page
+        in_box = body if box is None else L.fitting_prefix(fit.row_heights, fit.header_rows, box.height + L.EMIT_SLACK_EMU)
         entry = {"id": nid, "body_rows": body, "header_rows": fit.header_rows,
                  "box_in": None if box is None else [round(v / EMU_PER_INCH, 2) for v in (box.left, box.top, box.width, box.height)],
                  "rows_need_in": round(fit.total_height_emu / EMU_PER_INCH, 2),
-                 "rows_fitting_box": fit.fitting_row_prefix,
-                 "rows_to_fit": (split.get(nid) or {}).get("rows_to_fit_slide", body if not fit.overflow else fit.fitting_row_prefix),
+                 "rows_fitting_box": in_box,
+                 "rows_to_fit": (split.get(nid) or {}).get("rows_to_fit_slide", in_box),
                  "tallest_rows": [{"row": r, "lines": n} for r, n in lines.items()],
                  "column_deficits_in": {k: round(v / EMU_PER_INCH, 2) for k, v in fit.column_deficits.items()}}
         if box is not None and fit.total_height_emu <= box.height:
