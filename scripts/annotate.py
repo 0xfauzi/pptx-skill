@@ -53,7 +53,7 @@ from emit_pptx import DASHES, Guide as EmitGuide  # noqa: E402
 
 EMU_PER_PT = 12_700
 
-KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge")
+KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge", "category_row")
 COMMON_KEYS = {"id", "host", "kind", "anchor"}
 KIND_KEYS = {
     "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape"},
@@ -63,6 +63,7 @@ KIND_KEYS = {
     "callout": {"line_role", "line_width_pt", "fill_role", "label", "position", "gap_role", "pad_role", "head"},
     "bracket": {"line_role", "line_width_pt", "style", "side", "gap_role", "depth_role", "label"},
     "badge": {"fill_role", "label", "position", "gap_role", "pad_role"},
+    "category_row": {"cells", "role", "ink_role", "position", "gap_role", "gap_lines", "after", "shape", "cell_width", "label"},
 }
 REQUIRED = {
     "outline_box": ("line_role", "line_width_pt"),
@@ -72,13 +73,14 @@ REQUIRED = {
     "callout": ("line_role", "line_width_pt", "fill_role", "label", "position", "gap_role"),
     "bracket": ("line_role", "line_width_pt", "side", "gap_role", "depth_role"),
     "badge": ("fill_role", "label", "position"),
+    "category_row": ("cells", "position", "gap_role"),
 }
 LABEL_KEYS = {"text", "role", "ink_role", "position", "max_width_share", "align"}
 SHAPES = {"rect": "rect", "ellipse": "ellipse", "rounded": "roundRect"}
 AROUND = ("above", "below", "left", "right", "above_left", "above_right", "below_left", "below_right")
 LABEL_POSITIONS = {
-    "reference_line_h": ("end_outside", "end_above", "end_below", "start_above", "start_below"),
-    "reference_line_v": ("end_outside", "end_right", "end_left", "start_right", "start_left"),
+    "reference_line_h": ("end_outside", "end_above", "end_below", "start_above", "start_below", "middle_above", "middle_below"),
+    "reference_line_v": ("end_outside", "end_right", "end_left", "start_right", "start_left", "middle_right", "middle_left"),
     "band": ("inside_top_left", "inside_top_right", "inside_bottom_left", "inside_bottom_right"),
 }
 DEFAULTS = {
@@ -92,7 +94,14 @@ DEFAULTS = {
     "label.max_width_share": "one line, as wide as the text measures",
     "label.position.reference_line": "end_outside: past the plot's far edge, centred on the line",
     "label.position.band": "inside_top_left",
+    "cell_width": "uniform: every cell of the row as wide as its widest (one oval or box size along the row)",
+    "label.align.category_row": "right on a row (the label ends at the plot's edge), center on a column",
 }
+ROW_SHAPE_KEYS = {"prst", "line_role", "line_width_pt", "fill_role", "pad_role"}
+ROW_CELL_KEYS = {"text", "image"}
+#: a cell's text box inside an ellipse: the ellipse through the box's corners, sqrt(2) wider
+#: and taller than the box (an ellipse x^2/a^2 + y^2/b^2 = 1 with a = w/sqrt2 holds the corner)
+SQRT2 = 2 ** 0.5
 
 
 class AnnotationRefused(ValueError):
@@ -125,7 +134,7 @@ def drawn_marks(geo: ChartGeometry) -> list[tuple[int, int, tuple]]:
     (a football field's invisible base, a label carrier) and a zero-sized point are not."""
     out = []
     for j, s in enumerate(geo.series):
-        if s.get("fill_role") == "none" and geo.family in ("bar", "bar_stacked"):
+        if s.get("fill_role") == "none" and geo.series_family(j) in ("bar", "bar_stacked"):
             continue
         n = len(s["values"]) if geo.family == "xy" else len(geo.categories)
         for i in range(n):
@@ -252,10 +261,18 @@ class Labeller:
     def __init__(self, ctx: L.Context, scale: Fraction) -> None:
         self.ctx, self.scale = ctx, scale
 
-    def space(self, role: str | None, where: str) -> int:
+    def space(self, role: str | None, where: str, lines: int | None = None) -> int:
+        """A spacing role at the page's scale; or, for a type role, `lines` of its line
+        pitch (a row that must clear tick labels set in that role on that many lines)."""
         if role is None:
             return 0
         try:
+            if role.startswith("type."):
+                if lines is None:
+                    raise AnnotationRefused(f"{where}: a type role as a distance counts lines of it: give gap_lines")
+                return L.resolve_type_entry(self.ctx.guide, role, self.scale).pitch_emu * lines
+            if lines is not None:
+                raise AnnotationRefused(f"{where}: gap_lines counts lines of a type role; {role!r} is a spacing role")
             return L.space_emu(self.ctx.guide, role, self.scale, "x")
         except L.LayoutContractError as error:
             raise AnnotationRefused(f"{where}: {error}") from None
@@ -367,6 +384,7 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
     report: list[dict] = []
     problems: list[dict] = []
     seen_ids = set(by_id)
+    rows: dict[str, tuple] = {}  # a placed category_row's id -> its row rectangle, for "after"
     for ai, ann in enumerate(annotations or []):
         where = f"annotation {ann.get('id', ai)!r}" if isinstance(ann, dict) else f"annotation {ai}"
         try:
@@ -380,12 +398,12 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
             host = by_id.get(ann.get("host"))
             if host is None or host["kind"] not in ("chart", "table"):
                 raise AnnotationRefused(f"{where}: host {ann.get('host')!r} is not a chart or table element on this page")
-            for k in ("line_role", "fill_role"):
+            for k in ("line_role", "fill_role", "ink_role"):
                 if k in ann:
                     eg.hex(ann[k], where=where)
             if "label" in ann:
                 eg.hex(ann["label"]["ink_role"], where=f"{where} label")
-            drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where)
+            drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where, rows)
         except (AnnotationRefused, GeometryRefused) as error:
             problems.append({"kind": "annotation refused", "severity": "refusal", "detail": str(error)})
             report.append({"id": ann.get("id") if isinstance(ann, dict) else ai, "status": "refused", "why": str(error)})
@@ -410,7 +428,7 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
     return out, report, problems
 
 
-def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: EmitGuide, where: str) -> tuple[list[dict], dict]:
+def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: EmitGuide, where: str, rows: dict | None = None) -> tuple[list[dict], dict]:
     taken: list[str] = []
 
     def default(key: str, label_key: str | None = None) -> None:
@@ -422,11 +440,13 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         a = chart_anchor(geo, ann["anchor"], where)
         # every drawn mark the anchor does not take in: an annotation may not cover them. A
         # band's label lies under its host, so every mark in it hides it: none is its own
-        own = a.get("marks", a["rect"]) if "line" not in a and kind != "band" else None
+        own = a.get("marks", a["rect"]) if "line" not in a and kind not in ("band", "category_row") else None
         for j, i, m in drawn_marks(geo):
             if own is None or not _intersects(m, own):
                 name = geo.series[j].get("name")
-                other_marks.append((f"mark {name!r} {geo.categories[i] if geo.family != 'xy' else i!r}", m))
+                # a blank category label (a dense time axis labels every n-th) is named by its index
+                label = (geo.categories[i] or f"category #{i}") if geo.family != "xy" else i
+                other_marks.append((f"mark {name!r} {label!r}", m))
     else:
         a = table_anchor(host, ann["anchor"], where)
     lw = round(float(ann.get("line_width_pt", 0)) * EMU_PER_PT)
@@ -435,7 +455,9 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     pad = lab.space(ann.get("pad_role"), where)
     if "pad_role" not in ann and kind in ("outline_box", "band", "callout", "badge"):
         default("pad_role")
-    gap = lab.space(ann.get("gap_role"), where)
+    if "gap_lines" in ann and (isinstance(ann["gap_lines"], bool) or not isinstance(ann["gap_lines"], int) or ann["gap_lines"] < 1):
+        raise AnnotationRefused(f"{where}: gap_lines is a whole number of lines, 1 or more")
+    gap = lab.space(ann.get("gap_role"), where, ann.get("gap_lines"))
     if "gap_role" not in ann and kind in ("reference_line", "badge") and (kind == "badge" or "label" in ann):
         default("gap_role")
     label = ann.get("label")
@@ -511,11 +533,16 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             lines, w, h, fit = label_box()
             end, start = (x2, y2), (x1, y1)
             if horizontal:
-                lx = {"end_outside": end[0] + gap, "end_above": end[0] - w, "end_below": end[0] - w, "start_above": start[0], "start_below": start[0]}[pos]
-                ly = {"end_outside": end[1] - h / 2, "end_above": end[1] - gap - h, "end_below": end[1] + gap, "start_above": start[1] - gap - h, "start_below": start[1] + gap}[pos]
+                mid = (start[0] + end[0]) / 2 - w / 2
+                lx = {"end_outside": end[0] + gap, "end_above": end[0] - w, "end_below": end[0] - w, "start_above": start[0], "start_below": start[0],
+                      "middle_above": mid, "middle_below": mid}[pos]
+                ly = {"end_outside": end[1] - h / 2, "end_above": end[1] - gap - h, "end_below": end[1] + gap, "start_above": start[1] - gap - h, "start_below": start[1] + gap,
+                      "middle_above": end[1] - gap - h, "middle_below": end[1] + gap}[pos]
             else:
-                lx = {"end_outside": end[0] - w / 2, "end_right": end[0] + gap, "end_left": end[0] - gap - w, "start_right": start[0] + gap, "start_left": start[0] - gap - w}[pos]
-                ly = {"end_outside": end[1] - gap - h, "end_right": end[1], "end_left": end[1], "start_right": start[1] - h, "start_left": start[1] - h}[pos]
+                lx = {"end_outside": end[0] - w / 2, "end_right": end[0] + gap, "end_left": end[0] - gap - w, "start_right": start[0] + gap, "start_left": start[0] - gap - w,
+                      "middle_right": end[0] + gap, "middle_left": end[0] - gap - w}[pos]
+                ly = {"end_outside": end[1] - gap - h, "end_right": end[1], "end_left": end[1], "start_right": start[1] - h, "start_left": start[1] - h,
+                      "middle_right": (start[1] + end[1]) / 2 - h / 2, "middle_left": (start[1] + end[1]) / 2 - h / 2}[pos]
             drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, align("left")))
             footprint.append({"rect": (lx, ly, w, h), "text": True, "tokens": label["text"].split()})
     elif kind in ("arrow", "callout"):
@@ -570,6 +597,12 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             lb = _placed(side, box, w, h, gap)
             drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, align("center")))
             footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
+    elif kind == "category_row":
+        if host["kind"] != "chart":
+            raise AnnotationRefused(f"{where}: a category row is aligned to a chart's categories; its host is a {host['kind']}")
+        drawn, footprint, row_rect = _category_row(ann, aid, host, geo, lab, eg, where, rows or {}, default, gap)
+        (rows if rows is not None else {})[aid] = row_rect
+        r = row_rect
     elif kind == "badge":
         pos = ann["position"]
         if pos not in AROUND:
@@ -589,6 +622,161 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
              "anchor_emu": [round(v) for v in r], "drawn": [d["id"] for d in drawn], "defaults_taken": taken,
              "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks}
     return drawn, entry
+
+
+def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: "Labeller", eg: EmitGuide, where: str, rows: dict, default, gap: float):
+    """A row of cells (text, or a picture) centred on the chart's categories, beyond the
+    plot on one side, each inside its category's band: data rows under a chart, logos or
+    icons as category labels. Positions from chart_geometry, text measured with the
+    solver's ruler; a cell wider than its band is refused by name."""
+    import images
+    p = geo.plot
+    a = ann["anchor"]
+    if set(a) != {"categories"}:
+        raise AnnotationRefused(f"{where}: a category row anchors to {{\"categories\": [first, last]}}, the categories its cells sit under")
+    c0, c1 = _pair(a["categories"], where, "categories")
+    i0, i1 = geo._category_index(c0), geo._category_index(c1)
+    if i1 < i0:
+        raise AnnotationRefused(f"{where}: categories run first to last, got {i0}..{i1}")
+    cells = ann["cells"]
+    if not isinstance(cells, list) or len(cells) != i1 - i0 + 1:
+        raise AnnotationRefused(f"{where}: cells must list one entry per category {i0}..{i1} ({i1 - i0 + 1}); "
+                                f"got {len(cells) if isinstance(cells, list) else type(cells).__name__} (null leaves a category empty)")
+    pos = ann["position"]
+    across = not p.horizontal_bars  # categories run across the page: the row lies below or above the plot
+    if across and pos not in ("below", "above"):
+        raise AnnotationRefused(f"{where}: on a column or line chart a row lies below or above the plot, not {pos!r}")
+    if not across and pos not in ("left", "right"):
+        raise AnnotationRefused(f"{where}: on a horizontal bar chart a category column lies left or right of the plot, not {pos!r}")
+    text_style = {k: ann[k] for k in ("role", "ink_role") if k in ann}
+    shape = ann.get("shape")
+    if shape is not None:
+        if not isinstance(shape, dict) or set(shape) - ROW_SHAPE_KEYS or shape.get("prst") not in SHAPES:
+            raise AnnotationRefused(f"{where} shape: {{prst ({list(SHAPES)}), line_role, line_width_pt, fill_role, pad_role}}")
+        if not shape.get("line_role") and not shape.get("fill_role"):
+            raise AnnotationRefused(f"{where} shape: draws nothing without a line_role or fill_role")
+        if shape.get("line_role") and (not _num(shape.get("line_width_pt")) or shape["line_width_pt"] <= 0):
+            raise AnnotationRefused(f"{where} shape: a line_role needs a positive line_width_pt (no neutral stroke width exists)")
+        for k in ("line_role", "fill_role"):
+            if shape.get(k):
+                eg.hex(shape[k], where=f"{where} shape")
+    width_mode = ann.get("cell_width", "uniform")
+    if width_mode not in ("uniform", "own"):
+        raise AnnotationRefused(f"{where}: cell_width is \"uniform\" or \"own\"")
+    if "cell_width" not in ann:
+        default("cell_width")
+    pad = lab.space(shape.get("pad_role"), where) if shape else 0
+    # measure every cell
+    measured = []
+    for k, cell in enumerate(cells):
+        cw = f"{where} cells[{k}]"
+        if cell is None:
+            measured.append(None)
+            continue
+        if isinstance(cell, str):
+            cell = {"text": cell}
+        if not isinstance(cell, dict) or len(cell) != 1 or not set(cell) <= ROW_CELL_KEYS:
+            raise AnnotationRefused(f"{cw}: a cell is a string, {{\"text\": ...}}, {{\"image\": {{\"path\" | \"svg\", \"height_role\" | \"width_role\", ...}}}} or null")
+        if "text" in cell:
+            if not isinstance(cell["text"], str) or not cell["text"].strip():
+                raise AnnotationRefused(f"{cw}: text must be non-blank (null leaves the category empty)")
+            missing = [k2 for k2 in ("role", "ink_role") if k2 not in text_style]
+            if missing:
+                raise AnnotationRefused(f"{where}: a row of text cells needs {missing} (nothing picks a type or an ink for you)")
+            lines, w, h, fit = lab.measure({"text": cell["text"], **text_style}, None, cw)
+            measured.append(("text", cell["text"], lines, w, h, fit))
+        else:
+            try:
+                pic = images.picture(cell["image"], cw, eg.g)
+                size = images.box_size(pic, eg.g)
+            except images.ImageRefused as error:
+                raise AnnotationRefused(str(error)) from None
+            if size is None:
+                raise AnnotationRefused(f"{cw}: a picture in a row is sized by its role: give it height_role or width_role")
+            measured.append(("image", pic, None, size["width_emu"], size["height_emu"], None))
+    present = [m for m in measured if m is not None]
+    if not present:
+        raise AnnotationRefused(f"{where}: every cell is null")
+    k_inflate = SQRT2 if shape and shape["prst"] == "ellipse" else 1.0
+    def outer(w: float, h: float, kind: str) -> tuple[float, float]:
+        if shape is None or kind == "image":
+            return w, h
+        return w * k_inflate + 2 * pad, h * k_inflate + 2 * pad
+    sizes = [outer(m[3], m[4], m[0]) for m in present]
+    uni_w, uni_h = max(s_[0] for s_ in sizes), max(s_[1] for s_ in sizes)
+    depth = uni_h if across else uni_w      # extent away from the plot
+    # where the row starts: the plot's edge, or the row it follows
+    if "after" in ann:
+        prev = rows.get(ann["after"])
+        if prev is None:
+            raise AnnotationRefused(f"{where}: after {ann['after']!r} names no category row placed before this one on the page")
+        edge = {"below": prev[1] + prev[3], "above": prev[1], "right": prev[0] + prev[2], "left": prev[0]}[pos]
+    else:
+        edge = {"below": p.top + p.height, "above": p.top, "right": p.left + p.width, "left": p.left}[pos]
+    start = edge + gap if pos in ("below", "right") else edge - gap - depth
+    drawn: list[dict] = []
+    footprint: list[dict] = []
+    for k, m in enumerate(measured):
+        if m is None:
+            continue
+        i = i0 + k
+        cname = geo.categories[i] or f"category #{i}"
+        _, lo, hi = geo.category_band(i)
+        _, c = geo.category_centre(i)
+        cw_, ch_ = (uni_w, uni_h) if width_mode == "uniform" else outer(m[3], m[4], m[0])
+        a_ext = cw_ if across else ch_
+        if a_ext > hi - lo + 1:
+            raise AnnotationRefused(f"{where} cells[{k}] ({cname!r}): {round(a_ext)} EMU wide, wider than its category's {round(hi - lo)} EMU band; "
+                                    "shorten it, use a smaller role, or give the chart more width")
+        if across:
+            box = (c - cw_ / 2, start + (depth - ch_) / 2, cw_, ch_)
+        else:
+            box = (start + (depth - cw_) / 2, c - ch_ / 2, cw_, ch_)
+        cid = f"{aid}-{k}"
+        if m[0] == "image":
+            pic = m[1]
+            drawn.append({"id": cid, "kind": "image", "box": [round(v) for v in box], **pic.emit_fields()})
+            footprint.append({"rect": box})
+            continue
+        if shape is not None:
+            drawn.append({"id": f"{cid}-shape", "kind": "rect", "box": [round(v) for v in box], "fill_role": shape.get("fill_role"),
+                          "line_role": shape.get("line_role"), "line_width_emu": round(float(shape.get("line_width_pt", 0)) * EMU_PER_PT) or None,
+                          "prst": SHAPES[shape["prst"]]})
+            lw = round(float(shape.get("line_width_pt", 0)) * EMU_PER_PT)
+            footprint.append({"rect": box} if shape.get("fill_role") else {"outline": box, "width": lw})
+        _, text, lines, w, h, fit = m
+        tb = (box[0] + (box[2] - w) / 2, box[1] + (box[3] - h) / 2, w, h)
+        drawn.append(lab.text_element(f"{cid}-text", {"text": text, **text_style}, tb, lines, fit, "center", anchor="m"))
+        footprint.append({"rect": tb, "text": True, "tokens": text.split()})
+    if across:
+        row_rect = (p.left, start, p.width, depth)
+    else:
+        row_rect = (start, p.top, depth, p.height)
+    label = ann.get("label")
+    if label:
+        if across:
+            # the row's name before the first category: from the chart frame's edge to the plot's
+            room = p.left - host["box"][0]
+            if room <= 0:
+                raise AnnotationRefused(f"{where} label: the plot leaves no room left of it for the row's name; move plot_area.x right")
+            share = label.get("max_width_share")
+            limit = min(room, share * host["box"][2]) if share is not None else room
+            lines, w, h, fit = lab.measure(label, limit, f"{where} label")
+            if "align" not in label:
+                default("label.align", "label.align.category_row")
+            lb = (p.left - w, start + (depth - h) / 2, w, h)
+            al = label.get("align", "right")
+        else:
+            lines, w, h, fit = lab.measure(label, depth if label.get("max_width_share") is None else label["max_width_share"] * host["box"][2], f"{where} label")
+            if "align" not in label:
+                default("label.align", "label.align.category_row")
+            lb = (start + (depth - w) / 2, p.top - h, w, h)
+            al = label.get("align", "center")
+        if al not in ("left", "center", "right"):
+            raise AnnotationRefused(f"{where} label: align {al!r} not in left, center, right")
+        drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, al, anchor="m"))
+        footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
+    return drawn, footprint, row_rect
 
 
 def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) -> None:

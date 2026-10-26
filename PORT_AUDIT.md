@@ -162,3 +162,75 @@ rendered on 2026-10-20.
 - Table column levelling by added line count (review finding): the fitter levels by natural and minimum widths as deckgen's E38 does; a label column can wrap while a one-row header stays whole. Not changed, because the oracle against deckgen's fitter is the port's proof and a new rule needs its own measurement.
 - Paragraph rhythm per composition family (review finding): the guide records one modal spacing per role; a reference that spaces an executive page differently from its body pages loses that rhythm. Recorded, not built.
 - A capacity command over a page with components: `layout.py capacity` now budgets a component as the flexible box the build solves first and says so; the text inside a component is its own measure (component_api). Before, a page holding one stopped with a traceback.
+
+## Exhibit fidelity (blind round 2)
+
+The rater passed generated pages as real 58% of the time and real pages 90%; the notes
+on real pages named chart fidelity, icons and logos, and an exhibit "thoughtfully made to
+communicate something very specific"; on a generated page, an unlabelled red circle. The
+praised real pages (Netflix p5, BCG New York p13, p15, p20, p24, Jazz p9 by the same bank)
+and the coded corpus (TARGET_SPEC Appendix A) were read for what they draw that the spec
+could not express before this round:
+
+| Move on the praised pages | Corpus count | Before | Now |
+|---|---|---|---|
+| Logos or icons on the page (icon-led rows, logo walls) | icons on 32 pages, logo walls on 23 exhibits | a picture only from a file, stretched to its box, no size in roles | `slide.images` with `path` or an SVG `svg` icon; role-sized boxes; never stretched; `images.py list / extract` from a pptx or PDF reference |
+| Logos as category labels | 20 exhibits | no way to place a picture at a category | `category_row` cells holding pictures |
+| Data rows aligned under a chart's categories (BCG p24 ovals) | 29 exhibits | a table under the chart, unaligned | `category_row` text cells, optional ellipse or box, stacked rows (`after`) |
+| Combo: line plus columns, secondary axis (Netflix p5) | 14 combo exhibits; reference lines on 77 | refused (`plot_type`, `axis` unknown keys) | `plot_type`, `axis`, `axes.secondary_value` |
+| Axis titles (Netflix p5) | not coded | none | `axes.<name>.title` |
+| Dated axis labelled every n-th day, labels at -45 degrees | not coded | renderer's own skip and rotation | `label_interval`, `tick_interval`, `labels.rotation_deg` |
+| Series dash (forecast segments, dashed benchmark series) | forecast demarcation on 39 | none | `series[].dash` |
+| Reference-line label centred on a long line (Netflix p5) | | end or start only | `middle_above`, `middle_below` (and the vertical pair) |
+| Small multiples on one shared scale (BCG p20) | 77 pages with 2+ exhibits | grid plus fixed axes (already expressible) | unchanged; nothing ties the panels' scales together |
+| Area under water between a line and a baseline (BCG p20) | | no area-with-line combo before | expressible now as an area group plus a line group; not rebuilt |
+| Callout boxes with leaders, event bands (BCG p13) | 77 and 29 | annotations (already) | unchanged |
+| Connectors between waterfall steps (BCG p24 dotted lines) | 22 | none | none (no c:serLines) |
+| In-cell bars in a table (BCG p14) | 13 | none | none |
+
+Measured, LibreOffice 24.2 at 1600 px:
+
+- Combo geometry (`oracles/chart_geometry_probe.py`, two new configurations): two
+  clustered columns and a line on one axis, and a line on 0..100 with columns on a
+  secondary 0..40: every bar edge and point read within 0.87 px and 0.64 px of
+  chart_geometry. Before the groups were written in paint order (areas, bars, lines) the
+  second configuration read 4.1 px off with four line points not found: LibreOffice
+  paints groups in document order and the bars hid the line's markers.
+- Pictures: LibreOffice draws the SVG part of an svgBlip picture itself (with a blank
+  PNG fallback the icon still drew, 0% differing); an SVG part that draws nothing left
+  31.9% of the icon's box differing and the page refused. Fourteen pictures drawn as
+  written (one SVG icon, two PDF crops, eleven pptx logos down to 0.25 in tall) differ by
+  0 to 1.46% under the one-pixel-neighbourhood comparison; the first, pixel-for-pixel
+  comparison refused seven correctly drawn logos at 13.5 to 15.6% (resampling of fine
+  detail), so the comparison was changed and the threshold set at 5%. PowerPoint's
+  drawing of either part is not measured.
+- Two gates found missing while rebuilding, each shown passing a broken page before the
+  fix and refusing it after: a centred label taller than its column (white values on
+  thin bridge steps, drawn white on white: passed; now scored against the plot, 1.0:1,
+  refused); a category label's slot taken from the frame rather than the plot
+  ("Transportatio / n" passed; refused with `plot_area`).
+
+The rebuilds (each on its house's guide; each page fits at full scale, validates and is
+filed under its reference by the judge, which is necessary and not sufficient):
+
+- Netflix p5, price-volume (netflix guide, judge 0.058 against the house median 0.084):
+  data read back from the page's own picture (253 trading days, price and volume; the one
+  day the reference line hides is read as the line's value). Still differs: tick marks at
+  every day (LibreOffice ignores tickMarkSkip), axis titles larger (the house has no 9pt
+  bold role), no frame around the chart, the volume columns in `color.emphasis` (the
+  house's only red role) and the line in `color.accent2` (the picture's own theme blue is
+  not a guide role).
+- BCG p15, icon-led assumption rows (bcg guide, 0.12 against 0.131): the star of life
+  drawn in the SVG subset, the flag and the state outline extracted from the PDF. Still
+  differs: no dot terminals on the vertical rules, the title's underlined phrase, Inter
+  drawn for Trebuchet MS.
+- BCG p24, a bridge with two rows of figures in ovals under its categories (bcg guide,
+  0.114): every figure the page's own (its parts sum to 1,584 against a printed 1,585, so
+  no `bridge` declaration). Still differs: the values of the five thin steps sit above
+  their bars with the share (the build refused them white on white inside), no dotted
+  connectors between steps, the left key not aligned to the label rows, ovals in the
+  rule grey rather than the page's navy outline.
+- Jazz p9, eleven logos as category labels (netflix guide, the same bank's template,
+  0.112 against 0.084): revenue read back from the page's picture, logos extracted from
+  the pptx. Still differs: the legend sits lower, the chart has no frame, the bars take the
+  guide's blues rather than the picture's.

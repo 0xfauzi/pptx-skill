@@ -1,0 +1,1396 @@
+{
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/deck.pptx",
+ "ruler": "pillow_x128",
+ "slides": [
+  {
+   "id": "p5",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 1,
+    "units": 1,
+    "lead": 6
+   },
+   "tables": {},
+   "annotations": [
+    {
+     "id": "avg",
+     "kind": "reference_line",
+     "host": "pv",
+     "anchor": {
+      "value": 403.53
+     },
+     "status": "placed",
+     "anchor_emu": [
+      1344930,
+      3996629,
+      6496050,
+      0
+     ],
+     "drawn": [
+      "avg-line",
+      "avg-label"
+     ],
+     "defaults_taken": [
+      "label.max_width_share: one line, as wide as the text measures",
+      "label.align: left (center on a badge and on a bracket label)"
+     ],
+     "collisions": [],
+     "render_check": {
+      "host_words": 117,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 105,
+    "elements": 5,
+    "covered_area_fraction": 0.582,
+    "text_boxes_mostly_empty": "none",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "words_per_slide": {
+     "value": 105,
+     "band": [
+      55.6,
+      180.8
+     ],
+     "verdict": "in band"
+    },
+    "elements_per_slide": {
+     "value": 5,
+     "band": [
+      2.0,
+      13.0
+     ],
+     "verdict": "in band"
+    },
+    "content_area_fraction": {
+     "value": 0.582,
+     "band": [
+      0.4133,
+      0.7034
+     ],
+     "verdict": "in band"
+    }
+   },
+   "contrast": {
+    "checked": 12,
+    "violations": [],
+    "warnings": [],
+    "house_precedent": [],
+    "undecidable": [],
+    "unbound": [],
+    "nearest_pass": {
+     "element": "chrome-13",
+     "part": "chrome text",
+     "text": "Goldman Stanley",
+     "ink": "observed ink 113D63 of chrome-13",
+     "ratio": 11.22,
+     "threshold": 3.0,
+     "size_pt": 18.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "113D63",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 4,
+      "band": [
+       2.0,
+       13.0
+      ],
+      "verdict": "in band"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       1.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       1.2
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     },
+     "line": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 1,
+     "band": [
+      0.0,
+      1.2
+     ],
+     "verdict": "in band"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.9231
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": [],
+   "solver_status": "fit",
+   "problems": [
+    {
+     "kind": "no source line",
+     "severity": "warning",
+     "detail": "the page carries a table or a chart and no paragraph in type.source_line or type.footnote; house: 1 of 8 house data pages carry one (12%; the rule threshold 80% is unmeasured); add one where the house would"
+    }
+   ],
+   "title": {
+    "element": "title",
+    "text": "Rationale for Follow-On Equity Offering",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 39,
+      "house": {
+       "median": 39.0,
+       "p90": 48.2,
+       "max": 50,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 5,
+      "house": {
+       "median": 5.0,
+       "p90": 7.4,
+       "max": 8,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 1,
+       "n": 14
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 14,
+      "claim": 0,
+      "question": 0
+     },
+     "share": 1.0,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
+    }
+   },
+   "chart_defaults_taken": {
+    "pv": [
+     "axes.category.title: none: no axis title"
+    ]
+   }
+  }
+ ],
+ "position_drift": {},
+ "repetition": {
+  "threshold": 0.5,
+  "frame_left_out": [],
+  "pairs": [],
+  "realised": [
+   {
+    "page": 1,
+    "composition": "b1"
+   }
+  ],
+  "measure": {
+   "deck": "built",
+   "content_pages": 1,
+   "segments": [
+    [
+     1
+    ]
+   ],
+   "pairs": 0,
+   "status": "no evidence",
+   "why": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house": {
+   "decks": [
+    {
+     "deck": "mi_netflix_financing_pitchbook.pptx",
+     "status": "measured",
+     "content_pages": 14,
+     "composition": {
+      "V": 0.769,
+      "changed": 10,
+      "pairs": 13
+     },
+     "longest_run": 2
+    }
+   ],
+   "pooled": {
+    "status": "measured",
+    "decks": 1,
+    "decks_without_evidence": [],
+    "composition": {
+     "V": 0.769,
+     "changed": 10,
+     "pairs": 13,
+     "p10_deck_V": 0.769,
+     "deck_V": [
+      0.769
+     ],
+     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
+    },
+    "exhibits": {
+     "V": 0.923,
+     "changed": 12,
+     "pairs": 13,
+     "p10_deck_V": 0.923,
+     "deck_V": [
+      0.923
+     ],
+     "decks_unread": []
+    },
+    "classes": {
+     "V": 0.615,
+     "changed": 8,
+     "pairs": 13,
+     "p10_deck_V": 0.615,
+     "deck_V": [
+      0.615
+     ],
+     "decks_unread": []
+    },
+    "distinct_per_page": {
+     "mi_netflix_financing_pitchbook.pptx": 0.357
+    },
+    "longest_run": 2,
+    "sequences": [
+     [
+      "arch-2",
+      "arch-2",
+      "arch-3",
+      "arch-4",
+      "arch-5",
+      "arch-4",
+      "arch-6",
+      "arch-4",
+      "arch-5",
+      "arch-2",
+      "arch-2",
+      "arch-4",
+      "arch-4",
+      "arch-5"
+     ]
+    ]
+   }
+  },
+  "against_house": {
+   "built": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
+  },
+  "house_longest_run": 2,
+  "runs_over_reference": [],
+  "warnings": [],
+  "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
+ },
+ "emitted_slides": 1,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [
+   "SLIDE_NUMBER"
+  ],
+  "slide_layer_entries": [],
+  "notes": [],
+  "firm": [
+   {
+    "chrome_id": "chrome-13",
+    "kind": "label",
+    "text": "Goldman Stanley",
+    "layers": [
+     "master"
+    ],
+    "decision": "keep",
+    "chosen": false
+   }
+  ],
+  "drawn": [
+   []
+  ]
+ },
+ "validation": {
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/deck.pptx",
+  "slides": 1,
+  "problems": [],
+  "ok": true
+ },
+ "leakage": {
+  "past_decks": [
+   "mi_netflix_financing_pitchbook.pptx"
+  ],
+  "briefs": [],
+  "findings": 81,
+  "distinctive": 81,
+  "low": 17,
+  "pages": [
+   {
+    "page": 1,
+    "id": "p5",
+    "findings": [
+     {
+      "kind": "phrase",
+      "text": "0.85% to 0.95% in the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "1.24% to 1.38% in the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "1.60% to 1.80% in the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "a higher-than-usual share-price discount to",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "and 0.85% to 0.95% in",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "base case 1.60% to 1.80%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "case 1.60% to 1.80% in",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "case and 0.85% to 0.95%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "from 1.24% to 1.38% in",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "higher-than-usual share-price discount to complete",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "offer a higher-than-usual share-price discount",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "ranges from 1.24% to 1.38%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "phrase",
+      "text": "to offer a higher-than-usual share-price",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 2
+     },
+     {
+      "kind": "name",
+      "text": "given nautilus",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p2",
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "0.95% in the downside case",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "1.38% in the base case",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "1.80% in the upside case",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "a prime candidate for a",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "and stock-price performance in the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "equity ranges from 1.24% to",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "given nautilus rich valuation multiples",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "have to offer a higher-than-usual",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "in the base case 1.60%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "is a prime candidate for",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "it is a prime candidate",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "multiples and stock-price performance in",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "nautilus rich valuation multiples and",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "of equity ranges from 1.24%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "prime candidate for a follow-on",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "rich valuation multiples and stock-price",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "share-price discount to complete a",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "stock-price performance in the past",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "the base case 1.60% to",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "the upside case and 0.85%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "to 0.95% in the downside",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "to 1.38% in the base",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "to 1.80% in the upside",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "upside case and 0.85% to",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "valuation multiples and stock-price performance",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "years it is a prime",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "$403.53",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.60%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.80%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.24%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5",
+       "mi_netflix_financing_pitchbook.pptx p15"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.38%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5",
+       "mi_netflix_financing_pitchbook.pptx p15"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "phrase",
+      "text": "10 20% the company s",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "20% the company s after-tax",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "a $1.5 billion follow-on offering",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "after-tax cost of equity ranges",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "at discounts of 10 20%",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "because of the recent jump",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "believe the company may have",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "candidate for a follow-on equity",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "company may have to offer",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "company s after-tax cost of",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "complete a $1.5 billion follow-on",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "cost of equity ranges from",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "discount to complete a $1.5",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "discounts of 10 20% the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "for a follow-on equity offering",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "in the stock price we",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "in the upside case and",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "jump in the stock price",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "may have to offer a",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "of 10 20% the company",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "of the recent jump in",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "past several years it is",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "performance in the past several",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "price we believe the company",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "rationale for follow-on equity offering",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "recent jump in the stock",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "s after-tax cost of equity",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "several years it is a",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "stock price we believe the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "the company may have to",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "the company s after-tax cost",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "the past several years it",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "the recent jump in the",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "the stock price we believe",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "to complete a $1.5 billion",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     },
+     {
+      "kind": "phrase",
+      "text": "we believe the company may",
+      "past": [
+       "mi_netflix_financing_pitchbook.pptx p5"
+      ],
+      "past_pages": 1,
+      "rare_words": 0
+     }
+    ]
+   }
+  ],
+  "images": [],
+  "low_findings": [
+   {
+    "kind": "figure",
+    "text": "$1.5",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "0.85%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "0.95%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "20%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "after-tax cost",
+    "why": "a term of the trade: every word of it is in the public decks of other houses",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "average share price",
+    "why": "a term of the trade: every word of it is in the public decks of other houses",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "base case",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (goldman_airvana_go_private_board_2009.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "downside case",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (goldman_airvana_go_private_board_2009.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "phrase",
+    "text": "except for per share figures",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "follow-on equity offering",
+    "why": "a term of the trade: every word of it is in the public decks of other houses",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "phrase",
+    "text": "in millions except for per",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "phrase",
+    "text": "in the past several years",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mckinsey_uf_road_ahead_2023.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "millions except",
+    "why": "a term of the trade: also in 3 public deck(s) of other houses (goldman_airvana_go_private_board_2009.pdf, mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "phrase",
+    "text": "millions except for per share",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "share figures",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "upside case",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (goldman_airvana_go_private_board_2009.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "phrase",
+    "text": "usd in millions except for",
+    "why": "a term of the trade: also in 1 public deck(s) of other houses (mi_keybank_first_niagara_fig_ma.pptx)",
+    "pages": [
+     1
+    ]
+   }
+  ],
+  "what_to_do": {
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
+  },
+  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files",
+  "chrome_excluded": {
+   "mi_netflix_financing_pitchbook.pptx": {
+    "phrase": 0,
+    "name": 0,
+    "figure": 0
+   }
+  },
+  "images_checked": "pptx media by sha256",
+  "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
+  "verdict": "possible carry-over: 81 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
+ },
+ "renders": {
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/deck.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 68,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 12,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Wingdings": {
+    "rendered_with": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+    "fidelity": "substituted",
+    "codepoints_checked": 1,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": true
+   }
+  },
+  "pages": 1,
+  "images": [
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/renders/slide-01.png"
+  ]
+ },
+ "judge": {
+  "reference": "/home/user/pptx-skill/refs/files/mi_netflix_financing_pitchbook.pptx",
+  "total": 0.058,
+  "components": {
+   "families": 0.003,
+   "size_hist": 0.116,
+   "size_ladder": 0,
+   "title_size": 0,
+   "bold_ratio": 0.118,
+   "text_colors": 0.0,
+   "fills": null,
+   "lines": null,
+   "aligns": 0.119,
+   "kinds": 0.286,
+   "background": 0.0,
+   "margins": 0.447,
+   "coverage": 0.174,
+   "count": 0.006,
+   "overlap": 0.0,
+   "overflow": 0.0
+  },
+  "per_slide": [
+   {
+    "slide": 1,
+    "total": 0.058,
+    "worst": [
+     [
+      "margins",
+      0.447
+     ],
+     [
+      "kinds",
+      0.286
+     ],
+     [
+      "coverage",
+      0.174
+     ]
+    ]
+   }
+  ],
+  "overflow_where": [],
+  "house_spread": {
+   "n": 15,
+   "min": 0.055,
+   "median": 0.084,
+   "p90": 0.212,
+   "max": 0.388
+  },
+  "renditions": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx in another format"
+  },
+  "others": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/45541_Header.pptx": 0.432,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.485,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/themes.pptx": 0.449
+  },
+  "panel_skipped": {
+   "reason": "no type evidence (a scan, a browser print or an empty deck)",
+   "files": [
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/perella_weinberg_pitch.pdf"
+   ]
+  },
+  "same_house_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.1,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.058,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.073
+  },
+  "panel": "refs/files (default)",
+  "nearest_is_reference": true,
+  "reference_rank": 1,
+  "within_house_spread": true,
+  "layout_clean": true,
+  "filed_under_reference": true
+ },
+ "outputs": {
+  "verdict": "built",
+  "moved_aside": [],
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fid/work/netflix/out/p5/renders"
+ }
+}

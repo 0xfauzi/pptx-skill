@@ -25,7 +25,11 @@ PowerPoint):
   crossing value, positive and negative values on separate stacks; 100% stacked: each
   value over the category's sum of absolute values;
 - bars grow from where the category axis crosses (c:crosses autoZero, which
-  python-pptx writes): 0 clamped into lo..hi.
+  python-pptx writes): 0 clamped into lo..hi;
+- a combo chart (a series with its own `plot_type`, or `axis: "secondary"`): each series
+  is placed by its own plot group (bars cluster and stack only with the series of their
+  own type and axis) on its own value axis (`axes.secondary_value` on the right, its own
+  min and max, the same categories).
 """
 
 from __future__ import annotations
@@ -105,10 +109,12 @@ class ChartGeometry:
         self.where = el.get("id", "chart")
         self.type = str(el.get("type") or "")
         self.family = chart_family(self.type)
-        if self.family not in ("bar", "bar_stacked", "line", "xy"):
-            raise GeometryRefused(f"{self.where}: data positions are computed for bar, column, line and XY scatter charts; a {self.type} is not (unmeasured)")
-        if self.type.startswith(("LINE_STACKED", "LINE_MARKERS_STACKED")):
-            raise GeometryRefused(f"{self.where}: a stacked line's point positions are not computed here (unmeasured)")
+        self.series = el.get("series") or []
+        for t in {self.type} | {str(s.get("plot_type")) for s in self.series if s.get("plot_type")}:
+            if chart_family(t) not in ("bar", "bar_stacked", "line", "xy"):
+                raise GeometryRefused(f"{self.where}: data positions are computed for bar, column, line and XY scatter charts; a {t} is not (unmeasured)")
+            if t.startswith(("LINE_STACKED", "LINE_MARKERS_STACKED")):
+                raise GeometryRefused(f"{self.where}: a stacked line's point positions are not computed here (unmeasured)")
         rect = plot_rect(el, box)
         if rect is None:
             raise GeometryRefused(f"{self.where}: needs plot_area, the inner plot rectangle as fractions of the chart frame, so data positions "
@@ -119,7 +125,24 @@ class ChartGeometry:
         self.plot = Plot(*rect, self.type.startswith("BAR_"))
         self.axes = el.get("axes") or {}
         self.categories = el.get("categories") or []
-        self.series = el.get("series") or []
+
+    # --- combo charts: each series' own plot group and value axis -----------------------
+
+    def series_type(self, j: int) -> str:
+        return str(self.series[j].get("plot_type") or self.type)
+
+    def series_family(self, j: int) -> str:
+        return chart_family(self.series_type(j))
+
+    def series_axis(self, j: int) -> str:
+        """"value" or "secondary_value": the value axis series j is plotted against."""
+        return "secondary_value" if self.series[j].get("axis") == "secondary" else "value"
+
+    def group(self, j: int) -> list[int]:
+        """The series drawn in series j's plot group (same type, same value axis), in order:
+        bars cluster and stack only within their own group."""
+        key = (self.series_type(j), self.series_axis(j))
+        return [i for i in range(len(self.series)) if (self.series_type(i), self.series_axis(i)) == key]
 
     # --- axes ---------------------------------------------------------------------------
 
@@ -154,19 +177,21 @@ class ChartGeometry:
     def value_coord(self, v: float, axis: str = "value") -> tuple[str, float]:
         """("x" | "y", page EMU) of a value on the value axis, or on the x axis
         ("category") of an XY chart."""
-        if axis not in ("value", "category"):
-            raise GeometryRefused(f"{self.where}: axis {axis!r} is not value or category (the x axis of an XY chart)")
+        if axis not in ("value", "category", "secondary_value"):
+            raise GeometryRefused(f"{self.where}: axis {axis!r} is not value, secondary_value or category (the x axis of an XY chart)")
+        if axis == "secondary_value" and not any(s.get("axis") == "secondary" for s in self.series):
+            raise GeometryRefused(f"{self.where}: no series is plotted on the secondary value axis")
         if axis == "category" and self.family != "xy":
             raise GeometryRefused(f"{self.where}: a category axis has no scale; a value line sits on the value axis")
         t = self._value_fraction(axis, v)
         p = self.plot
-        across = (axis == "value" and p.horizontal_bars) or axis == "category"
+        across = (axis in ("value", "secondary_value") and p.horizontal_bars) or axis == "category"
         if across:
             return "x", p.left + t * p.width
         return "y", p.top + (1 - t) * p.height
 
-    def crossing_value(self) -> float:
-        lo, hi = self.scale("value")
+    def crossing_value(self, axis: str = "value") -> float:
+        lo, hi = self.scale(axis)
         return min(max(0.0, lo), hi)
 
     # --- categories ---------------------------------------------------------------------
@@ -237,19 +262,21 @@ class ChartGeometry:
 
     def bar_rect(self, series, category) -> tuple[float, float, float, float]:
         """(left, top, width, height) in page EMU of one bar."""
-        if self.family not in ("bar", "bar_stacked"):
-            raise GeometryRefused(f"{self.where}: a {self.type} has no bars")
         j = self._series_index(series)
+        if self.series_family(j) not in ("bar", "bar_stacked"):
+            raise GeometryRefused(f"{self.where}: series {j} is a {self.series_type(j)}, which has no bars")
         i = self._category_index(category)
         if self.cross_between() != "between":
             raise GeometryRefused(f"{self.where}: bars need axes.value.cross_between \"between\"")
-        n, k = len(self.categories), len(self.series)
+        members = self.group(j)
+        n, k = len(self.categories), len(members)
         gap = float(self.el.get("gap_width", ABSENT_GAP_WIDTH))
-        stacked = self.family == "bar_stacked"
+        stacked = self.series_family(j) == "bar_stacked"
         overlap = float(self.el.get("overlap", 100 if stacked else 0))
         axis, origin, extent = self._category_axis_span()
         slot = extent / n
-        bar = bar_thickness(abs(slot), self.type, k, gap, overlap)
+        bar = bar_thickness(abs(slot), self.series_type(j), k, gap, overlap)
+        jj = members.index(j)  # the bar's place in its own group
         sign = 1 if slot > 0 else -1
         slot_start = origin + slot * i
         if stacked:
@@ -257,11 +284,11 @@ class ChartGeometry:
         else:
             o = overlap / 100
             cluster = bar * (k - (k - 1) * o)
-            c0 = slot_start + sign * ((abs(slot) - cluster) / 2 + j * bar * (1 - o))
+            c0 = slot_start + sign * ((abs(slot) - cluster) / 2 + jj * bar * (1 - o))
         c1 = c0 + sign * bar
         v0, v1 = self.bar_values(j, i)
-        _, p0 = self.value_coord(v0)
-        _, p1 = self.value_coord(v1)
+        _, p0 = self.value_coord(v0, self.series_axis(j))
+        _, p1 = self.value_coord(v1, self.series_axis(j))
         cat_lo, cat_hi = min(c0, c1), max(c0, c1)
         val_lo, val_hi = min(p0, p1), max(p0, p1)
         if axis == "x":
@@ -270,8 +297,9 @@ class ChartGeometry:
 
     def bar_values(self, j: int, i: int) -> tuple[float, float]:
         """The value interval one bar spans, clipped to the axis range."""
-        lo, hi = self.scale("value")
-        base = self.crossing_value()
+        axis = self.series_axis(j)
+        lo, hi = self.scale(axis)
+        base = self.crossing_value(axis)
 
         def value(s: dict) -> float:
             v = s["values"][i]
@@ -279,15 +307,17 @@ class ChartGeometry:
                 raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number")
             return float(v)
 
-        if self.family == "bar":
+        if self.series_family(j) == "bar":
             a, b = base, value(self.series[j])
         else:
-            vals = [value(s) for s in self.series]
-            if "100" in self.type:
+            members = self.group(j)
+            vals = [value(self.series[m]) for m in members]
+            if "100" in self.series_type(j):
                 total = sum(abs(v) for v in vals)
                 vals = [v / total if total else 0.0 for v in vals]
-            v = vals[j]
-            same = [u for u in vals[:j] if (u >= 0) == (v >= 0)]
+            jj = members.index(j)
+            v = vals[jj]
+            same = [u for u in vals[:jj] if (u >= 0) == (v >= 0)]
             a = sum(same)
             b = a + v
         return min(max(a, lo), hi), min(max(b, lo), hi)
@@ -302,24 +332,25 @@ class ChartGeometry:
                 raise GeometryRefused(f"{self.where}: series {s.get('name')!r} has no point {index!r}")
             xv, yv = vals[index][0], vals[index][1]
             return self.value_coord(xv, "category")[1], self.value_coord(yv, "value")[1]
-        if self.family == "line":
+        axis = self.series_axis(j)
+        if self.series_family(j) == "line":
             i = self._category_index(index)
             v = s["values"][i]
             if not _num(v):
                 raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number")
             _, c = self.category_centre(i)
-            return c, self.value_coord(v)[1]
+            return c, self.value_coord(v, axis)[1]
         # a bar's anchor point: the centre of its value end
         x, y, w, h = self.bar_rect(series, index)
         v0, v1 = self.bar_values(j, self._category_index(index))
         if self.plot.horizontal_bars:
-            return (x + w if self.value_coord(v1)[1] >= self.value_coord(v0)[1] else x), y + h / 2
-        return x + w / 2, (y if self.value_coord(v1)[1] <= self.value_coord(v0)[1] else y + h)
+            return (x + w if self.value_coord(v1, axis)[1] >= self.value_coord(v0, axis)[1] else x), y + h / 2
+        return x + w / 2, (y if self.value_coord(v1, axis)[1] <= self.value_coord(v0, axis)[1] else y + h)
 
     def mark_rect(self, series, index) -> tuple[float, float, float, float]:
         """The drawn extent of one mark: a bar's rectangle, a point's marker box (its
         marker size in points, else a zero box at the point)."""
-        if self.family in ("bar", "bar_stacked"):
+        if self.series_family(self._series_index(series)) in ("bar", "bar_stacked"):
             return self.bar_rect(series, index)
         x, y = self.point(series, index)
         s = self.series[self._series_index(series)]

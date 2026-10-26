@@ -457,9 +457,45 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
         tf.margin_top = tf.margin_bottom = Emu(guide.space(el.get("pad_role"), 0))
 
 
-def write_image(slide, el: dict, box: tuple[int, int, int, int]) -> None:
-    x, y, w, h = box
-    pic = slide.shapes.add_picture(el["path"], Emu(x), Emu(y), Emu(w), Emu(h))
+#: a:blip's extension for an SVG picture (Office 2016+), with a PNG in r:embed for every
+#: reader that does not draw SVG
+SVG_BLIP_EXT = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}"
+SVG_BLIP_NS = "http://schemas.microsoft.com/office/drawing/2016/SVG/main"
+
+
+def write_image(slide, el: dict, box: tuple[int, int, int, int], guide: Guide | None = None) -> None:
+    """A picture at its own aspect inside its box (images.placed_box). A file is written
+    as given; an icon (svg_source) is written natively as an SVG part on the blip's svgBlip
+    extension, with a PNG fallback rasterised from the same parsed shapes."""
+    import images
+    if "aspect" not in el:
+        # a picture the build did not place through images.picture (the chrome's logo path)
+        x, y, w, h = box
+    else:
+        x, y, w, h = images.placed_box(box, el["aspect"], el.get("align", "center"), el.get("valign", "middle"))
+    if el.get("svg_source"):
+        if guide is None:
+            raise SpecError(f"{el.get('id')}: an icon needs the guide to resolve its colour roles")
+        try:
+            icon = images.parse_svg(Path(el["svg_source"]).read_bytes(), el.get("id", "image"))
+            hx = images.hexes(icon, guide, el.get("id", "image"))
+        except images.ImageRefused as error:
+            raise SpecError(str(error)) from None
+        import io
+        pic = slide.shapes.add_picture(io.BytesIO(images.fallback_png(icon, hx, w, h)), Emu(x), Emu(y), Emu(w), Emu(h))
+        package = slide.part.package
+        svg_part = Part(package.next_partname("/ppt/media/image%d.svg"), "image/svg+xml", package, images.svg_bytes(icon, hx))
+        rid = slide.part.relate_to(svg_part, RT.IMAGE)
+        blip = pic._element.find(".//" + qn("a:blip"))
+        ext_lst = blip.find(qn("a:extLst"))
+        if ext_lst is None:
+            ext_lst = etree.SubElement(blip, qn("a:extLst"))
+        ext = etree.SubElement(ext_lst, qn("a:ext"))
+        ext.set("uri", SVG_BLIP_EXT)
+        svg_blip = etree.SubElement(ext, f"{{{SVG_BLIP_NS}}}svgBlip", nsmap={"asvg": SVG_BLIP_NS})
+        svg_blip.set(qn("r:embed"), rid)
+    else:
+        pic = slide.shapes.add_picture(el["path"], Emu(x), Emu(y), Emu(w), Emu(h))
     pic.name = el.get("id", "image")
 
 
@@ -778,15 +814,25 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
 CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title", "foreign",
               "plot_area",
               "bridge"}  # bridge: a declaration the build's tie-out reads; nothing here draws from it
-SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth"}
+SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth",
+               "plot_type", "axis", "dash"}
+#: the families a combo chart joins on one set of category axes (OOXML plot groups sharing
+#: c:catAx); a horizontal bar, pie, scatter, bubble or radar group does not combine
+COMBO_FAMILIES = ("bar", "bar_stacked", "line", "area")
+SERIES_AXES = ("primary", "secondary")
 LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
 POINT_KEYS = {"index", "fill_role", "line_role", "label"}
 POINT_LABEL_KEYS = LABEL_KEYS | {"text"}
-AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels", "cross_between"}
+AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels", "cross_between", "title",
+             "label_interval", "tick_interval"}
+AXIS_TITLE_KEYS = {"text", "role", "ink_role", "orientation"}
+#: "along": the title runs along its axis (turned on a vertical axis); "horizontal": level
+AXIS_TITLE_ORIENTATIONS = ("along", "horizontal")
+AXIS_NAMES = ("category", "value", "secondary_value")
 # c:crossBetween on the value axis: "between" puts categories in bands (bar centres, line
 # points mid-band), "midpoint" puts line points on band edges (OOXML midCat).
 CROSS_BETWEEN = {"between": "between", "midpoint": "midCat"}
-AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role"}
+AXIS_LABEL_KEYS = {"show", "position", "role", "ink_role", "rotation_deg"}
 TICK_LABEL_POSITIONS = {"next_to": XL_TICK_LABEL_POSITION.NEXT_TO_AXIS, "low": XL_TICK_LABEL_POSITION.LOW, "high": XL_TICK_LABEL_POSITION.HIGH}
 GRIDLINE_KEYS = {"line_role", "line_width_pt"}
 PLOT_AREA_KEYS = {"x", "y", "w", "h"}
@@ -857,6 +903,9 @@ CHART_DEFAULTS = {
     "plot_fill_role": "no plot fill: the slide shows through",
     "title": "none",
     "plot_area": "automatic: each renderer places the plot inside the frame itself",
+    "axis.title": "none: no axis title",
+    "axis.title.orientation": "along: the title runs along its axis, turned a quarter on a vertical axis",
+    "series.axis": "primary",
 }
 
 
@@ -969,10 +1018,14 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     elif not isinstance(cats, list) or not cats:
         raise SpecError(f"{where}: categories must be a non-empty list")
     width = 3 if family == "bubble" else 2
-    stroked = family in ("line", "xy", "radar")
+    groups = combo_groups(el, type_name, family, where)
+    secondary = any(axis == "secondary" for _, axis, _ in groups)
     for si, s in enumerate(series):
         sw = f"{where} series[{si}]"
         _keys(sw, s, SERIES_KEYS)
+        s_type = s.get("plot_type", type_name)
+        s_family = chart_family(s_type)
+        stroked = s_family in ("line", "xy", "radar")
         values = s.get("values")
         if family in ("xy", "bubble"):
             if not isinstance(values, list) or any(not isinstance(v, list) or len(v) != width for v in values):
@@ -981,7 +1034,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             raise SpecError(f"{sw}: {len(values) if isinstance(values, list) else 'no'} values for {len(cats)} categories")
         if "fill_role" in s:
             if stroked:
-                raise SpecError(f"{sw}: a {type_name} series draws its line_role; fill_role does not apply (marker.fill_role colours markers)")
+                raise SpecError(f"{sw}: a {s_type} series draws its line_role; fill_role does not apply (marker.fill_role colours markers)")
             _colour(guide, s["fill_role"], sw)
         elif not stroked and not (family in ("pie", "doughnut") and len(s.get("points") or []) == len(values) and all("fill_role" in p for p in s.get("points") or [])):
             took(f"series[{si}].fill_role", "series.fill_role")
@@ -990,8 +1043,12 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 took(f"series[{si}].line_width_pt", "series.line_width_pt")
         else:
             took(f"series[{si}].line_role", "series.line_role")
-        if stroked and "smooth" not in s and family != "radar":
+        if stroked and "smooth" not in s and s_family != "radar":
             took(f"series[{si}].smooth", "series.smooth")
+        if "dash" in s:
+            _enum(sw, "dash", s["dash"], DASHES)
+            if s.get("line_role") in (None, NONE):
+                raise SpecError(f"{sw}: dash styles the series' stroke; give it a line_role (and line_width_pt) to dash")
         if "marker" in s:
             m = _keys(f"{sw} marker", s["marker"], MARKER_KEYS)
             if m.get("style") is not None:
@@ -999,7 +1056,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             for k in ("fill_role", "line_role"):
                 if k in m:
                     _colour(guide, m[k], f"{sw} marker")
-        elif stroked and ("MARKERS" in type_name or type_name in ("XY_SCATTER", "XY_SCATTER_LINES", "XY_SCATTER_SMOOTH")):
+        elif stroked and ("MARKERS" in s_type or s_type in ("XY_SCATTER", "XY_SCATTER_LINES", "XY_SCATTER_SMOOTH")):
             took(f"series[{si}].marker", "series.marker")
         labels = s.get("labels")
         if labels is None:
@@ -1008,9 +1065,9 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             _keys(f"{sw} labels", labels, LABEL_KEYS)
             _text_style(guide, labels, f"{sw} labels")
             if labels.get("show", True):
-                _check_position(family, labels.get("position"), f"{sw} labels")
+                _check_position(s_family, labels.get("position"), f"{sw} labels")
                 for k, d in (("position", "labels.position"), ("number_format", "labels.number_format"), ("role", "labels.role"), ("ink_role", "labels.ink_role")):
-                    if k not in labels and not (k == "position" and not FAMILY_POSITIONS.get(family)):
+                    if k not in labels and not (k == "position" and not FAMILY_POSITIONS.get(s_family)):
                         took(f"series[{si}].labels.{k}", d)
         for pi, p in enumerate(s.get("points") or []):
             pw = f"{sw} points[{pi}]"
@@ -1024,18 +1081,35 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             if "label" in p:
                 _keys(f"{pw} label", p["label"], POINT_LABEL_KEYS)
                 _text_style(guide, p["label"], f"{pw} label")
-                _check_position(family, p["label"].get("position"), f"{pw} label")
+                _check_position(s_family, p["label"].get("position"), f"{pw} label")
     if family not in ("pie", "doughnut"):
-        axes = _keys(f"{where} axes", el.get("axes") or {}, {"category", "value"})
-        for name in ("category", "value"):
+        axes = _keys(f"{where} axes", el.get("axes") or {}, set(AXIS_NAMES))
+        if "secondary_value" in axes and not secondary:
+            raise SpecError(f"{where} axes.secondary_value: no series is plotted on it; give a series \"axis\": \"secondary\" or remove the axis")
+        cb = {n: (axes.get(n) or {}).get("cross_between") for n in ("value", "secondary_value")}
+        if secondary and cb["secondary_value"] is not None and cb["secondary_value"] != cb["value"]:
+            raise SpecError(f"{where} axes.secondary_value: cross_between {cb['secondary_value']!r} differs from axes.value's {cb['value']!r}; "
+                            "both axes place the same categories, so the points would not line up")
+        for name in ("category", "value", *(("secondary_value",) if secondary else ())):
             ax = axes.get(name)
             aw = f"{where} axes.{name}"
             if ax is None:
                 took(f"axes.{name}", "axis.visible")
                 ax = {}
             _keys(aw, ax, AXIS_KEYS)
+            if "title" in ax:
+                t = _keys(f"{aw} title", ax["title"], AXIS_TITLE_KEYS)
+                if not isinstance(t.get("text"), str) or not t["text"].strip():
+                    raise SpecError(f"{aw} title: text is required")
+                _text_style(guide, t, f"{aw} title")
+                if "orientation" in t:
+                    _enum(f"{aw} title", "orientation", t["orientation"], AXIS_TITLE_ORIENTATIONS)
+                else:
+                    took(f"axes.{name}.title.orientation", "axis.title.orientation")
+            elif ax.get("visible") is not False:
+                took(f"axes.{name}.title", "axis.title")
             if "cross_between" in ax:
-                if name != "value" or family in ("xy", "bubble"):
+                if name not in ("value", "secondary_value") or family in ("xy", "bubble"):
                     raise SpecError(f"{aw}: cross_between belongs to the value axis of a category chart")
                 _enum(aw, "cross_between", ax["cross_between"], CROSS_BETWEEN)
             if ax.get("visible") is False:
@@ -1060,6 +1134,9 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 _text_style(guide, ax["labels"], f"{aw} labels")
                 if ax["labels"].get("position") is not None:
                     _enum(f"{aw} labels", "position", ax["labels"]["position"], TICK_LABEL_POSITIONS)
+                rot = ax["labels"].get("rotation_deg")
+                if rot is not None and (isinstance(rot, bool) or not isinstance(rot, int) or not -90 <= rot <= 90):
+                    raise SpecError(f"{aw} labels: rotation_deg is a whole number of degrees from -90 to 90")
             else:
                 took(f"axes.{name}.labels", "axis.labels")
             if ax.get("tick_marks") is not None:
@@ -1067,7 +1144,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             for k, d in (("tick_marks", "axis.tick_marks"), ("reverse", "axis.reverse")):
                 if k not in ax:
                     took(f"axes.{name}.{k}", d)
-            numeric = name == "value" or family in ("xy", "bubble")
+            numeric = name in ("value", "secondary_value") or family in ("xy", "bubble")
             if numeric:
                 if "number_format" not in ax:
                     took(f"axes.{name}.number_format", "axis.number_format")
@@ -1075,9 +1152,15 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                     took(f"axes.{name}.min/max", "axis.scale")
             elif {"min", "max", "major_unit", "number_format"} & set(ax):
                 raise SpecError(f"{aw}: a category axis has no scale or number format")
+            for k in ("label_interval", "tick_interval"):
+                if k in ax:
+                    if name != "category" or family in ("xy", "bubble"):
+                        raise SpecError(f"{aw}: {k} belongs to a category axis (every n-th category labelled or ticked)")
+                    if isinstance(ax[k], bool) or not isinstance(ax[k], int) or not 1 <= ax[k] <= 31999:
+                        raise SpecError(f"{aw}: {k} is a whole number of categories, 1 or more")
     elif el.get("axes"):
         raise SpecError(f"{where}: a {type_name} has no axes")
-    if family in ("bar", "bar_stacked"):
+    if any(chart_family(t) in ("bar", "bar_stacked") for t, _, _ in groups):
         for k in ("gap_width", "overlap"):
             if k not in el:
                 took(k, k)
@@ -1123,7 +1206,44 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             raise SpecError(f"{where} plot_area: x, y, w and h are all required, fractions of the chart frame, with x + w and y + h at most 1")
     else:
         took("plot_area", "plot_area")
-    return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults}
+    return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults, "groups": groups}
+
+
+def combo_groups(el: dict, type_name: str, family: str, where: str) -> list[tuple[str, str, list[int]]]:
+    """The chart's plot groups as (type name, value axis, series indices), the chart's own
+    type on the primary axis first (possibly empty). A series names another `plot_type`
+    or `axis: "secondary"` to join another group; the families combine on one category
+    axis (COMBO_FAMILIES), one group per family on each axis."""
+    series = el.get("series") or []
+    combo = False
+    for si, s in enumerate(series):
+        if not isinstance(s, dict):
+            continue
+        if "plot_type" in s:
+            if not isinstance(s["plot_type"], str) or s["plot_type"] not in XL_CHART_TYPE.__members__:
+                raise SpecError(f"{where} series[{si}]: plot_type {s['plot_type']!r} is not an XL_CHART_TYPE member name")
+            combo = combo or s["plot_type"] != type_name
+        if "axis" in s:
+            _enum(f"{where} series[{si}]", "axis", s["axis"], SERIES_AXES)
+            combo = combo or s["axis"] == "secondary"
+    groups: dict[tuple[str, str], list[int]] = {(type_name, "primary"): []}
+    for si, s in enumerate(series):
+        if isinstance(s, dict):
+            groups.setdefault((s.get("plot_type", type_name), s.get("axis", "primary")), []).append(si)
+    if not combo:
+        return [(t, a, ix) for (t, a), ix in groups.items()]
+    for t, _ in groups:
+        if chart_family(t) not in COMBO_FAMILIES or t.startswith("BAR_"):
+            raise SpecError(f"{where}: a combo chart joins column, line and area groups on one category axis; {t} does not combine "
+                            "(a horizontal bar's categories run up the page, a pie, scatter or radar has no shared category axis)")
+        if "3D" in t or t.endswith(("_PYRAMID", "_CONE", "_CYLINDER")):
+            raise SpecError(f"{where}: {t} does not combine")
+    for axis in SERIES_AXES:
+        fams = [chart_family(t) for (t, a), ix in groups.items() if a == axis and (ix or t == type_name)]
+        dup = sorted({f for f in fams if fams.count(f) > 1})
+        if dup:
+            raise SpecError(f"{where}: two {dup[0]} groups on the {axis} axis; on one axis each family is one group (series of one type cluster or stack together)")
+    return [(t, a, ix) for (t, a), ix in groups.items()]
 
 
 def _pad_point_counts(chart_space: etree._Element) -> None:
@@ -1241,8 +1361,10 @@ def _write_point_label(series, idx: int, guide: Guide, merged: dict, where: str)
     tspec, ink = _text_style(guide, merged, where)
     if merged.get("text") is not None:
         dl.text_frame.text = str(merged["text"])
-        for run in dl.text_frame.paragraphs[0].runs:
-            _font(run.font, guide, tspec, ink)
+        # every line of the label (a "\n" in the text starts a paragraph) in the label's type
+        for para in dl.text_frame.paragraphs:
+            for run in para.runs:
+                _font(run.font, guide, tspec, ink)
     _font(dl.font, guide, tspec, ink)
     if merged.get("position") is not None:
         dl.position = LABEL_POSITIONS[merged["position"]]
@@ -1276,6 +1398,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         raise SpecError(f"{where}: python-pptx cannot write {parsed['type_name']} ({error}); choose a type it writes") from None
     gf.name = where
     chart = gf.chart
+    secondary_axes = _write_combo(chart, parsed, data, where)
     if el.get("text"):
         tspec, ink = _text_style(guide, el["text"], f"{where} text")
         _font(chart.font, guide, tspec, ink)
@@ -1310,13 +1433,24 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             etree.SubElement(sp_pr, qn("a:noFill"))
         else:
             _solid_fill(sp_pr, fill)
-    plot = chart.plots[0]
-    for si, (series, s) in enumerate(zip(plot.series, el["series"])):
+    # every series by its c:idx (its place in the spec), whichever plot group holds it
+    by_idx = {ser.index: ser for p in chart.plots for ser in p.series}
+    written_series = [by_idx[i] for i in range(len(el["series"]))]
+    for si, (series, s) in enumerate(zip(written_series, el["series"])):
         sw = f"{where} series[{si}]"
         if "fill_role" in s:
             _fill(series.format, _colour(guide, s["fill_role"], sw))
         if "line_role" in s:
             _stroke(series.format, _colour(guide, s["line_role"], sw), s.get("line_width_pt"))
+        if "dash" in s:
+            ln = series._element.get_or_add_spPr().find(qn("a:ln"))
+            for old in ln.findall(qn("a:prstDash")):
+                ln.remove(old)
+            dash = etree.Element(qn("a:prstDash"))
+            dash.set("val", s["dash"])
+            # a:prstDash follows the line's fill in CT_LineProperties
+            fill = next((c for c in ln if etree.QName(c).localname in ("noFill", "solidFill", "gradFill", "pattFill")), None)
+            (fill.addnext(dash) if fill is not None else ln.insert(0, dash))
         if "smooth" in s:
             # through the element: python-pptx's XySeries has no smooth property
             series._element.get_or_add_smooth().val = bool(s["smooth"])
@@ -1345,12 +1479,13 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                     merged["show"] = True
                 _write_point_label(series, p["index"], guide, merged, f"{pw} label")
     taken = dict(parsed["defaults"])
-    for si, (series, s) in enumerate(zip(plot.series, el["series"])):
+    for si, (series, s) in enumerate(zip(written_series, el["series"])):
         if f"series[{si}].smooth" in taken:
             smooth = series._element.smooth
             written = "absent" if smooth is None else str(bool(smooth.val))
             taken[f"series[{si}].smooth"] = f"{written} ({CHART_DEFAULTS['series.smooth']})"
-    if family in ("bar", "bar_stacked"):
+    # every bar group takes the chart's gap_width and overlap (a combo's columns on either axis)
+    for plot in [p for p in chart.plots if etree.QName(p._element).localname == "barChart"]:
         if "gap_width" in el:
             plot.gap_width = int(el["gap_width"])
         else:
@@ -1361,8 +1496,17 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             taken["overlap"] = f"{plot.overlap} ({CHART_DEFAULTS['overlap']})"
     if family not in ("pie", "doughnut"):
         axes = el.get("axes") or {}
-        for name, axis in (("category", chart.category_axis), ("value", chart.value_axis)):
+        named = [("category", chart.category_axis), ("value", chart.value_axis)]
+        if secondary_axes is not None:
+            # python-pptx's value_axis is the SECOND c:valAx whenever there are two (its XY
+            # reading); a combo's primary value axis is the first
+            from pptx.chart.axis import ValueAxis
+            named = [("category", chart.category_axis), ("value", ValueAxis(chart._chartSpace.valAx_lst[0])), ("secondary_value", secondary_axes)]
+        for name, axis in named:
             ax = axes.get(name) or {}
+            if name == "secondary_value" and "cross_between" not in ax and (axes.get("value") or {}).get("cross_between"):
+                # the same categories on both pairs of axes: the secondary places them as the primary does
+                ax = {**ax, "cross_between": axes["value"]["cross_between"]}
             aw = f"{where} axes.{name}"
             if ax.get("visible") is False:
                 axis.visible = False
@@ -1396,12 +1540,127 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if ax.get("number_format"):
                 axis.tick_labels.number_format = ax["number_format"]
                 axis.tick_labels.number_format_is_linked = False
+            if ax.get("title"):
+                _write_axis_title(axis, ax["title"], guide, name, chart, f"{aw} title")
+            if (ax.get("labels") or {}).get("rotation_deg") is not None:
+                body = axis._element.get_or_add_txPr().find(qn("a:bodyPr"))
+                body.set("rot", str(int(ax["labels"]["rotation_deg"]) * 60000))
+                body.set("vert", "horz")
+            for k, tag in (("label_interval", "c:tickLblSkip"), ("tick_interval", "c:tickMarkSkip")):
+                if k in ax:
+                    _write_skip(axis._element, tag, int(ax[k]))
             _write_scale(axis, ax)
     _write_vary_colors(chart._chartSpace)
     _pad_point_counts(chart._chartSpace)
     if el.get("plot_area"):
         _write_plot_layout(chart._chartSpace, el["plot_area"])
     return {"id": where, "type": parsed["type_name"], "defaults_taken": [f"{k}: {v}" for k, v in taken.items()]}
+
+
+#: c:axId values for a combo's secondary axes: any unsigned int not already used; python-pptx
+#: numbers its own axes with 8-digit ids, so these cannot collide
+SECONDARY_AX_IDS = ("50010", "50020")
+
+
+def _write_combo(chart, parsed: dict, data, where: str):
+    """Move each series that names another plot_type or the secondary axis into its own
+    plot group. The group is taken from a chart python-pptx writes of that type over the
+    SAME chart data (so every series' cell references are the embedded workbook's), keeps
+    only its own series, and is joined to the primary axes or to a pair of secondary axes
+    (a deleted category axis and a value axis on the right that crosses at the maximum).
+    Returns the secondary value axis (python-pptx ValueAxis) or None."""
+    groups = parsed["groups"]
+    if len(groups) == 1 and groups[0][1] == "primary":
+        return None
+    from pptx.chart.axis import ValueAxis
+    area = chart._chartSpace.find(".//" + qn("c:plotArea"))
+    main = chart.plots[0]._element
+    main_ids = [a.get("val") for a in main.findall(qn("c:axId"))]
+    axes_first = next(c for c in area if etree.QName(c).localname in ("catAx", "valAx", "dateAx", "serAx"))
+    secondary_val = None
+    sec_needed = any(a == "secondary" for _, a, ix in groups if ix)
+    if sec_needed:
+        cat = area.find(qn("c:catAx"))
+        val = area.find(qn("c:valAx"))
+        s_cat, s_val = copy.deepcopy(cat), copy.deepcopy(val)
+        s_cat.find(qn("c:axId")).set("val", SECONDARY_AX_IDS[0])
+        s_cat.find(qn("c:crossAx")).set("val", SECONDARY_AX_IDS[1])
+        delete = s_cat.find(qn("c:delete"))
+        delete.set("val", "1")
+        s_val.find(qn("c:axId")).set("val", SECONDARY_AX_IDS[1])
+        s_val.find(qn("c:crossAx")).set("val", SECONDARY_AX_IDS[0])
+        s_val.find(qn("c:axPos")).set("val", "r")
+        for g in s_val.findall(qn("c:majorGridlines")) + s_val.findall(qn("c:minorGridlines")):
+            s_val.remove(g)
+        crosses = s_val.find(qn("c:crosses"))
+        if crosses is None:
+            raise SpecError(f"{where}: the value axis python-pptx wrote has no c:crosses to set for the secondary axis")
+        crosses.set("val", "max")
+        last_axis = [c for c in area if etree.QName(c).localname in ("catAx", "valAx", "dateAx", "serAx")][-1]
+        last_axis.addnext(s_cat)
+        s_cat.addnext(s_val)
+        secondary_val = ValueAxis(s_val)
+    for type_name, axis, idxs in groups:
+        if (type_name, axis) == (parsed["type_name"], "primary"):
+            continue
+        if not idxs:
+            continue
+        from pptx import Presentation as _P
+        scratch = _P()
+        sslide = scratch.slides.add_slide(scratch.slide_layouts[6])
+        other = sslide.shapes.add_chart(XL_CHART_TYPE[type_name], Emu(0), Emu(0), Emu(914400), Emu(914400), data).chart
+        group = copy.deepcopy(other.plots[0]._element)
+        for ser in group.findall(qn("c:ser")):
+            if int(ser.find(qn("c:idx")).get("val")) not in idxs:
+                group.remove(ser)
+        ids = main_ids if axis == "primary" else list(SECONDARY_AX_IDS)
+        for a, v in zip(group.findall(qn("c:axId")), ids):
+            a.set("val", v)
+        axes_first.addprevious(group)
+    for ser in main.findall(qn("c:ser")):
+        if int(ser.find(qn("c:idx")).get("val")) not in groups[0][2]:
+            main.remove(ser)
+    if not main.findall(qn("c:ser")):
+        # every series left the chart's own type: its group would plot nothing
+        area.remove(main)
+    # groups in the order they are painted: areas under bars under lines. LibreOffice paints
+    # in document order (measured by the probe: markers of a line written before a bar group
+    # were hidden under the bars), so the file states the order instead of leaving it to it
+    rank = {"areaChart": 0, "barChart": 1, "lineChart": 2}
+    groups_el = [c for c in area if etree.QName(c).localname in rank]
+    anchor = groups_el[-1].getnext()
+    for g in groups_el:
+        area.remove(g)
+    for g in sorted(groups_el, key=lambda g: rank[etree.QName(g).localname]):
+        anchor.addprevious(g)
+    return secondary_val
+
+
+def _write_skip(cat_ax: etree._Element, tag: str, n: int) -> None:
+    """c:tickLblSkip or c:tickMarkSkip in its schema place on a c:catAx: after lblOffset
+    (tickLblSkip before tickMarkSkip), before noMultiLvlLbl and extLst."""
+    for old in cat_ax.findall(qn(tag)):
+        cat_ax.remove(old)
+    el = etree.Element(qn(tag))
+    el.set("val", str(n))
+    later = ("tickMarkSkip", "noMultiLvlLbl", "extLst") if tag == "c:tickLblSkip" else ("noMultiLvlLbl", "extLst")
+    nxt = next((c for c in cat_ax if etree.QName(c).localname in later), None)
+    (nxt.addprevious(el) if nxt is not None else cat_ax.append(el))
+
+
+def _write_axis_title(axis, title: dict, guide: Guide, name: str, chart, where: str) -> None:
+    axis.has_title = True
+    tf = axis.axis_title.text_frame
+    tf.text = title["text"]
+    tspec, ink = _text_style(guide, title, where)
+    for run in tf.paragraphs[0].runs:
+        _font(run.font, guide, tspec, ink)
+    vertical_axis = name in ("value", "secondary_value") and not str(chart.chart_type).startswith("BAR_")
+    orientation = title.get("orientation", "along")
+    body = axis.axis_title._title.find(".//" + qn("c:rich")).find(qn("a:bodyPr"))
+    # written either way: the renderers' absence values for a vertical axis title differ
+    body.set("rot", "-5400000" if vertical_axis and orientation == "along" else "0")
+    body.set("vert", "horz")
 
 
 def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
@@ -1415,7 +1674,8 @@ def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
     family = parsed["family"]
     where = el.get("id", "chart")
     text_spec, text_ink = _text_style(guide, el.get("text"), f"{where} text")
-    on_fill = ON_FILL.get(family, set())
+    def fam(si: int) -> str:
+        return chart_family(el["series"][si].get("plot_type", parsed["type_name"]))
     out: list[dict] = []
 
     def ink_of(spec: dict) -> tuple[str | None, str | None, dict | None]:
@@ -1423,7 +1683,8 @@ def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
         name = spec.get("ink_role") or ((el.get("text") or {}).get("ink_role"))
         return ink or text_ink, name, tspec or text_spec
 
-    def backing(fill_role, position) -> list[tuple]:
+    def backing(fill_role, position, family: str) -> list[tuple]:
+        on_fill = ON_FILL.get(family, set())
         if family in ("line", "xy", "radar"):
             return [("plot",)]
         if fill_role is None:
@@ -1449,18 +1710,18 @@ def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
         plain = [i for i in range(n) if i not in overridden]
         if series_on and plain:
             ink, name, tspec = ink_of(labels)
-            out.append({"element": where, "part": f"series[{si}] {s['name']!r} labels", "points": plain, "ink": ink, "ink_name": name,
-                        "spec": tspec, "on": backing(s.get("fill_role"), labels.get("position"))})
+            out.append({"element": where, "series": si, "part": f"series[{si}] {s['name']!r} labels", "points": plain, "ink": ink, "ink_name": name,
+                        "spec": tspec, "on": backing(s.get("fill_role"), labels.get("position"), fam(si))})
         for idx, p in sorted(overridden.items()):
             merged = {**(labels or {}), **p.get("label", {})}
             shown = merged.get("show", True) if ("label" in p or series_on) else False
             if not shown:
                 continue
             ink, name, tspec = ink_of(merged)
-            out.append({"element": where, "part": f"series[{si}] {s['name']!r} point {idx} label", "points": [idx], "ink": ink, "ink_name": name,
-                        "spec": tspec, "on": backing(p.get("fill_role", s.get("fill_role")), merged.get("position"))})
+            out.append({"element": where, "series": si, "part": f"series[{si}] {s['name']!r} point {idx} label", "points": [idx], "ink": ink, "ink_name": name,
+                        "spec": tspec, "on": backing(p.get("fill_role", s.get("fill_role")), merged.get("position"), fam(si))})
     if family not in ("pie", "doughnut"):
-        for name in ("category", "value"):
+        for name in ("category", "value", *(("secondary_value",) if any(x.get("axis") == "secondary" for x in el["series"]) else ())):
             ax = (el.get("axes") or {}).get(name) or {}
             if ax.get("visible") is False or (ax.get("labels") or {}).get("show") is False:
                 continue
@@ -1897,7 +2158,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             elif kind == "rect":
                 write_rect(slide, el, guide, box)
             elif kind == "image":
-                write_image(slide, el, box)
+                write_image(slide, el, box, guide)
             elif kind == "table":
                 write_table(slide, el, guide, box)
             elif kind == "chart":

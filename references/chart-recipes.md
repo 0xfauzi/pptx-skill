@@ -8,7 +8,9 @@
 - Football field as a chart: a stacked bar with an invisible low series
 - Mekko approximation: one 100% column per segment, widths by weight
 - Labelled bars with no value axis
+- Combo: a line and columns on two value axes (price and volume)
 - Annotations: shapes at data positions
+- Category rows: data rows, ovals and logos aligned under the categories
 - What a default looks like in the report
 
 A chart is a spec you write. The emitter writes it as given and decides nothing: not
@@ -105,6 +107,33 @@ keybank (the pages named under "Proven on") and read from the render.
   `plot_area` and the axis's `min`, `max` and `cross_between`.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
+- A combo chart: a series takes its own `plot_type` (an `XL_CHART_TYPE` name) and
+  `axis` (`"primary"`, the default, or `"secondary"`). Column, line and area groups
+  combine on one category axis; a horizontal bar, pie, scatter, bubble or radar group does
+  not, and two groups of one family on one axis are refused (series of one type cluster or
+  stack together). Every bar group takes the chart's `gap_width` and `overlap`. The
+  groups are written areas first, then bars, then lines, the order the renderers paint
+  them (measured: a line written before the bars was hidden under them in LibreOffice).
+- `axes.secondary_value`: the right-hand value axis (every key of `axes.value`), for the
+  series on `axis: "secondary"`, refused when no series is on it; left out, it is written
+  as the neutral value and listed. Its `cross_between` must equal `axes.value`'s (both
+  place the same categories).
+- `axes.<name>.title`: `{"text", "role", "ink_role", "orientation"}`; `orientation`
+  `"along"` (turned a quarter on a vertical axis; the default, listed) or
+  `"horizontal"`. Left out on a visible axis, `chart_defaults_taken` lists it.
+- `axes.category.label_interval` and `tick_interval`: label (tick) every n-th category
+  (c:tickLblSkip, c:tickMarkSkip): a daily price series labels every 20th day. Measured
+  on LibreOffice 24.2: the label interval is honoured, the tick interval is not (a tick
+  is drawn at every category).
+- `axes.<name>.labels.rotation_deg`: -90 to 90, written on the tick labels' text
+  body. 0 keeps category labels level where LibreOffice would turn them to fit (it
+  turned 12pt labels in 1.0 in slots to 45 degrees on a BCG page); -45 is the dated-axis
+  look.
+- `series[].dash`: one of the line dashes (`dash`, `sysDash`, `lgDash`, ...) on the
+  series' own stroke (a forecast segment, a dashed benchmark series); it needs the
+  series' `line_role`.
+- A point label's `text` may hold a line break (`"6%\n87"`): each line is set in the
+  label's role and ink.
 - `c:varyColors val="0"` is written on every chart and is not yours to set: PowerPoint
   and LibreOffice read its absence oppositely (measured on both renderers). It means a pie
   draws one colour unless you give every slice a `fill_role` under `points`.
@@ -124,6 +153,20 @@ Below 3.0:1 refuses the page and names the part, the ink and the backing:
     color.accent1 fill of series[0] 'Precedented' labels is 1.54:1, under 3.0:1
 
 Nothing swaps an ink to rescue a page. The fix is the role you meant.
+
+A label set on a column's fill (`center`, `inside_end`, `inside_base`) that is taller
+than its column's segment (one line of its role, 1.2 x its size, against the segment
+chart_geometry computes; needs `plot_area` and the value axis range) spills onto the
+plot, and is scored against the plot too: white values on thin bridge steps over a white
+page read 1.0:1 and refuse the page, with `overflows_bar_at_points` naming the steps.
+Horizontal bars are not measured. Move those values above the bar (a carrier label, as
+in the bridge recipe) or give them an ink that reads on both.
+
+Category labels are checked against their slot; with `plot_area` the slot is the plot's
+width over the categories, not the frame's (the frame's let "Transportation" break as
+"Transportatio / n" on a BCG page and pass). The slot is still an upper bound:
+LibreOffice wraps a little inside it, so a word just under it can still break; read the
+render.
 
 ## Waterfall (bridge): an invisible first series as the running base
 
@@ -357,6 +400,63 @@ and scratch page `cols` (vertical).
 For a horizontal bar write `BAR_CLUSTERED` and `"reverse": true` on the category axis,
 or the first category prints at the bottom.
 
+## Combo: a line and columns on two value axes (price and volume)
+
+A price line on the left axis and daily volume as columns on the right: the chart's own
+type is the line, the volume series names `plot_type` and `axis: "secondary"`. Gap 0
+packs 253 daily columns edge to edge; the category axis labels every 20th day and leaves
+the other categories' labels blank. The average is a `reference_line` annotation at its
+value on the primary axis (`{"value": v}`; a line at a secondary value is
+`{"value": v, "axis": "secondary_value"}`).
+
+Proven on: the Netflix pitchbook's page 5 rebuilt on its own guide (data read back from
+the page's picture; PORT_AUDIT.md, exhibit fidelity). Measured by
+`oracles/chart_geometry_probe.py` with a line on 0..100 and columns on a secondary
+0..40: every bar edge and point within 0.64 px of chart_geometry at 1600 px.
+
+```json
+{
+ "type": "LINE", "categories": ["1/28/2014", "", "", "... 253 trading days, every 20th labelled ...", "1/9/2015", ""],
+ "number_format": "0.0",
+ "text": {"role": "type.axis_label", "ink_role": "color.ink"},
+ "title": {"text": "Price-Volume Over the Past Year", "role": "type.axis_label", "ink_role": "color.ink"},
+ "series": [
+  {"name": "Shares traded (M)", "values": [43.7, 29.0, "..."], "plot_type": "COLUMN_CLUSTERED", "axis": "secondary",
+   "fill_role": "color.emphasis", "line_role": "none", "labels": {"show": false}},
+  {"name": "Share price", "values": [406.3, 400.4, "..."], "line_role": "color.accent2", "line_width_pt": 1.75, "smooth": false,
+   "marker": {"style": "none"}, "labels": {"show": false}}
+ ],
+ "axes": {
+  "category": {"visible": true, "line_role": "color.ink", "line_width_pt": 0.75, "tick_marks": "out", "reverse": false, "gridlines": "none",
+               "label_interval": 20, "tick_interval": 20,
+               "labels": {"show": true, "position": "low", "rotation_deg": -45, "role": "type.axis_label", "ink_role": "color.ink"}},
+  "value": {"visible": true, "line_role": "color.ink", "line_width_pt": 0.75, "tick_marks": "out", "reverse": false,
+            "min": 0, "max": 600, "major_unit": 100, "number_format": "$0.00", "cross_between": "between",
+            "gridlines": {"line_role": "color.accent1", "line_width_pt": 0.75},
+            "labels": {"show": true, "role": "type.axis_label", "ink_role": "color.ink"},
+            "title": {"text": "Share Price", "role": "type.emphasis", "ink_role": "color.ink", "orientation": "along"}},
+  "secondary_value": {"visible": true, "line_role": "none", "tick_marks": "none", "reverse": false,
+                      "min": 0, "max": 100, "major_unit": 10, "number_format": "0 \"M\"", "cross_between": "between", "gridlines": "none",
+                      "labels": {"show": true, "role": "type.axis_label", "ink_role": "color.ink"},
+                      "title": {"text": "Shares Traded (in Millions)", "role": "type.emphasis", "ink_role": "color.ink", "orientation": "along"}}
+ },
+ "gap_width": 0, "overlap": 0, "legend": "none", "plot_fill_role": "none",
+ "plot_area": {"x": 0.115, "y": 0.09, "w": 0.775, "h": 0.66}
+}
+```
+
+```json
+"annotations": [
+ {"id": "avg", "host": "pv", "kind": "reference_line", "anchor": {"value": 403.53}, "line_role": "color.ink", "line_width_pt": 1.5, "dash": "solid",
+  "gap_role": "space.xs", "label": {"text": "Average Share Price - $403.53", "role": "type.axis_label", "ink_role": "color.ink", "position": "middle_below"}}]
+```
+
+The label first sat at `start_below` and the build refused it for covering the 4/24
+volume spike, then at `middle_below` in `type.body` for covering the 7/21 spike: a label
+may not cover a mark, and the fix was the smaller role the house uses for chart text.
+Choose which series is primary by which scale the reader reads first; a line over
+columns reads as the subject.
+
 ## Annotations: shapes at data positions
 
 Humans annotate almost every data exhibit (7 of 291 charts in the coded corpus
@@ -407,6 +507,11 @@ under the page's `annotations[].defaults_taken`):
 | `callout` | `line_role`, `line_width_pt`, `fill_role`, `label`, `position`, `gap_role` | `pad_role` (inside the box), `head` (`none`, `arrow`) | a filled box with a leader to the anchor |
 | `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role` | `style` (`square`, `brace`), `label` | a bracket opening toward the span, beyond its marks, label beyond it |
 | `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding one line (a number keyed to text) |
+| `category_row` | `cells`, `position`, `gap_role` | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `cell_width`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Category rows") |
+
+A reference line's label also takes `middle_above` and `middle_below` (horizontal) or
+`middle_right` and `middle_left` (vertical): centred along the line, where a long line's
+label clears marks at both ends.
 
 `position` is one of `above`, `below`, `left`, `right`, `above_left`, `above_right`,
 `below_left`, `below_right`. Labels are `{"text", "role", "ink_role"}` plus optional
@@ -522,6 +627,68 @@ line crossed four of them and the render check refused the page.
 Prefer native where a move can be native: a median row is an `emphasis` group, a highlighted
 bar is a point `fill_role`, a total is a series label. An annotation is a shape over the
 chart: it does not move when someone edits the chart's data.
+
+## Category rows: data rows, ovals and logos aligned under the categories
+
+29 exhibits in the coded corpus carry data rows aligned under the chart (22 of them in
+bank decks) and 20 use logos as category labels. A `category_row` is an annotation on a
+column, line or bar chart: one cell per category of `anchor.categories` ([first, last]),
+each centred on its category (chart_geometry's category centre), all in one row beyond
+the plot on `position` (`below` or `above` a column or line chart, `left` or `right` of
+a horizontal bar chart).
+
+- `cells`: one per category; a string (text), `{"text": ...}`, `{"image": <picture>}`
+  (a picture entry as under `slide.images`, sized by `height_role` or `width_role`), or
+  `null` for an empty category. Text cells are measured with the solver's ruler in
+  `role` and `ink_role`; a cell wider than its category's band is refused by name.
+- `gap_role` is how far the row stands from the plot's edge, or from the row named in
+  `after` (rows stack: the second row's `after` is the first row's id). A row under
+  tick labels must clear them: `"gap_role": "type.axis_label", "gap_lines": 3` stands
+  three lines of that role off the plot.
+- `shape`: `{"prst": "ellipse" | "rect" | "rounded", "line_role", "line_width_pt",
+  "fill_role", "pad_role"}` around each text cell (an ellipse is drawn through the text
+  box's corners, so the text stays inside it). `cell_width`: `"uniform"` (the default,
+  listed: every cell as wide as the widest, one oval size along the row) or `"own"`.
+- `label`: the row's name, `{"text", "role", "ink_role", "max_width_share", "align"}`,
+  set between the chart frame's left edge and the plot, ending at the plot's edge (leave
+  room with `plot_area.x`); above the column on a horizontal bar chart.
+
+The cells must lie inside the chart frame or clear every other element (the collision
+check), may cover no mark of the host, and after the render may cover none of the
+words the host drew: a first draft of the BCG page below refused because LibreOffice
+had turned its 12pt category labels to 45 degrees and they ran into the row
+(`"rotation_deg": 0` on the category labels, and a row `gap_lines` deep enough for
+their lines, fixed it).
+
+Proven on: BCG New York page 24 (a bridge with two rows of figures in ovals) and the
+Jazz pitchbook's page 9 (eleven company logos as category labels), each rebuilt on its
+house's guide (PORT_AUDIT.md, exhibit fidelity).
+
+```json
+"annotations": [
+ {"id": "emp", "host": "w", "kind": "category_row", "anchor": {"categories": [0, 7]}, "position": "below",
+  "gap_role": "type.body", "gap_lines": 4,
+  "cells": ["517", "1,659", "888", "390", "736", "269", "3,756", "8,215"], "role": "type.body", "ink_role": "color.ink",
+  "shape": {"prst": "ellipse", "line_role": "color.rule", "line_width_pt": 0.75, "pad_role": "space.xs"}, "cell_width": "uniform",
+  "label": {"text": "employees ('000s)", "role": "type.body", "ink_role": "color.ink", "max_width_share": 0.14, "align": "center"}},
+ {"id": "ui", "host": "w", "kind": "category_row", "anchor": {"categories": [0, 7]}, "position": "below", "gap_role": "space.md", "after": "emp",
+  "cells": ["8", "149", "186", "118", "272", "56", "492", "1,281"], "role": "type.body", "ink_role": "color.ink",
+  "shape": {"prst": "ellipse", "line_role": "color.rule", "line_width_pt": 0.75, "pad_role": "space.xs"}, "cell_width": "uniform",
+  "label": {"text": "incremental UI claims ('000s)\u00b9", "role": "type.body", "ink_role": "color.ink", "max_width_share": 0.14, "align": "center"}}]
+```
+
+Logos as category labels: hide the category tick labels (`"labels": {"show": false}`)
+and put the logos where they were. Each logo is fitted at its own aspect inside a box of
+both roles, so wide and tall marks line up:
+
+```json
+{"id": "logos", "host": "rev", "kind": "category_row", "anchor": {"categories": [0, 10]}, "position": "below", "gap_role": "space.sm",
+ "cells": [{"image": {"path": "/abs/work/logos/emergent.png", "height_role": "space.lg", "width_role": "space.xl", "align": "center", "valign": "middle"}},
+           "... one per company, in the categories' order ..."]}
+```
+
+Take each logo from the reference with `images.py extract` (page-specs.md, "Pictures")
+or from the user; never draw a company's mark yourself.
 
 ## What a default looks like in the report
 

@@ -101,6 +101,14 @@ CONFIGS = [
      "axes": axes()}),
     ("line, midpoint", {"type": "LINE_MARKERS", "categories": CATS5, "series": [series(0, [35, 62, 48, 90, 20], line=True), series(1, [55, 30, 70, 60, 80], line=True)],
      "axes": axes(cross="midpoint")}),
+    ("combo: 2 clustered columns and a line on one axis", {"type": "COLUMN_CLUSTERED", "categories": CATS5[:4],
+     "series": [series(0, [30, 55, 70, 40]), series(1, [45, 25, 60, 85]), {**series(2, [50, 65, 35, 75], line=True), "plot_type": "LINE_MARKERS"}],
+     "gap_width": 80, "overlap": 0, "axes": axes()}),
+    ("combo: line on the primary axis 0..100, columns on a secondary axis 0..40", {"type": "LINE_MARKERS", "categories": CATS5,
+     "series": [{**series(0, [12, 30, 8, 36, 20]), "plot_type": "COLUMN_CLUSTERED", "axis": "secondary"}, series(1, [35, 62, 48, 90, 20], line=True)],
+     "gap_width": 60, "overlap": 0,
+     "axes": {**axes(), "secondary_value": {"visible": True, "line_role": "none", "tick_marks": "none", "reverse": False, "min": 0, "max": 40, "major_unit": 10,
+                                             "number_format": "0", "gridlines": "none", "labels": {"show": True, **TEXT}, "cross_between": "between"}}}),
     ("XY scatter, 2 series", {"type": "XY_SCATTER", "series": [series(0, [[1.5, 20], [3.2, 65], [6.8, 40], [8.5, 85]], line=True),
                                                                 series(1, [[2.4, 75], [5.0, 30], [7.4, 55]], line=True)],
      "axes": {"category": {"visible": True, "line_role": "color.axis", "line_width_pt": 0.75, "tick_marks": "none", "reverse": False, "min": 0, "max": 10, "major_unit": 2,
@@ -128,29 +136,29 @@ def features(geo: ChartGeometry) -> list[dict]:
     the axis it is measured across."""
     out = []
     el = geo.el
-    if geo.family in ("bar", "bar_stacked"):
-        for j, s in enumerate(el["series"]):
+    for j, s in enumerate(el["series"]):
+        if geo.series_family(j) in ("bar", "bar_stacked"):
+            axis = geo.series_axis(j)
             for i in range(len(el["categories"])):
                 x, y, w, h = geo.bar_rect(j, i)
                 where = f"S{j} {el['categories'][i]}"
                 v0, v1 = geo.bar_values(j, i)
-                base_is_axis = v0 == geo.crossing_value()
+                base_is_axis = v0 == geo.crossing_value(axis)
                 if geo.plot.horizontal_bars:
                     out += [{"what": f"{where} top edge", "role": s["fill_role"], "axis": "y", "emu": y, "rect": (x, y, w, h), "side": "low"},
                             {"what": f"{where} bottom edge", "role": s["fill_role"], "axis": "y", "emu": y + h, "rect": (x, y, w, h), "side": "high"}]
-                    end_right = geo.value_coord(v1)[1] >= geo.value_coord(v0)[1]
+                    end_right = geo.value_coord(v1, axis)[1] >= geo.value_coord(v0, axis)[1]
                     out.append({"what": f"{where} value end", "role": s["fill_role"], "axis": "x", "emu": x + w if end_right else x, "rect": (x, y, w, h), "side": "high" if end_right else "low"})
                     if not base_is_axis:
                         out.append({"what": f"{where} value start", "role": s["fill_role"], "axis": "x", "emu": x if end_right else x + w, "rect": (x, y, w, h), "side": "low" if end_right else "high"})
                 else:
                     out += [{"what": f"{where} left edge", "role": s["fill_role"], "axis": "x", "emu": x, "rect": (x, y, w, h), "side": "low"},
                             {"what": f"{where} right edge", "role": s["fill_role"], "axis": "x", "emu": x + w, "rect": (x, y, w, h), "side": "high"}]
-                    end_top = geo.value_coord(v1)[1] <= geo.value_coord(v0)[1]
+                    end_top = geo.value_coord(v1, axis)[1] <= geo.value_coord(v0, axis)[1]
                     out.append({"what": f"{where} value end", "role": s["fill_role"], "axis": "y", "emu": y if end_top else y + h, "rect": (x, y, w, h), "side": "low" if end_top else "high"})
                     if not base_is_axis:
                         out.append({"what": f"{where} value start", "role": s["fill_role"], "axis": "y", "emu": y + h if end_top else y, "rect": (x, y, w, h), "side": "high" if end_top else "low"})
-    else:
-        for j, s in enumerate(el["series"]):
+        else:
             n = len(s["values"]) if geo.family == "xy" else len(el["categories"])
             for i in range(n):
                 px, py = geo.point(j, i)
