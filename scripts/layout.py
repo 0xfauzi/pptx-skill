@@ -1861,6 +1861,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                   + "; tallest rows " + ", ".join(f"{x['row']} ({x['lines']} lines)" for x in t["tallest_rows"]))
         for cause in payload.get("why_not_full_scale", []):
             print(f"  why not at full scale: {cause}")
+        for a in payload.get("annotations", []):
+            print(f"  annotation {a['id']}: {a['status']}" + (f" ({a['why']})" if a.get("why") else ""))
+        for f in payload.get("annotation_problems", []):
+            print(f"  annotation {f['severity']}: {f['kind']}: {f['detail']}")
         return 0 if payload["status"] == "fit" else 1
     ctx = build_context(args.spec, args.guide)
     if args.command == "solve":

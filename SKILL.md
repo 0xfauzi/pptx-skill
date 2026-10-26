@@ -272,7 +272,8 @@ python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guid
 components) and prints, per text element, its box, its lines now and how many characters
 more it takes before the page stops fitting at full scale; per table, its body rows, the
 height they need and `rows_to_fit` (the rows the page holds at full scale with everything
-else as written); and, for a page over budget, `why_not_full_scale`, the causes in words.
+else as written); each annotation placed as the build places it, with its refusals and
+collisions; and, for a page over budget, `why_not_full_scale`, the causes in words.
 Write the page's skeleton with short placeholder text first, read the budgets, then write
 the words.
 

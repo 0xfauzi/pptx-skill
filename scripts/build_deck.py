@@ -2422,7 +2422,7 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     api = component_api.make_api(guide, lg, ruler, index)
     one = L.Fraction(1)
     base_slide = copy.deepcopy(slide)
-    base_raw, _, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index, api)
+    base_raw, base_ctx, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index, api)
     out: dict = {"id": slide.get("id"), "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "status": outcome.status,
                  "scale": None if outcome.resolved is None else float(outcome.resolved.scale),
                  "reserved_zones_in": {z.get("source"): [round(z[k] / EMU_PER_INCH, 2) for k in ("left", "top", "width", "height")]
@@ -2430,6 +2430,14 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     if outcome.resolved is None:
         out["reason"] = outcome.reason
         return out
+    if base_slide.get("annotations") is not None:
+        # placed on the solved page as the build places them, so a collision or a refused
+        # anchor shows before a build (round 7: capacity placed none)
+        flat = flatten(base_slide, L.resolved_json(base_ctx, outcome.resolved), base_raw, guide)
+        _, placed, found = annotate.resolve(base_slide["annotations"], flat, base_ctx, outcome.resolved.scale, guide,
+                                            base_raw["page"].get("reserved_zones") or [])
+        out["annotations"] = [{"id": e.get("id"), "status": e.get("status"), **({"why": e["why"]} if e.get("why") else {})} for e in placed]
+        out["annotation_problems"] = [{"kind": f["kind"], "severity": f["severity"], "detail": f["detail"]} for f in found]
     _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, one)
     fits_full = full.status == "fit"
     texts: list[dict] = []
