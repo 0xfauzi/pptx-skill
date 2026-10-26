@@ -9,19 +9,27 @@ nothing here draws, and nothing here decides what to annotate.
     {"id": "subject", "host": "comps", "kind": "outline_box", "anchor": {"row": 3},
      "line_role": "color.accent2", "line_width_pt": 1.5, "pad_role": "space.xs"}
 
-Kinds (each a move the coded corpus measures): outline_box, band, reference_line,
-arrow, callout, bracket, badge. Anchors on a chart (chart_geometry.py, which needs
-plot_area and the axes' min, max and cross_between): point {series, category} or
-{series, index} on XY; categories [i, j]; category i (a line at its centre: an event
-marker); value v; values [a, b]; region {categories, values} or {x, y}. On a table (the
-solver's fitted column widths and row heights): cell [r, c], cells [[r0, c0], [r1, c1]],
-row r, rows [r0, r1], column c, columns [c0, c1], header_group {row, columns}; body
-rows count from 0 as `rows` lists them, header rows only through header_group.
+Kinds: outline_box, band, reference_line, arrow, callout, bracket, badge and
+category_row are named shorthands for moves the coded corpus measures; `mark` is the
+primitive under them: any OOXML preset the emitter writes, or a line with any OOXML line
+ends, with optional words beside it or on its body. Hosts are any element of the solved
+page: a chart, a table, a text, a picture, a rect (a region's drawn fill is the element
+`<region>-fill`). Anchors on a chart (chart_geometry.py, which needs plot_area and the
+axes' min, max and cross_between): point {series, category} or {series, index} on XY;
+categories [i, j]; category i (a line at its centre: an event marker); value v; values
+[a, b]; region {categories, values} or {x, y}. On a table (the solver's fitted column
+widths and row heights): cell [r, c], cells [[r0, c0], [r1, c1]], row r, rows [r0, r1],
+column c, columns [c0, c1], header_group {row, columns}; body rows count from 0 as
+`rows` lists them, header rows only through header_group. On any host: box [x0, y0, x1,
+y1], fractions of the host's solved box (beyond 0..1 reaches past its edges).
 
-Placement is computed from the anchor, the kind's closed set of positions and the
+Placement is computed from the anchor, the positions the kind can compute and the
 spacing roles the spec names. A choice the spec leaves out is written as the neutral
-value in DEFAULTS and listed in the report's `defaults_taken`; a choice with no neutral
-value (a colour, a stroke width, which side, how far) is required and refused by name.
+value in DEFAULTS (nothing drawn: no pad, no gap, a solid stroke, no head, one line) and
+listed in the report's `defaults_taken`; a choice with no neutral value (a colour, a
+stroke width, which side, how far, the shape, the alignment, where a label sits) is
+required and refused by name. A shape may come from the house's own file instead
+(`house_mark`: a mark a reference page draws, read by the extractor).
 
 The collision contract: an annotation may overlap only its anchor
 (its host). It may not cover another page element, another annotation, the page edge
@@ -34,6 +42,11 @@ host, every other annotation and the host's words, and it must lie inside its ba
 
 A value anchor must be a number inside its axis's min..max, and a label may not break
 a word between characters (layout.split_words, the solver's own test).
+
+A mark with no words of its own and nothing named that explains it is drawn and warned
+(`annotation unexplained`), with the house's own count of such marks beside it: the
+warning is answered in the report. An explanation that is named and does not hold is a
+false statement and refuses the page (`annotation explanation not found`).
 """
 
 from __future__ import annotations
@@ -53,18 +66,22 @@ from emit_pptx import DASHES, Guide as EmitGuide  # noqa: E402
 
 EMU_PER_PT = 12_700
 
-KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge", "category_row")
+KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge", "category_row", "mark")
 COMMON_KEYS = {"id", "host", "kind", "anchor"}
 KIND_KEYS = {
-    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape", "label", "gap_role", "explained_by"},
+    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape", "house_mark", "label", "gap_role", "explained_by"},
     "band": {"fill_role", "label", "pad_role", "explained_by"},
     "reference_line": {"line_role", "line_width_pt", "dash", "label", "gap_role", "explained_by"},
     "arrow": {"line_role", "line_width_pt", "dash", "label", "position", "gap_role"},
     "callout": {"line_role", "line_width_pt", "fill_role", "label", "position", "gap_role", "pad_role", "head"},
-    "bracket": {"line_role", "line_width_pt", "style", "side", "gap_role", "depth_role", "label", "explained_by"},
+    "bracket": {"line_role", "line_width_pt", "style", "house_mark", "side", "gap_role", "depth_role", "label", "explained_by"},
     "badge": {"fill_role", "label", "position", "gap_role", "pad_role"},
     "category_row": {"cells", "role", "ink_role", "position", "gap_role", "gap_lines", "after", "shape", "cell_width", "label", "align"},
+    "mark": {"prst", "house_mark", "line_role", "line_width_pt", "dash", "fill_role", "pad_role", "points", "head_end", "tail_end", "label",
+             "gap_role", "explained_by"},
 }
+#: the choices each kind cannot make for itself (no neutral value exists for them); a
+#: shape or style may instead come from the house's file (house_mark), checked in place
 REQUIRED = {
     "outline_box": ("line_role", "line_width_pt"),
     "band": ("fill_role",),
@@ -73,30 +90,37 @@ REQUIRED = {
     "callout": ("line_role", "line_width_pt", "fill_role", "label", "position", "gap_role"),
     "bracket": ("line_role", "line_width_pt", "side", "gap_role", "depth_role"),
     "badge": ("fill_role", "label", "position"),
-    "category_row": ("cells", "position", "gap_role"),
+    "category_row": ("cells", "position", "gap_role", "cell_width"),
+    "mark": (),
 }
+#: what the shape or style of a kind is, when neither it nor house_mark says (no neutral)
+SHAPE_KEY = {"outline_box": "shape", "bracket": "style", "mark": "prst"}
 LABEL_KEYS = {"text", "role", "ink_role", "position", "max_width_share", "align"}
+#: a label's own choices with no neutral value: what it says, in what, and how it aligns
+LABEL_REQUIRED = ("text", "role", "ink_role", "align")
+#: shorthands for three presets; any other OOXML preset the emitter writes is named as the
+#: file names it (emit_pptx.preset_shape)
 SHAPES = {"rect": "rect", "ellipse": "ellipse", "rounded": "roundRect"}
+#: a bracket's style as the bracket and brace presets draw it
+BRACKET_STYLES = {"square": ("leftBracket", "rightBracket"), "brace": ("leftBrace", "rightBrace")}
 AROUND = ("above", "below", "left", "right", "above_left", "above_right", "below_left", "below_right")
 LABEL_POSITIONS = {
     "reference_line_h": ("end_outside", "end_above", "end_below", "start_above", "start_below", "middle_above", "middle_below"),
     "reference_line_v": ("end_outside", "end_right", "end_left", "start_right", "start_left", "middle_right", "middle_left"),
     "band": ("inside_top_left", "inside_top_right", "inside_bottom_left", "inside_bottom_right"),
+    # a mark's words: beside it, or on its body where the contrast gate can bound the body
+    "mark": (*AROUND, "inside"),
 }
+#: the neutral values: each draws nothing (no space, no dash, no head) or as little as the
+#: words measure (one line). Every other choice is required
 DEFAULTS = {
     "pad_role": "0 EMU: drawn on the anchor's own edge",
     "gap_role": "0 EMU: the label touches what it labels",
     "dash": "solid",
-    "shape": "rect",
-    "style": "square (leftBracket / rightBracket presets)",
     "head": "none: a plain leader",
-    "label.align": "left (center on a badge and on a bracket label)",
+    "head_end": "none",
+    "tail_end": "none",
     "label.max_width_share": "one line, as wide as the text measures",
-    "label.position.reference_line": "end_outside: past the plot's far edge, centred on the line",
-    "label.position.band": "inside_top_left",
-    "cell_width": "uniform: every cell of the row as wide as its widest (one oval or box size along the row)",
-    "label.align.category_row": "right on a row (the label ends at the plot's edge), center on a column",
-    "align.category_row": "center: each cell's text centred in its cell",
 }
 ROW_SHAPE_KEYS = {"prst", "line_role", "line_width_pt", "fill_role", "pad_role"}
 ROW_CELL_KEYS = {"text", "image"}
@@ -285,6 +309,31 @@ def table_anchor(el: dict, anchor: dict, where: str) -> dict:
     raise AnnotationRefused(f"{where}: table anchor {sorted(keys)} is not one of cell, cells, row, rows, column, columns, header_group")
 
 
+def box_anchor(host: dict, frac, where: str) -> dict:
+    """{"box": [x0, y0, x1, y1]}: fractions of the host's solved box, on any host. Past 0..1
+    reaches beyond its edges (a mark beside a text); x1 = x0 or y1 = y0 is a line's span."""
+    if not isinstance(frac, list) or len(frac) != 4 or not all(_num(v) and abs(v) < 1e6 for v in frac):
+        raise AnnotationRefused(f"{where}: box is [x0, y0, x1, y1], four numbers: fractions of the host's box (0 its left or top edge, 1 its right or bottom)")
+    x0, y0, x1, y1 = frac
+    if x1 < x0 or y1 < y0:
+        raise AnnotationRefused(f"{where}: box runs from its top-left [x0, y0] to its bottom-right [x1, y1]; got {frac}")
+    hx, hy, hw, hh = host["box"]
+    return {"rect": (hx + x0 * hw, hy + y0 * hh, (x1 - x0) * hw, (y1 - y0) * hh)}
+
+
+def host_anchor(host: dict, anchor: dict, where: str, geo: ChartGeometry | None) -> dict:
+    """The anchor on its host: a box of fractions on any host, data coordinates on a chart
+    or a table."""
+    if set(anchor) == {"box"}:
+        return box_anchor(host, anchor["box"], where)
+    if host["kind"] == "chart" and geo is not None:
+        return chart_anchor(geo, anchor, where)
+    if host["kind"] == "table":
+        return table_anchor(host, anchor, where)
+    raise AnnotationRefused(f"{where}: a {host['kind']} host is anchored by {{\"box\": [x0, y0, x1, y1]}}, fractions of its box; "
+                            f"data anchors ({sorted(anchor)}) name places on a chart or a table")
+
+
 # --- labels ----------------------------------------------------------------------------
 
 
@@ -376,17 +425,29 @@ def _toward(position: str, label: tuple, target: tuple) -> tuple[tuple[float, fl
 # --- the resolver ----------------------------------------------------------------------
 
 
+def _a(word: str) -> str:
+    return f"{'an' if word[0] in 'aeiou' else 'a'} {word}"
+
+
 def _check_keys(ann: dict, where: str) -> str:
+    from emit_pptx import LINE_ENDS
     kind = ann.get("kind")
     if kind not in KINDS:
-        raise AnnotationRefused(f"{where}: kind {kind!r} not in {list(KINDS)}")
+        raise AnnotationRefused(f"{where}: kind {kind!r} not in {list(KINDS)} (`mark` draws any OOXML preset or line where no shorthand says it)")
     allowed = COMMON_KEYS | KIND_KEYS[kind]
     extra = sorted(set(ann) - allowed)
     if extra:
         raise AnnotationRefused(f"{where}: unknown keys {extra} for a {kind}; allowed {sorted(allowed)}")
     missing = [k for k in REQUIRED[kind] if k not in ann]
     if missing:
-        raise AnnotationRefused(f"{where}: a {kind} needs {missing}: no neutral value exists for them")
+        raise AnnotationRefused(f"{where}: {_a(kind)} needs {missing}: no neutral value exists for them")
+    if kind in SHAPE_KEY:
+        key = SHAPE_KEY[kind]
+        if key in ann and "house_mark" in ann:
+            raise AnnotationRefused(f"{where}: {key} and house_mark each say what the {kind} draws; give one")
+        if key not in ann and "house_mark" not in ann:
+            raise AnnotationRefused(f"{where}: {_a(kind)} needs {key} (or house_mark: {{\"slide\": N}}, a mark the reference's file draws): "
+                                    "no neutral shape exists")
     if not isinstance(ann.get("anchor"), dict):
         raise AnnotationRefused(f"{where}: anchor must be an object")
     if "label" in ann:
@@ -396,15 +457,22 @@ def _check_keys(ann: dict, where: str) -> str:
         extra = sorted(set(lab) - LABEL_KEYS)
         if extra:
             raise AnnotationRefused(f"{where} label: unknown keys {extra}; allowed {sorted(LABEL_KEYS)}")
-        missing = [k for k in ("text", "role", "ink_role") if not lab.get(k)]
+        missing = [k for k in LABEL_REQUIRED if not lab.get(k)]
         if missing:
-            raise AnnotationRefused(f"{where} label: needs {missing} (the ink is yours: nothing picks one for a fill)")
+            raise AnnotationRefused(f"{where} label: needs {missing}: no neutral value exists for them (the words, their type role, their ink, "
+                                    "and left, center or right)")
         if not isinstance(lab["text"], str) or not lab["text"].strip():
             raise AnnotationRefused(f"{where} label: text {lab['text']!r} says nothing; a label is words (leave the label out, and explain the mark another way)")
+        if lab["align"] not in ("left", "center", "right"):
+            raise AnnotationRefused(f"{where} label: align {lab['align']!r} not in left, center, right")
     if ann.get("dash") is not None and ann["dash"] not in DASHES:
         raise AnnotationRefused(f"{where}: dash {ann['dash']!r} not in {list(DASHES)}")
     if "line_width_pt" in ann and (not _num(ann["line_width_pt"]) or ann["line_width_pt"] <= 0):
         raise AnnotationRefused(f"{where}: line_width_pt must be a positive number")
+    if kind == "mark":
+        for k in ("head_end", "tail_end"):
+            if k in ann and ann[k] not in LINE_ENDS:
+                raise AnnotationRefused(f"{where}: {k} {ann[k]!r} is not an OOXML line end ({', '.join(LINE_ENDS)})")
     return kind
 
 
@@ -412,9 +480,10 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
             zones: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
     """The page's elements with every annotation's elements inserted (a band before its
     host, everything else after the page's own elements, in the spec's order), the
-    per-annotation report, and the refusals. An unlabelled mark that names nothing
-    explaining it (explanation) is drawn, so the render shows it, and refuses the page
-    as `annotation unexplained`."""
+    per-annotation report, and the problems. An unlabelled mark that names nothing
+    explaining it is drawn, so the render shows it, and warned as `annotation unexplained`
+    with the house's own count of such marks (house_evidence), to be answered in the
+    report; an explanation that is named and does not hold refuses the page."""
     eg = EmitGuide(guide)
     by_id = {el["id"]: el for el in elements}
     lab = Labeller(ctx, scale)
@@ -435,25 +504,29 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
                 raise AnnotationRefused(f"{where}: needs an id unique on the page")
             seen_ids.add(aid)
             host = by_id.get(ann.get("host"))
-            if host is None or host["kind"] not in ("chart", "table"):
-                raise AnnotationRefused(f"{where}: host {ann.get('host')!r} is not a chart or table element on this page")
+            if host is None or not host.get("box"):
+                raise AnnotationRefused(f"{where}: host {ann.get('host')!r} is not an element of this page (a chart, a table, a text, a picture, "
+                                        "a rect, or a region's drawn fill as <region>-fill)")
             for k in ("line_role", "fill_role", "ink_role"):
                 if k in ann:
                     eg.hex(ann[k], where=where)
             if "label" in ann:
                 eg.hex(ann["label"]["ink_role"], where=f"{where} label")
-            drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where, rows)
+            drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where, rows, guide)
             try:
                 siblings = {a["id"]: a for a in annotations if isinstance(a, dict) and isinstance(a.get("id"), str)}
-                entry["explained_by"] = explanation(ann, kind, host, by_id, guide, where, siblings) or "its own label"
+                entry["explained_by"] = explanation(ann, kind, host, by_id, guide, where, siblings, entry["_geometry"]) or "its own label"
             except AnnotationUnexplained as error:
-                entry["explained_by"] = f"unexplained: {error}"
-                problems.append({"kind": "annotation unexplained", "severity": "refusal", "detail": str(error)})
+                entry["explained_by"] = f"unexplained, warned: {error}"
+                problems.append({"kind": "annotation unexplained", "severity": "warning", "detail": str(error)})
+            except ExplanationNotFound as error:
+                entry["explained_by"] = f"not found: {error}"
+                problems.append({"kind": "annotation explanation not found", "severity": "refusal", "detail": str(error)})
         except (AnnotationRefused, GeometryRefused) as error:
             problems.append({"kind": "annotation refused", "severity": "refusal", "detail": str(error)})
             report.append({"id": ann.get("id") if isinstance(ann, dict) else ai, "status": "refused", "why": str(error)})
             continue
-        except SystemExit as error:  # emit_pptx.SpecError: an unknown role
+        except SystemExit as error:  # emit_pptx.SpecError: an unknown role or preset
             problems.append({"kind": "annotation refused", "severity": "refusal", "detail": str(error)})
             report.append({"id": ann.get("id"), "status": "refused", "why": str(error)})
             continue
@@ -473,18 +546,19 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
     return out, report, problems
 
 
-def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: EmitGuide, where: str, rows: dict | None = None) -> tuple[list[dict], dict]:
+def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: EmitGuide, where: str, rows: dict | None = None,
+                 guide: dict | None = None) -> tuple[list[dict], dict]:
     taken: list[str] = []
 
-    def default(key: str, label_key: str | None = None) -> None:
-        taken.append(f"{key}: {DEFAULTS[label_key or key]}")
+    def default(key: str) -> None:
+        taken.append(f"{key}: {DEFAULTS[key]}")
 
     other_marks: list[tuple[str, tuple]] = []
     strokes: list[tuple[str, tuple, float]] = []
-    if host["kind"] == "chart":
-        geo = ChartGeometry(host, host["box"])
+    geo = ChartGeometry(host, host["box"]) if host["kind"] == "chart" else None
+    a = host_anchor(host, ann["anchor"], where, geo)
+    if geo is not None:
         strokes = line_strokes(geo)
-        a = chart_anchor(geo, ann["anchor"], where)
         # every drawn mark the anchor does not take in: an annotation may not cover them. A
         # band's label lies under its host, so every mark in it hides it: none is its own
         own = a.get("marks", a["rect"]) if "line" not in a and kind not in ("band", "category_row") else None
@@ -494,71 +568,68 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                 # a blank category label (a dense time axis labels every n-th) is named by its index
                 label = (geo.categories[i] or f"category #{i}") if geo.family != "xy" else i
                 other_marks.append((f"mark {name!r} {label!r}", m))
-    else:
-        a = table_anchor(host, ann["anchor"], where)
+    house = house_mark(ann, kind, guide or {}, where) if "house_mark" in ann else None
     lw = round(float(ann.get("line_width_pt", 0)) * EMU_PER_PT)
-    if "dash" not in ann and kind in ("outline_box", "reference_line", "arrow"):
+    if "dash" not in ann and (kind in ("outline_box", "reference_line", "arrow") or (kind == "mark" and ann.get("line_role"))):
         default("dash")
     pad = lab.space(ann.get("pad_role"), where)
-    if "pad_role" not in ann and kind in ("outline_box", "band", "callout", "badge"):
+    if "pad_role" not in ann and kind in ("outline_box", "band", "callout", "badge", "mark"):
         default("pad_role")
     if "gap_lines" in ann and (isinstance(ann["gap_lines"], bool) or not isinstance(ann["gap_lines"], int) or ann["gap_lines"] < 1):
         raise AnnotationRefused(f"{where}: gap_lines is a whole number of lines, 1 or more")
     gap = lab.space(ann.get("gap_role"), where, ann.get("gap_lines"))
-    if "gap_role" not in ann and kind in ("reference_line", "badge", "outline_box") and (kind == "badge" or "label" in ann):
+    if "gap_role" not in ann and kind in ("reference_line", "badge", "outline_box", "mark") and (kind == "badge" or "label" in ann):
         default("gap_role")
     label = ann.get("label")
     stroke = {"line_role": ann.get("line_role"), "line_width_emu": lw, "dash": ann.get("dash")}
     drawn: list[dict] = []
     footprint: list[dict] = []  # what the annotation covers: [{"rect" | "segment", ...}]
     r = a["rect"]
+    geometry = MARK_GEOMETRY.get(kind)
 
-    def label_box() -> tuple[list[str], int, int, dict]:
+    def label_box(width: float | None = None) -> tuple[list[str], int, int, dict]:
         share = label.get("max_width_share")
         if share is not None and (not _num(share) or not 0 < share <= 1):
             raise AnnotationRefused(f"{where} label: max_width_share is a fraction of the host's width, 0 to 1")
-        if share is None:
+        if share is None and width is None:
             default("label.max_width_share")
-        return lab.measure(label, share * host["box"][2] if share is not None else None, f"{where} label")
+        limit = share * host["box"][2] if share is not None else None
+        if width is not None:
+            limit = min(limit, width) if limit is not None else width
+        return lab.measure(label, limit, f"{where} label")
 
-    def align(default_align: str) -> str:
-        if "align" in label:
-            if label["align"] not in ("left", "center", "right"):
-                raise AnnotationRefused(f"{where} label: align {label['align']!r} not in left, center, right")
-            return label["align"]
-        default("label.align")
-        return default_align
+    def position(options: tuple, what: str) -> str:
+        pos = label.get("position")
+        if pos is None:
+            raise AnnotationRefused(f"{where} label: {what} needs position, one of {list(options)}: no neutral place exists")
+        if pos not in options:
+            raise AnnotationRefused(f"{where} label: position {pos!r} not in {list(options)} for {what}")
+        return pos
+
+    def beside(box: tuple, what: str) -> None:
+        """The label beside a drawn box, standing clear of its stroke, at gap_role."""
+        pos = position(AROUND, what)
+        lines, w, h, fit = label_box()
+        hw = lw / 2
+        lb = _placed(pos, (box[0] - hw, box[1] - hw, box[2] + lw, box[3] + lw), w, h, gap)
+        drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, label["align"]))
+        footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
 
     if kind == "outline_box":
-        shape = ann.get("shape", "rect")
-        if shape not in SHAPES:
-            raise AnnotationRefused(f"{where}: shape {shape!r} not in {list(SHAPES)}")
-        if "shape" not in ann:
-            default("shape")
+        prst = house["prst"] if house else preset_name(ann["shape"], where)
         box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
-        drawn.append({"id": f"{aid}-box", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": SHAPES[shape], **stroke})
+        drawn.append({"id": f"{aid}-box", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": prst, **stroke})
         footprint += [{"outline": box, "width": lw}]
         if label:
             # the label says what the box marks, beside it: where is a choice with no neutral value
-            pos = label.get("position")
-            if pos not in AROUND:
-                raise AnnotationRefused(f"{where} label: an outline box's label needs position, one of {list(AROUND)} (beside the box, at gap_role)")
-            lines, w, h, fit = label_box()
-            hw = lw / 2  # the label stands clear of the stroke, not of the anchor
-            lb = _placed(pos, (box[0] - hw, box[1] - hw, box[2] + lw, box[3] + lw), w, h, gap)
-            drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, align("left")))
-            footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
+            beside(box, "an outline box's label (beside the box, at gap_role)")
     elif kind == "band":
         box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
         if host["kind"] == "table":
             _band_visible_on_table(host, box, eg, where)
         drawn.append({"id": f"{aid}-band", "kind": "rect", "box": [round(v) for v in box], "fill_role": ann["fill_role"], "line_role": None, "prst": "rect"})
         if label:
-            pos = label.get("position", "inside_top_left")
-            if pos not in LABEL_POSITIONS["band"]:
-                raise AnnotationRefused(f"{where} label: position {pos!r} not in {list(LABEL_POSITIONS['band'])}")
-            if "position" not in label:
-                default("label.position", "label.position.band")
+            pos = position(LABEL_POSITIONS["band"], "a band's label (inside the band)")
             lines, w, h, fit = label_box()
             room_w, room_h = box[2] - 2 * pad, box[3] - 2 * pad
             if w > room_w or h > room_h:
@@ -567,11 +638,11 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             _, v, hz = pos.split("_")
             lx = box[0] + pad if hz == "left" else box[0] + box[2] - pad - w
             ly = box[1] + pad if v == "top" else box[1] + box[3] - pad - h
-            drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, align("left")))
+            drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, label["align"]))
             footprint.append({"rect": (lx, ly, w, h), "text": True, "tokens": label["text"].split()})
     elif kind == "reference_line":
         if "line" not in a:
-            raise AnnotationRefused(f"{where}: a reference line anchors to a value or a category, not {sorted(ann['anchor'])}")
+            raise AnnotationRefused(f"{where}: a reference line anchors to a value or a category, not {sorted(ann['anchor'])} (a line anywhere is a `mark` with prst \"line\")")
         (x1, y1), (x2, y2) = a["line"]
         horizontal = abs(y2 - y1) < 1
         if not horizontal:
@@ -582,11 +653,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         footprint.append({"segment": ((x1, y1), (x2, y2)), "width": lw})
         if label:
             options = LABEL_POSITIONS["reference_line_h" if horizontal else "reference_line_v"]
-            pos = label.get("position", "end_outside")
-            if pos not in options:
-                raise AnnotationRefused(f"{where} label: position {pos!r} not in {list(options)} for a {'horizontal' if horizontal else 'vertical'} line")
-            if "position" not in label:
-                default("label.position", "label.position.reference_line")
+            pos = position(options, f"a {'horizontal' if horizontal else 'vertical'} line's label")
             lines, w, h, fit = label_box()
             end, start = (x2, y2), (x1, y1)
             if horizontal:
@@ -600,7 +667,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                       "middle_right": end[0] + gap, "middle_left": end[0] - gap - w}[pos]
                 ly = {"end_outside": end[1] - gap - h, "end_right": end[1], "end_left": end[1], "start_right": start[1] - h, "start_left": start[1] - h,
                       "middle_right": (start[1] + end[1]) / 2 - h / 2, "middle_left": (start[1] + end[1]) / 2 - h / 2}[pos]
-            drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, align("left")))
+            drawn.append(lab.text_element(f"{aid}-label", label, (lx, ly, w, h), lines, fit, label["align"]))
             footprint.append({"rect": (lx, ly, w, h), "text": True, "tokens": label["text"].split()})
     elif kind in ("arrow", "callout"):
         pos = ann["position"]
@@ -616,7 +683,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
             drawn.append({"id": f"{aid}-box", "kind": "rect", "box": [round(v) for v in box], "fill_role": ann["fill_role"], "prst": "rect", **stroke, "dash": None})
             footprint.append({"rect": box})
         text_box = (box[0] + inner / 2, box[1] + inner / 2, w, h)
-        drawn.append(lab.text_element(f"{aid}-label", label, text_box, lines, fit, align("left")))
+        drawn.append(lab.text_element(f"{aid}-label", label, text_box, lines, fit, label["align"]))
         footprint.append({"rect": text_box, "text": True, "tokens": label["text"].split()})
         (sx, sy), (ex, ey) = _toward(pos, box, target)
         head = "arrow" if kind == "arrow" else ann.get("head", "none")
@@ -632,11 +699,15 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         side = ann["side"]
         if side not in ("above", "below", "left", "right"):
             raise AnnotationRefused(f"{where}: side {side!r} not in above, below, left, right")
-        style = ann.get("style", "square")
-        if style not in ("square", "brace"):
-            raise AnnotationRefused(f"{where}: style {style!r} not in square, brace")
-        if "style" not in ann:
-            default("style")
+        if house:
+            style = next((st for st, presets in BRACKET_STYLES.items() if house["prst"] in presets), None)
+            if style is None:
+                raise AnnotationRefused(f"{where}: house_mark {house['ref']!r} on reference slide {house['slide']} is a {house['prst']!r}, "
+                                        f"which draws no one-sided bracket ({', '.join(p for ps in BRACKET_STYLES.values() for p in ps)}); give style")
+        else:
+            style = ann["style"]
+            if style not in BRACKET_STYLES:
+                raise AnnotationRefused(f"{where}: style {style!r} not in {list(BRACKET_STYLES)}")
         depth = lab.space(ann["depth_role"], where)
         span, extent = r, a.get("marks", r)
         if side in ("above", "below"):
@@ -645,17 +716,17 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         else:
             x = extent[0] - gap - depth if side == "left" else extent[0] + extent[2] + gap
             box = (x, span[1], depth, span[3])
-        word = "Bracket" if style == "square" else "Brace"
-        prst, rot = {"above": (f"left{word}", 90), "below": (f"right{word}", 90), "left": (f"left{word}", 0), "right": (f"right{word}", 0)}[side]
-        drawn.append({"id": f"{aid}-bracket", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": prst[0].lower() + prst[1:], "rot": rot, **stroke})
+        left, right = BRACKET_STYLES[style]
+        prst, rot = {"above": (left, 90), "below": (right, 90), "left": (left, 0), "right": (right, 0)}[side]
+        drawn.append({"id": f"{aid}-bracket", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": prst, "rot": rot, **stroke})
         footprint.append({"rect": box})
         if label:
             lines, w, h, fit = label_box()
             lb = _placed(side, box, w, h, gap)
-            drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, align("center")))
+            drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, label["align"]))
             footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
     elif kind == "category_row":
-        if host["kind"] != "chart":
+        if geo is None:
             raise AnnotationRefused(f"{where}: a category row is aligned to a chart's categories; its host is a {host['kind']}")
         drawn, footprint, row_rect = _category_row(ann, aid, host, geo, lab, eg, where, rows or {}, default, gap)
         (rows if rows is not None else {})[aid] = row_rect
@@ -664,21 +735,114 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         pos = ann["position"]
         if pos not in AROUND:
             raise AnnotationRefused(f"{where}: position {pos!r} not in {list(AROUND)}")
+        # the circle holds the whole measured block (its diagonal), however many lines it
+        # takes, so the label stands on the fill (+4 EMU: both boxes are rounded to whole
+        # EMU when written)
         lines, w, h, fit = label_box()
-        if len(lines) != 1:
-            raise AnnotationRefused(f"{where}: a badge holds one line")
-        # the circle holds the whole text box (its diagonal), so the label stands on the fill
-        # (+4 EMU: both boxes are rounded to whole EMU when written)
         d = (w * w + h * h) ** 0.5 + 2 * pad + 4
         box = _placed(pos, r, d, d, gap)
         drawn.append({"id": f"{aid}-badge", "kind": "rect", "box": [round(v) for v in box], "fill_role": ann["fill_role"], "line_role": None, "prst": "ellipse"})
         tb = (box[0] + (d - w) / 2, box[1] + (d - h) / 2, w, h)
-        drawn.append(lab.text_element(f"{aid}-label", label, tb, lines, fit, align("center"), anchor="m"))
+        drawn.append(lab.text_element(f"{aid}-label", label, tb, lines, fit, label["align"], anchor="m"))
         footprint += [{"rect": box}, {"rect": tb, "text": True, "tokens": label["text"].split()}]
+    elif kind == "mark":
+        prst = house["prst"] if house else (ann["prst"] if ann["prst"] == "line" else preset_name(ann["prst"], where))
+        geometry = _mark_parts(ann, prst, where)
+        if prst == "line":
+            (fx0, fy0), (fx1, fy1) = _points(ann["points"], where)
+            x1, y1, x2, y2 = r[0] + fx0 * r[2], r[1] + fy0 * r[3], r[0] + fx1 * r[2], r[1] + fy1 * r[3]
+            for k in ("head_end", "tail_end"):
+                if k not in ann:
+                    default(k)
+            drawn.append({"id": f"{aid}-line", "kind": "rule", "points": [round(x1), round(y1), round(x2), round(y2)],
+                          "box": [round(min(x1, x2)), round(min(y1, y2)), round(abs(x2 - x1)), round(abs(y2 - y1))], **stroke,
+                          "head_end": ann.get("head_end"), "tail_end": ann.get("tail_end")})
+            footprint.append({"segment": ((x1, y1), (x2, y2)), "width": lw})
+            if label:
+                beside((min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1)), "a line mark's label (beside the line, at gap_role)")
+        else:
+            box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
+            drawn.append({"id": f"{aid}-mark", "kind": "rect", "box": [round(v) for v in box], "fill_role": ann.get("fill_role"), "prst": prst,
+                          **(stroke if ann.get("line_role") else {"line_role": None})})
+            footprint.append({"rect": box} if ann.get("fill_role") else {"outline": box, "width": lw})
+            if label and label.get("position") == "inside":
+                body = _text_body(prst, box, where)
+                lines, w, h, fit = label_box(body[2])
+                if h > body[3]:
+                    raise AnnotationRefused(f"{where} label: measures {w} x {h} EMU and the body of a {prst} drawn {round(box[2])} x {round(box[3])} EMU "
+                                            f"holds {round(body[2])} x {round(body[3])} EMU: shorten it, set it beside the mark, or give the mark more room")
+                dx = {"left": 0, "center": (body[2] - w) / 2, "right": body[2] - w}[label["align"]]
+                tb = (body[0] + dx, body[1] + (body[3] - h) / 2, w, h)
+                drawn.append(lab.text_element(f"{aid}-label", label, tb, lines, fit, label["align"], anchor="m"))
+                footprint.append({"rect": tb, "text": True, "tokens": label["text"].split()})
+            elif label:
+                beside(box, f"a {prst} mark's label (beside it, or inside its body)")
     entry = {"id": aid, "kind": kind, "host": host["id"], "anchor": ann["anchor"], "status": "placed",
              "anchor_emu": [round(v) for v in r], "drawn": [d["id"] for d in drawn], "defaults_taken": taken,
-             "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks, "_lines": strokes}
+             "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks, "_lines": strokes, "_geometry": geometry}
+    if house:
+        entry["house_mark"] = {k: house[k] for k in ("slide", "ref", "prst", "geometry", "over")}
     return drawn, entry
+
+
+def preset_name(shape, where: str) -> str:
+    """A shape as the emitter writes it: one of the SHAPES shorthands, or any OOXML preset
+    by its own name (emit_pptx.preset_shape, the one check)."""
+    from emit_pptx import SpecError, preset_shape
+    prst = SHAPES.get(shape, shape) if isinstance(shape, str) else shape
+    try:
+        preset_shape(prst, where)
+    except SpecError as error:
+        raise AnnotationRefused(str(error.code)) from None
+    return prst
+
+
+def mark_geometry_of(prst: str, filled: bool, stroked: bool) -> str | None:
+    """What a drawn mark is, read the way the reference's marks are read (ooxml.geometry_of)."""
+    from ooxml import geometry_of
+    return geometry_of(prst, filled, stroked)
+
+
+def _mark_parts(ann: dict, prst: str, where: str) -> str | None:
+    """A `mark`'s stroke and body for its preset, refused by name where one cannot be drawn;
+    its geometry as the reference's marks are read."""
+    if prst == "line":
+        missing = [k for k in ("points", "line_role", "line_width_pt") if k not in ann]
+        if missing:
+            raise AnnotationRefused(f"{where}: a line mark needs {missing}: no neutral value exists for them")
+        if "fill_role" in ann:
+            raise AnnotationRefused(f"{where}: a line has no body to fill; fill_role draws nothing on it")
+        return "line"
+    for k in ("points", "head_end", "tail_end"):
+        if k in ann:
+            raise AnnotationRefused(f"{where}: {k} is a line's; a {prst!r} mark has a body (prst \"line\" draws a line)")
+    if not ann.get("line_role") and not ann.get("fill_role"):
+        raise AnnotationRefused(f"{where}: a mark draws nothing without a line_role or a fill_role")
+    if ann.get("line_role") and "line_width_pt" not in ann:
+        raise AnnotationRefused(f"{where}: a line_role needs line_width_pt: no neutral stroke width exists")
+    return mark_geometry_of(prst, bool(ann.get("fill_role")), bool(ann.get("line_role")))
+
+
+def _points(pts, where: str) -> tuple:
+    if (not isinstance(pts, list) or len(pts) != 2 or not all(isinstance(p, list) and len(p) == 2 and all(_num(v) for v in p) for p in pts)):
+        raise AnnotationRefused(f"{where}: points is [[x0, y0], [x1, y1]], the line's ends as fractions of the anchor's box")
+    if pts[0] == pts[1]:
+        raise AnnotationRefused(f"{where}: points {pts} are one point; a line runs between two")
+    return tuple(tuple(p) for p in pts)
+
+
+def _text_body(prst: str, box: tuple, where: str) -> tuple:
+    """The widest rectangle of a preset's solid body that words may stand on: the bodies the
+    contrast gate bounds (build_deck.PRESET_BODIES; an ellipse by its inscribed rectangle).
+    Any other preset has none, and words inside it are refused by name."""
+    from build_deck import PRESET_BODIES, TEXT_BEARING_PRESETS
+    x, y, w, h = box
+    if prst == "ellipse":
+        return (x + w * (1 - 1 / SQRT2) / 2, y + h * (1 - 1 / SQRT2) / 2, w / SQRT2, h / SQRT2)
+    if prst not in PRESET_BODIES:
+        raise AnnotationRefused(f"{where} label: a {prst!r} has no body bounded here, so words inside it are refused (the contrast gate could not say "
+                                f"what lies under them); inside words stand on one of {list(TEXT_BEARING_PRESETS)}; set the label beside the mark")
+    return tuple(max(PRESET_BODIES[prst](x, y, w, h, min(w, h)), key=lambda b: b[2] * b[3]))
 
 
 def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labeller, eg: EmitGuide, where: str, rows: dict, default, gap: float):
@@ -717,16 +881,15 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
         for k in ("line_role", "fill_role"):
             if shape.get(k):
                 eg.hex(shape[k], where=f"{where} shape")
-    align = ann.get("align", "center")
+    texts = any(isinstance(c, str) or (isinstance(c, dict) and "text" in c) for c in cells)
+    if texts and "align" not in ann:
+        raise AnnotationRefused(f"{where}: a row of text cells needs align (left, center or right in each cell): no neutral value exists")
+    align = ann.get("align", "center")  # a row of pictures only: each picture places itself (its own align, valign)
     if align not in ("left", "center", "right"):
         raise AnnotationRefused(f"{where}: align {align!r} not in left, center, right")
-    if "align" not in ann and any(c is not None for c in cells):
-        default("align", "align.category_row")
-    width_mode = ann.get("cell_width", "uniform")
+    width_mode = ann["cell_width"]
     if width_mode not in ("uniform", "own"):
-        raise AnnotationRefused(f"{where}: cell_width is \"uniform\" or \"own\"")
-    if "cell_width" not in ann:
-        default("cell_width")
+        raise AnnotationRefused(f"{where}: cell_width is \"uniform\" (every cell as wide as the widest) or \"own\" (each its own size)")
     pad = lab.space(shape.get("pad_role"), where) if shape else 0
     # measure every cell
     measured = []
@@ -832,18 +995,11 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
             share = label.get("max_width_share")
             limit = min(room, share * host["box"][2]) if share is not None else room
             lines, w, h, fit = lab.measure(label, limit, f"{where} label")
-            if "align" not in label:
-                default("label.align", "label.align.category_row")
             lb = (p.left - w, start + (depth - h) / 2, w, h)
-            al = label.get("align", "right")
         else:
             lines, w, h, fit = lab.measure(label, depth if label.get("max_width_share") is None else label["max_width_share"] * host["box"][2], f"{where} label")
-            if "align" not in label:
-                default("label.align", "label.align.category_row")
             lb = (start + (depth - w) / 2, p.top - h, w, h)
-            al = label.get("align", "center")
-        if al not in ("left", "center", "right"):
-            raise AnnotationRefused(f"{where} label: align {al!r} not in left, center, right")
+        al = label["align"]
         drawn.append(lab.text_element(f"{aid}-label", label, lb, lines, fit, al, anchor="m"))
         footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
     return drawn, footprint, row_rect
@@ -865,31 +1021,48 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
 
 # --- what a mark means ------------------------------------------------------------------
 
-#: the kinds that can be drawn saying nothing, and the geometry each draws as the file
-#: states it (ooxml.mark_geometry): a house precedent is a reference page whose file draws
-#: a mark of that geometry, carrying no text of its own, on other content
+#: the shorthand kinds that can be drawn saying nothing, and the geometry each draws as the
+#: file states it (ooxml.geometry_of; a `mark`'s comes from its preset, fill and stroke): a
+#: house precedent is a reference page whose file draws a mark of that geometry, carrying
+#: no text of its own, on other content
 MARK_GEOMETRY: dict[str, str] = {"outline_box": "outline", "band": "fill", "reference_line": "line", "bracket": "bracket"}
 #: what a cited reference mark must sit on to stand for a mark on each kind of host, as the
 #: file states it (exhibit_facts marks' `over` and `on_drawn_structure`): a mark on a chart
 #: needs a mark on a native chart; a mark on a table needs one on a native table or on the
 #: units of a structure the house built from shapes (keybank's slide 10 sets its estimates
-#: as rows of filled text shapes). A picture's content is pixels, so a mark on one is
-#: precedent for neither: the file cannot say it was a chart or a table
-PRECEDENT_HOSTS: dict[str, str] = {"chart": "a native chart", "table": "a native table or a structure built from shapes"}
+#: as rows of filled text shapes); a mark on a text, a picture or a shape needs one on the
+#: same. A picture's content is pixels, so a mark on one is precedent only for a mark on
+#: a picture: the file cannot say it was a chart or a table
+PRECEDENT_HOSTS: dict[str, tuple[frozenset, str]] = {
+    "chart": (frozenset({"chart"}), "a native chart"),
+    "table": (frozenset({"table"}), "a native table or a structure built from shapes"),
+    "text": (frozenset({"text"}), "a text"),
+    "image": (frozenset({"picture"}), "a picture"),
+    "rect": (frozenset({"shape", "text"}), "a drawn shape"),
+}
+
+
+def _host_words(host_kind: str) -> str:
+    return PRECEDENT_HOSTS[host_kind][1] if host_kind in PRECEDENT_HOSTS else f"a {host_kind}"
 
 
 def _sits_on(mark: dict, host_kind: str) -> bool:
-    over = mark.get("over") or []
-    return host_kind in over or (host_kind == "table" and mark.get("on_drawn_structure") is True)
+    over = set(mark.get("over") or [])
+    kinds = PRECEDENT_HOSTS.get(host_kind, (frozenset(),))[0]
+    return bool(over & kinds) or (host_kind == "table" and mark.get("on_drawn_structure") is True)
+
+
 EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "house_precedent")
 EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words naming what the mark encloses>"}, '
                      '{"annotation": "<a labelled annotation on the same host and anchor: a callout or arrow saying what it marks>"}, '
                      '{"legend": "<series name the host chart\'s legend shows in the mark\'s ink>"}, '
-                     '{"footnote": {"marker": "*", "note": "<text element id whose paragraph starts with the marker>"}} or '
+                     '{"footnote": {"marker": "1", "note": "<text element id whose paragraph starts with the marker>"}} or '
                      '{"house_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on the same '
-                     'kind of host: a native chart for a chart, a native table or a shape-built structure for a table; '
-                     'the guide\'s variety.pages[].exhibit_facts.marks)')
-FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
+                     'kind of host: a native chart for a chart, a native table or a shape-built structure for a table, a text, a picture or a '
+                     'shape for the same; the guide\'s variety.pages[].exhibit_facts.marks)')
+#: a footnote marker: one to three characters with no space in them ("*", "1", "(a)", "†")
+#: that close what the mark encloses as their own token and open the note's paragraph
+FOOTNOTE_MARKER_MAX = 3
 #: a word runs on through letters and digits ("CET1" is one word, not "CET" and a "1")
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9'&]*|\d[\d,]*(?:\.\d+)?")
 #: function words, never evidence of what a text says (a mark's quote, a page's intent)
@@ -897,7 +1070,111 @@ STOP_WORDS = {"the", "and", "for", "with", "from", "that", "this", "are", "was",
 
 
 class AnnotationUnexplained(AnnotationRefused):
-    """A mark that says nothing about what it marks."""
+    """A mark that says nothing about what it marks and names nothing that does: warned,
+    with the house's own count of such marks, and answered in the report."""
+
+
+class ExplanationNotFound(AnnotationRefused):
+    """A named explanation that is not there: a false statement about the page, refused."""
+
+
+def _joins(left: str, right: str, beyond: str) -> bool:
+    """Whether `right` continues the token `left` ends, so a marker written there is part of
+    a word or a figure: an ASCII letter or digit against a letter or digit ("2021" ends in
+    "1", "CET1" in "1"), or a digit across a decimal point or thousands comma between digits
+    ("12.1"). `beyond` is the character past `left` on its far side. A superscript (a "¹")
+    or a symbol (a "*") stands as its own token after a word."""
+    if right.isascii() and right.isalnum() and left.isascii() and left.isalnum():
+        return True
+    return left in ".," and right.isdigit() and beyond.isdigit()
+
+
+def marker_closes(text: str, marker: str) -> bool:
+    """`marker` ends `text` as its own token, never as part of a figure or a word."""
+    t = text.rstrip()
+    if not t.endswith(marker):
+        return False
+    rest = t[: len(t) - len(marker)]
+    return not rest or not _joins(rest[-1], marker[0], rest[-2:-1])
+
+
+def marker_opens(text: str, marker: str) -> bool:
+    """`marker` starts `text` as its own token, followed by the note's words ("1 Pro forma",
+    never "12 months" or "1.5x higher")."""
+    t = text.lstrip()
+    if not t.startswith(marker):
+        return False
+    rest = t[len(marker):]
+    return bool(rest.strip()) and not _joins(marker[-1], rest[0], rest[1:2])
+
+
+def reference_page(guide: dict, slide, where: str, missing: type[AnnotationRefused]) -> dict:
+    """The facts the extractor read from reference slide `slide` (variety.pages[].exhibit_facts),
+    or `missing` naming why there are none."""
+    if not isinstance(slide, int) or isinstance(slide, bool):
+        raise AnnotationRefused(f"{where}: slide is a page number of the reference, got {slide!r}")
+    pages = (guide.get("variety") or {}).get("pages")
+    page = next((p for p in pages if isinstance(p, dict) and p.get("slide") == slide), None) if isinstance(pages, list) else None
+    if page is None:
+        raise missing(f"{where}: reference slide {slide} is not a page the guide read (variety.pages)")
+    facts = page.get("exhibit_facts")
+    if not isinstance(facts, dict) or not isinstance(facts.get("marks"), list):
+        raise missing(f"{where}: the guide carries no exhibit facts for slide {slide} (extracted before they were read): re-run extract_style.py")
+    return facts
+
+
+def house_mark(ann: dict, kind: str, guide: dict, where: str) -> dict:
+    """The mark a reference page's file draws that this annotation takes its shape from
+    (`house_mark: {"slide": N, "ref": "<its ref>"}`; the ref may be left out where the page
+    draws exactly one mark of the kind's geometry): its preset, as the file names it."""
+    hm = ann["house_mark"]
+    if not isinstance(hm, dict) or "slide" not in hm or set(hm) - {"slide", "ref"}:
+        raise AnnotationRefused(f"{where}: house_mark is {{\"slide\": N}} or {{\"slide\": N, \"ref\": \"<a mark's ref>\"}} (draft.md lists each page's marks)")
+    facts = reference_page(guide, hm["slide"], f"{where}: house_mark", AnnotationRefused)
+    want = MARK_GEOMETRY.get(kind)
+    marks = [m for m in facts["marks"] if isinstance(m, dict)]
+    fitting = [m for m in marks if (want is None or m.get("geometry") == want) and ("ref" not in hm or m.get("ref") == hm["ref"])]
+    listed = [f"{m.get('ref')} ({m.get('geometry')}, {m.get('prst')})" for m in marks]
+    if len(fitting) != 1:
+        why = "no" if not fitting else f"{len(fitting)}"
+        raise AnnotationRefused(f"{where}: house_mark: reference slide {hm['slide']} draws {why} {want + ' ' if want else ''}mark(s)"
+                                f"{' with ref ' + repr(hm['ref']) if 'ref' in hm else ''}; its marks: {listed or 'none'}"
+                                f"{'; name one by ref' if len(fitting) > 1 else ''}")
+    m = fitting[0]
+    prst = "line" if m.get("geometry") == "line" else m.get("prst")
+    if not isinstance(prst, str) or not prst:
+        raise AnnotationRefused(f"{where}: house_mark {m.get('ref')!r} on reference slide {hm['slide']} names no preset the file states; give the shape")
+    return {"slide": hm["slide"], "ref": m.get("ref"), "prst": prst, "geometry": m.get("geometry"), "over": m.get("over")}
+
+
+def house_evidence(guide: dict, geometry: str, host_kind: str) -> str:
+    """The house's own count of marks of `geometry` on `host_kind`, with and without words of
+    their own, as its files draw them (variety.pages[].exhibit_facts.marks); the pages whose
+    facts were not read are counted as unread, never as none."""
+    pages = (guide.get("variety") or {}).get("pages")
+    if not isinstance(pages, list) or not pages:
+        return "the guide reads no reference pages (variety.pages), so the house's habit for such a mark is unmeasured"
+    bare: list = []
+    worded: list = []
+    unread: list = []
+    for p in pages:
+        facts = p.get("exhibit_facts") if isinstance(p, dict) else None
+        if not isinstance(facts, dict) or not isinstance(facts.get("marks"), list):
+            unread.append(p.get("slide") if isinstance(p, dict) else "?")
+            continue
+        for m in facts["marks"]:
+            if isinstance(m, dict) and m.get("geometry") == geometry and _sits_on(m, host_kind):
+                (bare if m.get("carries_text") is False else worded).append(p.get("slide"))
+    def on(slides: list) -> str:
+        got = sorted(set(slides))
+        return f" (slide{'s' if len(got) > 1 else ''} {', '.join(str(x) for x in got)})" if got else ""
+    said = (f"the reference's files draw {len(bare) + len(worded)} {geometry} mark(s) on {_host_words(host_kind)} across {len(pages) - len(unread)} page(s) read: "
+            f"{len(bare)} with no words of their own{on(bare)}, {len(worded)} carrying words{on(worded)}")
+    if unread:
+        said += f"; {len(unread)} page(s) unread (no exhibit facts), so these counts are a floor"
+    if bare:
+        said += f". Where this mark follows the house's own wordless {geometry}, explained_by {{\"house_precedent\": {{\"slide\": N}}}} cites it"
+    return said
 
 
 def _words(text: str) -> tuple[set[str], list[tuple[float, int]]]:
@@ -920,6 +1197,16 @@ def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], lis
     (the values of the marks spanned, or the value a line or band stands at)."""
     texts: list[str] = []
     numbers: list[float] = []
+    if host["kind"] not in ("chart", "table"):
+        # a text, a shape's words, a picture (none): what the host itself says, every
+        # paragraph and every run (a marker written as its own run is its own token)
+        for p in host.get("paragraphs") or []:
+            runs = [r.get("text") or "" for r in p.get("runs") or []]
+            texts.append("".join(runs))
+            texts += [t for t in runs if len(runs) > 1]
+        return texts, numbers
+    if set(anchor) == {"box"}:
+        return _box_content(host, box_anchor(host, anchor["box"], where)["rect"])
     if host["kind"] == "table":
         r0, r1, c0, c1 = table_anchor(host, anchor, where)["cells"]
         h = int(host.get("header_rows", 1))
@@ -975,6 +1262,33 @@ def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], lis
     return texts, numbers
 
 
+def _box_content(host: dict, rect: tuple) -> tuple[list[str], list[float]]:
+    """What a box anchor encloses on a chart or a table: the categories, series names and
+    values of the marks it overlaps; the cells it overlaps, as written."""
+    texts: list[str] = []
+    numbers: list[float] = []
+    if host["kind"] == "table":
+        xs, ys = table_geometry(host)
+        h = int(host.get("header_rows", 1))
+        for r in range(len(ys) - 1):
+            for c in range(len(xs) - 1):
+                if _intersects((xs[c], ys[r], xs[c + 1] - xs[c], ys[r + 1] - ys[r]), rect):
+                    texts += [t for t in L.header_labels(host["columns"][c], h, "table") if t] if r < h else [str(host["rows"][r - h][c])]
+        return list(dict.fromkeys(texts)), numbers
+    geo = ChartGeometry(host, host["box"])
+    for j, i, m in drawn_marks(geo):
+        if _intersects(m, rect):
+            texts.append(str(geo.series[j].get("name") or ""))
+            if geo.family != "xy":
+                texts.append(str(geo.categories[i]))
+                vals = geo.series[j].get("values") or []
+                if i < len(vals) and _num(vals[i]):
+                    numbers.append(float(vals[i]))
+            else:
+                numbers += [float(v) for v in geo.series[j]["values"][i][:2] if _num(v)]
+    return list(dict.fromkeys(texts)), numbers
+
+
 def _significant(v: float, decimals: int) -> int:
     """Significant digits of a figure as written ("1.4" 2, "75" 2, "1" 1, "0.05" 1)."""
     digits = f"{v:.{decimals}f}".replace(".", "").lstrip("0")
@@ -1014,19 +1328,23 @@ def _id_of(value, where: str) -> str:
 
 
 def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, where: str,
-                siblings: dict | None = None) -> dict | None:
-    """How a mark says what it means, proven, or AnnotationUnexplained. A mark that carries
-    a label says it itself (None: nothing to prove). Otherwise `explained_by` names one of:
-    a text element on the page and the words in it that name what the mark encloses (a
-    word or figure of the anchored cells, categories, series or values); another
-    annotation of the page (siblings, by id) on the same host and anchor that carries a
-    label (a callout or arrow saying what the band or box marks); a legend entry of
-    the host chart drawn in the mark's own ink; a footnote marker that ends a text the
-    mark encloses and starts a paragraph of the named note; or a page of the reference
-    whose file draws a mark of the same geometry carrying no text of its own on the same kind
-    of host (PRECEDENT_HOSTS; ooxml.exhibit_facts, read by the extractor). The model decides which; this only
-    checks that what it names is there."""
-    if kind not in MARK_GEOMETRY:
+                siblings: dict | None = None, geometry: str | None = None) -> dict | None:
+    """How a mark says what it means, proven; AnnotationUnexplained when it names nothing
+    (warned, with the house's own count: house_evidence); ExplanationNotFound when what it
+    names is not there (refused). A mark that carries a label says it itself (None:
+    nothing to prove). Otherwise `explained_by` names one of: a text element on the page
+    and the words in it that name what the mark encloses (a word or figure of the anchored
+    cells, categories, series or values, or of the host's own words); another annotation
+    of the page (siblings, by id) on the same host and anchor that carries a label (a
+    callout or arrow saying what the band or box marks); a legend entry of the host chart
+    drawn in the mark's own ink; a footnote marker that closes a text the mark encloses as
+    its own token and opens a paragraph of the named note; or a page of the reference whose
+    file draws a mark of the same geometry carrying no text of its own on the same kind of
+    host (PRECEDENT_HOSTS; ooxml.exhibit_facts, read by the extractor). The model decides
+    which, or none; this only checks that what it names is there. `geometry` is what the
+    mark draws (MARK_GEOMETRY for a shorthand; a `mark` by its preset)."""
+    geometry = geometry or MARK_GEOMETRY.get(kind)
+    if geometry is None:
         return None
     if "label" in ann:
         if "explained_by" in ann:
@@ -1034,8 +1352,10 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         return None
     how = ann.get("explained_by")
     if how is None:
-        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} says nothing about what it marks (a reader sees a shape and no reason). "
-                                    f"Give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
+        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks; a blind rater read "
+                                    "an unlabelled red circle as \"a model's attempt to annotate\". House evidence: "
+                                    f"{house_evidence(guide, geometry, host['kind'])}. Answer this in the report (what the mark tells a reader "
+                                    f"with no words beside it), or give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
     shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"house_precedent"})
     if not isinstance(how, dict) or set(how) not in shapes:
         raise AnnotationRefused(f"{where}: explained_by is one of {EXPLAINED_EXAMPLE}; got {how!r}")
@@ -1045,44 +1365,44 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
     if "text" in how:
         el = by_id.get(how["text"])
         if el is None or el.get("kind") != "text":
-            raise AnnotationUnexplained(f"{where}: explained_by.text {how['text']!r} is not a text element of this page")
+            raise ExplanationNotFound(f"{where}: explained_by.text {how['text']!r} is not a text element of this page")
         quote = how["quote"]
         if not isinstance(quote, str) or not quote.strip():
             raise AnnotationRefused(f"{where}: explained_by.quote is the words of {how['text']!r} that say what the mark encloses")
         body = " ".join(" ".join(t.split()) for t in _paragraph_texts(el))
         if " ".join(quote.split()) not in body:
-            raise AnnotationUnexplained(f"{where}: the quote {quote!r} is not in {how['text']!r} (it reads {body[:160]!r})")
+            raise ExplanationNotFound(f"{where}: the quote {quote!r} is not in {how['text']!r} (it reads {body[:160]!r})")
         texts, numbers = anchor_content(host, ann["anchor"], where)
         shared = _ties(quote, texts, numbers)
         if not shared:
-            raise AnnotationUnexplained(f"{where}: the quote {quote!r} names nothing the mark encloses; the anchor holds {[t for t in texts if t][:8]} "
-                                        f"and values {[round(v, 4) for v in numbers][:8]}: quote the words that name it")
+            raise ExplanationNotFound(f"{where}: the quote {quote!r} names nothing the mark encloses; the anchor holds {[t for t in texts if t][:8]} "
+                                      f"and values {[round(v, 4) for v in numbers][:8]}: quote the words that name it")
         return {"by": "text", "element": how["text"], "quote": quote, "shares": shared}
     if "annotation" in how:
         other = (siblings or {}).get(how["annotation"])
         if not isinstance(other, dict) or other is ann:
-            raise AnnotationUnexplained(f"{where}: explained_by.annotation {how['annotation']!r} is not another annotation of this page")
+            raise ExplanationNotFound(f"{where}: explained_by.annotation {how['annotation']!r} is not another annotation of this page")
         if not isinstance(other.get("label"), dict) or other.get("host") != ann.get("host") or other.get("anchor") != ann.get("anchor"):
-            raise AnnotationUnexplained(f"{where}: annotation {how['annotation']!r} explains this mark only with a label, on the same host and the same anchor "
-                                        f"(it has {'a' if isinstance(other.get('label'), dict) else 'no'} label, host {other.get('host')!r}, anchor {other.get('anchor')!r})")
+            raise ExplanationNotFound(f"{where}: annotation {how['annotation']!r} explains this mark only with a label, on the same host and the same anchor "
+                                      f"(it has {'a' if isinstance(other.get('label'), dict) else 'no'} label, host {other.get('host')!r}, anchor {other.get('anchor')!r})")
         return {"by": "annotation", "annotation": how["annotation"], "says": other["label"].get("text")}
     if "legend" in how:
         from emit_pptx import chart_legend
         name = how["legend"]
         if host["kind"] != "chart":
-            raise AnnotationUnexplained(f"{where}: explained_by.legend names a legend entry, and the host {host['id']!r} is a table")
+            raise ExplanationNotFound(f"{where}: explained_by.legend names a legend entry, and the host {host['id']!r} is a {host['kind']}")
         legend = chart_legend(host)
         if not isinstance(legend, dict):
-            raise AnnotationUnexplained(f"{where}: the host chart draws no legend, so no entry explains the mark")
+            raise ExplanationNotFound(f"{where}: the host chart draws no legend, so no entry explains the mark")
         names = [s.get("name") for s in host.get("series") or []]
         hidden = {int(i) for i in legend.get("hide_entries") or []}
         if names.count(name) != 1 or names.index(name) in hidden:
-            raise AnnotationUnexplained(f"{where}: the legend shows no one entry {name!r} (entries {[n for i, n in enumerate(names) if i not in hidden]})")
+            raise ExplanationNotFound(f"{where}: the legend shows no one entry {name!r} (entries {[n for i, n in enumerate(names) if i not in hidden]})")
         s = host["series"][names.index(name)]
         ink = ann.get("line_role") or ann.get("fill_role")
         if ink not in (s.get("fill_role"), s.get("line_role")):
-            raise AnnotationUnexplained(f"{where}: legend entry {name!r} is drawn in {s.get('fill_role') or s.get('line_role')!r} and the mark in {ink!r}; "
-                                        "a legend explains a mark drawn in its swatch's ink")
+            raise ExplanationNotFound(f"{where}: legend entry {name!r} is drawn in {s.get('fill_role') or s.get('line_role')!r} and the mark in {ink!r}; "
+                                      "a legend explains a mark drawn in its swatch's ink")
         return {"by": "legend", "entry": name}
     if "footnote" in how:
         fn = how["footnote"]
@@ -1090,30 +1410,24 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
             raise AnnotationRefused(f"{where}: explained_by.footnote is {{\"marker\", \"note\"}}")
         _id_of(fn["note"], f"{where}: explained_by.footnote.note")
         mk = fn["marker"]
-        if not isinstance(mk, str) or not FOOTNOTE_MARKER.match(mk):
-            raise AnnotationRefused(f"{where}: footnote marker {mk!r} is not a marker (*, **, †, ‡, §, (1), [a])")
+        if not isinstance(mk, str) or not 1 <= len(mk) <= FOOTNOTE_MARKER_MAX or any(ch.isspace() for ch in mk):
+            raise AnnotationRefused(f"{where}: footnote marker {mk!r} is not a marker: one to {FOOTNOTE_MARKER_MAX} characters with no space "
+                                    "(*, 1, a, (1), [a], †)")
         note = by_id.get(fn["note"])
         if note is None or note.get("kind") != "text":
-            raise AnnotationUnexplained(f"{where}: footnote note {fn['note']!r} is not a text element of this page")
-        if not any(t.lstrip().startswith(mk) for t in _paragraph_texts(note)):
-            raise AnnotationUnexplained(f"{where}: no paragraph of {fn['note']!r} starts with {mk!r}")
+            raise ExplanationNotFound(f"{where}: footnote note {fn['note']!r} is not a text element of this page")
+        if not any(marker_opens(t, mk) for t in _paragraph_texts(note)):
+            raise ExplanationNotFound(f"{where}: no paragraph of {fn['note']!r} opens with {mk!r} as its own token, followed by the note")
         texts, _ = anchor_content(host, ann["anchor"], where)
-        if not any(t.rstrip().endswith(mk) for t in texts):
-            raise AnnotationUnexplained(f"{where}: no text the mark encloses ends with {mk!r} (it holds {[t for t in texts if t][:8]}); "
-                                        "put the marker on the figure or label it explains")
+        if not any(marker_closes(t, mk) for t in texts):
+            raise ExplanationNotFound(f"{where}: no text the mark encloses ends with {mk!r} as its own token, apart from any figure or word "
+                                      f"(it holds {[t for t in texts if t][:8]}); put the marker on the figure or label it explains")
         return {"by": "footnote", "marker": mk, "note": fn["note"]}
     hp = how["house_precedent"]
-    slide = hp.get("slide") if isinstance(hp, dict) and set(hp) == {"slide"} else None
-    if not isinstance(slide, int) or isinstance(slide, bool):
+    if not isinstance(hp, dict) or set(hp) != {"slide"}:
         raise AnnotationRefused(f"{where}: explained_by.house_precedent is {{\"slide\": N}}, a page of the reference")
-    pages = (guide.get("variety") or {}).get("pages")
-    page = next((p for p in pages if isinstance(p, dict) and p.get("slide") == slide), None) if isinstance(pages, list) else None
-    if page is None:
-        raise AnnotationUnexplained(f"{where}: reference slide {slide} is not a page the guide read (variety.pages)")
-    facts = page.get("exhibit_facts")
-    if not isinstance(facts, dict) or not isinstance(facts.get("marks"), list):
-        raise AnnotationUnexplained(f"{where}: the guide carries no exhibit facts for slide {slide} (extracted before they were read): re-run extract_style.py")
-    geometry = MARK_GEOMETRY[kind]
+    slide = hp["slide"]
+    facts = reference_page(guide, slide, where, ExplanationNotFound)
     seen: list[str] = []
     for m in facts["marks"]:
         if not isinstance(m, dict) or m.get("geometry") != geometry:
@@ -1124,12 +1438,12 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         if not _sits_on(m, host["kind"]):
             seen.append(f"{m.get('ref')}: {'an' if geometry[0] in 'aeiou' else 'a'} {geometry} on {'+'.join(m.get('over') or [])}"
                         f"{' (a structure built from shapes)' if m.get('on_drawn_structure') else ''}, and the host {host['id']!r} is a {host['kind']}: "
-                        f"a mark on a {host['kind']} takes its precedent from one on {PRECEDENT_HOSTS[host['kind']]}")
+                        f"a mark on a {host['kind']} takes its precedent from one on {_host_words(host['kind'])}")
             continue
         return {"by": "house_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over"),
                 "on_drawn_structure": m.get("on_drawn_structure")}
-    raise AnnotationUnexplained(f"{where}: reference slide {slide} draws no {geometry} without text on {PRECEDENT_HOSTS[host['kind']]}"
-                                + (f" ({'; '.join(seen)})" if seen else " (its file holds no such mark; one inside a pasted picture is pixels the file cannot show)"))
+    raise ExplanationNotFound(f"{where}: reference slide {slide} draws no {geometry} without text on {_host_words(host['kind'])}"
+                              + (f" ({'; '.join(seen)})" if seen else " (its file holds no such mark; one inside a pasted picture is pixels the file cannot show)"))
 
 
 # --- the collision contract --------------------------------------------------------------

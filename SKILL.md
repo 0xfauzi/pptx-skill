@@ -308,8 +308,9 @@ or names under `explained_by` what explains it: words on the page that name what
 encloses (`{"text": id, "quote": ...}`), a labelled callout on the same anchor, a legend
 entry in its ink, a footnote marker it shares with a note, or a page of the reference whose
 file draws a mark of the same geometry with no text of its own. Otherwise the
-build refuses it as `annotation unexplained`: a red circle with no word beside it reads
-as a model's attempt to annotate. Kinds, anchors and four worked exhibits:
+build warns `annotation unexplained`, with the house's own count of such marks, and you
+answer it in the report: a red circle with no word beside it read to a blind rater as a
+model's attempt to annotate. A named explanation that is not there is refused. Kinds, anchors and four worked exhibits:
 [references/chart-recipes.md](references/chart-recipes.md) ("Marks at data positions").
 
 Source lines follow the house's count, not a habit of your own: the build warns

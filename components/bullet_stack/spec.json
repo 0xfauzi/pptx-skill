@@ -4,7 +4,13 @@
  "data_schema": {
   "items": ["string, one point each, in reading order"],
   "variant": "single_column | two_column (optional)",
-  "_id": "instance id prefix, set by the slide"
+  "_id": "instance id prefix, set by the slide",
+  "roles": {
+   "item": "type.body",
+   "gap": "space.sm",
+   "gutter": "space.md"
+  },
+  "bullet_level": "0 (default), a deeper level, or null for no bullet"
  },
  "size_domain_emu": {
   "width": [2743200, 9144000],

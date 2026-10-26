@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -533,6 +533,23 @@
     "ff-tickrow: no padding (pad_role left out)",
     "ff-tickrow: ['ff-tickrow-r'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free row space",
     "ff-ticktrack: no padding (pad_role left out)"
+   ],
+   "component_notes": [
+    "football_field 'ff': params.label_share: 0.42 (the default)",
+    "football_field 'ff': params.marker_width_pt: 1.5 (the default)",
+    "football_field 'ff': params.max_label_lines: 2 (the default)",
+    "football_field 'ff': params.value_share_max: 0.25 (the default)",
+    "football_field 'ff': params.wide_min_width_emu: 3000000 (the default)",
+    "football_field 'ff': roles.axis_rule: color.rule (the default)",
+    "football_field 'ff': roles.band: color.accent1, the first other accent; the marker reads 7.30:1 against it",
+    "football_field 'ff': roles.bar: space.sm (the default)",
+    "football_field 'ff': roles.bar_compact: space.xs (the default)",
+    "football_field 'ff': roles.caption: type.caption, the first of ['type.caption', 'type.footnote'] the guide defines",
+    "football_field 'ff': roles.gap: space.xs (the default)",
+    "football_field 'ff': roles.label: type.body (the default)",
+    "football_field 'ff': roles.marker: color.accent2, the first accent that reads on color.surface (11.22:1)",
+    "football_field 'ff': roles.marker_label: type.data_label, the first of ['type.data_label', 'type.emphasis', 'type.caption'] the guide defines",
+    "football_field 'ff': variant wide: every label, row, marker, axis and tick line fits the box"
    ],
    "scale": 1.0,
    "violations": [],
@@ -1409,7 +1426,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1700,7 +1717,7 @@
   "verdict": "possible carry-over: 12 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1732,10 +1749,10 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/renders/slide-04.png"
   ]
  },
  "judge": {
@@ -1843,8 +1860,8 @@
   },
   "others": {
    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/45541_Header.pptx": 0.5,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.619,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.492
+   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.517,
+   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.505
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
@@ -1872,7 +1889,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/section/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/section/renders"
  }
 }

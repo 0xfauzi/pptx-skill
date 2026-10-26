@@ -616,6 +616,8 @@ def visual_extent(bounds: tuple[int, int, int, int], rotation: int) -> tuple[int
 BRACKET_PRESETS = frozenset({"leftBrace", "rightBrace", "leftBracket", "rightBracket", "bracePair", "bracketPair"})
 #: the element kinds that hold an exhibit whole: a mark drawn on one sits on an exhibit
 HOST_KINDS = frozenset({"chart", "table", "picture"})
+#: the presets a file draws a line with (read as kind "line", geometry "line")
+LINE_PRESETS = frozenset({"line", "straightConnector1", "bentConnector3"})
 STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as one count
 #: definition, unmeasured: on a page that holds no chart, table or picture, this many fills,
 #: outlines or brackets or more are a structure built from shapes (a shape-built table, a
@@ -640,11 +642,21 @@ def mark_geometry(sh: Shape) -> str | None:
         return "line"
     if sh.kind not in ("shape", "text_shape", "text_box"):
         return None
-    if sh.prst in BRACKET_PRESETS:
+    return geometry_of(sh.prst, sh.fill is not None, sh.line is not None)
+
+
+def geometry_of(prst: str | None, filled: bool, stroked: bool) -> str | None:
+    """The one reading of what a shape draws, for a reference's file (mark_geometry) and
+    for a mark the build draws (annotate.mark_geometry_of): "line" for a line preset or
+    connector, "bracket" for a brace or bracket, "outline" for a stroke and no fill, "fill"
+    for a fill; None for neither."""
+    if prst in LINE_PRESETS:
+        return "line"
+    if prst in BRACKET_PRESETS:
         return "bracket"
-    if sh.fill is None and sh.line is not None:
+    if not filled and stroked:
         return "outline"
-    return "fill" if sh.fill is not None else None
+    return "fill" if filled else None
 
 
 def _fact_kind(sh: Shape) -> str:
@@ -768,7 +780,7 @@ def _shape_kind(sp: etree._Element) -> str:
     if local == "grpSp":
         return "group"
     prst = sp.find(f"{_p('spPr')}/{_a('prstGeom')}")
-    if prst is not None and prst.get("prst") in ("line", "straightConnector1", "bentConnector3"):
+    if prst is not None and prst.get("prst") in LINE_PRESETS:
         return "line"
     has_text = sp.find(f"{_p('txBody')}") is not None and bool("".join(sp.itertext()).strip())
     cnv = sp.find(f"{_p('nvSpPr')}/{_p('cNvSpPr')}")

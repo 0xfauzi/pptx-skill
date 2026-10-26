@@ -216,7 +216,8 @@
      "explained_by": {
       "text": "lead",
       "quote": "Above the median on P / TBV and P / E"
-     }
+     },
+     "shape": "rect"
     },
     {
      "id": "subject-box",
@@ -231,7 +232,8 @@
       "house_precedent": {
        "slide": 10
       }
-     }
+     },
+     "shape": "rect"
     }
    ]
   },
@@ -511,7 +513,8 @@
      "explained_by": {
       "text": "key",
       "quote": "The boxed region is the realistic case: 10-20% synergies at a 22.5-32.5% premium"
-     }
+     },
+     "shape": "rect"
     },
     {
      "id": "syn-range",
@@ -533,8 +536,10 @@
      "label": {
       "text": "Realistic synergies",
       "role": "type.caption",
-      "ink_role": "color.ink"
-     }
+      "ink_role": "color.ink",
+      "align": "center"
+     },
+     "style": "square"
     },
     {
      "id": "base-key",
@@ -549,7 +554,8 @@
      "label": {
       "text": "1",
       "role": "type.caption",
-      "ink_role": "color.ink_inverse"
+      "ink_role": "color.ink_inverse",
+      "align": "center"
      }
     }
    ]
@@ -839,7 +845,8 @@
      "label": {
       "text": "Committee range $29-35",
       "role": "type.data_label",
-      "ink_role": "color.ink"
+      "ink_role": "color.ink",
+      "align": "left"
      }
     },
     {
@@ -856,7 +863,8 @@
       "text": "Offer $36.50",
       "role": "type.data_label",
       "ink_role": "color.emphasis",
-      "position": "end_outside"
+      "position": "end_outside",
+      "align": "left"
      }
     },
     {
@@ -873,7 +881,8 @@
       "text": "Unaffected $27.80",
       "role": "type.data_label",
       "ink_role": "color.ink_muted",
-      "position": "end_outside"
+      "position": "end_outside",
+      "align": "left"
      }
     }
    ]
@@ -1093,7 +1102,8 @@
       "text": "Mean 1.66x",
       "role": "type.data_label",
       "ink_role": "color.ink_muted",
-      "position": "end_outside"
+      "position": "end_outside",
+      "align": "left"
      }
     },
     {
@@ -1113,7 +1123,8 @@
      "label": {
       "text": "1.71x, +0.05x",
       "role": "type.data_label",
-      "ink_role": "color.accent2"
+      "ink_role": "color.accent2",
+      "align": "left"
      }
     }
    ]

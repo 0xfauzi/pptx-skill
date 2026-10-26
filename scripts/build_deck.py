@@ -1789,7 +1789,18 @@ def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None, 
             if box["width"] <= 0 or box["height"] <= 0:
                 # the page left the component no room; expanding into nothing emits debris
                 raise SystemExit(f"component {node['id']}: the page leaves it a {box['width']} x {box['height']} EMU box; cut or split the page before the component")
-            sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide_for_components)
+            try:
+                sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide_for_components)
+            except ValueError as error:
+                # the component cannot draw what its data asks for (a variant the data cannot
+                # carry, a constant out of range): refused by name, never a traceback
+                raise SystemExit(f"component {node['id']!r} ({node['kind']}): {error}") from None
+            # what the component chose and the defaults it left in place, said by the component
+            # (component_api: its root region's `report`), into the page's component_notes
+            told = sub.pop("report", None) if isinstance(sub, dict) else None
+            if told is not None and (not isinstance(told, list) or not all(isinstance(t, str) for t in told)):
+                raise SystemExit(f"component {node['kind']}: report is a list of sentences, got {told!r}")
+            slide.setdefault("component_notes", []).extend(f"{node['kind']} {node['id']!r}: {t}" for t in told or [])
             sub = normalise(sub, slide)
             sub["weight"] = node.get("weight")
             if sub.get("id") != node["id"]:

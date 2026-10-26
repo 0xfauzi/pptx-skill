@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -66,9 +66,7 @@
       "emp-7-text",
       "emp-label"
      ],
-     "defaults_taken": [
-      "align: center: each cell's text centred in its cell"
-     ],
+     "defaults_taken": [],
      "explained_by": "its own label",
      "collisions": [],
      "render_check": {
@@ -112,9 +110,7 @@
       "ui-7-text",
       "ui-label"
      ],
-     "defaults_taken": [
-      "align: center: each cell's text centred in its cell"
-     ],
+     "defaults_taken": [],
      "explained_by": "its own label",
      "collisions": [],
      "render_check": {
@@ -678,7 +674,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/deck.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -1553,7 +1549,7 @@
   "verdict": "possible carry-over: 77 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1585,7 +1581,7 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/renders/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/renders/slide-01.png"
   ]
  },
  "judge": {
@@ -1668,7 +1664,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/fid-bcg-p24/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p24/renders"
  }
 }

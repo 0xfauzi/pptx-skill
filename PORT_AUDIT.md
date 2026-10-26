@@ -485,3 +485,50 @@ Left open: annotation kinds, the unexplained-mark severity, component constants 
 variants are WP3; doctrine and spec text, including page-specs.md's preset and depth lines,
 are WP4. The emitter's own face refusal in drawn chrome (a text entry with no face and no
 minor face in the guide) has no case of its own: the solver refuses such a guide first.
+
+## Design freedom, WP3: annotation and components
+
+The third work package: annotation kinds, hosts and defaults, the unexplained-mark
+severity, and component constants and variants. Each case ran first on the tree before
+the change (edf792e, a scratch export), then on the change; each gate added or changed
+was then taken out in a scratch copy of the changed tree and its case run again. Cases
+are pages cut from `examples/keybank-annotations.deck.json` (every choice stated, so the
+same page is valid on both trees) and one-page component decks, on the keybank guide from
+a fresh extraction.
+
+| Item | Before | Change | After | Gate removed |
+|---|---|---|---|---|
+| T2 unexplained mark | an unlabelled ring on the comps table refused `annotation unexplained` | `annotate.resolve`: a mark with no label and no `explained_by` is drawn and warned, with `house_evidence` (the outline, fill, line or bracket marks the reference's files draw on that kind of host, with and without words, by slide; unread pages counted as unread) and the blind rater's note; answered in the report | warning: "the reference's files draw 1 outline mark(s) on a native table or a structure built from shapes across 12 page(s) read: 1 with no words of their own (slide 10), 0 carrying words"; the same ring with `house_precedent` clean | refused again |
+| T2 false explanation | a quote not in the lead refused as `annotation unexplained` | a named explanation that does not hold is `ExplanationNotFound`: refused as `annotation explanation not found` (a false statement about the page) | refused by that name | builds, warned only |
+| C3 annotation defaults | an outline box without `shape` drawn as a rect and listed; a label without `align` left-aligned and listed; a line label without `position` put at `end_outside` | `DEFAULTS` keeps the neutral values only (pad, gap, dash, head, line ends, one line); shape, bracket style, label align, label position (band, reference line, mark), a row's cell align and `cell_width` are required, refused by name; `house_mark: {"slide": N[, "ref"]}` takes the shape from a mark the reference's file draws (exactly one, or name it) | refused by name; `house_mark` slide 10 draws `rect` from `sp[id=2]` and the report names it; slide 12 (8 marks) refused, listing them | the shape defaulted (C3a builds); align defaulted (C3d builds); the first of 8 marks taken |
+| V4 hosts | a box on the lead text refused: "not a chart or table element" | any element of the solved page hosts; `{"box": [x0, y0, x1, y1]}` (fractions of the host's box) on any host, and on a chart or table it encloses the marks or cells it overlaps | a rounded box on the lead placed, explained by its own words, render check 18 host words, 0 covered; with `space.lg` pad it collides with the title, the comps table and the page edge | |
+| V4 primitive mark | kind `mark` refused | `mark`: any OOXML preset by name (`emit_pptx.preset_shape`, one check), or a line with `points` and OOXML `head_end`/`tail_end` (`emit_pptx.LINE_ENDS`); words beside it, or `inside` its body on the presets the contrast gate bounds (`build_deck.PRESET_BODIES`); its geometry read as the reference's marks are (`ooxml.geometry_of`, now the one definition) | a star (warned renderer-unmeasured, warned unexplained with the house's 8 worded fills), a line written with headEnd oval and tailEnd stealth, words inside a chevron; words inside a cloud refused by name; `notAShape` refused by name | words in the cloud: a contrast refusal at 1.0:1 instead of the named one (the gate could not see the body) |
+| V4 badge | a two-line label refused: "a badge holds one line" | the circle holds the measured block's diagonal, however many lines | "Base" / "case" in a 449,184 EMU circle round a 329,939 x 304,800 EMU block | sized to the width alone: contrast refused at 1.0:1 (words off the circle) |
+| V4 footnote marker | "1" refused: not one of seven markers | one to three characters, no space, closing what the mark encloses as its own token and opening the note's paragraph (`marker_closes`, `marker_opens`) | "Harbor Point at $36.50 1" with note "1  Pro forma ..." explained; "... FY2021" refused; a note "12 months ..." refused | "FY2021" explains the mark; "12 months" opens the note |
+| C7, R4 kpi_row | `panel` an unknown variant (traceback); `lead` ignored | roles open (`component_api.choices`), `lead` index or null, `panel` only when asked, with a required fill role and the base question in the report; the lead's ink by `reading_role` against its own ground | tiles in color.surface_alt with the lead in accent2 at 7.3:1; co-equal figures all in ink; a panel without a fill refused by name | panel drawn on a fill nobody chose |
+| C7 football_field | marker in accent1, a 1.5:1 grey on keybank, over accent2 bands; constants fixed; a width estimate without the API | marker = the first accent that reads 3:1 on the surface, bands the first other accent, both reported with the ratio; roles and the five design constants open through `roles`/`params`; `wide`/`compact` reachable (spec.json said `narrow`); no API refused | keybank: marker accent2 at 11.22:1, bands accent1 (marker 7.30:1 against them); McKinsey unchanged (accent1 marker at 6.6:1, bands accent2, the 1.78:1 marker-to-band reported) | KeyError traceback (the API is read throughout) |
+| C7 title_block, bullet_stack | `rule` ignored; asking `no_kicker` with a kicker dropped the kicker in silence; roles fixed | `rule: false`, roles open; `no_kicker` with a kicker refused (content is never dropped); `bullet_level` (null for none) | hairline left out; refused by name; caption items with no bullet | kicker dropped, page fits |
+| R4 variants in the check | `component.py check` ran the auto-picked variant only | every declared variant asked for at every box (spec.json `variant_data` for what a variant needs); admission needs each to draw at one box; the variant chosen and why are in `component_notes` via the component's `report` (`build_deck.expand_components` lifts it; a component's ValueError is refused by name) | all four admitted on keybank: kpi_row panel fits 3 of 4 (not the tall rail), football_field wide fits 3 (the tall rail wraps a tick), compact 4 | kpi_row without `variant_data`: all_pass false, `variants_unreached: ['panel']` |
+
+Docs changed with the code: chart-recipes.md (hosts, the box anchor, `mark`, `house_mark`,
+required choices, the warning and the new refusal, the marker rule; worked examples state
+their choices; R2 checked: its sections are named by mechanism and its intro points at
+the house's nearest exhibit), components.md and components/README.md (worked examples to
+fork, variants reachable and reported, the API's new functions, co-equal parts),
+build-report.md (`annotation explanation not found`, the warning, `component_notes`), and
+SKILL.md's one sentence that described the refusal. `examples/keybank-annotations.deck.json`
+states the shape, style and align it took by default before.
+
+Rebuilt from a FRESH extraction on edf792e and on this change (scratchpad fr4, run.sh, the
+fidelity decks with the same choices stated): the 23 builds give the same status, scale,
+measured text lines, judge totals and filing. The differences: annotation
+`defaults_taken` lists no longer carry the shape, style and align the decks now state,
+and the two football field pages list their component notes (on keybank the marker and
+band roles swap, as above). The eight proof reports are refreshed from this run. ruff
+over `scripts/` and `components/`: 122 before, 123 after (TRY004 on the ValueErrors the
+build catches by that class).
+
+Left open: the risk 4a measurement (a model answering the warning in a located way on the
+round-5 ring page) needs a model run; the McKinsey marker reads 1.78:1 against its bands
+and is reported, not refused (no measured floor for a mark against its neighbour); the
+admissions' judge totals now include the forced-variant slides.

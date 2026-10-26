@@ -473,10 +473,15 @@ def _run_ink(run: dict, guide: Guide, paragraph_ink: str | None) -> str | None:
     return guide.hex(run["ink_role"], where="run") if run.get("ink_role") else paragraph_ink
 
 
+#: OOXML's line end types (ST_LineEndType), each a value the file states as written
+LINE_ENDS = ("none", "triangle", "stealth", "diamond", "oval", "arrow")
+
+
 def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     """A straight line: across the middle of its box (a layout rule), or between the
     element's own `points` [x1, y1, x2, y2] (an annotation's line, leader or arrow),
-    with an arrowhead at the second point when `tail_end` names one."""
+    with a line end at the first point (`head_end`) and the second (`tail_end`) when they
+    name one of LINE_ENDS."""
     x, y, w, h = box
     if el.get("points"):
         x1, y1, x2, y2 = (int(v) for v in el["points"])
@@ -500,8 +505,11 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
             width_emu = DEFAULT_LINE_EMU
             guide.take(el.get("id", "rule"), f"line width 0.75pt (left out, and the guide's motifs draw no {role} line)")
     _set_line(line._element.spPr, hex_color, width_emu, el.get("dash"))
-    if el.get("tail_end"):
-        etree.SubElement(line._element.spPr.find(qn("a:ln")), qn("a:tailEnd")).set("type", el["tail_end"])
+    for key, tag in (("head_end", "a:headEnd"), ("tail_end", "a:tailEnd")):
+        if el.get(key) not in (None, "none"):
+            if el[key] not in LINE_ENDS:
+                raise SpecError(f"{el.get('id', 'rule')}: {key} {el[key]!r} is not an OOXML line end ({', '.join(LINE_ENDS)})")
+            etree.SubElement(line._element.spPr.find(qn("a:ln")), qn(tag)).set("type", el[key])
 
 
 # A rect element names any OOXML preset geometry (prst) python-pptx writes, by its OOXML

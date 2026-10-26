@@ -10,6 +10,13 @@ data), solves each with the guide, refuses any violation, emits each onto the te
 renders them into one contact sheet, and judges the rendered slides against the
 reference. The author reads the sheet; nothing here judges taste.
 
+Every variant spec.json declares is then asked for by name (`data["variant"]`, with what
+spec.json's `variant_data` gives that variant, such as a panel's fill role) at every
+test box: a variant a slide can ask for must draw, so admission needs each one to pass
+at least one box, and the check lists where each fits, fails, or is refused by the
+component itself (a variant the data cannot carry). The variant the component chose by
+itself at each box, and why, is in that test's `notes` (the component's report).
+
 Before any of that, `check` runs each test's expand twice in separate interpreters under
 PYTHONHASHSEED=0 and PYTHONHASHSEED=1 and compares the returned trees (JSON with sorted
 keys, so a dict whose insertion order moved is not a difference, but a list whose order
@@ -98,7 +105,30 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
     spec = json.loads((component_root(kind) / "spec.json").read_text())
     guide = json.loads(Path(guide_path).read_text())
     guide_ref = {"guide_reference": guide.get("reference", {}).get("file"), "guide_reference_sha256": guide.get("reference", {}).get("sha256")}
-    tests = [dict(t, held_out=False) for t in spec["tests"]["shown"]] + [dict(spec["tests"]["held_out"], held_out=True)]
+    auto = [dict(t, held_out=False) for t in spec["tests"]["shown"]] + [dict(spec["tests"]["held_out"], held_out=True)]
+    Path(out).mkdir(parents=True, exist_ok=True)
+    # every declared variant asked for by name at every box; one the component refuses for
+    # this data (ValueError, the build's refusal by name) is recorded, not built
+    forced: list[dict] = []
+    refused: dict[str, dict[str, str]] = {}
+    api_guide = component_api.with_api(guide, component_api.make_api(guide))
+    for v in spec.get("variants") or {}:
+        for t in auto:
+            data = json.loads((component_root(kind) / t["data"]).read_text())
+            # what the variant needs that the test data cannot give it (a panel's fill role):
+            # spec.json variant_data, merged one level deep
+            for key, extra in ((spec.get("variant_data") or {}).get(v) or {}).items():
+                data[key] = {**data[key], **extra} if isinstance(extra, dict) and isinstance(data.get(key), dict) else extra
+            data["variant"] = v
+            path = Path(out) / f"{name}.{t['name']}@{v}.data.json"
+            path.write_text(json.dumps(data, indent=1))
+            try:
+                load_component(kind)(dict(data, _id="c"), dict(t["box"]), api_guide)
+            except ValueError as error:
+                refused.setdefault(v, {})[t["name"]] = str(error)
+                continue
+            forced.append(dict(t, name=f"{t['name']}@{v}", data=str(path.resolve()), variant=v))
+    tests = auto + forced
     stable = determinism(kind, tests, guide_path)
     margin = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 457200)
     # the harness page is emitted on the template, so the master's and layout's furniture
@@ -127,7 +157,6 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
                               "layout": {"kind": "flex", "direction": "column", "gap_role": "space.xs", "pad_role": "space.margin", "align": "stretch", "justify": "start"},
                               "children": [{"type": "component", "id": "c", "kind": kind, "data": data}]}},
         })
-    Path(out).mkdir(parents=True, exist_ok=True)
     deck_path = Path(out) / f"{name}.check.deck.json"
     deck_path.write_text(json.dumps(deck, indent=1))
     pptx = str(Path(out) / f"{name}.check.pptx")
@@ -145,7 +174,8 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
         wrapped = sorted(k for k, lines in (s.get("text_lines") or {}).items() if lines > 1 and any(tag in k for tag in single))
         if wrapped:
             ok = False
-        verdict.append({"test": t["name"], "held_out": t["held_out"], "box": t["box"], "pass": ok, "scale": s.get("scale"),
+        verdict.append({"test": t["name"], "held_out": t["held_out"], "variant": t.get("variant"), "box": t["box"], "pass": ok, "scale": s.get("scale"),
+                        "notes": s.get("component_notes", []),
                         "violations": s.get("violations", []), "reason": unplaceable.get(t["name"]) or s.get("reason"), "wrapped_single_line": wrapped,
                         "deterministic": d["deterministic"], "first_difference": d.get("first_difference") or d.get("error"),
                         "contrast_violations": (s.get("contrast") or {}).get("violations", [])})
@@ -154,8 +184,15 @@ def check(kind: str, guide_path: str, template: str, out: str, reference: str | 
     if images:
         from render import grid
         sheet = str(grid([Path(p) for p in images], Path(out) / f"{name}.sheet.png", cols=2, cell_w=700))
-    # a package that fails validation (a shape past the slide) is not admitted, whatever the boxes say
-    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict) and bool(report.get("validation", {}).get("ok")), "tests": verdict, "pptx": pptx, "sheet": sheet, **guide_ref,
+    variants = {v: {"fits": [x["test"].split("@")[0] for x in verdict if x["variant"] == v and x["pass"]],
+                    "fails": {x["test"].split("@")[0]: x["reason"] or x["violations"] or x["wrapped_single_line"] or x["contrast_violations"] or "see the test"
+                              for x in verdict if x["variant"] == v and not x["pass"]},
+                    "refused_by_the_component": refused.get(v, {})} for v in spec.get("variants") or {}}
+    unreached = [v for v, r in variants.items() if not r["fits"]]
+    # a package that fails validation (a shape past the slide) is not admitted, whatever the
+    # boxes say; nor is a component one of whose declared variants draws at no box
+    result = {"kind": kind, "all_pass": all(v["pass"] for v in verdict if v["variant"] is None) and not unreached and bool(report.get("validation", {}).get("ok")),
+              "tests": [v for v in verdict if v["variant"] is None], "variants": variants, "variants_unreached": unreached, "pptx": pptx, "sheet": sheet, **guide_ref,
               "determinism": stable, "judge": report.get("judge"), "validation_ok": report.get("validation", {}).get("ok")}
     (Path(out) / f"{name}.check.json").write_text(json.dumps(result, indent=1, default=str))
     return result
@@ -165,8 +202,10 @@ def admit(kind: str, out: str) -> dict:
     name = component_root(kind).name
     result = json.loads((Path(out) / f"{name}.check.json").read_text())
     if not result["all_pass"]:
-        raise SystemExit(f"{kind}: the last check did not pass every box; fix and re-check before admitting")
-    record = {"kind": kind, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True, "sheet": result["sheet"], "judge_total": (result.get("judge") or {}).get("total"),
+        raise SystemExit(f"{kind}: the last check did not pass every box, or a declared variant drew at none ({result.get('variants_unreached')}); "
+                         "fix and re-check before admitting")
+    record = {"kind": kind, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True,
+              "variants_fit": {v: r["fits"] for v, r in result["variants"].items()}, "sheet": result["sheet"], "judge_total": (result.get("judge") or {}).get("total"),
               # admission is bound to the guide it passed under; build_deck says so when the guide differs
               "guide_reference": result.get("guide_reference"), "guide_reference_sha256": result.get("guide_reference_sha256")}
     (component_root(kind) / "admitted.json").write_text(json.dumps(record, indent=1))

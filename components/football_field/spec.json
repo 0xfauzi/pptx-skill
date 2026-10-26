@@ -20,7 +20,26 @@
    "label": "string",
    "value": "number"
   },
-  "_id": "instance id prefix, set by the slide"
+  "_id": "instance id prefix, set by the slide",
+  "roles": {
+   "band": "computed when left out (see the report)",
+   "marker": "computed when left out (see the report)",
+   "label": "type.body",
+   "caption": "computed when left out (see the report)",
+   "marker_label": "computed when left out (see the report)",
+   "axis_rule": "color.rule",
+   "gap": "space.xs",
+   "bar": "space.sm",
+   "bar_compact": "space.xs"
+  },
+  "params": {
+   "label_share": 0.42,
+   "max_label_lines": 2,
+   "wide_min_width_emu": 3000000,
+   "value_share_max": 0.25,
+   "marker_width_pt": 1.5
+  },
+  "variant": "wide | compact (optional)"
  },
  "size_domain_emu": {
   "width": [
@@ -31,11 +50,11 @@
    1371600,
    5486400
   ],
-  "height_rule": "wide when every row label wraps to at most two lines in the label column (measured with guide['_api']) and the measured rows, marker line, axis and tick line fit the box height; otherwise compact (caption labels with the value inline, a space.xs bar)"
+  "height_rule": "data['variant'] when given; otherwise wide when every row label wraps to at most params.max_label_lines in the label column (measured with guide['_api']) and the measured rows, marker line, axis and tick line fit the box height, the box is at least params.wide_min_width_emu wide and the value column at most params.value_share_max of it; otherwise compact"
  },
  "variants": {
   "wide": "label column beside the bars, value column after them",
-  "narrow": "label with the value above each bar"
+  "compact": "label with the value above each bar, the thinner bar role"
  },
  "roles_used": [
   "type.body",
@@ -43,7 +62,12 @@
   "type.data_label",
   "color.accent1",
   "color.accent2",
-  "color.rule"
+  "color.accent3",
+  "color.accent4",
+  "color.rule",
+  "color.surface",
+  "space.xs",
+  "space.sm"
  ],
  "tests": {
   "shown": [
@@ -87,5 +111,5 @@
   "-mlabel"
  ],
  "single_line_rule": "tick labels, value captions and the marker label must stay on one line in every test box; component.py check fails otherwise",
- "marker": "a 1.5pt rule in color.accent1 at the marker value, in the label row and inside every bar row (cut out of the band where it crosses it)"
+ "marker": "a params.marker_width_pt rule in roles.marker (default: the first accent that reads 3:1 on color.surface) at the marker value, in the label row and inside every bar row (cut out of the band where it crosses it)"
 }

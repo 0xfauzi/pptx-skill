@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -283,7 +283,22 @@
     "ff-ticktrack: no padding (pad_role left out)"
    ],
    "component_notes": [
-    "component 'football_field' was admitted against another reference (/home/user/deckgen/fixtures/corpus/keybank.pptx); run component.py check with this guide before trusting its fit"
+    "component 'football_field' was admitted against another reference (/home/user/deckgen/fixtures/corpus/keybank.pptx); run component.py check with this guide before trusting its fit",
+    "football_field 'ff': params.label_share: 0.42 (the default)",
+    "football_field 'ff': params.marker_width_pt: 1.5 (the default)",
+    "football_field 'ff': params.max_label_lines: 2 (the default)",
+    "football_field 'ff': params.value_share_max: 0.25 (the default)",
+    "football_field 'ff': params.wide_min_width_emu: 3000000 (the default)",
+    "football_field 'ff': roles.axis_rule: color.rule (the default)",
+    "football_field 'ff': roles.band: color.accent2, the first other accent; the marker reads 1.78:1 against it",
+    "football_field 'ff': roles.bar: space.sm (the default)",
+    "football_field 'ff': roles.bar_compact: space.xs (the default)",
+    "football_field 'ff': roles.caption: type.caption, the first of ['type.caption', 'type.footnote'] the guide defines",
+    "football_field 'ff': roles.gap: space.xs (the default)",
+    "football_field 'ff': roles.label: type.body (the default)",
+    "football_field 'ff': roles.marker: color.accent1, the first accent that reads on color.surface (6.6:1)",
+    "football_field 'ff': roles.marker_label: type.data_label, the first of ['type.data_label', 'type.emphasis', 'type.caption'] the guide defines",
+    "football_field 'ff': variant wide: every label, row, marker, axis and tick line fits the box"
    ],
    "scale": 1.0,
    "violations": [],
@@ -745,7 +760,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -796,7 +811,7 @@
   "verdict": "possible carry-over: 1 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -828,8 +843,8 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders/slide-02.png"
   ]
  },
  "judge": {
@@ -931,7 +946,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/mk/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders"
  }
 }

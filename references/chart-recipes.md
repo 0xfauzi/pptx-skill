@@ -507,7 +507,7 @@ the page's picture; PORT_AUDIT.md, exhibit fidelity). Measured by
 ```json
 "annotations": [
  {"id": "avg", "host": "pv", "kind": "reference_line", "anchor": {"value": 403.53}, "line_role": "color.ink", "line_width_pt": 1.5, "dash": "solid",
-  "gap_role": "space.xs", "label": {"text": "Average Share Price - $403.53", "role": "type.axis_label", "ink_role": "color.ink", "position": "middle_below"}}]
+  "gap_role": "space.xs", "label": {"text": "Average Share Price - $403.53", "role": "type.axis_label", "ink_role": "color.ink", "position": "middle_below", "align": "left"}}]
 ```
 
 The label first sat at `start_below` and the build refused it for covering the 4/24
@@ -526,11 +526,12 @@ under the slide, beside `charts` and `styling`:
 "annotations": [
  {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5},
   "line_role": "color.emphasis", "line_width_pt": 1.5, "dash": "dash",
-  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside"}}
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside", "align": "left"}}
 ]
 ```
 
-`host` is a chart or table element on the page. Nothing annotates by itself: you decide
+`host` is any element of the solved page: a chart, a table, a text, a picture, a rect (a
+region's drawn fill is the element `<region>-fill`). Nothing annotates by itself: you decide
 whether and what, from where the claim lives on the exhibit and how the house marks such a
 place (the `marks` you wrote in the exhibit brief; the house's digest records say in words
 what each of its exhibits marks, and `variety.pages[].exhibit_facts.marks` lists the marks
@@ -549,6 +550,7 @@ Anchors, in the host's own data:
 | table | `{"cell": [r, c]}`, `{"cells": [[r0, c0], [r1, c1]]}` | cells; body rows count from 0 as `rows` lists them |
 | table | `{"row": r}`, `{"rows": [r0, r1]}`, `{"column": c}`, `{"columns": [c0, c1]}` | whole rows (all columns) or columns (header included); a column may be named by key |
 | table | `{"header_group": {"row": 0, "columns": [c0, c1]}}` | header cells (a spanner group) |
+| any | `{"box": [x0, y0, x1, y1]}` | fractions of the host's solved box (0 its left or top edge, 1 its right or bottom; beyond 0..1 reaches past them: a mark beside a text). On a chart or table, the marks or cells it overlaps are what it encloses |
 
 A chart anchor needs the chart's `plot_area` and, for the axis it names, `min`, `max`
 and `cross_between`; without them the annotation is refused by name (an auto-scaled
@@ -556,28 +558,44 @@ axis has no computable position). Bar, column, line and XY charts only; a pie, a
 radar, bubble or stacked line is refused. A table anchor uses the fitted column widths
 and row heights.
 
-Kinds (required keys first; every other choice left out is written neutral and listed
-under the page's `annotations[].defaults_taken`):
+Kinds (required keys first). A neutral value draws nothing or as little as the words
+measure: no pad, no gap, a solid stroke, no head or line end, a label on one line. Those
+are the only ones written for you, and each is listed under the page's
+`annotations[].defaults_taken`. Every other choice has no neutral value and is required:
+the shape, a bracket's style, where a label sits and how it aligns. Every label is `{"text",
+"role", "ink_role", "align"}` plus what its kind asks.
 
 | kind | required | optional | draws |
 |---|---|---|---|
-| `outline_box` | `line_role`, `line_width_pt` | `pad_role` (outward), `dash`, `shape` (`rect`, `ellipse`, `rounded`), `label` (with a `position` beside the box), `gap_role`, `explained_by` | an unfilled box on the anchor |
-| `band` | `fill_role` | `pad_role`, `label` (`inside_top_left` ...), `explained_by` | a fill UNDER the host (zone shading); a table row with its own fill hides it and is refused |
-| `reference_line` | `line_role`, `line_width_pt` | `dash`, `label` (`end_outside`, `end_above`, `end_below`, `start_above`, `start_below`; vertical: `end_outside`, `end_right`, `end_left`, `start_right`, `start_left`), `gap_role`, `explained_by` | a line across the plot at a value or category |
+| `outline_box` | `line_role`, `line_width_pt`, `shape` (`rect`, `ellipse`, `rounded`, or any OOXML preset by its own name) or `house_mark` | `pad_role` (outward), `dash`, `label` (with a `position` beside the box), `gap_role`, `explained_by` | an unfilled shape on the anchor |
+| `band` | `fill_role` | `pad_role`, `label` (with a `position`: `inside_top_left` ...), `explained_by` | a fill UNDER the host (zone shading); a table row with its own fill hides it and is refused |
+| `reference_line` | `line_role`, `line_width_pt` | `dash`, `label` (with a `position`: `end_outside`, `end_above`, `end_below`, `start_above`, `start_below`; vertical: `end_outside`, `end_right`, `end_left`, `start_right`, `start_left`), `gap_role`, `explained_by` | a line across the plot at a value or category |
 | `arrow` | `line_role`, `line_width_pt`, `label`, `position`, `gap_role` | `dash` | the label beside the anchor at `gap_role`, an arrow from it to the anchor |
 | `callout` | `line_role`, `line_width_pt`, `fill_role`, `label`, `position`, `gap_role` | `pad_role` (inside the box), `head` (`none`, `arrow`) | a filled box with a leader to the anchor |
-| `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role` | `style` (`square`, `brace`), `label`, `explained_by` | a bracket opening toward the span, beyond its marks, label beyond it |
-| `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding one line (a number keyed to text) |
-| `category_row` | `cells`, `position`, `gap_role` | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `cell_width`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Rows aligned to categories") |
+| `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role`, `style` (`square`, `brace`) or `house_mark` | `label`, `explained_by` | a bracket opening toward the span, beyond its marks, label beyond it |
+| `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding its label's measured block, however many lines (a number keyed to text) |
+| `category_row` | `cells`, `position`, `gap_role`, `cell_width`, `align` (for text cells) | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Rows aligned to categories") |
+| `mark` | `prst` (any OOXML preset the emitter writes, or `"line"`) or `house_mark`; a `fill_role` or a `line_role` with `line_width_pt`; a line also `points` | `pad_role`, `dash`, `head_end`, `tail_end` (a line's ends: `none`, `triangle`, `stealth`, `diamond`, `oval`, `arrow`), `label` (a `position` beside it, or `inside` its body), `gap_role`, `explained_by` | the primitive under the shorthands: any shape or line at the anchor, sized to it |
+
+A `mark`'s `points` are `[[x0, y0], [x1, y1]]`, its line's ends as fractions of the anchor's
+box. Words `inside` a mark stand on its body, measured to fit it: only on the presets whose
+body the contrast gate bounds (rect, roundRect, ellipse, homePlate, chevron and the four
+block arrows); any other preset (a cloud, a star) is refused with words inside, and drawn
+with words beside it. A preset no proof has drawn warns `renderer-unmeasured preset`.
+
+`house_mark: {"slide": N}` (or `{"slide": N, "ref": "<a mark's ref>"}` where the page draws
+more than one) takes the shape from a mark the reference's file draws on slide N
+(`variety.pages[].exhibit_facts.marks`, listed in `draft.md`): its preset for an outline
+box or a mark, its bracket or brace for a bracket. The report names it under `house_mark`.
 
 A reference line's label also takes `middle_above` and `middle_below` (horizontal) or
 `middle_right` and `middle_left` (vertical): centred along the line, where a long line's
 label clears marks at both ends.
 
 `position` is one of `above`, `below`, `left`, `right`, `above_left`, `above_right`,
-`below_left`, `below_right`. Labels are `{"text", "role", "ink_role"}` plus optional
-`position`, `align` and `max_width_share` (a fraction of the host's width to wrap at,
-for every kind; left out, the label is one line). Every label is measured with the
+`below_left`, `below_right`. Labels are `{"text", "role", "ink_role", "align"}` plus
+`position` where the kind asks for it and an optional `max_width_share` (a fraction of
+the host's width to wrap at, for every kind; left out, the label is one line). Every label is measured with the
 solver's ruler at the page's scale and written with its measured lines; a label whose
 word is wider than its line (it would break between characters) is refused, and a band's
 label must fit inside the band.
@@ -590,17 +608,21 @@ covers the neighbouring rows; `"pad_role": "none"` is the box on the cell edges.
 ### A mark says what it means
 
 A ring, box, band, line or bracket with no words reads as decoration or as a model's
-attempt to annotate (a blind rater on an unlabelled red circle). Each one either carries
-a `label`, or names under `explained_by` exactly one thing that explains it; the build
-checks that the named thing is there and refuses `annotation unexplained` otherwise:
+attempt to annotate (a blind rater on an unlabelled red circle). Each one carries a
+`label`, or names under `explained_by` exactly one thing that explains it, or neither:
+then it is drawn and warned `annotation unexplained`, with the house's own count beside
+it (the outline, fill, line or bracket marks its files draw on that kind of host, with
+and without words of their own, and on which slides), and the warning is answered in the
+report. What `explained_by` names is checked, and a named explanation that is not there
+refuses the page (`annotation explanation not found`):
 
 | `explained_by` | what the build checks |
 |---|---|
 | `{"text": "lead", "quote": "Above the median on P / TBV"}` | `lead` is a text element of the page, the quote is in it word for word, and the quote shares a word or a figure (at the quote's rounding; 10% also matches 0.1) with what the mark encloses: the anchored cells, a column head where the mark encloses the head or only some columns, a row label where it encloses the label or only some rows (a box round one whole row is not named by the heads of the columns it crosses), or the categories, series names and values the anchor spans. A word runs on through digits (`CET1` is one word); a figure of one significant digit (`1`) ties only a value it equals exactly |
 | `{"annotation": "selected-note"}` | another annotation of the page, on the same host and the same anchor, that carries a label (a callout saying what a band marks) |
 | `{"legend": "Selected range"}` | the host chart draws a legend showing that series, and the series is drawn in the mark's own ink |
-| `{"footnote": {"marker": "*", "note": "source"}}` | a text the mark encloses (a cell, a category) ends with the marker, and a paragraph of `note` starts with it |
-| `{"house_precedent": {"slide": 10}}` | the reference's file draws, on slide 10, a mark of the same geometry (an outline box an outline, a band a fill, a reference line a line, a bracket a bracket) carrying no text of its own, on the same kind of host: on a native chart for a mark on a chart; on a native table, or on a structure the house built from shapes (keybank's slide 10 rows of filled text shapes), for a mark on a table: the guide's `variety.pages[].exhibit_facts.marks`, read by the extractor. A mark on a pasted picture stands for neither, since the file cannot say what the picture shows. A ring drawn inside a pasted picture is pixels the file cannot show, so it is no precedent: explain such a mark another way |
+| `{"footnote": {"marker": "1", "note": "source"}}` | the marker is one to three characters with no space (`*`, `1`, `a`, `(1)`, `†`); a text the mark encloses (a cell, a category, the host's own words or one of its runs) ends with it as its own token, never inside a figure or a word (`FY2021` does not end with the marker `1`; `Harbor Point 1` does), and a paragraph of `note` opens with it, followed by the note (`1 Pro forma`, never `12 months`) |
+| `{"house_precedent": {"slide": 10}}` | the reference's file draws, on slide 10, a mark of the same geometry (an outline box an outline, a band a fill, a reference line a line, a bracket a bracket) carrying no text of its own, on the same kind of host: on a native chart for a mark on a chart; on a native table, or on a structure the house built from shapes (keybank's slide 10 rows of filled text shapes), for a mark on a table; on a text, a picture or a shape for a mark on the same: the guide's `variety.pages[].exhibit_facts.marks`, read by the extractor. A mark on a pasted picture stands for neither, since the file cannot say what the picture shows. A ring drawn inside a pasted picture is pixels the file cannot show, so it is no precedent: explain such a mark another way |
 
 Each placed annotation's report entry says how it is explained (`explained_by`: `its own
 label`, or what was checked). The marks the house's files draw, with whether each carries
@@ -609,12 +631,20 @@ complete_guide's `house_habits`.
 
 What the build refuses, by name, under `problems`:
 
-- `annotation refused`: a key, anchor or role it cannot honour (`axes.value needs
+- `annotation refused`: a key, anchor or role it cannot honour, or a choice with no neutral value left out (`an outline_box needs shape (or house_mark ...)`, `label: needs ['align']`, `axes.value needs
   numeric min < max`, `cross_between ... is required`, `value 45 is outside axes.value
   20..44`, `value '36.5' on axes.value is not a number`, `'Committee' ... breaks between
   characters`, a band label wider than its band, `body row 10 (emphasis) is filled with
   color.accent1, which hides a band drawn under it`).
-- `annotation unexplained`: an unlabelled ring, box, band, line or bracket with no `explained_by`, or one whose named explanation is not there (`the quote 'peer median of 79%' names nothing the mark encloses; the anchor holds ['Ridership vs 2019 (%)', 'MSTA (base case)', '74']`). The mark is still drawn, so the render shows it.
+- `annotation explanation not found`: what `explained_by` names is not there (`the quote 'peer median of 79%' names nothing the mark encloses; the anchor holds ['Ridership vs 2019 (%)', 'MSTA (base case)', '74']`). The mark is still drawn, so the render shows it.
+
+And warns, under `problems`, to be answered in the report:
+
+- `annotation unexplained`: an unlabelled ring, box, band, line, bracket or mark with no
+  `explained_by` (`the reference's files draw 1 outline mark(s) on a native table or a
+  structure built from shapes across 12 page(s) read: 1 with no words of their own (slide
+  10), 0 carrying words`). Answer what the mark tells a reader with no words beside it, or
+  give it a label or an explanation.
 - `annotation collides`: the annotation covers another page element, another
   annotation, the page edge, a reserved chrome zone, or a mark of its host it does not
   anchor to (`covers mark 'Range' 'Dividend discount model'`), and a label over a line
@@ -655,10 +685,10 @@ precedent. Page 5's boxes are inside a pasted picture, which the file cannot sho
 "styling": {"comps": {"emphasis": [{"rows": [10], "fill_role": "color.accent1"}]}},
 "annotations": [
  {"id": "median-box", "host": "comps", "kind": "outline_box", "anchor": {"cells": [[10, 1], [10, 2]]},
-  "line_role": "color.emphasis", "line_width_pt": 1.5,
+  "shape": "rect", "line_role": "color.emphasis", "line_width_pt": 1.5,
   "explained_by": {"text": "lead", "quote": "Above the median on P / TBV and P / E"}},
  {"id": "subject-box", "host": "comps", "kind": "outline_box", "anchor": {"row": 13},
-  "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"house_precedent": {"slide": 10}}}]
+  "house_mark": {"slide": 10}, "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"house_precedent": {"slide": 10}}}]
 ```
 
 ### Worked: a region boxed, a header group bracketed, a row keyed (on a sensitivity grid)
@@ -671,13 +701,13 @@ way.
 ```json
 "annotations": [
  {"id": "scenario", "host": "grid", "kind": "outline_box", "anchor": {"cells": [[1, 3], [5, 5]]},
-  "line_role": "color.emphasis", "line_width_pt": 1.5,
+  "shape": "rect", "line_role": "color.emphasis", "line_width_pt": 1.5,
   "explained_by": {"text": "key", "quote": "The boxed region is the realistic case: 10-20% synergies at a 22.5-32.5% premium"}},
  {"id": "syn-range", "host": "grid", "kind": "bracket", "anchor": {"header_group": {"columns": [3, 5]}},
-  "side": "above", "gap_role": "space.xs", "depth_role": "space.xs", "line_role": "color.rule", "line_width_pt": 1.0,
-  "label": {"text": "Realistic synergies", "role": "type.caption", "ink_role": "color.ink"}},
+  "side": "above", "style": "square", "gap_role": "space.xs", "depth_role": "space.xs", "line_role": "color.rule", "line_width_pt": 1.0,
+  "label": {"text": "Realistic synergies", "role": "type.caption", "ink_role": "color.ink", "align": "center"}},
  {"id": "base-key", "host": "grid", "kind": "badge", "anchor": {"row": 3}, "position": "left", "gap_role": "space.xs",
-  "fill_role": "color.accent2", "label": {"text": "1", "role": "type.caption", "ink_role": "color.ink_inverse"}}]
+  "fill_role": "color.accent2", "label": {"text": "1", "role": "type.caption", "ink_role": "color.ink_inverse", "align": "center"}}]
 ```
 
 ### Worked: decision values as lines, a range as a zone (on valuation ranges)
@@ -696,9 +726,9 @@ check.
   "explained_by": {"annotation": "selected-note"}},
  {"id": "selected-note", "host": "ff", "kind": "callout", "anchor": {"values": [29, 35]}, "position": "below", "gap_role": "space.xs",
   "pad_role": "space.xs", "fill_role": "color.surface", "line_role": "color.rule", "line_width_pt": 0.75,
-  "label": {"text": "Committee range $29-35", "role": "type.data_label", "ink_role": "color.ink"}},
+  "label": {"text": "Committee range $29-35", "role": "type.data_label", "ink_role": "color.ink", "align": "left"}},
  {"id": "offer", "host": "ff", "kind": "reference_line", "anchor": {"value": 36.5}, "line_role": "color.emphasis", "line_width_pt": 1.5, "dash": "dash",
-  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside"}}]
+  "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside", "align": "left"}}]
 ```
 
 ### Worked: one mark highlighted, the mean as a line, an arrow carrying its figure (on a ranking)
@@ -712,10 +742,10 @@ line crossed four of them and the render check refused the page.
 ```json
 "annotations": [
  {"id": "mean", "host": "rank", "kind": "reference_line", "anchor": {"value": 1.66}, "line_role": "color.ink_muted", "line_width_pt": 1.0, "dash": "dash",
-  "label": {"text": "Mean 1.66x", "role": "type.data_label", "ink_role": "color.ink_muted", "position": "end_outside"}},
+  "label": {"text": "Mean 1.66x", "role": "type.data_label", "ink_role": "color.ink_muted", "position": "end_outside", "align": "left"}},
  {"id": "subject", "host": "rank", "kind": "arrow", "anchor": {"point": {"series": 0, "category": 3}}, "position": "right", "gap_role": "space.md",
   "line_role": "color.accent2", "line_width_pt": 1.0,
-  "label": {"text": "1.71x, +0.05x", "role": "type.data_label", "ink_role": "color.accent2"}}]
+  "label": {"text": "1.71x, +0.05x", "role": "type.data_label", "ink_role": "color.accent2", "align": "left"}}]
 ```
 
 Prefer native where a move can be native: a median row is an `emphasis` group, a highlighted
@@ -741,16 +771,16 @@ a horizontal bar chart).
   three lines of that role off the plot.
 - `shape`: `{"prst": "ellipse" | "rect" | "rounded", "line_role", "line_width_pt",
   "fill_role", "pad_role"}` around each text cell (an ellipse is drawn through the text
-  box's corners, so the text stays inside it). `cell_width`: `"uniform"` (the default,
-  listed: every cell as wide as the widest, one oval size along the row) or `"own"`.
+  box's corners, so the text stays inside it). `cell_width` (required): `"uniform"` (every
+  cell as wide as the widest, one oval size along the row) or `"own"`.
 - `label`: the row's name, `{"text", "role", "ink_role", "max_width_share", "align"}`,
   set between the chart frame's left edge and the plot, ending at the plot's edge (leave
   room with `plot_area.x`); above the column on a horizontal bar chart.
 
 A category row's text cells may each carry their own style: `cells` entries are
 `{"text", "role", "ink_role", "emphasis"}` objects as well as strings (a bold total cell,
-a red gap figure), and the row takes `align` (left, center, right; centred when left out,
-listed as a default taken) for its cells.
+a red gap figure), and a row of text cells takes `align` (left, center, right; required)
+for its cells.
 
 Placement inside the frame: a callout, a row or a label below a chart band lands in the
 next element unless the chart frame leaves room for it. Give the room inside the frame
@@ -773,11 +803,11 @@ house's guide (PORT_AUDIT.md, exhibit fidelity).
 "annotations": [
  {"id": "emp", "host": "w", "kind": "category_row", "anchor": {"categories": [0, 7]}, "position": "below",
   "gap_role": "type.body", "gap_lines": 4,
-  "cells": ["517", "1,659", "888", "390", "736", "269", "3,756", "8,215"], "role": "type.body", "ink_role": "color.ink",
+  "cells": ["517", "1,659", "888", "390", "736", "269", "3,756", "8,215"], "role": "type.body", "ink_role": "color.ink", "align": "center",
   "shape": {"prst": "ellipse", "line_role": "color.rule", "line_width_pt": 0.75, "pad_role": "space.xs"}, "cell_width": "uniform",
   "label": {"text": "employees ('000s)", "role": "type.body", "ink_role": "color.ink", "max_width_share": 0.14, "align": "center"}},
  {"id": "ui", "host": "w", "kind": "category_row", "anchor": {"categories": [0, 7]}, "position": "below", "gap_role": "space.md", "after": "emp",
-  "cells": ["8", "149", "186", "118", "272", "56", "492", "1,281"], "role": "type.body", "ink_role": "color.ink",
+  "cells": ["8", "149", "186", "118", "272", "56", "492", "1,281"], "role": "type.body", "ink_role": "color.ink", "align": "center",
   "shape": {"prst": "ellipse", "line_role": "color.rule", "line_width_pt": 0.75, "pad_role": "space.xs"}, "cell_width": "uniform",
   "label": {"text": "incremental UI claims ('000s)\u00b9", "role": "type.body", "ink_role": "color.ink", "max_width_share": 0.14, "align": "center"}}]
 ```
@@ -787,7 +817,7 @@ and put the logos where they were. Each logo is fitted at its own aspect inside 
 both roles, so wide and tall marks line up:
 
 ```json
-{"id": "logos", "host": "rev", "kind": "category_row", "anchor": {"categories": [0, 10]}, "position": "below", "gap_role": "space.sm",
+{"id": "logos", "host": "rev", "kind": "category_row", "anchor": {"categories": [0, 10]}, "position": "below", "gap_role": "space.sm", "cell_width": "uniform",
  "cells": [{"image": {"path": "/abs/work/logos/emergent.png", "height_role": "space.lg", "width_role": "space.xl", "align": "center", "valign": "middle"}},
            "... one per company, in the categories' order ..."]}
 ```

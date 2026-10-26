@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -76,8 +76,7 @@
      ],
      "defaults_taken": [
       "dash: solid",
-      "pad_role: 0 EMU: drawn on the anchor's own edge",
-      "shape: rect"
+      "pad_role: 0 EMU: drawn on the anchor's own edge"
      ],
      "explained_by": {
       "by": "text",
@@ -113,8 +112,7 @@
      ],
      "defaults_taken": [
       "dash: solid",
-      "pad_role: 0 EMU: drawn on the anchor's own edge",
-      "shape: rect"
+      "pad_role: 0 EMU: drawn on the anchor's own edge"
      ],
      "explained_by": {
       "by": "house_precedent",
@@ -388,8 +386,7 @@
      ],
      "defaults_taken": [
       "dash: solid",
-      "pad_role: 0 EMU: drawn on the anchor's own edge",
-      "shape: rect"
+      "pad_role: 0 EMU: drawn on the anchor's own edge"
      ],
      "explained_by": {
       "by": "text",
@@ -432,9 +429,7 @@
       "syn-range-label"
      ],
      "defaults_taken": [
-      "style: square (leftBracket / rightBracket presets)",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -463,8 +458,7 @@
      ],
      "defaults_taken": [
       "pad_role: 0 EMU: drawn on the anchor's own edge",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -744,7 +738,6 @@
      ],
      "defaults_taken": [
       "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)",
       "head: none: a plain leader"
      ],
      "explained_by": "its own label",
@@ -774,8 +767,7 @@
      ],
      "defaults_taken": [
       "gap_role: 0 EMU: the label touches what it labels",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -804,8 +796,7 @@
      ],
      "defaults_taken": [
       "gap_role: 0 EMU: the label touches what it labels",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -1065,8 +1056,7 @@
      ],
      "defaults_taken": [
       "gap_role: 0 EMU: the label touches what it labels",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -1098,8 +1088,7 @@
      ],
      "defaults_taken": [
       "dash: solid",
-      "label.max_width_share: one line, as wide as the text measures",
-      "label.align: left (center on a badge and on a bracket label)"
+      "label.max_width_share: one line, as wide as the text measures"
      ],
      "explained_by": "its own label",
      "collisions": [],
@@ -1616,7 +1605,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1766,7 +1755,7 @@
   "verdict": "possible carry-over: 5 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1798,10 +1787,10 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-04.png"
   ]
  },
  "judge": {
@@ -1938,7 +1927,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr3/out/w1/kb/annotations/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders"
  }
 }

@@ -86,13 +86,15 @@ Listed per page before the figures. A refusal turns a fit page `unfittable` with
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
-`annotation unexplained` (a ring, box, band, line or bracket with no label and no proven
-`explained_by`: chart-recipes.md, "A mark says what it means"), `annotation collides`,
+`annotation explanation not found` (what a mark's `explained_by` names is not there:
+chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
 `picture not drawn as written`, `picture too small to check`, `picture render check failed`;
 `font refused`; `exhibit without a brief` (with `--plan`: the written page holds a chart, a table, a
 picture or a structure built from shapes, and its plan page briefs none; `slides[].briefs`
-gives both counts). Warnings never refuse: `briefs differ from the file's exhibits` (the
+gives both counts). Warnings never refuse: `annotation unexplained` (a ring, box, band,
+line, bracket or mark with no label and no `explained_by`, with the house's own count of
+such marks with and without words: answer it in the report); `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
 which exhibit), `tieout` (a totals cell that does not equal its column), `no
 source line` (below), `renderer-unmeasured preset` (a shape in a preset no render here has
@@ -269,7 +271,11 @@ the guide says is refused by name.
   text's size (category labels against their slot, centred data labels against a column's
   width), and under `spills` each horizontal bar's label wider than its bar, warned as
   "chart label wider than its bar".
-- `component_notes`: a component admitted against another guide; re-run its check.
+- `component_notes`: what each component chose and why (its variant), each role or
+  constant it left at its default, each role it computed from the guide (a lead's or a
+  marker's ink by contrast), and a component admitted against another guide (re-run its
+  check). The defaults are choices like any other: set them through the component's
+  `data["roles"]` or `data["params"]` where the house does otherwise.
 - `pictures`: per picture on the page (a `slide.images` entry or a `category_row` cell),
   the box it was drawn in on the render (`box_px`), `differ_share` (the share of that
   box's pixels with no pixel of the picture as written within one pixel and 64 levels of
