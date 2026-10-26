@@ -83,6 +83,10 @@ keybank (the pages named under "Proven on") and read from the render.
   lists that default. `axes.value.crosses: "min"` puts the x axis along the bottom and
   `axes.category.crosses: "min"` the y axis along the left (rendered in LibreOffice
   24.2.7, round 8). On a category chart the category axis takes the three words only.
+  Category labels sit next to the category axis, where it crosses the value axis, so a
+  bar below that value (or below zero when the scale spans it) grows through them; their
+  contrast is scored against that bar's fill as well as the plot. `"position": "low"` on
+  the category labels sets them at the plot's edge instead.
 - A `null` value is a gap: no bar or point is drawn there (the file writes
   `dispBlanksAs gap`), a line breaks, and annotations elsewhere on the chart are placed as
   usual; an anchor on the gap itself is refused (there is no mark to anchor on).

@@ -935,7 +935,9 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
                 for b in item["on"]:
                     if b[0] == "fill":
                         backings.append(b[1])
-                        names.setdefault(b[1], f"{b[2]} fill of {item['part']}")
+                        names.setdefault(b[1], f"{b[2]} bars across the category labels (they sit where the value axis crosses; "
+                                               "axes.category.labels.position low sets them at the plot's edge)" if item["part"] == "category axis labels"
+                                         else f"{b[2]} fill of {item['part']}")
                     elif b[0] == "plot":
                         if plot is lower and image_below:
                             unknown.append("an image lies under the chart; contrast needs pixels")

@@ -2141,6 +2141,28 @@ def _write_axis_title(axis, title: dict, guide: Guide, name: str, chart, where: 
     body.set("vert", "horz")
 
 
+def bars_across_labels(el: dict) -> set[int]:
+    """The series whose bars cross the category labels: the labels sit next to the category
+    axis, where it crosses the value axis (`crosses`, or zero when the scale spans it), and
+    a bar on the low side of that value grows from the axis through them (round 8 verifier:
+    min 50, max 150, crosses 100 drew 'South' and 'West' on their bars). Labels set `low` or
+    `high` sit at the plot's edge; a reversed value axis is not measured, so nothing is
+    claimed there."""
+    axes = el.get("axes") or {}
+    cat, val = axes.get("category") or {}, axes.get("value") or {}
+    if not str(el.get("type", "")).startswith(("COLUMN_", "BAR_")) or (cat.get("labels") or {}).get("position", "next_to") != "next_to" or val.get("reverse"):
+        return set()
+    c = val.get("crosses", "auto_zero")
+    values = [v for s in el.get("series") or [] if s.get("axis") != "secondary" for v in s.get("values") or [] if isinstance(v, int | float)]
+    if c == "auto_zero":
+        lo = val.get("min")
+        c = 0 if (lo is not None and lo < 0) or (lo is None and any(v < 0 for v in values)) else None
+    if not isinstance(c, int | float) or isinstance(c, bool):
+        return set()
+    return {si for si, s in enumerate(el.get("series") or []) if s.get("axis") != "secondary" and str(s.get("plot_type") or el["type"]).startswith(("COLUMN_", "BAR_"))
+            and any(isinstance(v, int | float) and v < c for v in s.get("values") or [])}
+
+
 def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
     """Every chart text the spec inks, with what it sits on, for the build's contrast
     gate: data labels per series and per overriding point, axis tick labels, legend.
@@ -2204,7 +2226,10 @@ def chart_label_inks(el: dict, guide: Guide) -> list[dict]:
             if ax.get("visible") is False or (ax.get("labels") or {}).get("show") is False:
                 continue
             ink, ink_name, tspec = ink_of(ax.get("labels") or {})
-            out.append({"element": where, "part": f"{name} axis labels", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": [("plot",)]})
+            on: list[tuple] = [("plot",)]
+            if name == "category":
+                on += [backing(s.get("fill_role"), "center", fam(si))[0] for si, s in enumerate(el["series"]) if si in bars_across_labels(el)]
+            out.append({"element": where, "part": f"{name} axis labels", "points": [], "ink": ink, "ink_name": ink_name, "spec": tspec, "on": on})
     legend = chart_legend(el)
     if legend and legend != NONE:
         ink, ink_name, tspec = ink_of(legend)
