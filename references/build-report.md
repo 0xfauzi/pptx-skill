@@ -96,7 +96,7 @@ deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or i
 or says no chart on the page declares one; a zero step that draws no bar ties, and is
 a warning, `bridge zero step unlabelled`, only when no series labels it); `chart label breaks mid-word`; `emitted text overflows`;
 `renderer divergence: text wrapped`; `renderer divergence: chart text`;
-`chart labels taller than their band`; `annotation refused`,
+`chart labels taller than their band`; `chart label covered`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
@@ -167,7 +167,11 @@ several words drawn on more than one line (LibreOffice wrapped it in its bar). E
 what to change. Before the render, a horizontal bar chart whose category band is shorter
 than one line of its labels is refused as `chart labels taller than their band`, with the
 plot height that holds every name, and a centred column label wider than its bar is warned
-as `chart label wider than its bar`.
+as `chart label wider than its bar`. A data label the render draws under a line of the
+chart, or over another data label, refuses the page as `chart label covered`; before the
+render, an `above` or `below` label on a line drawn without markers is placed where
+LibreOffice sets it (3pt off its point, measured) and warned under the same kind when a
+line would cross it.
 
 ## Contrast
 

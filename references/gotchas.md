@@ -16,6 +16,10 @@
   one line in a slot narrower than its word. The build reads each chart's words off the
   render (`renderer divergence: chart text`, build-report.md); a written break (`\n` in a
   point label's text) is two lines in both renderers.
+- LibreOffice sets a line chart's `above` label 37,411 to 38,050 EMU over its point and a
+  `below` label 38,908 to 39,379 EMU under it (no markers, 9pt, 12 points each, round 8);
+  on a steep line the neighbouring segment then runs through it. The build predicts that
+  before the render and reads it off the render (`chart label covered`).
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus

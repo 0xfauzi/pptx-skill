@@ -1507,6 +1507,7 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
     for i, page in enumerate(emit_pages):
         page_words = words[i] if i < len(words) else []
         found: list[str] = []
+        crossings: list[str] = []
         checked: dict[str, str] = {}
         for el in page["elements"]:
             if el["kind"] != "chart":
@@ -1520,8 +1521,13 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
             expected, unknown = chart_texts(el)
             missing, wrapped = [], []
             # longest first, so a short label never takes the words of a longer one
+            drawn_at: dict[str, tuple] = {}
             for part, text in sorted(expected, key=lambda pt: -len(pt[1])):
-                if _match_on_line(lines, "".join(text.split()), used):
+                got: list = []
+                if _match_on_line(lines, "".join(text.split()), used, got):
+                    if not part.startswith("category"):
+                        drawn_at[part] = (min(b[0] for b in got), min(b[1] for b in got),
+                                          max(b[0] + b[2] for b in got) - min(b[0] for b in got), max(b[1] + b[3] for b in got) - min(b[1] for b in got))
                     continue
                 if part.startswith("category") or "\n" in text:
                     if all(_match_on_line(lines, tok, used) for tok in text.split()):
@@ -1541,9 +1547,85 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
                 found.append(f"{el['id']} {part}: {text!r} is drawn on more than one line: LibreOffice wrapped it where the file "
                              "writes one; shorten it, set it in a smaller role, widen the bar (gap_width), or set it outside the bar "
                              "(outside_end, or a category_row beside the plot)")
+            parts = sorted(drawn_at)
+            for a_i, a in enumerate(parts):
+                for b in parts[a_i + 1:]:
+                    ra, rb = drawn_at[a], drawn_at[b]
+                    # a word box runs the face's ascent to descent (1.21 x the size for Inter,
+                    # measured), wider than the ink: two labels collide when they share width and
+                    # more than LABEL_OVERLAP_SHARE of the smaller box's height (a definition,
+                    # unmeasured; stacked end labels 888 EMU apart in their boxes read clear)
+                    if (min(ra[0] + ra[2], rb[0] + rb[2]) > max(ra[0], rb[0])
+                            and min(ra[1] + ra[3], rb[1] + rb[3]) - max(ra[1], rb[1]) > LABEL_OVERLAP_SHARE * min(ra[3], rb[3])):
+                        crossings.append(f"{el['id']} {a}: the render draws it over {b}; move one (position), shorten one, or label one")
+            for part, crossed in lines_through_labels(el, drawn_at):
+                crossings.append(f"{el['id']} {part}: the render draws it under {crossed}; set it on the other side of its point "
+                                 "(position), label fewer points, or name the series at the line's end")
             checked[el["id"]] = (f"{len(expected) - len(missing) - len(wrapped)} of {len(expected)} chart labels drawn as written"
                                  + (f"; not read here: {unknown}" if unknown else ""))
-        out.append({"checked": checked, "found": found})
+        out.append({"checked": checked, "found": found, "crossed": crossings})
+    return out
+
+
+#: Measured, round 8, LibreOffice 24.2.7, a line series with no markers, 9pt labels: an
+#: `above` label's box (pdftotext's word box) ends 37,411 to 38,050 EMU over its point and a
+#: `below` label's starts 38,908 to 39,379 EMU under it, over 12 points each, and the word
+#: box is 1.21 times the size tall. With a marker the offset is unmeasured.
+LINE_LABEL_GAP_EMU = {"above": 37_700, "below": 39_100}
+LABEL_OVERLAP_SHARE = 0.25
+
+
+def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
+    """Where LibreOffice will set each shown `above` or `below` data label of a line series
+    drawn without markers (LINE_LABEL_GAP_EMU), measured with the solver's ruler: part ->
+    box. Empty when the chart's geometry is not computable."""
+    from chart_geometry import ChartGeometry, GeometryRefused
+    out: dict[str, tuple] = {}
+    if el["kind"] != "chart" or not str(el.get("type", "")).startswith("LINE"):
+        return out
+    try:
+        geo = ChartGeometry(el, el["box"])
+        for si, s in enumerate(el.get("series") or []):
+            if geo.series_family(si) != "line" or (s.get("marker") or {}).get("style", "none") != "none":
+                continue
+            labels = s.get("labels") or {}
+            points = {p["index"]: p for p in s.get("points") or []}
+            for pi, value in enumerate(s.get("values") or []):
+                own = points.get(pi, {}).get("label")
+                merged = {**labels, **(own or {})}
+                shown = merged.get("show", True) if own is not None else bool(labels) and labels.get("show", True)
+                pos = merged.get("position")
+                if not shown or value is None or pos not in LINE_LABEL_GAP_EMU or not merged.get("role"):
+                    continue
+                text = merged.get("text") or label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
+                if not text or "\n" in str(text):
+                    continue
+                entry = L.resolve_type_entry(ctx.guide, merged["role"], L.Fraction(1))
+                w = L.advance_emu(ctx.ruler, str(text), ctx.face(entry).path, entry.size_pt)
+                h = entry.size_pt * 1.21 * L.EMU_PER_POINT
+                x, y = geo.point(si, pi)
+                top = y - LINE_LABEL_GAP_EMU["above"] - h if pos == "above" else y + LINE_LABEL_GAP_EMU["below"]
+                out[f"series[{si}] {s.get('name')!r} point {pi} label"] = (x - w / 2, top, w, h)
+    except GeometryRefused:
+        return {}
+    return out
+
+
+def lines_through_labels(el: dict, boxes: dict[str, tuple]) -> list[tuple[str, str]]:
+    """Each label box (part -> box) a stroked line segment of the chart crosses, with the
+    segment named (annotate.line_strokes, the strokes an annotation label must clear)."""
+    from chart_geometry import ChartGeometry, GeometryRefused
+    if el["kind"] != "chart" or not boxes:
+        return []
+    try:
+        strokes = annotate.line_strokes(ChartGeometry(el, el["box"]))
+    except GeometryRefused:
+        return []
+    out = []
+    for part, box in boxes.items():
+        crossed = [name for name, seg, width in strokes if annotate._segment_hits(seg, width, box)]
+        if crossed:
+            out.append((part, ", ".join(crossed[:2])))
     return out
 
 
@@ -1563,9 +1645,9 @@ def _word_lines(words: list[tuple]) -> list[list[tuple]]:
     return [sorted(line, key=lambda wd: wd[0][0]) for line in lines]
 
 
-def _match_on_line(lines: list[list[tuple]], target: str, used: set[tuple[int, int]]) -> bool:
+def _match_on_line(lines: list[list[tuple]], target: str, used: set[tuple[int, int]], hits: list | None = None) -> bool:
     """Consecutive unused words of one line that spell `target` (spaces aside); marks them
-    used and returns True, else False."""
+    used, adds their boxes to `hits`, and returns True, else False."""
     if not target:
         return True
     for li, line in enumerate(lines):
@@ -1578,6 +1660,8 @@ def _match_on_line(lines: list[list[tuple]], target: str, used: set[tuple[int, i
                 taken.append((li, j))
                 if spelled == target:
                     used.update(taken)
+                    if hits is not None:
+                        hits.extend(line[t][0] for _, t in taken)
                     return True
                 if not target.startswith(spelled):
                     break
@@ -2740,7 +2824,11 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                  "detail": f"{b['chart']} {b['part']}: {b['text']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU on one line, past its "
                            f"{b['bar_emu']} EMU bar: it is drawn over the bar's ends and what lies beyond them"}
                 for b in spills] + [
-                {"kind": "chart labels taller than their band", "severity": "refusal", "detail": d} for d in bar_category_bands(elements, ctx)],
+                {"kind": "chart labels taller than their band", "severity": "refusal", "detail": d} for d in bar_category_bands(elements, ctx)] + [
+                {"kind": "chart label covered", "severity": "warning",
+                 "detail": f"{el['id']} {part}: set where LibreOffice sets such a label (LINE_LABEL_GAP_EMU, measured), it lies under {crossed}; "
+                           "the render check refuses it if drawn so: set it on the other side of its point, label fewer points, or name the series at the line's end"}
+                for el in elements for part, crossed in lines_through_labels(el, predicted_line_labels(el, ctx))],
                 chrome, precedent, slide_chrome(slide, guide, chrome))
             entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
             entry["problems"][:0] = title_warnings + plan_message_figures(slide, elements, plan_pages)  # warnings first, as the tie-outs are
@@ -2833,8 +2921,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                     entry["chart_text_drawn"] = found["checked"]
                 for f in found["found"]:
                     entry["problems"].append({"kind": "renderer divergence: chart text", "severity": "refusal", "detail": f})
-                if found["found"] and entry["status"] == "fit":
-                    entry["status"], entry["reason"] = "unfittable", "renderer divergence: chart text"
+                for f in found["crossed"]:
+                    entry["problems"].append({"kind": "chart label covered", "severity": "refusal", "detail": f})
+                if (found["found"] or found["crossed"]) and entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", ("renderer divergence: chart text" if found["found"] else "chart label covered")
         else:
             for entry in emitted:
                 entry["drawn_lines"] = f"not checked: the render's words were not read ({unread})"
