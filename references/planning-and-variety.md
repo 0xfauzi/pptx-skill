@@ -17,7 +17,8 @@ Before any page spec, write for each page: its message (on a reference page, whi
 no claim, what the reader looks it up for), the evidence that proves it,
 the exhibit, the supporting text, the data it needs, the composition intent (which element
 dominates, or how co-equal blocks divide the page), the layout, the split boundaries if it
-will not fit, and the title in the HOUSE's register and length (`guide.titles`).
+will not fit, and the title, with its register and length read against the house's
+(`guide.titles`: the plan check and the build report them, and a departure is answered).
 
 ## The exhibit brief
 
@@ -103,8 +104,9 @@ Every key on every page:
 Name the composition honestly: a house archetype when the page is built like one (look at
 the archetype's anchor page), else a named new one, and the SAME name whenever two pages
 share an arrangement, mirrored or re-weighted. A page that repeats the previous page's
-composition carries the reason in `deliberate_parallel` (a sibling template: same layout,
-scale and category order, held exactly). Worked plans: `examples/keybank-section.plan.json`,
+composition carries the reason in `deliberate_parallel` (for instance a sibling page meant
+to be compared: such pages share one scale and one category order; whether they share one
+frame is your call, said in the reason). Worked plans: `examples/keybank-section.plan.json`,
 `examples/mckinsey-pdf.plan.json`.
 
 `title_register` is your words for the title's register. When they name a term the house's

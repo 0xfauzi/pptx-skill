@@ -1,13 +1,14 @@
 # Titles and text: questions, and what decks measurably do
 
-Questions to ask, with what professional decks measurably do; never rules. The house's
-measured `guide.titles` (register counts, lengths, companions, where its claims sit) is
-the answer whenever it has evidence. Counts are from 578 coded content pages (bank 231,
+Questions to ask, with what professional decks measurably do. None of it is a rule. The
+house's measured `guide.titles` (register counts, lengths, companions, where its claims
+sit) is the strongest evidence you have: start there, and where this page departs, say why
+in the report. Only measurable defects refuse. Counts are from 578 coded content pages (bank 231,
 consulting 317, chart book 30), one coder per page, good to about plus or minus 2 to 3.
 
 ## Contents
 - Questions per page
-- Title register is a house choice
+- Title register: what houses did
 - Where the claim lives when the title is a topic
 - Length
 - Kickers, units lines, continuations
@@ -16,20 +17,22 @@ consulting 317, chart book 30), one coder per page, good to about plus or minus 
 
 ## Questions per page
 
-- What is the one thing the reader should leave with, and which slot of THIS house carries
-  it: the title, a lead-in ending in a colon, a sidebar, a takeaway band, a kicker, a units
-  line, the labels of numbered rows?
+- What should the reader leave with: the page's message, or, on a reference page, what
+  they look up? Which slot of THIS house carries it (`guide.titles.claims_elsewhere` names
+  where it states claims; the corpus found titles, lead-ins, sidebars, takeaway bands,
+  kickers, units lines and row labels), or does this page need somewhere else?
 - Does this house argue in titles, or name the topic and argue elsewhere? How long are its
   titles, and does any run to two lines?
-- Is this a page of argument or a page of reference? Reference pages carry complete
-  tables with housekeeping (spanners, totals, footnotes) and little emphasis.
+- Is this a page of argument or a page of reference (263 of 372 topic-title pages state
+  no claim)? What do this house's own reference pages carry: complete tables, spanners,
+  totals, footnotes, how much emphasis?
 - What does the text add that the exhibit cannot: assumptions, caveats, causes, history,
   the implication, the derived number? Is anything said twice?
 - Can the reader check the claim on the page? Is every figure in the claim computed from
   what is printed?
-- Prefer the measured figure to the adjective: what is the number behind "strong"?
+- Is there a measured figure behind each adjective: what is the number behind "strong"?
 
-## Title register is a house choice
+## Title register: what houses did
 
 | Register | Total | Bank | Consulting | Chart book |
 |---|---|---|---|---|
@@ -37,8 +40,8 @@ consulting 317, chart book 30), one coder per page, good to about plus or minus 
 | Claim sentence | 199 | 2 | 197 | 0 |
 | Question | 7 | 6 | 1 | 0 |
 
-- Bank decks almost never title with a claim (2 of 231); the chart book never does;
-  consulting mostly does, not always (197 of 317).
+- Bank decks title with a claim on 2 of 231 pages; the chart book on 0 of 30; consulting
+  on 197 of 317.
 - Register varies by deck within one house (one consulting deck 23 of 30 claim titles; a
   memo 0 of 12), and the same exhibit can take both registers in one deck.
 - Measured on generated sections: a planner told to write claim titles wrote 19 with a
@@ -60,9 +63,12 @@ On the remaining topic-title pages no claim is stated: the page is reference mat
 ## Length
 
 Median title length in words: bank topic titles 4; chart book 4; consulting topic titles
-7; consulting claim titles 15 (8 to 22 words, usually two lines). Hold to the house's own
-median, p90 and max from `guide.titles`; the build warns above the max and refuses a
-two-line title the house never wrote.
+7; consulting claim titles 15 (8 to 22 words, usually two lines). The build reports each
+title against the house's own median, p90 and max from `guide.titles` and warns above the
+max; the report answers the warning. What it refuses is fit: a title that needs more lines
+than the band above the reference's top rule holds does not fit (build_deck.py, the title
+band check), and the message names both fixes: shorten it, or move a clause to where the
+house states claims.
 
 ## Kickers, units lines, continuations
 
@@ -87,5 +93,6 @@ two-part title.
 - Bold or coloured lead-ins: bank 26 of 231, consulting 179 of 317, chart book 0 of 30.
 - Words per page: native-pptx bank decks median 72 (range 2 to 221); two consulting houses
   114 to 191 per page on average; the guide's density band is this house's own range.
-- Parallel findings became numbered or label rows rather than bullets; ordered options
-  became a spectrum; qualitative text was ranked on an axis.
+- Coders recorded parallel findings set as numbered or label rows rather than bullets,
+  ordered options as a spectrum, and qualitative text ranked on an axis (not counted). What
+  form would carry this text best for this reader?

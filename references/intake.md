@@ -39,8 +39,9 @@ count; `--pages 30-70` reads a range.
 ## What the digest cannot see
 
 - `type.body` is the most frequent size level. When two or three levels are close in
-  votes, the house writes at several sizes and your pages must too: match the size
-  histogram, not only the role.
+  votes, the house writes at several sizes: the judge's `size_hist` reports how far your
+  pages' sizes sit from the house's histogram (a section held at one body size in a
+  house with its mass at 11, 16 and 18pt was not filed under its reference).
 - Density bands are the house's own range (10th to 90th percentile of words, elements and
   covered area per page). Below the band is sparse for this house; above it is denser
   than the house ever goes.

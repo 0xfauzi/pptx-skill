@@ -211,9 +211,10 @@ page holding a chart or a table, answer
 the page's `source_line`: `true` when it carries a source or note line naming where its
 figures come from, `false` when not; leave it `null` on other pages. The finalizer counts
 them (`exhibit_habits.source_lines`) and prints the count under `house_habits`; the build
-refuses a data page without a source line where the house carries one on at least 80% of
-its data pages, and warns on a page WITH one where under 50% do (over three or more data
-pages; both lines unmeasured: build-report.md). Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
+warns on a data page without a source line where at least half of the house's data pages
+carry one, or where the habit is unmeasured (fewer than three data pages), quoting the
+house's count; the report answers it. A page with a source line is never a departure, and
+nothing here refuses (build_deck.py `source_line_problem`; build-report.md). Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
 repeated or added, a candidate added and a record repeated are each refused by name, and a
 patch value for `/exhibit_habits` is refused. The finalizer counts the source lines and
 keeps the records as you wrote them; it computes nothing from your words. The house's

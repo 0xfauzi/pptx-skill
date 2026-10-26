@@ -37,11 +37,10 @@ The deck may carry `firm_chrome` beside `slides` (templates-and-chrome.md).
 
 ## Limits
 
-Each refused with its own message: node ids unique on the page; at most 400 nodes; at most
-5 levels below the root (`root > body > col > panel > head > text` is the deepest chain).
-The depth cap is a runaway bound (shape nesting observed 3 deep in three reference decks, plus 2), not a measurement of
-layout trees. When a chain runs out, remove a region that wraps one child, or merge a
-column into its parent; a text element takes `fill_role` and `anchor` itself.
+Each refused with its own message (layout.py): node ids unique on the page; at most 400
+nodes; at most 64 grid tracks; at most 12 levels below the root. These are runaway bounds,
+not design limits: none was measured on layout trees. The build reports each page's
+deepest chain under `slides[].layout_depth`.
 
 ## Capacity before text
 
@@ -116,8 +115,10 @@ python3 -I scripts/images.py extract "$REF" --page 15 --bbox 40,230,100,275 -o "
 ```
 
 A company's logo is the user's or the reference's, never one you draw. An icon (a
-person, a flag, a factory, a check) is yours to draw in the subset when the house uses
-icons and the user supplied none.
+person, a flag, a factory, a check) is yours to draw in the subset. Icons are on 32 of 578
+coded pages (2 of 231 bank, 0 in the native-pptx bank decks): does this house draw them,
+and what would one add that the house's own devices cannot? Say why in the report where
+the house draws none.
 
 Proven on: BCG New York page 15 rebuilt on its guide, an icon-led row page (a star of
 life drawn in the subset, a flag and the state's outline taken from the PDF), each
@@ -155,11 +156,13 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
 
 ## Conventions the build enforces
 
-- The page title is held to the band above the reference's top rule when it has one: the
+- The page title is given the band above the reference's top rule when it has one: the
   build gives the title element the band's height (from the root's top padding down to
   the rule), so the content below starts under the rule's zone with no gap to tune. A
-  two-line title the house never wrote is refused; shorten it or move the second clause
-  where the house states claims. A house that sets a subtitle above its rule (jazz) is
+  title that needs more lines than the band holds does not fit, and the page reads
+  `unfittable` with the line count and both fixes (shorten it, or move a clause to where
+  the house states claims). Its register and length are reported against the house's,
+  as warnings to answer, not refusals. A house that sets a subtitle above its rule (jazz) is
   written as a second paragraph of the title element in the subtitle's role, with the
   root's `pad_roles` top set to the step that starts the band where the house's title
   starts (jazz: `space.md`, 0.11 in, as its title sits 0.10 in down); the title's length
@@ -174,10 +177,8 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   is reserved. A band carrying content on at least half the pages it appears on is a
   surface (a title band, a body band) and reserves nothing; text on it is scored against
   its fill, so text straddling a band edge is refused there.
-- A region may carry `fill_role` (and `prst`, a preset drawn under its children: `rect`,
-  `roundRect`, `ellipse`, `homePlate`, `chevron`, `rightArrow`, `leftArrow`, `downArrow`,
-  `upArrow`, `diamond`, `triangle`, and the brackets and braces, which carry no text) and
-  an outline (`line_role`, `line_width_emu`, `dash`)
+- A region may carry `fill_role` (and `prst`, any OOXML preset name, drawn under its
+  children) and an outline (`line_role`, `line_width_emu`, `dash`)
   and padding in its layout: `pad_role` on every side, or `pad_roles` naming each of
   `left`, `top`, `right`, `bottom` (a spacing role or null; a side left out is refused,
   not read as zero). Text inside takes `ink_role` on its paragraph. A house's arrow or
@@ -185,7 +186,12 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   solid body (a homePlate's body ends half the shape's height before its point; a
   chevron's runs between its notch and its point; an arrow's is its shaft), so give the
   pointed side the padding that keeps the words on the body (a homePlate label with
-  `pad_roles` right `space.md` and the rest `space.sm` on keybank).
+  `pad_roles` right `space.md` and the rest `space.sm` on keybank). Words may stand only
+  on a preset whose body the contrast gate can bound (`rect`, `roundRect`, `ellipse`,
+  `homePlate`, `chevron` and the four block arrows; build_deck.py `check_text_preset`
+  refuses any other under words). Any preset draws on a region or rect with no words in
+  it; one no proof has rendered yet is warned `renderer-unmeasured preset`: check its
+  render, and open the deck in PowerPoint before release.
 - A text element takes `fill_role`, `line_role` and `anchor` (`t`, `m` or `b`) itself;
   any other anchor is refused (it fell back to top in silence before). `prst` and
   `pad_role` on a text element are refused: a text box is a rectangle measured at its
@@ -213,8 +219,10 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   smaller scale may fix.
 - Emphasis runs (`styling.<id>.paragraphs.<n>.runs` with `emphasis: true`) are measured at
   the paragraph's regular weight; keep them short or leave slack.
-- Bullet indents come from the reference's bullets; a reference without bullets gets the
-  spacing scale's progression (sm, md, lg).
+- Bullet indents come from the reference's bullets, or the spec's `bullet_indent_roles`.
+  A reference without bullets and a spec that names none gets the spacing scale's
+  progression (sm, md, lg, xl), listed under `layout_defaults_taken` with the question it
+  hides: does this text need bullets, numbered rows or prose?
 
 ## Looking before writing: the reference's gallery
 
@@ -241,18 +249,21 @@ It searches the reference's own gallery, then the company's library, then an ext
 library (`refs/library`, git-ignored), and says which answered. Order: composition first,
 aspect next, then data-shape and intent words against the words each exhibit was tagged
 in. Describe the page by what it must show, not by a chart type.
-Use each entry's `why` and `ask` lines as questions for your page, never as a layout to
-copy. An aspect mismatch is flagged: examples do not carry across page sizes. `no evidence`
+Use each entry's `why` and `ask` lines as questions for your page; an entry is another
+page's answer, not a layout to copy. An aspect mismatch is flagged: examples do not carry across page sizes. `no evidence`
 means nothing fits. Building a company library is in the page-library reference.
 
 ## House specimen pages
 
-`examples/house/` holds 14 specimen pages as deck specs (comps, football field, waterfall,
-Mekko, KPI band, timeline, credentials, league table, agenda, profile, framework matrix,
-arithmetic chain, section divider, text plus chart); `COVERAGE.md` names each page's family.
-They were composed for 16:9: on a 4:3 bank page at 12pt only 2 of 14 fit as written, so cut
-or split before building, and read the unfittable report rather than forcing the scale.
-Their titles are specimens, not a register: write titles in the house's register.
+`examples/house/` holds 14 pages of one other house (a predecessor system's default
+specimen) as deck specs: one house's answers to 14 intents (comps, football field,
+waterfall, Mekko, KPI band, timeline, credentials, league table, agenda, profile, framework
+matrix, arithmetic chain, section divider, text plus chart). They are things to look at
+and depart from, not seeds. Look at your house's own nearest page first, name what the
+specimen does differently, then build from your house. `COVERAGE.md` records the
+specimen house's own habits with counts (a kicker over the title on 13 of 14 pages, a
+filled takeaway band on 4) and how each page fares on keybank: they were composed for
+16:9, and on a 4:3 bank page at 12pt only 1 of 14 fits as written.
 
 ## Motifs
 

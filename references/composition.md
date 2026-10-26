@@ -1,8 +1,9 @@
 # Composition: questions, and what decks measurably do
 
-Questions to ask about a page's arrangement, with what professional decks measurably do;
-never rules. The house's archetypes (`guide.composition`, `guide.variety`) and its own
-pages decide. Counts are from 578 coded content pages (bank 231, consulting 317, chart book
+Questions to ask about a page's arrangement, with what professional decks measurably do.
+None of it is a rule. The house's measured habits (`guide.composition`, `guide.variety`, its
+own pages) are the strongest evidence you have: start there, and where this page departs,
+say why in the report. Only measurable defects refuse. Counts are from 578 coded content pages (bank 231, consulting 317, chart book
 30), one coder per page, good to about plus or minus 2 to 3.
 
 ## Contents
@@ -12,7 +13,7 @@ pages decide. Counts are from 578 coded content pages (bank 231, consulting 317,
 - Sidebars and takeaway boxes
 - Density
 - Conventions that belong to one house
-- Generated-deck tells, and when they are not tells
+- What a blind rater noticed on generated pages
 
 ## Questions per page
 
@@ -25,8 +26,8 @@ pages decide. Counts are from 578 coded content pages (bank 231, consulting 317,
   does the eye finish? (The resolution tends to sit at the end of the reading path: the
   last row boxed and shaded, a bottom band, a down arrow to one bottom-line number.)
 - If several blocks are co-equal, are they a comparison (equal panels on a shared scale,
-  one order) or a list of unrelated facts (rank them by how directly each proves the
-  message and size them by that rank)?
+  one order) or a list of unrelated facts? Does each block's size say how much it matters
+  to the message?
 - Is every edge on an axis the page already has? Is empty space a decision you can name?
 - Which house page is nearest to this intent, and what does it do that this page does not?
 
@@ -78,7 +79,8 @@ Takeaway band, box or sidebar as an emphasis device: 46 pages.
 
 Median page fill is 0.85 in every house type. Median elements per page: bank about 80 (two
 decks at 145 and 119), consulting about 30, chart book about 35; dense tables reach 110 to
-230 elements. The guide's density bands are this house's own range; aim inside them.
+230 elements. The guide's density bands are this house's own range: the build reports
+where the page sits in them, as evidence, and a page outside them says why in the report.
 
 ## Conventions that belong to one house
 
@@ -90,13 +92,24 @@ three pitch books on one master; exhibit-only pages with no body text on 30 of 3
 row-label template for 7 appendix pages; one template across 6 recap pages and another
 across 5 segment tables.
 
-## Generated-deck tells, and when they are not tells
+## What a blind rater noticed on generated pages
 
-A rater's notes on generated pages: "Chart variety and layout variety in generated slides
-are low. Generally the same patterns with different colours"; "Logos. Generated slides have
-none". Things that read as generated where the house does not do them: card grids for
-content that is not a comparison; icon, number and label tiles; rounded everything; centred
-body text; three of everything; uniform spacing with no tension between and within groups;
-one composition repeated on pages that are not siblings; filler added to look full instead
-of a split. Where the house does one of these (a consulting house pairing big numbers with
-icons; a house whose panels are equal small multiples), it is the house's habit, not a tell.
+The rater's recorded notes, the evidence here: "Chart variety and layout variety in
+generated slides are low. Generally the same patterns with different colours"; "Logos.
+Generated slides have none". Claim titles on every page of a topic house were caught in the
+blind round too (evals/README.md).
+
+Questions to put to a page against its house, with counts where the corpus has them:
+
+- A card grid: is the content a comparison, or a list that a grid makes look like one?
+- Number and label tiles: big numbers or KPI panels are 8 of 578 coded pages, all
+  consulting; icons are on 32 (2 bank, 30 consulting). Does this house draw them?
+- Corners: what do `guide.shape_language.corner_radii` (`rounded_share`) and the house's
+  pages show?
+- Centred body text, three of everything, uniform spacing: does the house do this, and does
+  this content have three parts or equal weight?
+- One composition on pages that are not siblings: is the repeat saying they are parallel?
+- Extra text or exhibits added to look full: would a split serve the reader better?
+
+Where the house does one of these (a consulting house pairing big numbers with icons; a
+house whose panels are equal small multiples), it is the house's habit.

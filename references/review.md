@@ -32,26 +32,30 @@ pages would. Then change the specs and build again. Never a score.
    one element drifting between pages of one kind.
 3. The message: can it be found in two seconds? Hold each exhibit to its brief in the
    plan: does the reader see what `reader_must_see` says, is the comparison it names
-   drawn, are the marks where the claim lives? Is the exhibit annotated the way this
-   house annotates (its digest records)? Does every stated figure
+   drawn, are the marks where the claim lives? Can the claim be found on the exhibit, and
+   how does this house treat such places on its nearest pages (its digest records)? 7 of
+   291 coded charts are bare. Does every stated figure
    compute from the page's own data?
 4. The house: side by side with the house's best pages, what differs? Title register and
    length, where the claim sits, how dense, how the house marks emphasis, whether it draws
    gridlines and legends, how much it labels.
-5. Generated-deck tells: card grids where the content is not a comparison, equal tiles,
-   big numbers with no base or population, rounded everything, centred text, three of
-   everything, uniform spacing, one composition repeated where pages are not siblings.
-   Each is a tell only where this house does not do it.
+5. What a blind rater noticed on generated pages (composition.md, "What a blind rater
+   noticed"): low chart and layout variety, missing logos, claim titles in a topic house,
+   and a "random red circle with no label". Put the questions there to this page against
+   the house's own pages and counts: a card grid for content that is not a comparison, big
+   numbers with no base or population, corners, centred text, three of everything,
+   uniform spacing, one composition repeated where pages are not siblings.
 6. What a managing director would circle in red, and what they would write beside it.
 
 ## Writing a located finding
 
-Element id, what is wrong, the change:
+Element id, what is wrong, the evidence, and the change you propose (or the question it
+leaves open):
 
 - `takeaway: competes with the table; drop the fill, keep the rule`
 - `ff axis: tick labels sit off their values and $14 is missing; the field cannot be read against its scale`
 - `s3 commentary: column ends at 40% of the page height; give it the weight or add the next point`
-- `s2 title: a claim sentence in a house that writes topic phrases; move the claim to the lead-in`
+- `s2 title: 15-word claim; house titles are topic phrases (28 of 30, median 4 words) and it states claims in lead-ins on 9 pages; is the claim better there?`
 
 ## Package checks before handing over
 

@@ -10,7 +10,9 @@ brief (planning-and-variety.md): what the reader must see, what is compared agai
 the data's shape in your words, at least two forms weighed with why not or why, the form
 chosen and why, the house's nearest exhibit, and what will be marked.
 
-The house decides whenever it has evidence: its digest records (`exhibit_habits`: what each
+The house's measured habits are the strongest evidence you have: start there, and where
+this exhibit departs, say why in the report. Only measurable defects refuse. The evidence is
+its digest records (`exhibit_habits`: what each
 exhibit is, how it is drawn, what it marks, in words), what its files state
 (`variety.pages[].exhibit_facts`: native charts and their plot groups, tables, pictures,
 marks), and its `charts` section. The counts below are per exhibit over 601 coded exhibits
@@ -21,7 +23,7 @@ marks in the spec: chart-recipes.md.
 ## Contents
 - Questions for every exhibit
 - Table or chart: what the corpus did
-- Annotation is the norm
+- How often exhibits are annotated
 - Marks sit where the claim lives
 - Text adds what the exhibit cannot
 - Labels, legends, gridlines, colour
@@ -38,11 +40,10 @@ marks in the spec: chart-recipes.md.
   Which of those does the claim need, and which only support it?
 - Which forms could show that comparison? Weigh at least two. For each: what does the
   reader do with their eyes to get the claim (read a length, find a position against a
-  line, follow a slope, look a value up, subtract two numbers)? The form where that act is
-  shortest and surest wins; say why the others lose.
-- Will the reader look values up, compare them, follow a sequence, or match items? Lookup
-  wants a grid; comparison wants a common scale; sequence wants direction; matching wants
-  alignment.
+  line, follow a slope, look a value up, subtract two numbers)? Which form makes that act
+  shortest and surest, and why do the others lose?
+- What will the reader do with this content, and what does that ask of the form? (In the
+  corpus, lookup and reference content was a table in 71 of 71 cases.)
 - Which of the house's own exhibits is nearest? Open it (the digest crop, the gallery, the
   render). What does the house do there that this exhibit should take: its order, its
   emphasis, its labelling, its density? Where must this one depart, and why?
@@ -59,16 +60,17 @@ marks in the spec: chart-recipes.md.
 Lookup and reference content was a table in 71 of 71 cases. Change over time was a chart 93
 times and a table 24 times; the 24 tables were projections where every number is read. In
 three native-pptx bank pitch books, 27 of 33 data exhibits were pasted pictures, with marks
-laid over them as separate shapes. The question is never which form is allowed; it is
+laid over them as separate shapes. The question is not which form is allowed; it is
 whether the reader reads numbers or reads shape.
 
-## Annotation is the norm
+## How often exhibits are annotated
 
 7 of 291 charts carry no annotation (bank 0 of 109, consulting 4 of 135, chart book 3 of
 47); a chart averages about two marks (bank 2.25, consulting 2.09, chart book 2.02). About
 one chart in four marks nothing that points at the message (only labels, sorting,
-footnotes, totals or spanners): the reader is left to find the claim. A bare exhibit is
-the exception the house must show before you draw one.
+footnotes, totals or spanners): the reader is left to find the claim. If this exhibit is
+to be bare, where does this house leave such an exhibit bare, and can the reader still find
+the claim?
 
 ## Marks sit where the claim lives
 
@@ -79,8 +81,10 @@ changes because of something that happened, a total over a stack when the claim 
 total, a box round the one answer on a recommendation. Ask where your claim lives, then
 ask how this house marks such a place (its digest says, in its own words, what it marks and
 how). A mark elsewhere is decoration; a mark that says nothing about what it marks reads
-as a model's attempt to annotate (a blind rater, on an unlabelled red circle), so the build
-refuses one that names no explanation.
+as a model's attempt to annotate (a blind rater, on an unlabelled red circle). The build
+draws a mark with no label and no `explained_by` and warns, with the house's own count of
+such marks beside it; the report answers the warning. An `explained_by` that names something
+not on the page is refused (`annotation explanation not found`, annotate.py).
 
 ## Text adds what the exhibit cannot
 
@@ -99,13 +103,15 @@ anything said twice, and is anything the reader needs said nowhere?
   side over time (34 of 85).
 - Gridlines absent where recorded: bank 58 of 80, consulting 78 of 89; the chart book draws
   light horizontal gridlines on 47 of 47. Gridlines are a house habit.
-- Colour: one emphasis colour or a single hue is the norm; categorical colour is kept for
-  genuinely categorical series (one bank group: 24 of 72 single emphasis against 15 of 72
+- Colour: one emphasis colour or a single hue was the most common; categorical colour was
+  kept for genuinely categorical series (one bank group: 24 of 72 single emphasis against 15 of 72
   categorical). Semantic red and green appear on 9 pages; elsewhere red means "look here".
   Heat and status colour were defined against a named benchmark or decision.
 
 ## Lapses humans made
 
-Mismatched y-scales on sibling charts, truncated axes, colliding labels, a missed subject
-highlight, a claim with no bracket summing it, comma decimals in a borrowed chart. These are
-what a generator should be better than, not what it should copy.
+Measurable defects the coders recorded: mismatched y-scales on sibling charts, truncated
+axes, colliding labels, comma decimals in a borrowed chart. These are what a generator
+should be better than, not what it should copy. One coder's judgement, recorded beside
+them: a missed subject highlight, a claim with no bracket summing it; weigh these as
+opinion against the house's own pages.

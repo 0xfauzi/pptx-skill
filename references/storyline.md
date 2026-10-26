@@ -1,7 +1,8 @@
 # Storyline: questions for sequencing a section
 
-These are questions to ask, with what professional decks measurably do. They are never
-rules: the house's own decks decide. Counts are from 578 coded content pages of 24 decks
+These are questions to ask, with what professional decks measurably do. None of them is
+a rule. The house's measured habits are the strongest evidence you have: start there, and
+where this section departs, say why in the report. Only measurable defects refuse. Counts are from 578 coded content pages of 24 decks
 (investment bank 231, strategy consulting 317, one market chart book 30), one coder per
 page, good to about plus or minus 2 to 3.
 
@@ -9,7 +10,7 @@ page, good to about plus or minus 2 to 3.
 - Per deck
 - Per section
 - Measured tendencies
-- Checks on a draft plan
+- Questions for a draft plan
 
 ## Per deck
 
@@ -28,8 +29,10 @@ page, good to about plus or minus 2 to 3.
   takeaway bands) form one argument a reader could accept without the exhibits?
 - Which compositions and layouts will each page use, and how does that compare with the
   house's own variety? Which repeats are deliberate parallels, and why?
-- Which pages are one of a set, meant to be compared by flipping? Then hold one template,
-  one scale and one category order across them exactly.
+- Which pages are one of a set, meant to be compared by flipping? Pages meant to be
+  compared share one scale and one category order (mismatched sibling scales were recorded
+  as human defects, below). Does the set also read better on one frame, or does a page
+  need its own?
 - Is any page here only because the data exists, not because the argument needs it?
 - Is anything carried over from a past deck that the user did not supply for this one?
 
@@ -39,7 +42,8 @@ page, good to about plus or minus 2 to 3.
   of the 24 decks that carry a variety row (bank 0.645, consulting 0.765); exhibit types change more often (median 0.77 bank, 0.85
   consulting, 0.97 chart book). Every long run of one composition (up to 7 pages) was a
   sibling template held on purpose: recap pages, segment tables, an appendix of row-label
-  pages, two matching scenario pages. No coder found an accidental run of sameness.
+  pages, two matching scenario pages. No coder found an accidental run of sameness. Does
+  every run of one composition in this plan have a reason a reader would give for it?
 - Sibling pages: runs of 5 to 12 sibling pages exist in the corpus; mismatched y-scales on
   sibling charts were recorded as human defects.
 - Reference pages: consulting topic titles cluster on executive summaries, appendices,
@@ -50,9 +54,11 @@ page, good to about plus or minus 2 to 3.
   consulting 210 of 317, chart book 1 of 30). A section plan that is all charts is unlike
   every house type measured.
 
-## Checks on a draft plan
+## Questions for a draft plan
 
-- Two pages that state the same thing in different words: merge them.
-- Evidence scheduled before the claim it supports, where the house states claims first.
-- A section carved by data source or workstream instead of by argument.
-- A run of one composition with no reason a reader would give for it.
+- Do two pages state the same thing in different words? Would one page serve the reader
+  better?
+- Where the house states claims first, is any evidence scheduled before the claim it
+  supports, and is that order deliberate?
+- Is the section carved by argument, or by data source or workstream? Which does this
+  reader need?

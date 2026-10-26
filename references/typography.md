@@ -1,7 +1,8 @@
 # Typography: questions for holding the house's hierarchy
 
-The guide's type roles, size levels, floors and description are the house's typography;
-these questions are for applying them, never rules that override them.
+The guide's type roles, size levels, floors and description are the house's measured
+typography, the strongest evidence you have: start there, and where a page departs, say why
+in the report. Only measurable defects refuse (fit, floors, fonts). These are questions.
 
 ## Questions
 
@@ -10,16 +11,18 @@ these questions are for applying them, never rules that override them.
   does every run sit on `type.body`? (A generated section held at a 12pt body role, in a
   house whose histogram put its mass at 11, 16 and 18pt, was not filed by the judge with
   `size_hist` carrying the distance.)
-- Does each run land exactly on one role? An intermediate, one-off size reads as an error;
-  the emitter refuses literal sizes, so a new level enters only as a role the completion
-  added at a size the reference shows.
-- How do adjacent levels differ in this house: by size, by weight, by ink, by case? Copy
-  the house's dimension rather than adding a second.
+- Does each run land on one role? The emitter refuses literal sizes (roles, not
+  literals), so a new level enters as a role the completion adds: at a size the reference
+  shows, or at another size with a `why`, which is then tagged `off_ladder` and listed as a
+  build warning with the judge's `size_hist` distance (complete_guide.py). The measured
+  reason to prefer the house's levels is the drift below.
+- How do adjacent levels differ in this house: by size, by weight, by ink, by case? Where
+  this page adds a second dimension, what does it say that the house's one does not?
 - How does this house emphasise inside running text: bold lead-ins (consulting 179 of 317
   pages, bank 26 of 231), colour, or neither? How many words does it emphasise at once?
 - Are casing and alignment held per role across every page? Is body text flush where the
   house sets it flush, and is centring kept for what the house centres?
-- Does any text sit below its family's floor? The solver never descends below
+- Does any text sit below its family's floor? The solver does not descend below
   `max(floor_pt, absolute_floor_pt)`; when body content cannot fit above its floor, the
   page splits or re-arranges.
 - Are fonts the house's? A stand-in face is recorded under `typography.families.substitutes`

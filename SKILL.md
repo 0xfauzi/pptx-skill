@@ -12,18 +12,19 @@ fonts, solve geometry, write valid packages, render, and refuse what is measurab
 No script picks a colour, a chart or a layout for you; when you leave a choice out, the
 build writes a named neutral value and lists it, so you see every choice you did not make.
 
-The house wins. Its habits (title register and length, where claims sit, how it draws and
-marks its exhibits, emphasis, source lines, variety, density) are in the guide you
-complete in step 2. Nothing in this skill asks you to pick a chart type or an annotation
+The house's measured habits are the strongest evidence you have. Start there; where a
+page departs, say why in the report. Only measurable defects refuse. The habits (title
+register and length, where claims sit, how it draws and marks its exhibits, emphasis,
+source lines, variety, density) are in the guide you complete in step 2. Nothing in this skill asks you to pick a chart type or an annotation
 move from a list, and nothing refuses one for its name: every exhibit is reasoned out
 from what the reader must see, the data and the house's own exhibits, and written down
 as a brief before its spec. The tables of corpus counts in the references (emphasis,
 table and composition families by house type) are coders' labels for what they saw,
 evidence beside a choice and never a set to choose from; the lists that remain in code
-name what the code can draw (the emitter's chart kinds, the annotation drawing kinds),
-not what to show. The reference files on design offer questions plus counts from 578
-coded pages of 24 professional decks; where the house has evidence, the house's habit
-decides.
+name what the code can draw (the emitter's chart kinds, the annotation shorthands beside a
+`mark` that draws any OOXML preset), not what to show. The reference files on design
+offer questions plus counts from 578 coded pages of 24 professional decks, with the
+house's own counts beside them.
 
 **Where files go.** Run every command from this skill's directory. Every command writes
 under a work directory of your own outside the skill, named once:
@@ -71,7 +72,8 @@ Deck progress:
 - [ ] 8. Review every render at full size against the house and against each
          exhibit's brief; write located findings; fix; rebuild
          (cap 8 builds per 5-page section; keep the best build)
-- [ ] 9. Annotation: mark each exhibit where the house marks such exhibits; rebuild
+- [ ] 9. Annotation: can each exhibit's claim be found on it? How does the house
+         treat such places? Mark, or say why not; rebuild
 - [ ] 10. Variety report: realised variety against the plan and the house
 - [ ] 11. Validate the package; final report
 ```
@@ -114,8 +116,8 @@ answers are read by looking, and they carry the house's habits into every later 
   table whether it carries a source line. Nothing is chosen from a list. Each stub page
   also shows `file_facts`, what the file itself states (its exhibit structure and the
   marks it draws, with whether each carries text). The run prints `house_habits`: the
-  house's source-line count and the marks its files draw. These decide where your pages
-  carry a source line and how a mark says what it means.
+  house's source-line count and the marks its files draw: the evidence beside your
+  choices of where a page carries a source line and how a mark says what it means.
 - `/variety/content_pages`: which pages are content, read off the renders.
 
 Two answers are easy to get wrong. `null` says the house has no such text or colour
@@ -136,8 +138,10 @@ python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --hei
 python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx"
 ```
 
-Every page names one of the template's layouts, chosen the way the house's past pages use
-them. A PDF reference builds with `--chrome draw`.
+Every page names one of the template's layouts. Which layout did the house use for pages
+like this, and does this page need the same frame? `layouts` prints how many of the
+reference's slides use each one, an unused layout included. A PDF reference builds with
+`--chrome draw`.
 
 **The reference firm's own chrome.** The template draws the reference house's name and
 logo on every page. When the deck is for that firm, keep them. When it is for another firm
@@ -280,7 +284,7 @@ content. Every field: [references/build-report.md](references/build-report.md).
 ### 8. Review every render
 
 Open every page image in `$DECK_WORK/out/renders/` at full size beside the house's nearest pages.
-Then hold each exhibit to its brief: does the reader see what `reader_must_see` says,
+Then check each exhibit against its brief: does the reader see what `reader_must_see` says,
 in three seconds, without arithmetic? Is the comparison the brief names drawn, the value
 compared against on the exhibit? Are the marks where the claim lives, and does each say
 what it marks? Does the text add what the exhibit cannot? A render that fails its brief
@@ -293,12 +297,13 @@ last one. What to look for and in what order:
 ### 9. Annotation
 
 For each exhibit, take the `marks` line of its brief and the house's own records of
-what it marks (`exhibit_habits.records[].marks`, in words, and the marks its files draw),
-decide where the claim lives on the exhibit, and mark it the way this house marks such
-places: `annotations` on the slide (reference lines, outline boxes,
-bands, brackets, callouts, badges at data positions, rows of figures or logos under the
-categories), or native emphasis (a point fill, an
-emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
+what it marks (`exhibit_habits.records[].marks`, in words, and the marks its files draw).
+Can the claim be found on the exhibit? How does this house treat such places on its
+nearest pages (7 of 291 coded charts are bare)? Where you mark, the means are open:
+`annotations` on the slide (reference lines, outline boxes, bands, brackets, callouts,
+badges, rows of figures or logos under the categories, or a `mark` in any OOXML preset or
+line end, anchored at data positions or on any element's box), or native emphasis (a
+point fill, an emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
 or covers the host's text. Ink a mark in the house's look-here colour, `color.emphasis`
 (answered in step 2), not `color.negative`, which colours a bad value; where the house
 has none, its rule or ink role.
@@ -313,9 +318,11 @@ answer it in the report: a red circle with no word beside it read to a blind rat
 model's attempt to annotate. A named explanation that is not there is refused. Kinds, anchors and four worked exhibits:
 [references/chart-recipes.md](references/chart-recipes.md) ("Marks at data positions").
 
-Source lines follow the house's count, not a habit of your own: the build warns
-`source line the house rarely carries` on a page with one where under half the house's
-data pages carry one, and the brief prints both counts. An illustrative-figures note the
+Source lines: the build warns `no source line` on a data page without one where at least
+half of the house's data pages carry one (or the habit is unmeasured), quoting the house's
+count; answer it in the report, adding one or saying why this page carries none. A page
+with a source line is never a departure, and the brief prints the deck's count beside the
+house's. An illustrative-figures note the
 user asks for goes where the house puts notes; say where in the report.
 
 ### 10. Variety report
@@ -350,6 +357,10 @@ EBITDA), round figures and years once each: keep every one your own data or brie
 produces, and check any figure among them you did not compute. The firm's own name in
 the chrome is not leakage; it is the `firm_chrome` choice in step 3.
 
+Read `judge.components` in the build report: a deck nearer another house than its
+reference shows which components carry the distance. Fix what it names, or say in the
+report why it stands; a deck filed under its house is not thereby finished either.
+
 The final report states: template and layouts chosen and why; what was measured, what you
 completed by judgement (with confidence), what was substituted (fonts), and what the user
 must supply (placeholder figures, logos); every page's status and scale; open findings from
@@ -370,15 +381,15 @@ Context for every page:
 - the data, with every stated figure computed.
 
 Questions to answer before writing the spec:
-- What is the one thing the reader should leave with, and which slot of THIS house carries
-  it: title, lead-in, sidebar, takeaway band, kicker, units line, row labels?
+- What should the reader leave with: the page's message, or what they look up on a
+  reference page? Which slot of THIS house carries it (`guide.titles.claims_elsewhere`;
+  the corpus found titles, lead-ins, sidebars, takeaway bands, kickers, units lines, row
+  labels), or does this page need somewhere else?
 - Is this a page of argument or of reference?
-- Which element proves the message most directly, and is its size that rank? Where does the
-  eye finish?
-- If blocks are co-equal: a comparison (equal panels, one scale, one order) or unrelated
-  facts (rank and size them)?
-- Table, chart, diagram or structured text: will the reader look up, compare, follow or
-  match?
+- Does each block's size say how much it matters? Where does the eye finish?
+- If blocks are co-equal: are they a comparison (pages and panels meant to be compared
+  share one scale and one order) or unrelated facts?
+- What will the reader do with this content, and what form serves that?
 - What is the data's shape, in its own terms? Which forms could show the comparison the
   reader must make, and what does each ask of the reader's eye? Which does the house's
   nearest exhibit suggest, and where must this one depart? If the house never showed
@@ -414,8 +425,6 @@ around a refusal by changing the guide.
 - No content from a past deck that the user did not supply for this deck (the build's
   `leakage` report lists every candidate); company files, guides, digests and libraries
   stay in `$DECK_WORK`, outside this skill.
-- A deck nearer another house than its reference is not finished; a deck filed under its
-  house is not thereby finished either.
 
 ## Files
 

@@ -1,17 +1,30 @@
 # House specimen as examples
 
-Fourteen pages converted from a default house specimen of the predecessor system
-(role-only page models, with their own datasets). Each file is a one-slide deck in the shape of
-`examples/keybank-section.deck.json`: `slides[].id`, `layout`, `notes` (the specimen's
-intent), `spec.root`, and `styling` / `charts` / `rules` where the page has them. Every
-value is a token role; nothing here carries a colour, a size or a coordinate.
+Fourteen pages of one other house: a default house specimen of a predecessor system,
+converted to role-only page models with their own datasets. Each file is a one-slide deck in
+the shape of `examples/keybank-section.deck.json`: `slides[].id`, `layout`, `notes` (the
+specimen's intent), `spec.root`, and `styling` / `charts` / `rules` where the page has
+them. Every value is a token role; nothing here carries a colour, a size or a coordinate.
 
-Each page is named for what it shows, which is not a menu of page types to pick from:
-your page starts from its brief and the house's nearest pages. Read a specimen for how its
-spec is built (regions, weights, roles, a chart's techniques) when your brief needs the
-same construction, and build against the reference you are matching. They were authored for a 16:9 house page with house type
-sizes; on another reference they are a starting arrangement, not a page that fits (see
-"On keybank" below).
+They are one house's answers to 14 intents: things to look at and depart from, not seeds
+and not a menu of page types. Look at your own house's nearest page first (its renders,
+gallery and digest), name what the specimen does differently, then build from your house.
+Read a specimen for how its spec is built (regions, weights, roles, a chart's techniques)
+when your page needs the same construction. They were authored for a 16:9 house page with
+house type sizes; on another reference they do not fit as written (see "On keybank" below).
+
+## The specimen house's own habits
+
+What these 14 pages do is this one house's practice, counted here so it can be told apart
+from yours:
+
+- a kicker over the title on 13 of 14 pages (all but the section opener, 01); a kicker or
+  subtitle is on 64 of 231 coded bank pages and 265 of 317 consulting pages;
+- a filled takeaway band on 4 (08, 09, 10, 13);
+- a source line on 12 of 14 (not 01 or 02);
+- a rule element (a hairline closing a column or heading, or a decor rule) on 12 of 14;
+- a table on 10 of 14 and a native chart on 5 (04, 05, 06, 07, 12), the football field on
+  09 drawn as a component.
 
 ## Pages
 
@@ -83,20 +96,23 @@ imports the predecessor system).
 ## On keybank (4:3, 24pt title, 12pt tables)
 
 Built with `scripts/build_deck.py examples/house/<file> --guide keybank.guide.json
---template keybank-template.pptx --reference keybank.pptx` on 2026-10-20. Status is the
-build's; "filed" is the judge's `filed_under_reference`.
+--template keybank-template.pptx --reference keybank.pptx` on 2026-10-20; rows 02 and 09
+re-read on 2026-10-26 from a fresh extraction of keybank (the same result on main,
+3952e74). Status is the build's; "filed" is the judge's `filed_under_reference`. A title
+that needs more lines than the band holds is now the reason a page reports first; the
+overflow listed beside it is still there.
 
 | Page | Status | Scale | Title lines (band holds 1) | Filed | What does not fit |
 |---|---|---|---|---|---|
 | 01 | unfittable | 0.99 | (no title band) | no | el-section-title and grp-content-0-body cross the reference's top-rule zone by 1,828 EMU |
-| 02 | fit | 0.98 | 1 | no (nearest house is not keybank) | nothing; render reads cleanly |
+| 02 | unfittable | 0.98 | 1 | no (the nearest house is keybank; judge 0.149) | the three decision bodies grp-decide-0-body to grp-decide-2-body each cross the footer zone (`chrome-5:footer`) by 87,301 EMU and the footer rule's zone (`chrome-4:rule`) by 88,215 EMU; the title fits |
 | 03 | unfittable | 0.98 | 2 | no | band-history runs past the page |
 | 04 | unfittable | 0.99 | 1 | no | el-segment-table's columns need 404,607 EMU more than its box; the source line crosses the footer rule zone by 44,127 EMU |
 | 05 | unfittable | 0.98 | 2 | no | el-trend-table runs past the page |
 | 06 | unfittable | 0.98 | 2 | no | only the two-line title, crossing the top-rule zone; the body fits |
 | 07 | fit | 1.00 | 1 | yes | solver fit, but the waterfall is left 266,789 EMU tall (read from the emitted pptx): the two text columns and the 7-row table take the page, so the chart is a sliver. Not a usable page on keybank. |
 | 08 | unfittable | 0.98 | 2 | no | 17-row table measures 9,854,046 EMU tall (company names wrap to 3 lines in keybank's 12pt cells); 3 rows fit; even the declared split at row 9 does not |
-| 09 | unfittable | 1.00 | 2 | no | text, 7-row table and note leave the football field a box of height 0; band-body over by 495,645 EMU |
+| 09 | refused before building | n/a | n/a | n/a | the text, 7-row table and note leave the football field component a box of 8,382,000 x 0 EMU, and the build refuses the component by name before solving (the 2026-10-20 row read unfittable at 1.00, band-body over by 495,645 EMU; which later change moved it was not traced) |
 | 10 | unfittable | 0.98 | 2 | no | band-shortlist runs past the page |
 | 11 | unfittable | 0.98 | 2 | no | each card row is as tall as its tallest card, which pushes band-reading 2,189,204 EMU past the page (before the 2026-10-20 fit-truth change the rows were cut to a share and the cards overflowed them unreported, with the rule between card rows rounded to zero height) |
 | 12 | unfittable | 0.98 | 2 | no | the two-line title, crossing the top-rule zone, and el-league: its fitted rows need 2,727,460 EMU in a 1,436,322 EMU box (unreported before the 2026-10-20 fit-truth change) |
@@ -104,5 +120,6 @@ build's; "filed" is the judge's `filed_under_reference`.
 | 14 | unfittable | 0.99 | 2 | no | band-asks runs past the page |
 
 The specimen was composed for a 16:9 page; keybank is 4:3 with 12pt table cells and a
-one-line title band. These are reported, not forced: to use a page on keybank, shorten
-the title to one line and drop one exhibit or split the page.
+one-line title band, and 1 of 14 pages (07) fits as written. These are reported, not
+forced: a page built from your house's own nearest page starts from its proportions
+instead.
