@@ -1922,6 +1922,10 @@ Extractor.run_raster = _raster_run
 #: size included, each the model's to choose. Floors are limits, not look: each family
 #: carries the product safety floor and no floor_pt, since nothing was measured.
 BLANK_OPEN = (
+    ("/look_brief", ("the look brief, written before any other answer: who reads the deck and where, the subject's own world, the data's "
+                     "character, the density it calls for and why, the look in words, what each colour means, why the type ladder is what "
+                     "it is, and what you rejected; references/no-reference-design.md walks the reasoning, complete_guide.py --shapes "
+                     "gives the keys")),
     ("/reference/page", ('the page size, {"width_emu": int, "height_emu": int, "why": "..."}: 16:9 at 13.333 x 7.5 in is 12192000 x 6858000 EMU, '
                          "4:3 at 10 x 7.5 in is 9144000 x 6858000; choose for where the deck will be shown")),
     ("/typography/families", 'the faces, {"major": "<face>", "minor": "<face>"}: installed faces only (preflight.py lists them), so every fit is measured'),

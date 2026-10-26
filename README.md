@@ -30,7 +30,8 @@ behind each port recorded in `PORT_AUDIT.md`.
 ## The path, in one paragraph
 
 Render the reference and look at it; triage a PDF first. With no reference, make a blank
-draft (`extract_style.py --blank`), choose the whole look, and skip the round trip; the
+draft (`extract_style.py --blank`), reason the look out and write it as a look brief
+(`references/no-reference-design.md`), choose the whole look, and skip the round trip; the
 build then runs every hard limit and reports "no reference" wherever it would compare. Extract a guide draft
 (`extract_style.py`) and answer its open addresses by looking (`complete_guide.py`),
 including the reference's title register, its exhibit digest (`gallery.py digest`: every

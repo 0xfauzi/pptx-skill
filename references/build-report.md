@@ -93,7 +93,8 @@ Listed per page before the figures. A refusal turns a fit page `unfittable` with
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
-or says no chart on the page declares one); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
+or says no chart on the page declares one); `chart label breaks mid-word`; `emitted text overflows`;
+`renderer divergence: text wrapped`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
@@ -146,6 +147,14 @@ with the scaled pitch, spacing, tracking and inset. After the emit the build rea
 back and measures every text element and table against its solved box; any shape that
 outgrows it refuses the page as `emitted text overflows`. Line breaks are written as the
 solver measured them, so PowerPoint cannot re-break the text.
+
+The render is then read for the lines each solved text box was drawn in (`slides[].drawn_lines`:
+per box `{"written", "drawn"}`, or why it was not found: its words are not one run in the
+render, or are drawn more than once). A box drawn in more lines than written refuses the
+page as `renderer divergence: text wrapped`, naming the lines as drawn: the renderer set a
+measured line wider than the ruler did, and the box runs below its measured height. Shorten
+the text or widen the box so the line that wrapped has room. Without a render
+(`--no-render`) nothing is checked, and `drawn_lines` says why.
 
 ## Contrast
 

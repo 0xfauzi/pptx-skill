@@ -75,6 +75,10 @@
    "check": "Pass or fail: extract_style.py --blank; complete_guide.py writes the guide with core_open [] and still_open []; every completed value carries value_provenance model_choice."
   },
   {
+   "statement": "Before answering the look, the agent writes a look brief from references/no-reference-design.md: audience, occasion, the subject's world, the data's character, a density target with its why, the look in words, one meaning per colour, the ladder's rationale from the densest page, and what was rejected; the response shows it.",
+   "check": "Pass or fail: the completion carries /look_brief and complete_guide.py accepts it (a missing part or a placeholder is refused). Read it against the guide: each colour meaning names a role the pages use for that meaning, and the ladder's smallest rung is the densest page's text; the brief is never scored."
+  },
+  {
    "statement": "No corpus figure is copied into the look as a default, and no other deck's look is borrowed without the user naming it.",
    "check": "Read the completion's whys: each states a reason for this deck, never a corpus count as the value."
   },

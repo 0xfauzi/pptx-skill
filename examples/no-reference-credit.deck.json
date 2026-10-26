@@ -1,0 +1,1376 @@
+{
+ "slides": [
+  {
+   "id": "p1-summary",
+   "layout": "Blank",
+   "title": {
+    "register": "topic"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Credit profile"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Financial summary, FY2021 to FY2025"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "fin_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Five-year financial summary"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "fin_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$m unless stated; fiscal years to December; CAGR FY2021 to FY2025"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "fin",
+           "kind": "table",
+           "weight": 1.0,
+           "table": {
+            "columns": [
+             {
+              "key": "l",
+              "label": "",
+              "value_kind": "text"
+             },
+             {
+              "key": "fy2021",
+              "label": "FY2021",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2022",
+              "label": "FY2022",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2023",
+              "label": "FY2023",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2024",
+              "label": "FY2024",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2025",
+              "label": "FY2025",
+              "value_kind": "number"
+             },
+             {
+              "key": "cagr",
+              "label": "CAGR (%)",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Volume",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Carloads (thousands)",
+              "182",
+              "191",
+              "204",
+              "199",
+              "213",
+              "4.0"
+             ],
+             [
+              "Revenue per carload ($)",
+              "1,070",
+              "1,049",
+              "1,048",
+              "1,059",
+              "1,044",
+              "(0.6)"
+             ],
+             [
+              "Revenue ($m)",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Intermodal",
+              "61.4",
+              "66.0",
+              "72.8",
+              "70.1",
+              "78.5",
+              "6.3"
+             ],
+             [
+              "Chemicals",
+              "44.2",
+              "47.9",
+              "51.3",
+              "53.0",
+              "56.6",
+              "6.4"
+             ],
+             [
+              "Agriculture",
+              "38.7",
+              "36.2",
+              "40.9",
+              "42.5",
+              "41.8",
+              "1.9"
+             ],
+             [
+              "Aggregates",
+              "27.5",
+              "29.8",
+              "31.1",
+              "30.4",
+              "33.2",
+              "4.8"
+             ],
+             [
+              "Coal",
+              "22.9",
+              "20.4",
+              "17.6",
+              "14.8",
+              "12.3",
+              "(14.4)"
+             ],
+             [
+              "Total revenue",
+              "194.7",
+              "200.3",
+              "213.7",
+              "210.8",
+              "222.4",
+              "3.4"
+             ],
+             [
+              "Growth (%)",
+              "",
+              "2.9",
+              "6.7",
+              "(1.4)",
+              "5.5",
+              ""
+             ],
+             [
+              "Profit ($m)",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Operating expenses",
+              "136.4",
+              "139.3",
+              "146.8",
+              "146.6",
+              "150.0",
+              "2.4"
+             ],
+             [
+              "EBITDA",
+              "58.3",
+              "61.0",
+              "66.9",
+              "64.2",
+              "72.4",
+              "5.6"
+             ],
+             [
+              "EBITDA margin (%)",
+              "29.9",
+              "30.5",
+              "31.3",
+              "30.5",
+              "32.6",
+              ""
+             ],
+             [
+              "Operating ratio (%)",
+              "70.1",
+              "69.5",
+              "68.7",
+              "69.5",
+              "67.4",
+              ""
+             ],
+             [
+              "Cash flow ($m)",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Capex",
+              "24.1",
+              "26.5",
+              "28.0",
+              "25.7",
+              "29.9",
+              "5.5"
+             ],
+             [
+              "Cash interest",
+              "14.2",
+              "13.8",
+              "15.9",
+              "17.1",
+              "16.4",
+              "3.7"
+             ],
+             [
+              "Cash taxes",
+              "4.0",
+              "4.6",
+              "5.2",
+              "4.9",
+              "6.1",
+              "11.1"
+             ],
+             [
+              "Free cash flow",
+              "16.0",
+              "16.1",
+              "17.8",
+              "16.5",
+              "20.0",
+              "5.7"
+             ],
+             [
+              "Capex / revenue (%)",
+              "12.4",
+              "13.2",
+              "13.1",
+              "12.2",
+              "13.4",
+              ""
+             ],
+             [
+              "Free cash flow / EBITDA (%)",
+              "27.4",
+              "26.4",
+              "26.6",
+              "25.7",
+              "27.6",
+              ""
+             ],
+             [
+              "Credit",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Net debt at year end ($m)",
+              "228.0",
+              "226.5",
+              "238.0",
+              "252.4",
+              "230.2",
+              "0.2"
+             ],
+             [
+              "Net debt / EBITDA (x)",
+              "3.91",
+              "3.71",
+              "3.56",
+              "3.93",
+              "3.18",
+              ""
+             ],
+             [
+              "EBITDA / cash interest (x)",
+              "4.11",
+              "4.42",
+              "4.21",
+              "3.75",
+              "4.41",
+              ""
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "rows": [
+               9,
+               13,
+               20
+              ],
+              "fill_role": "keep",
+              "bold": true
+             },
+             {
+              "rows": [
+               10,
+               14,
+               15,
+               21,
+               22
+              ],
+              "fill_role": "keep",
+              "italic": true,
+              "bold": false
+             },
+             {
+              "columns": [
+               "fy2025"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             },
+             {
+              "rows": [
+               10
+              ],
+              "columns": [
+               "fy2024"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.negative",
+              "bold": false
+             },
+             {
+              "rows": [
+               8
+              ],
+              "columns": [
+               "cagr"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.negative",
+              "bold": false
+             },
+             {
+              "rows": [
+               0,
+               3,
+               11,
+               16,
+               23
+              ],
+              "fill_role": "color.surface_alt",
+              "bold": true
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "fin_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Free cash flow is EBITDA less capex, cash interest and cash taxes, before working capital. Negatives in parentheses."
+            }
+           ]
+          }
+         ],
+         "weight": 2.6
+        },
+        {
+         "type": "region",
+         "id": "notes",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "notes_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Strengths"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Revenue grew 3.4% a year to $222.4m; EBITDA grew faster, 5.6% a year, to $72.4m.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Margin widened from 29.9% to 32.6% and the operating ratio fell from 70.1% to 67.4% as intermodal and chemicals, now 60.7% of revenue, grew over 6% a year.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Free cash flow rose from $16.0m to $20.0m, 27.6% of EBITDA in FY2025.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n4",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Interest cover never fell below 3.75x against a 3.00x minimum.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "risks_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Risks"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n5",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Leverage peaked at 3.93x in FY2024 against a 4.00x maximum, 1.7% of EBITDA from the test; it is 3.18x in FY2025.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n6",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Revenue fell 1.4% in FY2024 (red) as intermodal fell 3.7%; intermodal is the largest and most cyclical line.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n7",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Coal fell 14.4% a year to $12.3m, 5.5% of revenue (red): the one line in decline.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n8",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Capex runs at 12.2% to 13.4% of revenue and cannot fall far without the network suffering.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n9",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "FY2025 in green; red marks a fall."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company management accounts, illustrative figures supplied for this book."
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "p2-leverage",
+   "layout": "Blank",
+   "title": {
+    "register": "topic"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Credit profile"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Leverage and covenant headroom"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "lev_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Net debt / EBITDA against the covenant maximum"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "lev_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "x, tested at each fiscal year end; FY2024 in red, the tightest year"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "lev",
+           "kind": "chart",
+           "weight": 1.0
+          },
+          {
+           "type": "element",
+           "id": "build",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "l",
+              "label": "",
+              "value_kind": "text"
+             },
+             {
+              "key": "fy2021",
+              "label": "FY2021",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2022",
+              "label": "FY2022",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2023",
+              "label": "FY2023",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2024",
+              "label": "FY2024",
+              "value_kind": "number"
+             },
+             {
+              "key": "fy2025",
+              "label": "FY2025",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Net debt ($m)",
+              "228.0",
+              "226.5",
+              "238.0",
+              "252.4",
+              "230.2"
+             ],
+             [
+              "EBITDA ($m)",
+              "58.3",
+              "61.0",
+              "66.9",
+              "64.2",
+              "72.4"
+             ],
+             [
+              "Net debt / EBITDA (x)",
+              "3.91",
+              "3.71",
+              "3.56",
+              "3.93",
+              "3.18"
+             ],
+             [
+              "Headroom to 4.00x (%)",
+              "2.2",
+              "7.2",
+              "11.1",
+              "1.7",
+              "20.5"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "rows": [
+               2
+              ],
+              "fill_role": "keep",
+              "bold": true
+             },
+             {
+              "rows": [
+               3
+              ],
+              "fill_role": "keep",
+              "italic": true,
+              "bold": false
+             },
+             {
+              "rows": [
+               3
+              ],
+              "columns": [
+               "fy2024"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.negative",
+              "bold": true
+             },
+             {
+              "columns": [
+               "fy2025"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "lev_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Headroom: the share by which EBITDA could fall before net debt / EBITDA reaches 4.00x."
+            }
+           ]
+          }
+         ],
+         "weight": 1.25
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "cov_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Covenant tests"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "cov_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "covenant level in amber; FY2025 in green"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "cov",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "t",
+              "label": "Test",
+              "value_kind": "text"
+             },
+             {
+              "key": "c",
+              "label": "Covenant",
+              "value_kind": "number"
+             },
+             {
+              "key": "a24",
+              "label": "FY2024",
+              "value_kind": "number"
+             },
+             {
+              "key": "a25",
+              "label": "FY2025",
+              "value_kind": "number"
+             },
+             {
+              "key": "h",
+              "label": "Headroom (%)",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Net debt / EBITDA (x)",
+              "4.00 max",
+              "3.93",
+              "3.18",
+              "20.5"
+             ],
+             [
+              "EBITDA / cash interest (x)",
+              "3.00 min",
+              "3.75",
+              "4.41",
+              "32.0"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "columns": [
+               "c"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent2",
+              "bold": false
+             },
+             {
+              "rows": [
+               0
+              ],
+              "columns": [
+               "a24"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.negative",
+              "bold": true
+             },
+             {
+              "columns": [
+               "a25"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "cov_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Headroom: the share by which FY2025 EBITDA could fall before the test fails."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mix_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Revenue by commodity"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mix_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$m and share of revenue (%); FY2025 in green"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mix",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "Commodity",
+              "value_kind": "text"
+             },
+             {
+              "key": "r21",
+              "label": "FY2021",
+              "value_kind": "number"
+             },
+             {
+              "key": "s21",
+              "label": "Share",
+              "value_kind": "number",
+              "total": "none"
+             },
+             {
+              "key": "r25",
+              "label": "FY2025",
+              "value_kind": "number"
+             },
+             {
+              "key": "s25",
+              "label": "Share",
+              "value_kind": "number",
+              "total": "none"
+             },
+             {
+              "key": "g",
+              "label": "CAGR (%)",
+              "value_kind": "number",
+              "total": "none"
+             }
+            ],
+            "rows": [
+             [
+              "Intermodal",
+              "61.4",
+              "31.5",
+              "78.5",
+              "35.3",
+              "6.3"
+             ],
+             [
+              "Chemicals",
+              "44.2",
+              "22.7",
+              "56.6",
+              "25.4",
+              "6.4"
+             ],
+             [
+              "Agriculture",
+              "38.7",
+              "19.9",
+              "41.8",
+              "18.8",
+              "1.9"
+             ],
+             [
+              "Aggregates",
+              "27.5",
+              "14.1",
+              "33.2",
+              "14.9",
+              "4.8"
+             ],
+             [
+              "Coal",
+              "22.9",
+              "11.8",
+              "12.3",
+              "5.5",
+              "(14.4)"
+             ],
+             [
+              "Total",
+              "194.7",
+              "100.0",
+              "222.4",
+              "100.0",
+              "3.4"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": true,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "rows": [
+               4
+              ],
+              "columns": [
+               "g"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.negative",
+              "bold": false
+             },
+             {
+              "columns": [
+               "r25",
+               "s25"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "mix_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Intermodal and chemicals rose from 54.2% to 60.7% of revenue. Shares are rounded."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "debt_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Debt at FY2025 year end"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "debt_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$m; liquidity $46.2m: $16.2m cash and $30.0m undrawn revolver"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "debt",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "t",
+              "label": "Facility",
+              "value_kind": "text"
+             },
+             {
+              "key": "a",
+              "label": "$m",
+              "value_kind": "number"
+             },
+             {
+              "key": "p",
+              "label": "Pricing",
+              "value_kind": "text",
+              "align": "right"
+             },
+             {
+              "key": "m",
+              "label": "Due",
+              "value_kind": "number"
+             },
+             {
+              "key": "x",
+              "label": "x EBITDA",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Term loan B",
+              "185.0",
+              "SOFR + 3.25%",
+              "2029",
+              ""
+             ],
+             [
+              "Revolver ($50.0m)",
+              "20.0",
+              "SOFR + 2.75%",
+              "2028",
+              ""
+             ],
+             [
+              "Equipment notes",
+              "41.4",
+              "5.10% fixed",
+              "2031",
+              ""
+             ],
+             [
+              "Gross debt",
+              "246.4",
+              "",
+              "",
+              "3.40"
+             ],
+             [
+              "Cash",
+              "(16.2)",
+              "",
+              "",
+              ""
+             ],
+             [
+              "Net debt",
+              "230.2",
+              "",
+              "",
+              "3.18"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "rows": [
+               3,
+               5
+              ],
+              "fill_role": "keep",
+              "bold": true
+             }
+            ]
+           }
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company management accounts, illustrative figures supplied for this book."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "lev": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "FY2021",
+      "FY2022",
+      "FY2023",
+      "FY2024",
+      "FY2025"
+     ],
+     "number_format": "0.00",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Net debt / EBITDA (x)",
+       "values": [
+        3.91,
+        3.71,
+        3.56,
+        3.93,
+        3.18
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_end",
+        "number_format": "0.00",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       },
+       "points": [
+        {
+         "index": 3,
+         "fill_role": "color.negative"
+        }
+       ]
+      },
+      {
+       "name": "Covenant maximum 4.00x",
+       "values": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0
+       ],
+       "plot_type": "LINE",
+       "line_role": "color.accent2",
+       "line_width_pt": 1.5,
+       "marker": {
+        "style": "none"
+       },
+       "smooth": false,
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 4.2
+      }
+     },
+     "gap_width": 70,
+     "overlap": 0,
+     "legend": {
+      "position": "t",
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "plot_fill_role": "none",
+     "title": "none"
+    }
+   }
+  }
+ ]
+}

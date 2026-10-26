@@ -1,0 +1,142 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {
+   "id": "p1-summary",
+   "intent": "the whole credit profile in one place",
+   "message": "Five years of volume, revenue by commodity, profit, cash flow and leverage, with the credit notes beside them",
+   "composition": "new:table-beside-notes",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "every line of the credit profile for all five years, grouped by block, with each line's growth rate at the end",
+     "comparison": "each year against the years beside it, and each line's five-year growth against the others",
+     "data": "19 lines in five blocks by five fiscal years, mixed units (thousands, dollars, millions, percent, multiples), plus a growth column",
+     "forms_considered": [
+      {
+       "form": "one long table with block heads",
+       "reason": "chosen: every figure the committee checks sits in one grid read across a row and down a year"
+      },
+      {
+       "form": "small multiple line charts per metric",
+       "reason": "shows trends but hides the figures a lender quotes and checks"
+      },
+      {
+       "form": "two tables, income and credit",
+       "reason": "splits revenue from the leverage it services, which the reader compares"
+      }
+     ],
+     "chosen_form": "one long table with block heads",
+     "why": "a credit reader reads line by line and checks figures across years; one ruled grid with block heads shows the profile without turning",
+     "marks": "block heads on a pale band; the FY2021 to FY2025 growth column set apart; the revenue fall in FY2024 and coal's decline in brick red, which the notes column names"
+    }
+   ]
+  },
+  {
+   "id": "p2-leverage",
+   "intent": "the covenant position and where the revenue comes from",
+   "message": "Leverage peaked at 3.93x in FY2024, 1.7% from the covenant, and fell to 3.18x as intermodal and chemicals reached 60.7% of revenue",
+   "composition": "new:chart-beside-tables",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "leverage in each year against the 4.00x maximum, and how close FY2024 came",
+     "comparison": "each year's net debt to EBITDA against the covenant maximum",
+     "data": "one ratio by five fiscal years and one constant threshold",
+     "forms_considered": [
+      {
+       "form": "column chart with a threshold line",
+       "reason": "chosen: the gap between each column and the line is the headroom, seen at once"
+      },
+      {
+       "form": "table of leverage by year",
+       "reason": "carries the figures but the reader must subtract to see the headroom"
+      },
+      {
+       "form": "line chart of leverage",
+       "reason": "five points draw a line, but a ratio at each test date is a discrete reading"
+      }
+     ],
+     "chosen_form": "column chart with a threshold line",
+     "why": "the covenant is a line the ratio must stay under; columns against that line make the tight year visible",
+     "marks": "values on every column; the FY2024 column in brick red as the tightest; the covenant line in amber, named in the legend"
+    },
+    {
+     "reader_must_see": "the net debt and EBITDA behind each year's ratio, and the headroom each year left",
+     "comparison": "each year's ratio and headroom against the years beside it, the ratio against its two inputs",
+     "data": "two amounts, a ratio and a headroom percent by five fiscal years",
+     "forms_considered": [
+      {
+       "form": "four-line table aligned under the chart's years",
+       "reason": "chosen: the figures behind each column sit under it and the reader checks the ratio"
+      },
+      {
+       "form": "data labels for net debt and EBITDA on the chart",
+       "reason": "three labels per column would crowd five columns and still drop the headroom"
+      }
+     ],
+     "chosen_form": "four-line table aligned under the chart's years",
+     "why": "a lender recomputes the ratio from its inputs; the table puts them under the column they explain",
+     "marks": "the ratio row bold; FY2024's 1.7% headroom in brick red"
+    },
+    {
+     "reader_must_see": "both covenant tests for the last two years with the headroom left in FY2025",
+     "comparison": "each test's actual against its covenant, FY2024 against FY2025",
+     "data": "two tests by covenant level, two years and a headroom percent",
+     "forms_considered": [
+      {
+       "form": "covenant test table",
+       "reason": "chosen: a lender reads covenant compliance as a table of test, level and actual"
+      },
+      {
+       "form": "bullet charts per test",
+       "reason": "draws headroom but drops the levels the credit agreement states"
+      }
+     ],
+     "chosen_form": "covenant test table",
+     "why": "the committee checks each test against its stated level, which a table gives directly",
+     "marks": "the covenant column in amber; the FY2024 leverage reading in brick red"
+    },
+    {
+     "reader_must_see": "how the revenue mix moved between FY2021 and FY2025, and that coal shrank while the rest grew",
+     "comparison": "each commodity's FY2021 revenue and share against FY2025",
+     "data": "five commodities by two years, revenue and share, a growth rate and a total",
+     "forms_considered": [
+      {
+       "form": "mix table with shares and a totals row",
+       "reason": "chosen: revenue, share and growth read in one row and the total ties out"
+      },
+      {
+       "form": "stacked column of the mix",
+       "reason": "needs five colours, one per commodity, and gives colour five meanings"
+      }
+     ],
+     "chosen_form": "mix table with shares and a totals row",
+     "why": "the reader needs the shares and the totals as figures; a table keeps colour for meaning",
+     "marks": "coal's growth rate in brick red; the totals row bold under a rule"
+    },
+    {
+     "reader_must_see": "what the debt is, what it costs, when it falls due, and the cash netted against it",
+     "comparison": "each facility against the others by size, pricing and maturity, gross against net debt",
+     "data": "three facilities by amount, pricing and maturity, cash, gross and net debt with their multiples of EBITDA",
+     "forms_considered": [
+      {
+       "form": "debt table with gross and net lines",
+       "reason": "chosen: the capital structure reads down to net debt, the figure the covenant tests"
+      },
+      {
+       "form": "maturity bar chart",
+       "reason": "draws when debt falls due but drops pricing and the netting of cash"
+      }
+     ],
+     "chosen_form": "debt table with gross and net lines",
+     "why": "the committee reads the structure top to bottom and checks it nets to the net debt in the covenant test",
+     "marks": "gross and net debt bold"
+    }
+   ]
+  }
+ ]
+}

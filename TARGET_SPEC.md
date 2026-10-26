@@ -597,8 +597,12 @@ name, or asks which to follow; decks are never pooled.
 No reference is a first-class path, not a fallback. `extract_style.py --blank` writes a
 draft in which every address of the look is open, the page size included, with the open
 set as data (`BLANK_OPEN`); every answer carries provenance `model_choice`, and an address
-left open refuses the guide (on this path nothing has a default). The model chooses the
-page size, the faces (installed ones, so fit is measured), a type ladder with nothing
+left open refuses the guide (on this path nothing has a default). Before choosing, the model
+reasons the look out from the audience and occasion, the subject's own world, the content
+and its data, a named brand, and restraint (`references/no-reference-design.md`: reasoning
+with corpus counts, never a default style or a menu), and writes that reasoning as
+`/look_brief`; the completion refuses the brief only when it is missing or a placeholder,
+and never weighs it. The model then chooses the page size, the faces (installed ones, so fit is measured), a type ladder with nothing
 under the 7pt absolute floor, the palette, the spacing scale and margins, the chrome or
 none, how tables and charts are drawn, and the look in words. The template is a blank
 package at the chosen page size, built with `--chrome draw`. The build runs every hard

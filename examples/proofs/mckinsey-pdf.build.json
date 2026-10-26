@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -223,6 +223,24 @@
     "file": 1,
     "file_structure": "table (1 panel)",
     "verdict": "agree"
+   },
+   "drawn_lines": {
+    "title": {
+     "written": 1,
+     "drawn": 1
+    },
+    "left": {
+     "written": 14,
+     "drawn": 14
+    },
+    "takeaway": {
+     "written": 2,
+     "drawn": 2
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    }
    }
   },
   {
@@ -509,6 +527,100 @@
     "ff-axis": [
      "line width 0.75pt (left out, and the guide's motifs draw no color.rule line)"
     ]
+   },
+   "drawn_lines": {
+    "title": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-mlabel": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl0": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val0": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl1": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val1": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl2": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val2": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl3": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val3": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl4": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val4": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl5": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val5": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-lbl6": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-val6": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-tk0": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-tk1": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-tk2": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-tk3": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ff-tk5": {
+     "written": 1,
+     "drawn": 1
+    },
+    "commentary": {
+     "written": 12,
+     "drawn": 12
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    }
    }
   }
  ],
@@ -714,7 +826,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -752,7 +864,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other firms in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files",
+  "rarity_basis": "13 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/round7/refs/files",
   "chrome_excluded": {
    "mckinsey-calstrs-future-of-boards-2024.pdf": {
     "phrase": 0,
@@ -765,7 +877,7 @@
   "verdict": "possible carry-over: 1 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -797,8 +909,8 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/renders/slide-02.png"
   ]
  },
  "judge": {
@@ -869,26 +981,26 @@
    "max": 0.355
   },
   "others": {
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/45541_Header.pptx": 0.543,
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.275,
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_netflix_financing_pitchbook.pptx": 0.279,
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/themes.pptx": 0.484
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/45541_Header.pptx": 0.543,
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.275,
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_netflix_financing_pitchbook.pptx": 0.279,
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/themes.pptx": 0.484
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/bmo_fairness_opinion_board.pdf",
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_style_on_panel": {
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.79,
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.254,
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.25
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.79,
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.254,
+   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.25
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": false,
@@ -900,7 +1012,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/mk/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/mk/deck/renders"
  }
 }

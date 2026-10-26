@@ -1409,6 +1409,59 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
 # --- measured fit of what the file carries --------------------------------------------------
 
 
+def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: list[list[tuple]]) -> list[dict]:
+    """Each solved text box as the renderer drew it: its words found in the render's word
+    list (pdftotext -bbox, in the order drawn) as one unbroken run, and the lines they sit
+    on counted against the lines the file writes (each paragraph and each break the solver
+    measured). More lines drawn than written means the renderer set a measured line wider
+    than the ruler did and wrapped it: the box overflows below its measured height (on
+    LibreOffice 24.2.7, a 7.5pt line measured 24,110 EMU inside its box was wrapped). Words
+    the render does not hold as one run are reported as not found, never as a fit."""
+    from pptx import Presentation
+    from pptx.oxml.ns import qn as pqn
+    slides = list(Presentation(out).slides)
+    offset = len(slides) - len(emitted)
+    out_pages = []
+    for i, page in enumerate(emit_pages):
+        solved = {el["id"] for el in page["elements"] if el["kind"] == "text"}
+        page_words = words[i] if i < len(words) else []
+        checked, wrapped = {}, []
+        for shape in slides[offset + i].shapes:
+            if shape.name not in solved or not shape.has_text_frame:
+                continue
+            paras = shape.text_frame.paragraphs
+            written = sum(1 + len(p._p.findall(pqn("a:br"))) for p in paras if p.text.strip())
+            tokens = " ".join(p.text for p in paras).split()
+            if not tokens:
+                continue
+            # the render's words inside the box's column, from its top down (a wrapped box runs
+            # below its height, never out of its column), in the order drawn; bullet glyphs
+            # are drawn as words of their own and are not the text
+            glyphs = {b.get("char") for b in shape._element.iter(pqn("a:buChar"))} - {None, ""}
+            x0, x1, top = shape.left, shape.left + shape.width, shape.top
+            seq = [(box, t) for box, t in page_words if x0 - annotate.EMU_PER_PT <= box[0] + box[2] / 2 <= x1 + annotate.EMU_PER_PT
+                   and box[1] + box[3] / 2 >= top and not (t in glyphs or (len(t) == 1 and 0xE000 <= ord(t) <= 0xF8FF))]
+            texts_in = [t for _, t in seq]
+            starts = [k for k in range(len(texts_in) - len(tokens) + 1) if texts_in[k:k + len(tokens)] == tokens]
+            if len(starts) != 1:
+                checked[shape.name] = f"not found: its words are {'not one run' if not starts else 'drawn ' + str(len(starts)) + ' times'} in its column of the render"
+                continue
+            run = seq[starts[0]:starts[0] + len(tokens)]
+            lines: list[tuple[float, list[str]]] = []
+            for box, text in run:
+                if lines and abs(box[1] - lines[-1][0]) < box[3] / 2:
+                    lines[-1][1].append(text)
+                else:
+                    lines.append((box[1], [text]))
+            checked[shape.name] = {"written": written, "drawn": len(lines)}
+            if len(lines) > written:
+                wrapped.append(f"{shape.name}: written in {written} line(s) the solver measured, drawn in {len(lines)} by the renderer "
+                               f"({[' '.join(t) for _, t in lines]}); a measured line was set wider than the ruler measured it. "
+                               "Shorten the text or widen its box, so the line that wrapped has room")
+        out_pages.append({"checked": checked, "wrapped": wrapped})
+    return out_pages
+
+
 def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: dict, ctx: L.Context) -> list[list[dict]]:
     """The written file read back and measured against the solver's boxes, per emitted
     page: every text shape through fingerprint.text_overflows in strict mode (the file's
@@ -2507,7 +2560,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             report["renders"] = {"error": completed.stderr[-500:]}
         unread = None
         words: list = []
-        if annotation_pages:
+        if do_render:
             try:
                 if not Path(pdf).exists():
                     raise annotate.RenderUnread("the render wrote no PDF")
@@ -2516,7 +2569,19 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                     raise annotate.RenderUnread(f"the PDF has {len(words)} page(s) for {len(emitted)} emitted page(s)")
             except annotate.RenderUnread as error:
                 unread = str(error)
-        if unread is not None:
+        if unread is None:
+            # every solved text box against the lines the renderer drew it in
+            offset = len(words) - len(emitted)
+            for entry, found in zip(emitted, drawn_lines(out, emitted, emit_spec["slides"], words[offset:]), strict=True):
+                entry["drawn_lines"] = found["checked"]
+                for f in found["wrapped"]:
+                    entry["problems"].append({"kind": "renderer divergence: text wrapped", "severity": "refusal", "detail": f})
+                if found["wrapped"] and entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", "renderer divergence: text wrapped"
+        else:
+            for entry in emitted:
+                entry["drawn_lines"] = f"not checked: the render's words were not read ({unread})"
+        if unread is not None and annotation_pages:
             # asked for and not done: the words the host draws are unknown, so the page is
             # not passed as if they had been read
             for index, placed in annotation_pages.items():

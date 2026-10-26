@@ -3,6 +3,11 @@
 - LibreOffice fits more text than PowerPoint on 92 of 600 measured boxes; the ruler shrinks
   the width budget (5,933 EMU with the Pillow ruler, 20,234 with HarfBuzz) so a measured
   line never runs long in PowerPoint (600 boxes measured in both).
+- LibreOffice 24.2.7 is not always the looser: a 7.5pt Liberation Sans line measured
+  3,769,677 EMU in a 3,793,787 EMU box (24,110 EMU of slack, more than the HarfBuzz shrink)
+  was wrapped, its box drawn in 3 lines where 2 were written. How often, at which sizes
+  and faces, is unmeasured; the build reads the render's lines per box and refuses the
+  page (`renderer divergence: text wrapped`, build-report.md).
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus

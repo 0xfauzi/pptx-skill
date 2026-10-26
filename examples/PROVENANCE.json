@@ -86,6 +86,12 @@
   "no-reference.deck.json",
   "no-reference.brief.txt",
   "no-reference.figures.py",
-  "proofs/no-reference.build.json"
+  "proofs/no-reference.build.json",
+  "no-reference-credit.completion.json",
+  "no-reference-credit.plan.json",
+  "no-reference-credit.deck.json",
+  "no-reference-credit.brief.txt",
+  "no-reference-credit.figures.py",
+  "proofs/no-reference-credit.build.json"
  ]
 }

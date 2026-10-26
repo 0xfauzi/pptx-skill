@@ -60,6 +60,14 @@ takes `[]` for pages with no furniture, and its entries leave out `slides_presen
 entry is drawn on every page). `/reference/page` takes the page size you choose. The corpus
 counts in the design references are questions beside each choice, never a value to write.
 
+`/look_brief` is open on a blank draft and only there: the reasoning behind the look,
+written first from [no-reference-design.md](no-reference-design.md) (audience, occasion,
+subject world, data character, density with its why, the look, a meaning per colour, the
+ladder's rationale, what was rejected). It is refused when missing, when a part is missing,
+or when a part is a placeholder (TBD, n/a, a repeated word, the shape's own `<...>` text);
+what it argues is never judged. The guide stores it as `look_brief`, provenance
+`model_choice`.
+
 ## Value shapes
 
 Every open address takes the value below; `--check` prints the line for each address it
@@ -92,11 +100,12 @@ value instead. A left-out key never closes anything.
 | `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|t\|r\|l\|tr\|none"}}, "why"} | refused |
 | `/continuation` | what the reference does when a page continues onto the next, read off its pages: in words ("none seen" is an answer), or {"contd_mark": "<the mark as the reference writes it>" or null, "why": "where it is seen, or that none is"} | refused |
 | `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the reference was not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never a prohibition | refused |
+| `/look_brief` | {"audience": "<who reads it>", "occasion": "<where and how it is read>", "subject_world": "<the subject's own materials and conventions, and what you borrow or leave>", "data_character": "<how much data, its shape, exhibits per page>", "density": {"target": "<how dense>", "why": "<why this content and reader call for it>"}, "look": "<the look in words>", "colour_meanings": {"<color role>": "<the one thing it means across the deck>", ...}, "type_ladder": "<why the ladder is what it is, from the densest page>", "rejected": [{"what": "<a look or device considered>", "why": "<why not>"}, ...]}; each answer a phrase of your own, never a placeholder | refused |
 | `/derivation_rules` | a list of sentences | refused |
 | `/titles/register` | see Titles below | refused |
 | `/variety/content_pages` | a list of page numbers | refused |
 | `/exhibit_habits` | never in the patch: answered by --digest DIR | refused |
-| `/chrome` | a list of {"chrome_id": "chrome-1", "kind": "rule\|band\|logo\|label\|page_number\|footer\|date", "box_in": [left, top, width, height] (inches on the page), "slides_present": <pages it is on, at least half the reference's to be drawn>, and as the kind needs: "text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"} (every text kind, page_number included, all four), "fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or "line_role" with "line_width_pt" (rule; a logo placeholder drawn as a line), "image_path" (logo), "anchor": "slide_top\|slide_bottom\|slide_left\|slide_right", "rotation_deg", "why"}. Nothing is filled in for you: the width, colour and text style the emitter would otherwise fall back on are refused by name when left out | refused |
+| `/chrome` | a list of {"chrome_id": "chrome-1", "kind": "rule\|band\|logo\|label\|page_number\|footer\|date", "box_in": [left, top, width, height] (inches on the page), "slides_present": <pages it is on, at least half the reference's to be drawn>, and as the kind needs: "text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"} (every text kind, page_number included, all four), "fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or "line_role" with "line_width_pt" (rule; a logo placeholder drawn as a line), "image_path" (logo), "anchor": "slide_top\|slide_bottom\|slide_left\|slide_right", "rotation_deg", "carries_content" (a band the page sets content on: a title band), "why"}. Nothing is filled in for you: the width, colour and text style the emitter would otherwise fall back on are refused by name when left out | refused |
 | `/composition` | {"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"} | refused |
 | `/notes/<name>` | a string | refused |
 | `/reference/page` | {"width_emu": int, "height_emu": int, "why": "..."} (a guide made with no reference: the page size you choose) | refused |
@@ -261,3 +270,5 @@ open. They show the shape of an answer; they are not answers for another deck, a
 evaluation on either deck holds them out (`evals/holdout.py`).
 `examples/no-reference.completion.json` answers a blank draft: a whole look chosen for a
 three-page deck with no reference, every answer with its why.
+`examples/no-reference-credit.completion.json` answers one for a dense two-page credit
+book, its look brief written first and the guide made from it.

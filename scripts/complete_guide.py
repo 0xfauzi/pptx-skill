@@ -106,6 +106,16 @@ PICTURES_NOTE = '; add "evidence": "pictures" when the reference sets such text 
 #: the one value of a completion's "evidence" member: the answer is read off pictures the
 #: reference pasted (a chart or table as an image), not off its text or shapes
 PICTURES = "pictures"
+#: The look brief a guide made with no reference carries (references/no-reference-design.md):
+#: the reasoning written before the look is chosen. It is refused only when missing or a
+#: placeholder; what it says is never judged.
+LOOK_BRIEF_PHRASES = ("audience", "occasion", "subject_world", "data_character", "look", "type_ladder")
+LOOK_BRIEF_SHAPE = ('{"audience": "<who reads it>", "occasion": "<where and how it is read>", "subject_world": "<the subject\'s own '
+                    'materials and conventions, and what you borrow or leave>", "data_character": "<how much data, its shape, exhibits per '
+                    'page>", "density": {"target": "<how dense>", "why": "<why this content and reader call for it>"}, "look": "<the look in '
+                    'words>", "colour_meanings": {"<color role>": "<the one thing it means across the deck>", ...}, "type_ladder": "<why the '
+                    'ladder is what it is, from the densest page>", "rejected": [{"what": "<a look or device considered>", "why": "<why not>"}, '
+                    '...]}; each answer a phrase of your own, never a placeholder')
 VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/color/roles/color\.(surface|ink|accent1)", COLOR_SHAPE, None),
     (r"/color/roles/color\.emphasis", COLOR_SHAPE,
@@ -151,6 +161,7 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/description", ('{"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the reference was '
      'not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never '
      'a prohibition'), None),
+    (r"/look_brief", LOOK_BRIEF_SHAPE, None),
     (r"/derivation_rules", "a list of sentences", None),
     (r"/titles/register", "see Titles below", None),
     (r"/variety/content_pages", "a list of page numbers", None),
@@ -237,7 +248,60 @@ def shape_error(path: str, value) -> str | None:
         return continuation_error(value)
     if path == "/description":
         return description_error(value)
+    if path == "/look_brief":
+        return look_brief_error(value)
     return None
+
+
+def _template_text(value) -> bool:
+    """A shape's own "<...>" text, copied as the answer."""
+    return isinstance(value, str) and bool(re.search(r"<[^<>]*>", value))
+
+
+def look_brief_error(value) -> str | None:
+    """/look_brief: every part present and each a phrase of the model's own (PLACEHOLDERS and
+    the shape's "<...>" text are no answer). Only a missing or placeholder part refuses: what
+    the brief argues is the model's, and nothing here weighs it."""
+    if not isinstance(value, dict):
+        return f"/look_brief: expected {LOOK_BRIEF_SHAPE}"
+    errors = []
+    missing = [k for k in (*LOOK_BRIEF_PHRASES, "density", "colour_meanings", "rejected") if k not in value]
+    if missing:
+        errors.append(f"{missing} not written")
+
+    def phrase(v, where: str) -> None:
+        err = plan._phrase_error(v, where, plan.BRIEF_MIN_WORDS)
+        if err or _template_text(v):
+            errors.append(err or f"{where}: the shape's own <...> text is no answer, not {v!r}")
+
+    for k in LOOK_BRIEF_PHRASES:
+        if k in value:
+            phrase(value[k], k)
+    if "density" in value:
+        d = value["density"]
+        if not isinstance(d, dict) or set(d) != {"target", "why"}:
+            errors.append(f"density: expected {{\"target\", \"why\"}}, not {d!r}")
+        else:
+            phrase(d["target"], "density target")
+            phrase(d["why"], "density why")
+    if "colour_meanings" in value:
+        cm = value["colour_meanings"]
+        if not isinstance(cm, dict) or not cm:
+            errors.append(f"colour_meanings: one entry or more, each colour role with the one thing it means; not {cm!r}")
+        else:
+            for role, meaning in cm.items():
+                if _template_text(role):
+                    errors.append(f"colour_meanings: {role!r} is the shape's own text, not a colour role")
+                phrase(meaning, f"colour_meanings {role}")
+    if "rejected" in value:
+        rj = value["rejected"]
+        if not isinstance(rj, list) or not rj or not all(isinstance(r, dict) and set(r) == {"what", "why"} for r in rj):
+            errors.append(f"rejected: one entry or more, each {{\"what\", \"why\"}}; not {rj!r}")
+        else:
+            for i, r in enumerate(rj):
+                phrase(r["what"], f"rejected[{i}] what")
+                phrase(r["why"], f"rejected[{i}] why")
+    return ("/look_brief: " + "; ".join(errors)) if errors else None
 
 
 #: the closed choices /continuation once offered: nothing reads them, so a page's
@@ -1047,6 +1111,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         check_color_refs(guide, value if isinstance(value, dict) else {}, path)
     elif path == "/chrome":
         guide["chrome"] = chrome_entries(guide, value)
+    elif path == "/look_brief":
+        guide["look_brief"] = {**value, "provenance": model_prov("the look brief, written before the look was chosen")}
     elif path == "/reference/page":
         w, h = value["width_emu"], value["height_emu"]
         guide["reference"]["page"] = {"width_emu": w, "height_emu": h, "width_in": round(w / 914400, 3), "height_in": round(h / 914400, 3),

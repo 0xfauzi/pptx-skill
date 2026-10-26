@@ -1,4 +1,15 @@
 {
+ "/look_brief": {
+  "audience": "the operator's board and its lenders, who know the business and check each figure against last year",
+  "occasion": "a three-page operating review read on screens before the meeting, then projected in the board room",
+  "subject_world": "ferries live by timetables and harbour charts; the deck borrows only the timetable's habit of one figure per cell read across a row, and leaves out waves, hulls and nautical colour as costume with no job",
+  "data_character": "small and tidy: one five-year revenue series, four routes by two measures with a total, three headline metrics; one exhibit per page is enough",
+  "density": {"target": "moderate: one exhibit and a short text column per page, tables of four to six rows", "why": "three pages, few figures and a projected second reading; packing more per page would only add white space between fewer things"},
+  "look": "calm and analytical: white pages, blue-black Inter, one deep teal that leads and an ochre that points, a teal rule under a sentence title",
+  "colour_meanings": {"color.accent1": "the company's own figures and the structure that carries them: headers, the lead series, the title rule", "color.accent2": "the one place the claim lands: the latest year, the figure the title states", "color.accent3": "context that should recede behind the company's figures", "color.positive": "a signed gain, only in a bridge", "color.negative": "a signed loss, only in a bridge"},
+  "type_ladder": "the densest page is the route table, whose 9pt cells read projected and on screen; footnotes and axis labels sit a step under at 8pt, above the 7pt floor; body at 11pt, headings at 14pt and a 22pt title that fits a claim on two lines",
+  "rejected": [{"what": "a navy and white maritime palette", "why": "it reads as costume and gives navy no meaning beyond ships"}, {"what": "big numbers for the three headline metrics", "why": "alone they lose the year each is compared with, which the board reads first"}, {"what": "gridlines on the charts", "why": "labelled marks carry the values, so the grid would only add lines"}]
+ },
  "/reference/page": {"width_emu": 12192000, "height_emu": 6858000, "why": "a 16:9 deck read on screens and projected in a board room"},
  "/typography/families": {"major": "Inter", "minor": "Inter"},
  "/typography/roles/type.title": {"size_pt": 22, "weight": 700, "italic": false, "family": "major", "alignment": "left", "case": "as_typed", "ink_role": "color.ink", "line_spacing": 1.1, "space_before_pt": 0, "space_after_pt": 0, "why": "a sentence title that states the page's claim, bold and dark so it reads first"},

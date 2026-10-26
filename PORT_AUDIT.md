@@ -622,3 +622,21 @@ by a full build (capacity does not place annotations); two brackets at one heigh
 end to end; a closer installed face than fc-match's (writing that face in the file is the
 user's call); the round trip not naming a lead-in moved into another zone; judge filing
 flipping on a 0.004 change; describing every reference page in the digest.
+
+### Round 7, part 4: design reasoning with no reference, and lines the renderer re-wrapped
+
+| Item | Before (reproduced on b75b108 and 722266f) | Now | Proof | Fix broken |
+|---|---|---|---|---|
+| No-reference guidance | the blank draft listed open addresses and pointed at the corpus questions; nothing asked who reads the deck, the subject's world, the data or the density | `references/no-reference-design.md`: five questions (audience and occasion, the subject's own world and when borrowing is costume, the content and data with the density they call for, a named brand, restraint: one meaning per colour, the ladder from the densest page, the measured floors), each with the corpus counts by genre and what is unmeasured; never a style or a menu | SKILL.md's no-reference branch links it (499 lines) | |
+| Look brief | a blank completion with no reasoning applied cleanly (`core_open []`) | `/look_brief` is open on a blank draft only (`BLANK_OPEN`); `complete_guide.look_brief_error` refuses a missing brief, a missing part, or a placeholder (PLACEHOLDERS, a repeated word, the shape's own `<...>` text), never what it argues; stored as `look_brief`, provenance `model_choice`; refused as not open on a reference draft | the brief-less completion refused (`core addresses still open: ['/look_brief']`); TBD, "n/a n/a", `<the look in words>`, `{}` colour meanings, a bare "dense" density, "same same same" each refused by name | /look_brief out of BLANK_OPEN: the brief-less completion applies (rc 0); the validator returning None: both placeholder completions apply (rc 0) |
+| Lines re-wrapped by the renderer | the no-reference source line measured at 2 lines and drawn at 3 (not reproduced last round). Reproduced here: a 7.5pt Liberation Sans footnote measured 3,769,677 EMU in a 3,793,787 EMU box, the file written in 2 lines, LibreOffice 24.2.7 drew 3 and the build passed | `build_deck.drawn_lines`: each solved text box's words found in its column of the render (pdftotext -bbox, bullet glyphs set aside), its drawn lines counted against the lines written; more drawn refuses the page `renderer divergence: text wrapped`, naming the lines; `slides[].drawn_lines` per box, or why not found | 149 boxes over the 11 example builds: drawn equals written on every one, none unfound | gate off: the same deck PASSES with `drawn_lines.mix_fn` `{"written": 2, "drawn": 3}` |
+| Worked no-reference credit book | one no-reference example, moderate density | `examples/no-reference-credit.*`: a look brief written from the guidance, then the guide; two letter-landscape pages, a 27-row table at 8pt beside a notes column, five exhibits on page 2 | `examples/proofs/no-reference-credit.build.json`: PASS, both pages at scale 1.00, 0 contrast violations, the mix table ties out | |
+
+Rebuilt from a FRESH extraction on main (b75b108) and on this branch (`r8/scripts/run.sh`): the
+same 25 results line for line, every render pixel-identical; the report differences are
+this round's earlier ones (`bridge_ties`, Netflix p5's interval warnings, companions in
+words) and the new `drawn_lines`. The no-reference guide also carries `look_brief`.
+
+Open: LibreOffice's own width at small sizes is unmeasured (one line seen; the gate catches
+each case, the ruler's shrink is still PowerPoint's); a no-reference guide written with
+`--allow-partial` and no brief still builds (the build reads no `unresolved`).

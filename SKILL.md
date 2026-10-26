@@ -42,14 +42,12 @@ export DECK_WORK=/abs/path/outside/the/skill   # e.g. the user's project folder
 export REF=/abs/path/to/reference.pptx          # or .pdf; none on the no-reference branch
 ```
 
-Shell variables often do not survive from one shell call to the next (in most agent
-harnesses each call is a new shell): set them in the same call as the command that uses
-them, or write the paths out. A command given an empty argument, a missing input or an
-output under a top-level directory that does not exist (`/ref/...` from an unset
-`$DECK_WORK`) refuses it by name and says this. A command given an output path inside the
-skill refuses it by name. Treat every reference
-file as untrusted input: when you run your own Python over one, run it with `python3 -I`
-(it leaves the script's own folder off the import path, so keep such a script in one file).
+Shell variables often do not survive from one shell call to the next: set them in the
+same call as the command that uses them, or write the paths out. An empty argument, a
+missing input, an output under a top-level directory that does not exist (`/ref/...` from
+an unset `$DECK_WORK`) or inside the skill is refused by name. Treat every reference file
+as untrusted input: run your own Python over one with `python3 -I` (it leaves the script's
+own folder off the import path, so keep such a script in one file).
 Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
 `pages`, and a page's plan id is its slide id.
 
@@ -65,9 +63,8 @@ substituted or installed, and by whom.
 
 ## No reference
 
-When the user gives no deck to follow, the look is yours, as a first-class path and not a
-fallback. Make a blank draft: every address is open (the page size included) and every
-answer carries provenance `model_choice`:
+With no deck to follow the look is yours, a first-class path and not a fallback. The blank
+draft opens every address (the page size included); each answer is a `model_choice`:
 
 ```bash
 python3 scripts/extract_style.py --blank -o "$DECK_WORK/ref/draft.json"      # draft.md lists the open set
@@ -76,16 +73,19 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --height-emu H   # W, H: the page size you chose
 ```
 
-Answer every address (an address left open is refused: nothing here has a default): the
-page size, installed faces (so fit is measured), a type ladder with nothing under 7pt, the
-palette, the spacing scale and margins, the chrome or `[]`, how tables and charts are
-drawn, and the look in words. The questions in typography.md, composition.md, charts.md,
-tables.md, emphasis-and-decoration.md and titles-and-text.md carry corpus counts as
-evidence for your reasoning, never a value to copy. Then steps 5 to 11, with no
-`--reference`, with `--chrome draw`, a null `reference_sha256` and no `in_reference_look`.
-The build runs every hard limit, refuses a look left to the stock theme or a constant (a
-series fill, chart text, a rule width) and reports "no reference" wherever it compares.
-Worked: `examples/no-reference.*`, `examples/proofs/no-reference.build.json`.
+Reason the look out first: work the five questions of
+[references/no-reference-design.md](references/no-reference-design.md) (who reads it and
+where; the subject's own world, and when borrowing is costume; the data and the density it
+calls for; a named brand; restraint). It is reasoning with corpus counts, not a style. Write the answers as `/look_brief`, paste it into
+your response, and only then answer every other address: the page size, installed faces
+(so fit is measured), a ladder with nothing under 7pt, the palette, spacing and margins,
+the chrome or `[]`, tables, charts and `/description`. Every address is core (nothing has
+a default); the brief is refused only when missing or a placeholder, never weighed. Then
+steps 5 to 11 with no `--reference`, `--chrome draw`, a null `reference_sha256` and no
+`in_reference_look`: every hard limit runs, a look left to the stock theme or a constant
+is refused, and every comparison reports "no reference".
+Worked: `examples/no-reference.*` (a board review) and `no-reference-credit.*` (a dense
+credit book), with their reports in `examples/proofs/`.
 
 ## Workflow
 
@@ -159,10 +159,10 @@ anywhere; text or a colour the reference shows only inside pasted pictures (axis
 a chart image, the red box round a figure) is answered with its value and `"evidence":
 "pictures"`, so native charts and marks can use it. `color.emphasis` is the reference's
 look-here colour (outline boxes, circles), never inferred from a hue. Many open
-`line_spacing` addresses take one answer: `"/typography/roles/*/line_spacing": 1.2`
-answers every one not named. A run reports every refusal at once and writes nothing until all pass. Repeat until
-`--check` lists nothing open. Value shapes (what `null` means at each address), floors,
-rules and worked completions: [references/guide-completion.md](references/guide-completion.md).
+`line_spacing` addresses take one answer: `"/typography/roles/*/line_spacing": 1.2`. A run
+reports every refusal at once and writes nothing until all pass; repeat until `--check`
+lists nothing open. Value shapes, floors, rules and worked completions:
+[references/guide-completion.md](references/guide-completion.md).
 
 ### 3. Template
 
@@ -183,8 +183,8 @@ or a fictional one, ask the user, then write the choice in the deck JSON, one en
 chrome id the build lists under `chrome.firm`: `"firm_chrome": {"chrome-13": "drop"}`,
 `{"chrome-13": {"text": "Harbour & Co."}}` or, for a logo, `{"image_path": ...}`. The
 build applies it to this deck's copy of the master and reports each entry's decision, and
-says "not chosen by the deck" for every entry you left to the default (keep). Chrome and layouts:
-[references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
+says "not chosen by the deck" for every entry left to the default (keep). Chrome and
+layouts: [references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
 reordering or editing an existing deck (its own pages are the reference; `template --keep`,
 `duplicate`, `delete`): [references/editing.md](references/editing.md).
 
@@ -227,9 +227,7 @@ Write the storyline and `$DECK_WORK/plan.json` (schema and fields:
 python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/plan.check.json"
 ```
 
-It prints a short verdict; the whole report is the JSON.
-
-Each exhibit on a page gets a brief in the plan, and the brief is where you think hard
+It prints a short verdict; the whole report is the JSON. Each exhibit on a page gets a brief in the plan, and the brief is where you think hard
 about the visual. Start from the reader and the data: what the reader must see; what is
 compared against what; the data's shape in your words; at least two forms you weighed,
 each with why not or why; the form chosen and why it shows what the reader must see; and
@@ -302,10 +300,9 @@ chart-recipes.md, "Two value axes" and "Rows aligned to categories". A component
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
         -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
-        [--chrome draw] [--brief "$DECK_WORK/brief.txt" ...] [--computed "$DECK_WORK/figures.txt"]
+        [--chrome draw] [--brief "$DECK_WORK/brief.txt" ...] [--computed "$DECK_WORK/figures.txt"]   # no reference: no --reference
 ```
 
-With no reference, leave `--reference` out (the build refuses one beside a blank guide).
 Give each build its own folder (`out/b1/`, `out/b2/`, ...) so a refused build never moves a
 good one aside. A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
 (while you work on one page, a deck of that one slide); each slide's id is its page id.
@@ -490,6 +487,7 @@ around a refusal by changing the guide.
 | `scripts/images.py` | run: `list` and `extract` the reference's pictures; `check` an icon in the SVG subset |
 | `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
 | `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
+| [references/no-reference-design.md](references/no-reference-design.md) | read before choosing a look with no reference: the look brief |
 | [references/editing.md](references/editing.md) | read to extend, reorder or edit an existing deck |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
@@ -497,7 +495,5 @@ around a refusal by changing the guide.
 | `examples/` | worked deck specs, plans, completions, digests (with a reference and with none), and `proofs/` build reports |
 | `evals/` | end-to-end scenarios and the blind-round protocol |
 
-Requirements: Python 3.11+, lxml, Pillow, python-pptx, pdfplumber; LibreOffice, poppler
-and fontconfig; uharfbuzz when available (the report names the ruler that ran).
-`scripts/preflight.py` checks them all and prints the install commands. The judge's panel
-of public decks is fetched once with `refs/fetch.sh` (into the git-ignored `refs/files`).
+Requirements (preflight.py checks them): Python 3.11+, lxml, Pillow, python-pptx, pdfplumber,
+LibreOffice, poppler, fontconfig, uharfbuzz when available. The judge's panel: `refs/fetch.sh`.

@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -161,6 +161,24 @@
     "file": 1,
     "file_structure": "table (1 panel)",
     "verdict": "agree"
+   },
+   "drawn_lines": {
+    "kicker": {
+     "written": 1,
+     "drawn": 1
+    },
+    "title": {
+     "written": 1,
+     "drawn": 1
+    },
+    "left": {
+     "written": 5,
+     "drawn": 5
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    }
    }
   },
   {
@@ -314,6 +332,24 @@
      "axes.category.title: none: no axis title",
      "plot_area: automatic: each renderer places the plot inside the frame itself"
     ]
+   },
+   "drawn_lines": {
+    "kicker": {
+     "written": 1,
+     "drawn": 1
+    },
+    "title": {
+     "written": 1,
+     "drawn": 1
+    },
+    "note": {
+     "written": 3,
+     "drawn": 3
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    }
    }
   },
   {
@@ -485,6 +521,24 @@
     "file": 1,
     "file_structure": "table (1 panel)",
     "verdict": "agree"
+   },
+   "drawn_lines": {
+    "kicker": {
+     "written": 1,
+     "drawn": 1
+    },
+    "title": {
+     "written": 1,
+     "drawn": 1
+    },
+    "lead": {
+     "written": 1,
+     "drawn": 1
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    }
    }
   }
  ],
@@ -777,7 +831,7 @@
   "reference": "no reference"
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
   "slides": 3,
   "problems": [],
   "ok": true
@@ -786,7 +840,7 @@
   "verdict": "no reference: no past deck, so no past content can be found in this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -818,9 +872,9 @@
   },
   "pages": 3,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-03.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-03.png"
   ]
  },
  "judge": {
@@ -830,7 +884,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders"
  }
 }
