@@ -1550,9 +1550,11 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
                                 "categories, or turn column labels (rotation_deg)" if part.startswith("category") else
                                 "; LibreOffice broke or dropped it: a smaller label role, a shorter label, or room for it (gap_width, plot_area)"))
             for part, text in wrapped:
+                bars = str(el.get("type", "")).startswith(("COLUMN_", "BAR_"))
                 found.append(f"{el['id']} {part}: {text!r} is drawn on more than one line: LibreOffice wrapped it where the file "
-                             "writes one; shorten it, set it in a smaller role, widen the bar (gap_width), or set it outside the bar "
-                             "(outside_end, or a category_row beside the plot)")
+                             "writes one; shorten it, set it in a smaller role, write the break where it should fall (\\n in the "
+                             "label's text), or " + ("widen the bar (gap_width) or set it outside the bar (outside_end, or a category_row beside the plot)"
+                                                      if bars else "give it room beside its point (plot_area)"))
             parts = sorted(drawn_at)
             for a_i, a in enumerate(parts):
                 for b in parts[a_i + 1:]:
