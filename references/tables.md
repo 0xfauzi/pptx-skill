@@ -119,7 +119,7 @@ habits recorded on 35 pages; the reference's own are in its digest records (`how
   annotation above the table.
 - Table text has one floor, the same in the build and in `pptx_tools validate --emit`:
   the floor of the `table` family (the smallest text the reference sets in native table
-  cells; with no reference, or none measured, the 7pt absolute floor). Where the reference's own tables are pasted
+  cells; with no native table text, the body floor; with no reference, the 7pt absolute floor). Where the reference's own tables are pasted
   pictures or vector text in a PDF, answer `/tables/picture_text` at completion
   (guide-completion.md): the size is measured there and the table floor drops to it,
   never below the absolute floor.

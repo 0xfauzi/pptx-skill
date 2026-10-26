@@ -1753,6 +1753,16 @@ class Extractor:
         floors = {}
         for fam, roles in FLOOR_FAMILIES.items():
             vals = samples.get(fam, [])
+            if not vals and fam == "table" and samples.get("body"):
+                # no native table cell to measure: the reference's tables (if any) are pictures
+                # or absent, and its smallest body text is the only evidence of what it sets as
+                # running text, so the table floor is the body floor until tables.picture_text
+                # measures the pictures (layout.table_floor_pt lowers it there). Left open, it
+                # fell to the 7pt absolute floor with no evidence (round 8 verifier, keybank 12 to 7)
+                vals = samples["body"]
+                inherit = True
+            else:
+                inherit = False
             if not vals:
                 self.open(f"/floors/{fam}/floor_pt", "no run filed to this family", {"roles": list(roles), "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam]})
                 floors[fam] = {"roles": list(roles), "floor_pt": None, "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam], "sample_size": 0}
@@ -1766,6 +1776,8 @@ class Extractor:
             floors[fam] = {"roles": list(roles), "floor_pt": min(kept), "trimmed_outlier_count": len(vals) - len(kept), "sample_size": len(vals),
                            "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam],
                            "provenance": observed([], len(vals), False, 1.0)}
+            if inherit:
+                floors[fam].update(sample_size=0, inherited_from="body", provenance=inferred([], len(vals), False, 1.0))
         self.guide["floors"] = floors
         self.guide["floors_note"] = ("absolute_floor_pt: product safety floor (7.0pt, measured on two screen media); never generate below max(floor_pt, absolute_floor_pt). "
                                      f"floor_pt is the smallest size the reference sets that is inside the Tukey lower fence or recurs on {MIN_LEVEL_OBSERVATIONS} or more pages; "

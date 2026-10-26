@@ -164,9 +164,9 @@ When the body floor equals the body size there is no headroom: density comes fro
 arrangement and content. Table text is its own family, `table` (`type.table_header`,
 `type.table_cell`): its floor is the smallest text the reference sets in native table
 cells, so a dense reference's 7pt tables do not wait on its 12pt body. A reference with
-no native table text leaves `/floors/table/floor_pt` open (null: the absolute floor
-holds); where its tables are pictures, measure them (below) and the table floor drops to
-their size. You may lower a floor in the completion when the reference's
+no native table text takes its body floor as the table floor (`inherited_from: body`: the
+smallest running text it sets is the only evidence); where its tables are pictures,
+measure them (below) and the table floor drops to their size. You may lower a floor in the completion when the reference's
 captions show a smaller size in use, never below `absolute_floor_pt` (7.0pt, measured on
 two screen media by one rater for Arial and Calibri; print was not measured, so for a deck
 that will be printed keep the reference's own floor).
