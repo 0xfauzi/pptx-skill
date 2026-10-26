@@ -721,3 +721,38 @@ the label offsets are measured on Inter at 9pt only; PowerPoint's legend order o
 chart is unmeasured; `--computed` still takes one file and figures as cells write them
 (dense-ref), not asked for here; a plain-text tile strip is no exhibit, so a brief for one
 still reads as a difference.
+
+### Round 8, part 2: the verifier's defects on 9a4fa2d
+
+Each reproduced on main (`r8x/v2/main`, a2d1091) and on 9a4fa2d (`r8x/v2/r8orig`) first,
+from the verifier's probe decks (`r8x/v2/d/`) or a fresh extraction; each fix then broken in
+a copy (`r8x/v2/brk`) to show the defect return.
+
+| Item | Before (9a4fa2d) | Now | Proof | Fix broken |
+|---|---|---|---|---|
+| 1 Table floor with no native table text | `/floors/table/floor_pt` left open, so `table_floor_pt` fell to the 7pt absolute floor: keybank main 12.0, 9a4fa2d 7.0; with `picture_text` 10.0, main 10.0 and 9a4fa2d 7.0 | the table family takes the body floor, `inherited_from: body`, until `tables.picture_text` lowers it | fresh keybank (`d1.sh`): 12.0, and 10.0 with picture_text 10; mckinsey 11.0, bcg 9.5; dense-ref keeps its measured 7.0 picture tables | open again, 7.0 both ways |
+| 2 Half-way labels | `label_text` rounded a half to even: '1,234' and '1.2x' expected where LibreOffice draws '1,235' and '1.3x'; `pD-thou`, `pD-x` refused (main passes) | a half rounds away from zero, read at the value's shortest decimal spelling | both PASS, 8 of 8 labels; `pD-cur`, `pD-neg`, `pD-pct`, `pD-pct1` PASS | half-even: both refused again |
+| 3 Turned labels | pdftotext cuts a turned label into fragments: `pJ45` 1 of 12, `pI` 0 of 36, both refused, and the refusal never named `label_interval` | `annotate.pdf_turned_runs` reads each run of turned characters whole (pdfplumber, one rotation, contiguous advances); a label not found on a line is looked for there; the category refusal names `label_interval` and a category_row | `pJ45` 12 of 12 PASS, `pJ0` PASS; `pI` 18 of 36 (LibreOffice drew every other month), refused naming `label_interval`; `pI-li2` PASS | lookup off: 1 of 12 and 0 of 36 |
+| 4 Labels wrapped in open space | every wrapped data label refused: dense-ref p2, consulting p3 (4 labels), public p1 | refused only on its bar's fill (`label_on_fill`: an ON_FILL position or none written); in open space it is counted as wrapped and its block held to the label and line crossing checks | genre: main 5 of 5, 9a4fa2d 2 of 5, now 5 of 5; a wrapped stacked-segment label still refused (`pW-fill-n`) | 9a4fa2d's three refusals return (`genre/brk4`) |
+| 5 Category labels on bars (`crosses`) | `pK` (min 50, max 150, crosses 100) drew 'South' and 'West' on accent1 bars and passed: contrast scored them on the plot only | the category labels are also scored against each bar that grows through them (below `crosses`, or zero when the scale spans it; labels `next_to`; not claimed on a reversed value axis) | `pK` refused, 1.22:1, naming `labels.position: low`; `pK-low` PASS | `pK` PASS again |
+| 6 Small multiple by size only | `pF` (a column, a bar and a line chart in equal slots) read 1 panel | grouped by size and chart form; reader `exhibit_facts 4` | `pF` 3 panels; three equal column charts (`pF-same`) still one small multiple | `pF` 1 panel again |
+| 7 Table cells read below the table, never refused | no lower edge: keybank-section s4 'Required for FY17 accretion' not found; a cell not found was counted only | read between the table's top and bottom; a cell not found refuses as `renderer divergence: table cell` | keybank-section 21 of 21; genre 3,853 of 3,853 (9a4fa2d 17 not found, every one this cause); the real render's words with one cell's removed give the refusal (`sim/sim7.py`), where 9a4fa2d counts it | keybank-section s4 refused |
+| Combo chart lines | `line_strokes` returned nothing unless the whole chart was a line chart: a target line through column labels passed (`pL-combo`, main and 9a4fa2d) | every line series of a category chart is stroked, for labels and annotations alike | `pL-combo` refused as `chart label covered` | PASS again |
+| Bar legend order, break test | broken only by removing the code | the reversed-axis branch negated: `pB-rev` (reversed, legend Beta then Alpha, Alpha on top on the render) is warned "the order its bars sit", which the render contradicts | `pB-rev` warning "against the bars" | wrong text, as stated |
+| `label_interval` and no category check | not a defect: LibreOffice ignores `c:tickLblSkip` (round 7, measured) and the page already warns `renderer divergence: category interval`, so the render's labels are not the page's; data labels are still read (netflix p5 writes none, hence 0 of 0) | no change | | |
+
+Rebuilt from a FRESH extraction on main and here (`r8x/v2/rb/run.sh`, `FIDC=r8x/fidc`): the 29
+result lines are identical (keybank-roundtrip-slide3 is refused on both, as before). Against
+main, 101 of 106 renders are pixel-identical and the 5 that differ are the no-reference books'
+title band, as at 9a4fa2d; against 9a4fa2d all 106 are identical, and the reports differ
+only in the table floor (keybank 12.0, mckinsey 11.0, bcg 9.5 inherited from the body; their
+open `/floors/table/floor_pt` gone; netflix unchanged), the reader string, and
+keybank-section's walk table 21 of 21. Genre sections (`r8x/v2/genre.sh`): all five pass here,
+as on main; against 9a4fa2d all 27 renders are identical, the three refused builds now pass,
+and every table reads all its cells.
+
+ruff 0.16.9: 144 findings on main and 144 here, the same set.
+
+Open: a centred label wider than its bar is warned, but its contrast is scored on the bar's
+fill only, so white ink running past the bar onto a white plot (`pW-fill200`, drawn 'or term')
+is not refused; the turned-run reader is proven on LibreOffice's -45 and automatic turns only.
