@@ -1500,6 +1500,29 @@ def chart_texts(el: dict) -> tuple[list[tuple[str, str]], list[str]]:
     return out, unknown
 
 
+_LABEL_PART = re.compile(r"^series\[(\d+)\] .* point (\d+) label$")
+
+
+def label_on_fill(el: dict, part: str) -> bool:
+    """Whether a data label (a chart_texts part) is set on its mark's fill: a bar's label at
+    a position on the fill (emit_pptx.ON_FILL), or at no written position, where the
+    renderer picks and a stacked segment's default is its centre. A label in the plot's open
+    space (a line, scatter or bubble point, a bar's outside_end) is not."""
+    from chart_geometry import chart_family
+    from emit_pptx import ON_FILL
+    m = _LABEL_PART.match(part)
+    if not m:
+        return False
+    si, pi = int(m[1]), int(m[2])
+    s = (el.get("series") or [])[si]
+    family = chart_family(str(s.get("plot_type") or el.get("type", "")))
+    if family not in ("bar", "bar_stacked", "pie"):
+        return False
+    own = next((p.get("label") for p in s.get("points") or [] if p.get("index") == pi), None) or {}
+    position = {**(s.get("labels") or {}), **own}.get("position")
+    return position is None or position in ON_FILL.get(family, set())
+
+
 def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: list[list[tuple]] | None = None) -> list[dict]:
     """Each chart's text as the renderer drew it, read off the render's words inside the
     chart's frame (pdftotext -bbox), against chart_texts. The words are set in lines (a
@@ -1508,8 +1531,10 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
     splits a letterspaced 'Shore' into 'S' and 'hore'). A turned label (rotation_deg, or one
     LibreOffice turns itself to fit) is cut into fragments there, so a label not found on a
     line is looked for whole among the page's turned runs (annotate.pdf_turned_runs). A data label not found on one line
-    whose words are all drawn was wrapped by the renderer (round 7: 'First-lien / TLB'
-    inside a stacked segment); a category label may wrap, so its words are found one by
+    whose words are all drawn was wrapped by the renderer: refused where it is set on its
+    mark's fill (round 7: 'First-lien / TLB' inside a stacked segment, label_on_fill), and
+    held to the crossing checks below where it wraps in open space, which is a design (round
+    8 verifier: 'CLKB 1.58x' on two lines beside a scatter point touched nothing); a category label may wrap, so its words are found one by
     one; anything else is not drawn as written: LibreOffice drops category labels that do
     not fit their band (round 8: a 14-name horizontal bar ranking drew every third name)
     and breaks a label it squeezes. Each word is matched once."""
@@ -1533,6 +1558,7 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
             used: set[tuple[int, int]] = set()
             expected, unknown = chart_texts(el)
             missing, wrapped = [], []
+            open_wraps = 0
             # longest first, so a short label never takes the words of a longer one
             drawn_at: dict[str, tuple] = {}
             for part, text in sorted(expected, key=lambda pt: -len(pt[1])):
@@ -1552,8 +1578,19 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
                     if all(_match_on_line(lines, tok, used) for tok in text.split()):
                         continue  # a category label wraps in its slot; a written break is two lines
                     missing.append((part, text))
-                elif len(text.split()) > 1 and all(_match_on_line(lines, tok, used) for tok in text.split()):
-                    wrapped.append((part, text))
+                elif len(text.split()) > 1 and all(_match_on_line(lines, tok, used, got) for tok in text.split()):
+                    if label_on_fill(el, part):
+                        wrapped.append((part, text))
+                    else:
+                        box = (min(b[0] for b in got), min(b[1] for b in got),
+                               max(b[0] + b[2] for b in got) - min(b[0] for b in got),
+                               max(b[1] + b[3] for b in got) - min(b[1] for b in got))
+                        # its words held as one block only where they sit as one (no taller than
+                        # a line per word, no wider than the words side by side): words found
+                        # apart are not claimed to cover anything between them
+                        if box[3] <= sum(b[3] for b in got) and box[2] <= sum(b[2] for b in got) * 1.5:
+                            drawn_at[part] = ink_band(box, text)
+                        open_wraps += 1
                 else:
                     missing.append((part, text))
             for part, text in missing:
@@ -1580,7 +1617,8 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
             for part, crossed in lines_through_labels(el, drawn_at):
                 crossings.append(f"{el['id']} {part}: the render draws it under {crossed}; set it on the other side of its point "
                                  "(position), label fewer points, or name the series at the line's end")
-            checked[el["id"]] = (f"{len(expected) - len(missing) - len(wrapped)} of {len(expected)} chart labels drawn as written"
+            checked[el["id"]] = (f"{len(expected) - len(missing) - len(wrapped) - open_wraps} of {len(expected)} chart labels drawn as written"
+                                 + (f", {open_wraps} wrapped by the renderer in open space (a design; held to the crossing checks)" if open_wraps else "")
                                  + (f"; not read here: {unknown}" if unknown else ""))
         out.append({"checked": checked, "found": found, "crossed": crossings})
     return out

@@ -165,7 +165,9 @@ one LibreOffice turns to fit) among the render's turned runs, read whole; a labe
 refuses the page as `renderer divergence: chart text` (LibreOffice drops category labels
 that do not fit their band, a dated axis included: say which are drawn with
 `label_interval`, and breaks a label it squeezes), and so does a data label of
-several words drawn on more than one line (LibreOffice wrapped it in its bar). Each says
+several words set on its bar's fill and drawn on more than one line (LibreOffice wrapped
+it in its bar). A label that wraps in open space (beside a scatter or line point, or a
+bar's `outside_end`) is a design: it is counted as wrapped and held to the crossing checks. Each says
 what to change. Before the render, a horizontal bar chart whose category band is shorter
 than one line of its labels is refused as `chart labels taller than their band`, with the
 plot height that holds every name, and a centred column label wider than its bar is warned
