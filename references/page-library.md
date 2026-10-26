@@ -37,11 +37,14 @@ deck not in this build, or a page named by both is refused.
 ## Tagging
 
 Each kept page gets a stub whose tag fields are null (`house_type`, `composition_family`,
-`composition_as_recorded`, `title`, `title_register`, `exhibits` with `type`, `family`,
-`data_shape`, `message`, `annotation_moves`, `annotations_as_recorded`, then
-`emphasis_devices`, `craft`, `why_instructive`, `designer_questions`). Fill them after
-looking at `look_at`. `[]` means you looked and found none. A designer question opens with a
-sentence ending in `?`. Families and moves are the vocabulary's slugs. `check` exits 1 while
+`composition_as_recorded`, `title`, `title_register`, `exhibits` with `type`,
+`data_shape`, `message`, `annotations_as_recorded`, then `emphasis_devices`, `craft`,
+`why_instructive`, `designer_questions`). Fill them after looking at `look_at`. `[]` means
+you looked and found none. A designer question opens with a sentence ending in `?`. An
+exhibit is tagged in your own words (what it is, its data, its message, each annotation as
+you would describe it); nothing about an exhibit is chosen from a list. The title register
+is the title vocabulary's slug. A library built before exhibits were tagged in words
+(manifest schema 3) is refused: build or import it again. `check` exits 1 while
 any kept page is untagged and names each; `pick` ranks only tagged entries and says how many
 were left out.
 

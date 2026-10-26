@@ -1,6 +1,6 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/deck.pptx",
- "ruler": "pillow_x128",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/deck.pptx",
+ "ruler": "harfbuzz",
  "slides": [
   {
    "id": "b1-eps",
@@ -201,6 +201,7 @@
    },
    "chart_defaults_taken": {
     "chart": [
+     "axes.category.title: none: no axis title",
      "plot_area: automatic: each renderer places the plot inside the frame itself"
     ]
    }
@@ -407,6 +408,7 @@
    },
    "chart_defaults_taken": {
     "chart": [
+     "axes.category.title: none: no axis title",
      "plot_area: automatic: each renderer places the plot inside the frame itself"
     ]
    }
@@ -468,11 +470,15 @@
   "realised": [
    {
     "page": 1,
-    "composition": "b1"
+    "composition": "b1",
+    "structure": "chart bar col stacked x3 (1 panel)",
+    "kinds": "chart (1 panel)"
    },
    {
     "page": 2,
-    "composition": "b1"
+    "composition": "b1",
+    "structure": "chart bar col stacked x4 (1 panel)",
+    "kinds": "chart (1 panel)"
    }
   ],
   "measure": {
@@ -516,7 +522,7 @@
      ],
      "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
     },
-    "exhibits": {
+    "structures": {
      "V": 1.0,
      "changed": 10,
      "pairs": 10,
@@ -526,13 +532,13 @@
      ],
      "decks_unread": []
     },
-    "classes": {
-     "V": 0.9,
-     "changed": 9,
+    "kinds": {
+     "V": 1.0,
+     "changed": 10,
      "pairs": 10,
-     "p10_deck_V": 0.9,
+     "p10_deck_V": 1.0,
      "deck_V": [
-      0.9
+      1.0
      ],
      "decks_unread": []
     },
@@ -591,7 +597,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -622,7 +628,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files",
+  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -635,7 +641,7 @@
   "verdict": "no distinctive carry-over; 1 low finding(s): keep each that your own data or brief produces"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -667,12 +673,12 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/renders/slide-02.png"
   ]
  },
  "judge": {
-  "reference": "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.086,
   "components": {
    "families": 0.0,
@@ -739,25 +745,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/45541_Header.pptx": 0.391,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.509,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/themes.pptx": 0.405
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/45541_Header.pptx": 0.391,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.509,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/themes.pptx": 0.405
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.093,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.128,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_netflix_financing_pitchbook.pptx": 0.082
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.093,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.128,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.082
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -769,7 +775,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/br/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/bridge/renders"
  }
 }

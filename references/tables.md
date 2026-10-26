@@ -68,7 +68,7 @@ pages; dark label cells and banners on 37.
 Recurring bank habits (both coder groups): $ only on the first and total rows; x on
 multiples; italic ratio rows under their $ row; a units column separate from the labels; NM
 and NA written out, never left blank. Negatives in parentheses on 13 pages. Number-format
-habits recorded on 35 pages; the house's own appear in `exhibit_habits.number_formats`.
+habits recorded on 35 pages; the house's own are in its digest records (`how_drawn`).
 
 ## The table spec: what you write and what the build measures
 

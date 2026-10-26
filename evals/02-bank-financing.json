@@ -130,8 +130,8 @@
    "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
   },
   {
-   "statement": "Every exhibit is annotated with at least one move the house uses for that data shape, or the report says why not.",
-   "check": "Compare each exhibit's annotations and native emphasis with guide.exhibit_habits.moves_by_data_shape."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, with its marks where the claim lives, the way the house marks such places, or the report says why not. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief, open the house page it names (digest crop and record) and the render: the reader sees reader_must_see without arithmetic, the compared value is drawn, and the marks sit where the brief and the house's digest records (marks, in words) put them."
   },
   {
    "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
@@ -150,12 +150,12 @@
    "check": "Read the final report."
   },
   {
-   "statement": "No two adjacent pages share an exhibit-class set unless declared a deliberate parallel.",
-   "check": "deck.build.json repetition.measure.classes: realised class V >= house p10 (0.643 pooled when measured), or the repeat is declared."
+   "statement": "No two adjacent pages share an exhibit structure unless declared a deliberate parallel.",
+   "check": "deck.build.json repetition.measure.structures: structure V (read from the written file) >= the house's p10 deck (against_house.structures_V), or the repeat is declared; renaming an exhibit in the plan does not move it."
   },
   {
    "statement": "Each composition name in the plan is honest: two pages that set a table beside a chart carry the same name.",
-   "check": "Compare plan compositions with the renders; the realised classes in the build agree with the plan's exhibit types."
+   "check": "Compare plan compositions with the renders; each page's realised structure (repetition.realised[].structure) agrees with the forms its briefs chose."
   },
   {
    "statement": "The maturity profile marks the year the new issue lands and the next maturity wall.",

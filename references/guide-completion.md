@@ -86,8 +86,9 @@ slot.
 pictures still sets axis labels, data labels and emphasis marks in them: answer those
 with the value read off the pictures and `"evidence": "pictures"` (recorded as `seen_in:
 pictures`, so the report can say the value was read at camera precision). A `null` for
-`type.axis_label` or `type.data_label` is refused when the digest records exhibits with
-axes or labelled marks, since native charts would then have no role to set them in.
+`type.axis_label` or `type.data_label` is refused when a digest record answers
+`axis_labels` or `value_labels` true, since native charts would then have no role to set
+them in.
 
 `color.emphasis` is the house's look-here colour: the outline box round a figure, the
 circle, the highlighted bar. It is always open (no hue band decides it) and is not
@@ -156,15 +157,25 @@ content crop is still drawn; the stub names it under `also_draws`). Copy
 `digest.stub.json` to `digest.json` in the same directory, leave the stub as cut, and in
 the copy replace each page's `exhibits: null` with records in the stub's
 `record_template` (an empty list states the page has none; one candidate may hold several
-exhibits). Every value comes from `references/page_craft_vocabulary.json`; every
-annotation move names its anchor. A mark move (a ring or box, a band or shading, a
-reference or event line, a bracket: the moves under `annotation_kind_moves` in the
-vocabulary) also answers `labelled`: `true` when words on the exhibit say what it marks (a
-label beside it, or the figure or words it rings), `false` when it stands alone and only
-the text around it explains it; a mark move without it is refused. `false` answers are
-the house's precedent for an unlabelled mark on a new page (`explained_by:
-{"house_precedent": {"slide": N}}`), and the finalizer lists both under
-`exhibit_habits.marks_labelled`. On every page holding a data chart or a table, answer
+exhibits). Each record is your own words, after looking at the crop; nothing is chosen
+from a list, and the words are checked for being there (a phrase of at least three words;
+`what` at least one), never for what they say:
+
+- `what`: what the exhibit is, its form and what it is made of;
+- `message`: the one thing a reader takes from it;
+- `how_drawn`: what is compared against what, order, colour, labels, legend, gridlines,
+  number formats, as the house does them;
+- `marks`: what the house marks on it and how, where the claim lives, and whether words
+  beside the mark say what it marks; or that it marks nothing;
+- `chart_or_table`, `axis_labels`, `value_labels`: true or false, read off the page.
+
+Each stub page also carries `file_facts`: what the file itself states (the exhibit
+structure and every mark drawn on content, with its geometry, what it sits on and whether
+it carries text), read by the extractor. That, not your words, is what a house precedent
+for an unlabelled mark is checked against (`explained_by: {"house_precedent": {"slide":
+N}}`: slide N's file draws a mark of the same geometry with no text of its own). A ring
+inside a pasted picture is pixels: describe it in `marks`; it is no precedent. On every
+page holding a chart or a table, answer
 the page's `source_line`: `true` when it carries a source or note line naming where its
 figures come from, `false` when not; leave it `null` on other pages. The finalizer counts
 them (`exhibit_habits.source_lines`) and prints the count under `house_habits`; the build
@@ -172,9 +183,9 @@ refuses a data page without a source line where the house carries one on at leas
 its data pages, and warns on a page WITH one where under 50% do (over three or more data
 pages; both lines unmeasured: build-report.md). Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
 repeated or added, a candidate added and a record repeated are each refused by name, and a
-patch value for `/exhibit_habits` is refused. The finalizer computes every count (types,
-data shapes, moves by data shape and by message, emphasis, number formats, legend, labels,
-colour logic) and re-measures the house's exhibit-type and exhibit-class variety.
+patch value for `/exhibit_habits` is refused. The finalizer counts the source lines and
+keeps the records as you wrote them; it computes nothing from your words. The house's
+exhibit structure variety is read from the file by the extractor, not from the digest.
 
 ## Content pages: /variety/content_pages
 

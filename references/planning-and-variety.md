@@ -2,6 +2,7 @@
 
 ## Contents
 - The page plan
+- The exhibit brief
 - Figures: computed, never invented
 - The house's variety (guide.variety)
 - plan.json
@@ -17,6 +18,33 @@ the exhibit, the supporting text, the data it needs, the composition intent (whi
 dominates, or how co-equal blocks divide the page), the layout, the split boundaries if it
 will not fit, and the title in the HOUSE's register and length (`guide.titles`).
 
+## The exhibit brief
+
+Every exhibit on a planned page carries a brief, written before its spec while looking at
+the house's nearest exhibits (the digest's crops and records, the gallery, the renders)
+and at the data. Nothing in it is chosen from a list: there is no list of chart types,
+moves or devices in this skill. It is where the visual is thought through:
+
+```json
+{"reader_must_see": "where 1.33x tangible book falls in the ranking of precedents",
+ "comparison": "the offer's multiple against each precedent's multiple, ranked",
+ "data": "one value for each of nine deals, one of them the subject",
+ "forms_considered": [
+   {"form": "sorted horizontal bars with the subject in the emphasis colour", "reason": "chosen: rank and the subject's place read at a glance"},
+   {"form": "dot plot on one axis", "reason": "names would collide where multiples cluster near 1.6x"}],
+ "chosen_form": "sorted horizontal bars with the subject in the emphasis colour",
+ "why": "the claim is a rank; sorted bars show the rank, and one dark bar shows where the offer sits",
+ "nearest_house_exhibit": {"page": 9, "what": "sorted bars with the average boxed; this keeps the sort and marks the subject"},
+ "marks": "the subject bar in the dark fill with its value bold; the rest muted"}
+```
+
+`nearest_house_exhibit` is `{"page": N, "what": ...}` for a page of the reference, or
+`{"none": "why no page is near, because ..."}`. A form you cannot argue for against
+another is not chosen yet; a brief whose reader cannot see `reader_must_see` on the render
+is a review finding (review.md). `plan.py check` reads a brief for completeness only:
+every field there, each a phrase of at least three words (a form's name at least one), at
+least two distinct forms, a real page or a reason. It never reads what the brief says.
+
 ## Figures: computed, never invented
 
 Use the user's figures byte for byte. A missing figure is a named placeholder the user must
@@ -30,12 +58,19 @@ floor sat below one of them. The build cannot catch a false sentence.
 ## The house's variety (guide.variety)
 
 Per content page: its composition archetype (leader clustering of content boxes at box
-IoU 0.5), and once `/exhibit_habits` is answered its exhibit-type and exhibit-class sets.
-Over adjacent pairs of content pages the reader sees in a row:
+IoU 0.5), and its exhibit facts as the file states them (`exhibit_facts`, read by the
+extractor: each native chart by the plot groups its chart XML declares, with their bar
+direction, grouping and series count; tables; pictures; drawn shapes; the panel count, 1,
+2 or 3+; and every mark drawn on content, with its geometry, what it sits on and whether
+it carries text). Over adjacent pairs of content pages the reader sees in a row:
 
 - V (composition): pairs whose composition differs / pairs;
-- V (exhibits), V (classes): the same over exhibit-type and exhibit-class sets (a page
-  with none is {text_only}; an unread page is left out, never counted as a change);
+- V (structures): pairs whose exhibit structure differs / pairs (a page with no exhibit
+  is "text only"; a page whose facts were not read is left out, never counted as a
+  change). Nobody names a structure, so renaming an exhibit in a plan or a digest cannot
+  move it;
+- V (kinds): the same over exhibit kinds, the structure with any chart read as "chart":
+  a table beside a line chart and a table beside a column chart are one kind of page;
 - distinct compositions per page; the longest run; every run of two or more.
 
 A deck with no stretch of 3 content pages in a row is `no evidence`, and so is a raster
@@ -51,11 +86,11 @@ python3 scripts/plan.py house --guide "$DECK_WORK/ref/guide.json" [--house-deck 
 Every key on every page:
 
 ```json
-{"schema": "pptx-skill section plan v1", "reference_sha256": "<guide.reference.sha256>",
+{"schema": "pptx-skill section plan v2", "reference_sha256": "<guide.reference.sha256>",
  "pages": [{"id": "<the page's slide id in the deck JSON>", "intent": "...", "message": "...",
             "composition": "arch-4 | new:<lowercase-name>",
-            "exhibit_types": ["<exhibit_type>"], "data_shapes": ["<data_shape>"],
-            "title_register": "topic|claim|question", "deliberate_parallel": null}]}
+            "title_register": "topic|claim|question", "deliberate_parallel": null,
+            "exhibits": [<one exhibit brief per exhibit; [] on a page with none>]}]}
 ```
 
 Name the composition honestly: a house archetype when the page is built like one (look at
@@ -73,12 +108,14 @@ python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/gui
 
 It prints a short verdict (status, each refusal and warning, each measure against the
 house's 10th percentile) and writes the whole report as JSON with `-o` (`--json` prints it).
-With one house deck each 10th percentile is that deck's own value, and its exhibit and class
-V come from your digest reading: a different reading of the same deck moves these lines by
-up to 0.3 (two readers of keybank: exhibit V 0.8 and 1.0, class V 0.6 and 0.9). The verdict
-says so; pool sister decks with `--house-deck` where you have them.
+With one house deck each 10th percentile is that deck's own value; the verdict says so;
+pool sister decks with `--house-deck` where you have them. A plan declares no exhibit
+structure (its exhibits are briefs), so the check reports the house's structure V for
+reference and leaves the measure to the build.
 
-Refused (exit 1), each by name: a plan not of this shape; a value outside the vocabulary
+Refused (exit 1), each by name: a plan not of this shape; an incomplete exhibit brief (a field
+missing, a phrase under three words, fewer than two distinct forms, a nearest page that is
+not a page of the reference); a title register outside the title vocabulary
 (`references/page_craft_vocabulary.json`), including a non-string register; an archetype the
 guide does not hold, or a `new:` name that is not lowercase letters, digits, `-` and `_`; a
 reason on a page that repeats nothing; a plan for another reference; an UNDECLARED repeat
@@ -97,12 +134,15 @@ where V reads as samey. Answer every warning in the plan or in your report.
 it refuses. The deck holds the whole plan or one run of consecutive planned pages (one page
 while you work on it), each slide's id its page id. After solving it reports, under `repetition`: each page's realised composition
 (the same clustering over the solved content boxes, the page frame left out), V and runs
-against the house, the exhibit classes each page realises (a table is `table`, a chart
-`data_chart`; a page with a component or an image is unread), class V against the house's,
-and every page where plan and build disagree. Class V cannot be renamed: a section of
-table-beside-chart pages reads as the repeat it is however the plan names them (measured: a
-section rated samey built at composition V 1.0 and class V 0.25 against the house's 10th
-percentile deck 0.643, warned; its revision built at class V 0.75, not warned).
+against the house, each page's exhibit structure read back from the file the build wrote
+(the one reader that read the house's pages, `ooxml.exhibit_facts`, the drawn chrome left
+out), structure V and kinds V against the house's, and every page where plan and build
+disagree. Neither can be renamed: a section of table-beside-chart pages reads as the repeat
+it is however the plan describes them (measured: the round-2 netflix section a rater
+called samey builds at structure V 1.0, since each of its charts plots something else,
+and kinds V 0.25 against the pooled house's 10th percentile deck 0.494, warned; its
+revision builds at kinds V 0.75, not warned; the class V that came before this read 0.25
+and 0.75 on the same decks, from class names the model chose).
 
 ## Where the measure is weak
 
@@ -115,8 +155,13 @@ percentile deck 0.643, warned; its revision built at class V 0.75, not warned).
   house is held to the more lenient count.
 - On a PDF, text blocks stand in for shapes; a page set as many small blocks rarely matches
   another, so a consulting PDF can read every page as its own archetype.
-- The exhibit-type vocabulary has 25 types against 10 corpus families, so exhibit V comes
-  out higher than the corpus figures below.
+- A picture carries no structure: a house that pastes its charts and tables reads every
+  such page as "picture", so its structure V is low and the build is held to a lenient
+  line. What a picture shows is the digest's reading, never measured.
+- A PDF states rectangles, paths and text, never a chart or a table: a PDF house's
+  structure reads pictures, drawn shapes and text only, coarser than a native build's.
+- Structure is kind and count, not form: two column charts of three series are one
+  structure whatever they compare.
 - V counts adjacent pairs only: A B A C A reads 1.0; distinct compositions per page shows it.
 
 ## Measured tendencies across houses

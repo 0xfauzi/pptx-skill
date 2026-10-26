@@ -45,7 +45,7 @@ import plan  # noqa: E402
 from emit_pptx import GUIDE_LEGEND_POSITIONS  # noqa: E402
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
-#: TARGET_SPEC Appendix A as closed sets: the title register, the title companions and the exhibit digest fields.
+#: the title register and the title companions (references/page_craft_vocabulary.json); an exhibit is never read in a list
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 # the extractor never observes these, so they are always the model's to write
 ALWAYS_WRITABLE = {"/description", "/derivation_rules", "/continuation", "/typography/families/substitutes"}
@@ -336,14 +336,12 @@ def title_register(guide: dict, value) -> dict:
             "claims_elsewhere": claims, "why": value.get("why"), "provenance": model_prov(value.get("why") or "")}
 
 
-#: the moves an annotation can draw with no words of its own (outline, fill, line,
-#: bracket): on these the digest answers whether the house labelled the mark
-MARK_MOVE_SET = frozenset(m for moves in VOCABULARY["annotation_kind_moves"].values() for m in moves)
-EXHIBIT_KEYS = {"candidate", "class", "type", "data_shape", "message", "message_kind", "annotation_moves", "emphasis_devices",
-                "number_formats", "legend", "data_labels", "colour_logic", "why"}
-EXHIBIT_SCALARS = (("class", "exhibit_class"), ("type", "exhibit_type"), ("data_shape", "data_shape"), ("message_kind", "message_kind"),
-                   ("legend", "legend"), ("data_labels", "data_labels"), ("colour_logic", "colour_logic"))
-EXHIBIT_LISTS = (("emphasis_devices", "emphasis_device"), ("number_formats", "number_format"))
+#: a digest record: the model's reading in its own words, plus three readings of the page
+#: that later steps hold the house to (a data page, chart text the house sets); nothing
+#: in a record is chosen from a list
+EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": plan.BRIEF_MIN_WORDS}  # least words
+EXHIBIT_FLAGS = ("chart_or_table", "axis_labels", "value_labels")
+EXHIBIT_KEYS = {"candidate", *EXHIBIT_TEXT, *EXHIBIT_FLAGS, "why"}
 
 
 def _stub_pages(stub) -> dict[int, list[str]]:
@@ -367,10 +365,12 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
     aggregated. The completed pages are exactly the stub's: a page dropped, repeated or added
     is named, as is a candidate list that differs from the stub's. Every page is answered (an
     empty list states the page holds no exhibit; a missing or null list is an omission); a
-    record repeated on its page is named; every exhibit names each field in the closed
-    vocabulary, every annotation move with what it anchors to. All omissions are named in
-    one refusal. The counts, by type, data shape and message kind, are computed here, and
-    the sample is the stub's, never the completed file's."""
+    record repeated on its page is named; every exhibit says in words what it is, its
+    message, how the house draws it and what it marks (EXHIBIT_TEXT, checked for being
+    there, never for what it says), and answers EXHIBIT_FLAGS true or false. All omissions
+    are named in one refusal. The sample is the stub's, never the completed file's. What
+    the file itself shows of each page (its structure, its marks) is not here: the
+    extractor read it (variety.pages[].exhibit_facts)."""
     if stub is None:
         raise PatchError("/exhibit_habits: answered only through complete_guide.py --digest DIR, which reads the stub the gallery "
                          "cut (DIR/digest.stub.json) beside the completed copy (DIR/digest.json); a patch value has no stub to be checked against")
@@ -406,17 +406,17 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
         if not isinstance(exhibits, list):
             errors.append(f"slide {slide}: exhibits not answered (an empty list states the page has none)")
             continue
-        data_page = any(isinstance(ex, dict) and ex.get("class") in plan.DATA_CLASSES for ex in exhibits)
+        data_page = any(isinstance(ex, dict) and ex.get("chart_or_table") is True for ex in exhibits)
         line = page.get("source_line")
         if data_page and not isinstance(line, bool):
-            errors.append(f"slide {slide}: source_line {line!r}; a page holding a data chart or a table answers true or false")
+            errors.append(f"slide {slide}: source_line {line!r}; a page holding a chart or a table answers true or false")
         elif not data_page and line is not None:
-            errors.append(f"slide {slide}: source_line {line!r} on a page with no data chart or table; leave it null")
+            errors.append(f"slide {slide}: source_line {line!r} on a page with no chart or table; leave it null")
         candidates = set(want[slide])
         # one candidate may hold several exhibits (a grid and the chart beside it), but two
         # records that say the same thing about the same place are one exhibit counted twice
         same = Counter(json.dumps(ex, sort_keys=True) for ex in exhibits)
-        errors += [f"slide {slide}: an exhibit is recorded {n} times ({json.loads(k).get('message')!r})" for k, n in same.items() if n > 1]
+        errors += [f"slide {slide}: an exhibit is recorded {n} times ({json.loads(k).get('what')!r})" for k, n in same.items() if n > 1]
         for i, ex in enumerate(exhibits):
             where = f"slide {slide} exhibit {i}"
             if not isinstance(ex, dict):
@@ -430,74 +430,29 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
                 errors.append(f"{where}: unknown keys {stray}")
             if ex.get("candidate") is not None and not (isinstance(ex["candidate"], str) and ex["candidate"] in candidates):
                 errors.append(f"{where}: candidate {ex['candidate']!r} is not one of the stub's for this page ({sorted(candidates)})")
-            for key, vocab in EXHIBIT_SCALARS:
+            for key, least in EXHIBIT_TEXT.items():
                 if key in ex:
-                    e = _vocab_error(vocab, ex[key], f"{where} {key}")
+                    e = plan._phrase_error(ex[key], f"{where} {key}", least)
                     if e:
                         errors.append(e)
-            for key, vocab in EXHIBIT_LISTS:
-                if key in ex:
-                    if not isinstance(ex[key], list):
-                        errors.append(f"{where} {key}: a list (empty when there is none)")
-                    else:
-                        errors += [e for v in ex[key] for e in [_vocab_error(vocab, v, f"{where} {key}")] if e]
-            if "message" in ex and not (isinstance(ex["message"], str) and ex["message"].strip()):
-                errors.append(f"{where} message: the one message in words")
-            moves = ex.get("annotation_moves")
-            if "annotation_moves" in ex:
-                if not isinstance(moves, list):
-                    errors.append(f"{where} annotation_moves: a list of {{\"move\", \"anchor\"}} (empty when the exhibit carries none)")
-                else:
-                    for j, m in enumerate(moves):
-                        if not isinstance(m, dict) or set(m) - {"labelled"} != {"move", "anchor"}:
-                            errors.append(f"{where} annotation_moves[{j}]: exactly {{\"move\", \"anchor\"}}, plus \"labelled\" on a mark")
-                            continue
-                        if m.get("move") in MARK_MOVE_SET and not isinstance(m.get("labelled"), bool):
-                            errors.append(f"{where} annotation_moves[{j}]: {m['move']} is a mark: answer labelled, true when words on the exhibit "
-                                          "say what it marks (a label beside it, or the figure it rings), false when it stands alone")
-                        elif "labelled" in m and m.get("move") not in MARK_MOVE_SET:
-                            errors.append(f"{where} annotation_moves[{j}]: labelled is answered only on a mark move ({sorted(MARK_MOVE_SET)})")
-                        e = _vocab_error("annotation_move", m["move"], f"{where} annotation_moves[{j}]")
-                        if e:
-                            errors.append(e)
-                        if not (isinstance(m["anchor"], str) and m["anchor"].strip()):
-                            errors.append(f"{where} annotation_moves[{j}]: anchor names what the move points at")
+            for key in EXHIBIT_FLAGS:
+                if key in ex and not isinstance(ex[key], bool):
+                    errors.append(f"{where} {key}: true or false, read off the page, not {ex[key]!r}")
             records.append({"slide": slide, **ex})
     if errors:
         raise PatchError(f"/exhibit_habits: {len(errors)} problem{'s' if len(errors) > 1 else ''}: " + "; ".join(errors))
 
-    def count(values) -> dict:
-        return dict(sorted(Counter(values).items(), key=lambda kv: (-kv[1], kv[0])))
-
     pages = answered
-    moves = [(r, m["move"]) for r in records for m in r["annotation_moves"]]
     data_pages = [p for p in pages if p.get("source_line") is not None]
     sourced = [p["slide"] for p in data_pages if p["source_line"]]
     return {
         "source_lines": {"data_pages": len(data_pages), "with_source_line": len(sourced), "pages_with": sourced,
                          "pages_without": [p["slide"] for p in data_pages if not p["source_line"]],
                          "share": round(len(sourced) / len(data_pages), 3) if data_pages else None,
-                         "definition": "pages holding a data chart or a table, and how many of them carry a source or note line"},
+                         "definition": "pages holding a chart or a table, native or pictured (chart_or_table), and how many of them carry a source or note line"},
         "sample": {"pages_read": len(pages), "pages_with_exhibits": sum(1 for p in pages if p["exhibits"]),
                    "pages_without": [p["slide"] for p in pages if not p["exhibits"]], "exhibits": len(records),
                    "policy": stub.get("sample_policy") or "every evidence page the digest cut"},
-        "classes": count(r["class"] for r in records),
-        "types": count(r["type"] for r in records),
-        "data_shapes": count(r["data_shape"] for r in records),
-        "message_kinds": count(r["message_kind"] for r in records),
-        "annotation_moves": count(m for _, m in moves),
-        "moves_by_data_shape": {shape: count(m for r, m in moves if r["data_shape"] == shape) for shape in sorted({r["data_shape"] for r in records})},
-        "moves_by_message_kind": {kind: count(m for r, m in moves if r["message_kind"] == kind) for kind in sorted({r["message_kind"] for r in records})},
-        "marks_labelled": {state: [{"slide": r["slide"], "type": r["type"], "class": r["class"], "move": m["move"], "anchor": m["anchor"]}
-                                   for r in records for m in r["annotation_moves"] if m["move"] in MARK_MOVE_SET and m["labelled"] is want]
-                           for state, want in (("labelled", True), ("unlabelled", False))},
-        "mean_moves_per_exhibit": round(len(moves) / len(records), 2) if records else None,
-        "exhibits_without_moves": [f"{r['slide']}:{r.get('candidate')}" for r in records if not r["annotation_moves"]],
-        "emphasis_devices": count(d for r in records for d in r["emphasis_devices"]),
-        "number_formats": count(f for r in records for f in r["number_formats"]),
-        "legend": count(r["legend"] for r in records),
-        "data_labels": count(r["data_labels"] for r in records),
-        "colour_logic": count(r["colour_logic"] for r in records),
         "records": records,
         "provenance": model_prov(f"exhibit digest of {len(pages)} pages, {len(records)} exhibits"),
     }
@@ -583,22 +538,16 @@ def record_absent(guide: dict, path: str, role: str, why: str) -> None:
     guide.setdefault(ABSENT_SHAPE, {})[role] = {"address": path, "why": why, "provenance": model_prov(why)}
 
 
-#: chart text roles, and the digest records that show the house draws such text: an
-#: axis on every exhibit of these types, a data label wherever the record says marks are
-#: labelled
-AXIS_TYPES = {"line", "column", "stacked", "horizontal_bar", "combo", "football_field_or_range_bars", "waterfall_or_bridge",
-              "scatter_or_bubble", "histogram"}
+#: chart text roles, and the digest reading that says the house sets such text on an exhibit
+CHART_TEXT_FLAGS = {"type.axis_label": ("axis_labels", "exhibits with axis labels"), "type.data_label": ("value_labels", "exhibits with values on their marks")}
 
 
 def chart_text_in_digest(guide: dict, role: str) -> str | None:
     """Where the completed digest records the house drawing a chart text role, or None."""
     records = (guide.get("exhibit_habits") or {}).get("records") or []
-    if role == "type.axis_label":
-        hits = [r for r in records if r.get("type") in AXIS_TYPES]
-        what = "exhibits with axes"
-    elif role == "type.data_label":
-        hits = [r for r in records if r.get("data_labels") in ("all", "selective")]
-        what = "exhibits with labelled marks"
+    if role in CHART_TEXT_FLAGS:
+        flag, what = CHART_TEXT_FLAGS[role]
+        hits = [r for r in records if r.get(flag) is True]
     else:
         return None
     return f"{len(hits)} {what} (slides {sorted({r['slide'] for r in hits})})" if hits else None
@@ -951,12 +900,15 @@ def main(argv: list[str]) -> int:
         # the habits every later step reads, with their counts, where the model sees them first
         from build_deck import SOURCE_LINE_ADVICE, source_line_habit
         habit = source_line_habit(guide)
+        marks = [(p["slide"], m) for p in (guide.get("variety") or {}).get("pages") or [] for m in (p.get("exhibit_facts") or {}).get("marks") or []]
+        bare = [(s, m) for s, m in marks if not m["carries_text"]]
+        by_geometry = {g: sorted({s for s, m in bare if m["geometry"] == g}) for g in sorted({m["geometry"] for _, m in bare})}
+        bare_text = "; ".join(f"{g} on slides {pages}" for g, pages in by_geometry.items()) or "none"
         summary["house_habits"] = {
             "source_lines": f"house {habit['habit']}: {habit['evidence']}: {SOURCE_LINE_ADVICE[habit['habit']]}",
-            "marks": f"{len(eh['marks_labelled']['labelled'])} labelled, {len(eh['marks_labelled']['unlabelled'])} unlabelled "
-                     f"(unlabelled on slides {sorted({m['slide'] for m in eh['marks_labelled']['unlabelled']})}): an unlabelled mark on a new page "
-                     "names what explains it (annotation explained_by)",
-            "annotation_moves": eh["annotation_moves"]}
+            "marks": (f"the file draws {len(marks)} marks on content, {len(bare)} carrying no text of their own ({bare_text}); "
+                      "marks inside pasted pictures are pixels the file cannot show: read them in the digest. An unlabelled mark on a "
+                      "new page names what explains it (annotation explained_by)")}
     print(json.dumps(summary, indent=1))
     return 0
 

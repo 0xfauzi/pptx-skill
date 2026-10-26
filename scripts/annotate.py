@@ -39,7 +39,6 @@ a word between characters (layout.split_words, the solver's own test).
 from __future__ import annotations
 
 import html
-import json
 import re
 import subprocess
 import sys
@@ -404,14 +403,13 @@ def _check_keys(ann: dict, where: str) -> str:
     return kind
 
 
-def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Fraction, guide: dict, zones: list[dict],
-            plan_types: list[str] | None = None) -> tuple[list[dict], list[dict], list[dict]]:
+def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Fraction, guide: dict,
+            zones: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
     """The page's elements with every annotation's elements inserted (a band before its
     host, everything else after the page's own elements, in the spec's order), the
     per-annotation report, and the refusals. An unlabelled mark that names nothing
     explaining it (explanation) is drawn, so the render shows it, and refuses the page
-    as `annotation unexplained`; plan_types are the exhibit types the plan lists for the
-    page, against which a house precedent's exhibit type is checked."""
+    as `annotation unexplained`."""
     eg = EmitGuide(guide)
     by_id = {el["id"]: el for el in elements}
     lab = Labeller(ctx, scale)
@@ -442,7 +440,7 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
             drawn, entry = _resolve_one(ann, kind, aid, host, lab, eg, where, rows)
             try:
                 siblings = {a["id"]: a for a in annotations if isinstance(a, dict) and isinstance(a.get("id"), str)}
-                entry["explained_by"] = explanation(ann, kind, host, by_id, guide, plan_types, where, siblings) or "its own label"
+                entry["explained_by"] = explanation(ann, kind, host, by_id, guide, where, siblings) or "its own label"
             except AnnotationUnexplained as error:
                 entry["explained_by"] = f"unexplained: {error}"
                 problems.append({"kind": "annotation unexplained", "severity": "refusal", "detail": str(error)})
@@ -849,16 +847,17 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
 
 # --- what a mark means ------------------------------------------------------------------
 
-VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
-#: the kinds that can be drawn saying nothing (an outline, a fill, a line, a bracket), and
-#: the digest's annotation moves each one draws, which a house precedent must show
-MARK_MOVES: dict[str, list[str]] = VOCABULARY["annotation_kind_moves"]
+#: the kinds that can be drawn saying nothing, and the geometry each draws as the file
+#: states it (ooxml.mark_geometry): a house precedent is a reference page whose file draws
+#: a mark of that geometry, carrying no text of its own, on other content
+MARK_GEOMETRY: dict[str, str] = {"outline_box": "outline", "band": "fill", "reference_line": "line", "bracket": "bracket"}
 EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "house_precedent")
 EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words naming what the mark encloses>"}, '
                      '{"annotation": "<a labelled annotation on the same host and anchor: a callout or arrow saying what it marks>"}, '
                      '{"legend": "<series name the host chart\'s legend shows in the mark\'s ink>"}, '
                      '{"footnote": {"marker": "*", "note": "<text element id whose paragraph starts with the marker>"}} or '
-                     '{"house_precedent": {"slide": N}} (a digest record on reference slide N with the same move drawn unlabelled)')
+                     '{"house_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on its content: '
+                     'the guide\'s variety.pages[].exhibit_facts.marks)')
 FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
 #: a word runs on through letters and digits ("CET1" is one word, not "CET" and a "1")
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9'&]*|\d[\d,]*(?:\.\d+)?")
@@ -982,7 +981,7 @@ def _id_of(value, where: str) -> str:
     return value
 
 
-def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan_types: list[str] | None, where: str,
+def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, where: str,
                 siblings: dict | None = None) -> dict | None:
     """How a mark says what it means, proven, or AnnotationUnexplained. A mark that carries
     a label says it itself (None: nothing to prove). Otherwise `explained_by` names one of:
@@ -991,11 +990,11 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan
     annotation of the page (siblings, by id) on the same host and anchor that carries a
     label (a callout or arrow saying what the band or box marks); a legend entry of
     the host chart drawn in the mark's own ink; a footnote marker that ends a text the
-    mark encloses and starts a paragraph of the named note; or a page of the house's
-    digest where the same move is drawn unlabelled on an exhibit of the host's class (and
-    of a type the plan lists for this page, given --plan). The model decides which; this
-    only checks that what it names is there."""
-    if kind not in MARK_MOVES:
+    mark encloses and starts a paragraph of the named note; or a page of the reference
+    whose file draws a mark of the same geometry carrying no text of its own on its content
+    (ooxml.exhibit_facts, read by the extractor). The model decides which; this only
+    checks that what it names is there."""
+    if kind not in MARK_GEOMETRY:
         return None
     if "label" in ann:
         if "explained_by" in ann:
@@ -1074,33 +1073,25 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan
     hp = how["house_precedent"]
     slide = hp.get("slide") if isinstance(hp, dict) and set(hp) == {"slide"} else None
     if not isinstance(slide, int) or isinstance(slide, bool):
-        raise AnnotationRefused(f"{where}: explained_by.house_precedent is {{\"slide\": N}}, a reference page of the digest")
-    records = (guide.get("exhibit_habits") or {}).get("records")
-    if not isinstance(records, list):
-        raise AnnotationUnexplained(f"{where}: the guide holds no completed digest (/exhibit_habits), so no house precedent can be read")
-    klass = {"table": "table", "chart": "data_chart"}[host["kind"]]
-    moves = MARK_MOVES[kind]
+        raise AnnotationRefused(f"{where}: explained_by.house_precedent is {{\"slide\": N}}, a page of the reference")
+    pages = (guide.get("variety") or {}).get("pages")
+    page = next((p for p in pages if isinstance(p, dict) and p.get("slide") == slide), None) if isinstance(pages, list) else None
+    if page is None:
+        raise AnnotationUnexplained(f"{where}: reference slide {slide} is not a page the guide read (variety.pages)")
+    facts = page.get("exhibit_facts")
+    if not isinstance(facts, dict) or not isinstance(facts.get("marks"), list):
+        raise AnnotationUnexplained(f"{where}: the guide carries no exhibit facts for slide {slide} (extracted before they were read): re-run extract_style.py")
+    geometry = MARK_GEOMETRY[kind]
     seen: list[str] = []
-    for r in records:
-        if not isinstance(r, dict) or r.get("slide") != slide:
+    for m in facts["marks"]:
+        if not isinstance(m, dict) or m.get("geometry") != geometry:
             continue
-        for m in r.get("annotation_moves") or []:
-            if not isinstance(m, dict) or m.get("move") not in moves:
-                continue
-            what = f"slide {slide} {r.get('type')} ({r.get('class')}): {m['move']} on {m.get('anchor')!r}"
-            if r.get("class") != klass:
-                seen.append(f"{what}: a {r.get('class')}, the host is a {klass}")
-            elif "labelled" not in m:
-                seen.append(f"{what}: the digest does not say whether it is labelled (answer labelled on the move and re-run --digest)")
-            elif m["labelled"] is not False:
-                seen.append(f"{what}: labelled there, so it is precedent for a labelled mark only")
-            elif plan_types is not None and r.get("type") not in plan_types:
-                seen.append(f"{what}: a {r.get('type')}, and the plan lists {plan_types} for this page")
-            else:
-                return {"by": "house_precedent", "slide": slide, "type": r.get("type"), "move": m["move"], "anchor": m.get("anchor"),
-                        "type_checked": plan_types is not None}
-    raise AnnotationUnexplained(f"{where}: reference slide {slide} shows no unlabelled {' or '.join(moves)} on a {klass}"
-                                + (f" ({'; '.join(seen)})" if seen else " (the digest records no such move there)"))
+        if m.get("carries_text") is not False:
+            seen.append(f"{m.get('ref')}: a {geometry} on {'+'.join(m.get('over') or [])} carrying its own text, precedent for a labelled mark only")
+            continue
+        return {"by": "house_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over")}
+    raise AnnotationUnexplained(f"{where}: reference slide {slide} draws no {geometry} without text on its content"
+                                + (f" ({'; '.join(seen)})" if seen else " (its file holds no such mark; one inside a pasted picture is pixels the file cannot show)"))
 
 
 # --- the collision contract --------------------------------------------------------------

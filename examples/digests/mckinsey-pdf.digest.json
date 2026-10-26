@@ -8,34 +8,9 @@
   "height_px": 1350,
   "px_per_pt": 2.5
  },
- "vocabulary": "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/references/page_craft_vocabulary.json",
  "sample_policy": "every evidence page",
  "pages_not_read": [],
  "generated_slides_skipped": [],
- "record_template": {
-  "candidate": "<a candidate id on this page, or null>",
-  "class": "exhibit_class",
-  "type": "exhibit_type",
-  "data_shape": "data_shape",
-  "message": "<the one message, in words>",
-  "message_kind": "message_kind",
-  "annotation_moves": [
-   {
-    "move": "annotation_move",
-    "anchor": "<what it points at>"
-   }
-  ],
-  "emphasis_devices": [
-   "emphasis_device"
-  ],
-  "number_formats": [
-   "number_format"
-  ],
-  "legend": "legend",
-  "data_labels": "data_labels",
-  "colour_logic": "colour_logic",
-  "why": "<optional>"
- },
  "pages": [
   {
    "slide": 1,
@@ -101,21 +76,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "shape_built_text",
-     "type": "structured_text",
-     "data_shape": "no_data_shape",
+     "what": "four round icons in a row, each over a short label",
      "message": "Boards face four pressures at once",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "icons"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: icons",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -217,27 +184,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "diagram_or_process",
-     "type": "process_timeline_or_plan",
-     "data_shape": "process_or_timeline",
+     "what": "five board stages climbing left to right as a rising staircase of headings and notes, photos beneath",
      "message": "The board's role has moved from complacent to catalyst over 20 years",
-     "message_kind": "change_over_time",
-     "annotation_moves": [
-      {
-       "move": "event_markers",
-       "anchor": "five board eras placed on a rising line",
-       "labelled": true
-      }
-     ],
-     "emphasis_devices": [
-      "photos_or_logos"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: photos or logos",
+     "marks": "event markers on a time axis on five board eras placed on a rising line, with words beside it saying what it marks",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -266,32 +219,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "diagram_or_process",
-     "type": "diagram_or_framework",
-     "data_shape": "diagram_or_framework",
+     "what": "three columns of numbered items with photo bullets, joined by chevrons into platform, activities and levers",
      "message": "Fifteen elements in three groups make an effective board",
-     "message_kind": "other",
-     "annotation_moves": [
-      {
-       "move": "numbered_keys",
-       "anchor": "fifteen numbered elements"
-      },
-      {
-       "move": "connectors_between_marks",
-       "anchor": "arrows from platform to activities to levers"
-      }
-     ],
-     "emphasis_devices": [
-      "numbered_markers",
-      "photos_or_logos",
-      "arrow_connectors"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: numbered or lettered markers, photos or logos, arrows, chevrons or wedges as connectors",
+     "marks": "numbered or lettered keys tied to text on fifteen numbered elements; connectors or zoom lines between marks on arrows from platform to activities to levers",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -320,26 +254,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "big_numbers",
-     "type": "big_numbers_or_kpi",
-     "data_shape": "no_data_shape",
+     "what": "four large percentages stepping down the page, each over its survey statement",
      "message": "Boards are strongest on setting strategy and weakest on reducing bias",
-     "message_kind": "ranking",
-     "annotation_moves": [
-      {
-       "move": "sorted_order",
-       "anchor": "four figures stepping down from 70% to 36%"
-      }
-     ],
-     "emphasis_devices": [
-      "big_numbers"
-     ],
-     "number_formats": [
-      "percent_suffix"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: percent sign on figures; emphasis: big numbers",
+     "marks": "sorted order on four figures stepping down from 70% to 36%",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -386,22 +307,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "shape_built_text",
-     "type": "structured_text",
-     "data_shape": "no_data_shape",
+     "what": "a plain list of topics beside a large photograph",
      "message": "The boardroom agenda spans fourteen topics",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "photos_or_logos",
-      "status_stamps"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: photos or logos, status stamps (draft, preliminary, illustrative)",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -421,22 +333,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "diagram_or_process",
-     "type": "diagram_or_framework",
-     "data_shape": "diagram_or_framework",
+     "what": "an iceberg drawing in bands, a row of icons with their labels beside each band",
      "message": "Models are the tip of what generative AI value needs",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "icons",
-      "bold_or_coloured_lead_in"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: icons, bold or coloured lead-in or key phrase",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -493,21 +396,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "shape_built_text",
-     "type": "structured_text",
-     "data_shape": "no_data_shape",
+     "what": "three icons in a row, each over a name and a description of one approach",
      "message": "Companies can take, shape or make generative AI solutions",
-     "message_kind": "choice_or_recommendation",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "icons"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: icons",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -554,28 +449,13 @@
    "exhibits": [
     {
      "candidate": "p010-c1",
-     "class": "shape_built_text",
-     "type": "structured_text",
-     "data_shape": "no_data_shape",
+     "what": "a numbered list of six questions, each led by a bold phrase",
      "message": "Six questions decide whether a board executes on generative AI",
-     "message_kind": "other",
-     "annotation_moves": [
-      {
-       "move": "numbered_keys",
-       "anchor": "six numbered questions"
-      }
-     ],
-     "emphasis_devices": [
-      "bold_or_coloured_lead_in",
-      "numbered_markers",
-      "takeaway_band_or_sidebar"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: bold or coloured lead-in or key phrase, numbered or lettered markers, takeaway band, box or sidebar",
+     "marks": "numbered or lettered keys tied to text on six numbered questions",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -622,33 +502,13 @@
    "exhibits": [
     {
      "candidate": "p011-c1",
-     "class": "big_numbers",
-     "type": "big_numbers_or_kpi",
-     "data_shape": "comps_or_benchmark_table",
+     "what": "a grid of big figures, two rows of boards against four survey measures, the last column boxed",
      "message": "Highly effective boards outscore less effective ones on every measure",
-     "message_kind": "subject_vs_peers",
-     "annotation_moves": [
-      {
-       "move": "circled_or_boxed_mark",
-       "anchor": "the induction-training column, 24% against 43%",
-       "labelled": true
-      },
-      {
-       "move": "footnote_markers",
-       "anchor": "detail follows on page 15"
-      }
-     ],
-     "emphasis_devices": [
-      "big_numbers",
-      "boxed_or_circled_figure",
-      "icons"
-     ],
-     "number_formats": [
-      "percent_suffix"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: percent sign on figures; emphasis: big numbers, boxed or circled figure, icons",
+     "marks": "circled or boxed mark on the induction-training column, 24% against 43%, with words beside it saying what it marks; footnote markers on detail follows on page 15",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -697,22 +557,13 @@
    "exhibits": [
     {
      "candidate": null,
-     "class": "shape_built_text",
-     "type": "structured_text",
-     "data_shape": "no_data_shape",
+     "what": "a claim on the left beside a list of statements on a dark panel, the last set apart in bold",
      "message": "Boards take on more but keep directors without the new skills",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "takeaway_band_or_sidebar",
-      "bold_or_coloured_lead_in"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: takeaway band, box or sidebar, bold or coloured lead-in or key phrase",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -756,26 +607,13 @@
    "exhibits": [
     {
      "candidate": "p013-c1",
-     "class": "diagram_or_process",
-     "type": "diagram_or_framework",
-     "data_shape": "diagram_or_framework",
+     "what": "a ring in three segments around a label, each segment with its heading, quote and bullets",
      "message": "An effective director combines know-how, skills and mindset",
-     "message_kind": "other",
-     "annotation_moves": [
-      {
-       "move": "numbered_keys",
-       "anchor": "three ring segments numbered 1 to 3"
-      }
-     ],
-     "emphasis_devices": [
-      "numbered_markers"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: numbered or lettered markers",
+     "marks": "numbered or lettered keys tied to text on three ring segments numbered 1 to 3",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": null
@@ -823,35 +661,13 @@
    "exhibits": [
     {
      "candidate": "p014-c1",
-     "class": "table",
-     "type": "status_or_check_matrix",
-     "data_shape": "status_or_check_matrix",
+     "what": "a matrix of skills down the side against current and future directors, cells filled where present",
      "message": "The current board lacks skills the strategy needs",
-     "message_kind": "other",
-     "annotation_moves": [
-      {
-       "move": "status_glyphs",
-       "anchor": "checks per director and skill"
-      },
-      {
-       "move": "column_spanners",
-       "anchor": "current directors and those to be replaced"
-      },
-      {
-       "move": "footnote_markers",
-       "anchor": "the process steps note"
-      }
-     ],
-     "emphasis_devices": [
-      "status_glyphs_or_rag",
-      "dark_label_cells_or_banners"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "legend_box",
-     "data_labels": "not_applicable",
-     "colour_logic": "monochrome"
+     "how_drawn": "colour: ink and greys only; series named by: a legend; figures: the exhibit shows no figures; emphasis: status glyphs, checks or red-amber-green, navy or dark label cells or banners",
+     "marks": "status glyphs (check, cross, dots) on checks per director and skill; column spanners or grouped headers on current directors and those to be replaced; footnote markers on the process steps note",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": true
@@ -889,21 +705,13 @@
    "exhibits": [
     {
      "candidate": "p015-c1",
-     "class": "table",
-     "type": "text_or_data_table",
-     "data_shape": "text_or_data_table",
+     "what": "a table of session kinds down the side, a description and sample topics across",
      "message": "Onboarding runs through four kinds of session",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "bold_or_coloured_lead_in"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: bold or coloured lead-in or key phrase",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": false
@@ -990,21 +798,13 @@
    "exhibits": [
     {
      "candidate": "p017-c1",
-     "class": "table",
-     "type": "text_or_data_table",
-     "data_shape": "text_or_data_table",
+     "what": "a dense three-row table, one row each for know-how, skills and mindset, with bolded phrases",
      "message": "The ideal director's know-how, skills and mindset in detail",
-     "message_kind": "other",
-     "annotation_moves": [],
-     "emphasis_devices": [
-      "bold_or_coloured_lead_in"
-     ],
-     "number_formats": [
-      "no_figures"
-     ],
-     "legend": "not_applicable",
-     "data_labels": "not_applicable",
-     "colour_logic": "single_hue"
+     "how_drawn": "colour: tints of one hue, no highlight; figures: the exhibit shows no figures; emphasis: bold or coloured lead-in or key phrase",
+     "marks": "nothing is marked: the claim reads from the exhibit as drawn",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
     }
    ],
    "source_line": true

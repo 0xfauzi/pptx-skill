@@ -71,7 +71,7 @@ EVIDENCE_CAP = 8
 # Asserted, unmeasured: a block counts as sitting at the kicker (above) or subtitle and
 # units-line (below) position when its gap to the title is within one title line pitch.
 TITLE_COMPANION_GAP_PITCHES = 1.0
-#: The closed vocabulary (TARGET_SPEC Appendix A) the model classifies titles and exhibits in.
+#: The title vocabulary the model reads titles in (an exhibit is described in words, never classified).
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
 # Product safety floor: the smallest size the specimen stays legible at on both render media,
@@ -1127,20 +1127,22 @@ class Extractor:
     def variety(self, archetype_of: dict[int, str]) -> None:
         """The house's variety over its content pages (plan.py holds the measure): each page's
         archetype in page order with library.py's triage proposal, which pages are content
-        (the proposal, until /variety/content_pages answers it), and the measure. Exhibit types
-        are not read here: complete_guide.py measures them once /exhibit_habits is answered."""
+        (the proposal, until /variety/content_pages answers it), each page's exhibits as the
+        file states them (ooxml.exhibit_facts: the structure plan.py measures, and the marks a
+        house precedent is read from), and the measure."""
         from library import facts_of, propose  # library imports gallery, which imports this module
-        from ooxml import Package
+        from ooxml import Package, exhibit_facts
         facts = facts_of(self.slides, None if self.is_pdf else Package(self.path))
         triage = {t["page"]: t for t in propose(list(facts.values()))}
-        pages = [{"slide": s.index + 1, "composition": archetype_of[i], "triage": triage[s.index + 1]["proposal"], "why": triage[s.index + 1]["evidence"]}
+        pages = [{"slide": s.index + 1, "composition": archetype_of[i], "triage": triage[s.index + 1]["proposal"], "why": triage[s.index + 1]["evidence"],
+                  "exhibit_facts": exhibit_facts(s, self.is_chrome)}
                  for i, s in enumerate(self.slides)]
         content = [p["slide"] for p in pages if p["triage"] == plan.CONTENT]
         self.guide["variety"] = {
             "pages": pages,
             "content_pages": {"pages": content, "basis": "proposal: library.py's triage definitions (unmeasured), not confirmed by looking"},
             "method": plan.METHOD, "weaknesses": list(plan.WEAKNESSES),
-            "measure": plan.measure_deck(Path(self.path).name, plan.content_segments({"pages": pages, "content_pages": {"pages": content}}, None)),
+            "measure": plan.measure_deck(Path(self.path).name, plan.content_segments({"pages": pages, "content_pages": {"pages": content}})),
         }
         self.open("/variety/content_pages", "which pages are content is a reading: look at the renders and list the content pages (the triage "
                   "proposal is in the candidates); the house's variety is measured over them, and stays on the proposal until answered",
@@ -1649,9 +1651,9 @@ class Extractor:
                              ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
             self.open(path, reason)
         self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, copy the "
-                  "stub to digest.json beside it, complete every page of the copy in the vocabulary it names, and answer with complete_guide.py --digest <dir>",
-                  {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json",
-                   "vocabulary": "references/page_craft_vocabulary.json"})
+                  "stub to digest.json beside it, describe every exhibit of every page of the copy in your own words (what it is, what the "
+                  "reader sees, how the house draws and marks it), and answer with complete_guide.py --digest <dir>",
+                  {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json"})
         self.notes.append("gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide")
         text_layer = {"status": "typographic"}
         if self.is_pdf:
@@ -1719,8 +1721,7 @@ def _raster_run(self: "Extractor") -> dict:
     self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at its pages: the digest of a raster reference "
               "cuts whole pages (no shapes to crop); copy the stub to digest.json beside it, complete every page, and answer with "
               "complete_guide.py --digest <dir>",
-              {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json",
-               "vocabulary": "references/page_craft_vocabulary.json"})
+              {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json"})
     self.notes.append("raster reference: the text layer is a wrapper or an OCR layer and was not mined. Next: "
                       "python3 scripts/raster_style.py <ref.pdf> --out work/ref/raster, read raster.md and the chrome mask, "
                       "then complete the guide from the page images with raster_inference provenance at confidence <= 0.5.")
@@ -1784,9 +1785,11 @@ def variety_report(v: dict | None) -> list[str]:
         return out + [f"No evidence: {(v or {}).get('why') or 'no page sequence'}."]
     out += [f"How: {v['method']}", "", "Where it is weak:"] + [f"- {w}" for w in v["weaknesses"]] + [""]
     out.append(f"Content pages ({v['content_pages']['basis']}): {v['content_pages']['pages']}")
-    out.append("| slide | composition | triage | why |")
-    out.append("|---|---|---|---|")
-    out += [f"| {p['slide']} | {p['composition']} | {p['triage']} | {p['why']} |" for p in v["pages"]]
+    out.append("| slide | composition | exhibit structure (the file) | marks without text | triage | why |")
+    out.append("|---|---|---|---|---|---|")
+    out += [f"| {p['slide']} | {p['composition']} | {p['exhibit_facts']['structure']} | "
+            f"{', '.join(m['geometry'] + ' on ' + '+'.join(m['over']) for m in p['exhibit_facts']['marks'] if not m['carries_text']) or 'none'} | "
+            f"{p['triage']} | {p['why']} |" for p in v["pages"]]
     m = v["measure"]
     out.append("")
     if m["status"] != "measured":
@@ -1795,10 +1798,9 @@ def variety_report(v: dict | None) -> list[str]:
                f"distinct compositions {m['distinct']['compositions']} over {m['distinct']['pages']} pages ({m['distinct']['per_page']} per page); "
                f"longest run {m['longest_run']}; segments {m['segments']}")
     out.append(f"Runs of one composition: {m['runs'] or 'none'}")
-    ex = m["exhibits"]
-    out.append(f"V (exhibit-type sets): {ex['V'] if 'V' in ex else ex['why']}")
-    cl = m["classes"]
-    out.append(f"V (exhibit-class sets): {cl['V'] if 'V' in cl else cl['why']}")
+    for name, what in (("structures", "exhibit structure"), ("kinds", "exhibit kinds, any chart a chart")):
+        st = m[name]
+        out.append(f"V ({what}, read from the file): {st['V'] if 'V' in st else st['why']}")
     return out
 
 

@@ -1,16 +1,24 @@
-# Chart recipes
+# Chart techniques in the spec
+
+These recipes show how to express an idea in the spec; they are not a set of options to
+choose from. Decide the exhibit first, from what the reader must see, the data and the
+house's nearest exhibit (the plan's exhibit brief, charts.md); then find here the
+technique that draws it. Each technique is named for what it does, and each worked example
+is one exhibit it has drawn, not the only one it can.
 
 ## Contents
 - The spec
 - How the contrast gate reads a chart
-- Waterfall (bridge): an invisible first series as the running base
-- Bridge with negative steps that cross zero
-- Football field as a chart: a stacked bar with an invisible low series
-- Mekko approximation: one 100% column per segment, widths by weight
-- Labelled bars with no value axis
-- Combo: a line and columns on two value axes (price and volume)
-- Annotations: shapes at data positions
-- Category rows: data rows, ovals and logos aligned under the categories
+- Invisible base series: marks that float
+  - A running base under each step (worked: a bridge)
+  - Bases on both sides of zero (worked: a bridge that crosses zero)
+  - A base on horizontal bars (worked: valuation ranges against an offer)
+- Widths set by the layout: one full-height column per segment (worked: a mekko)
+- Labels without axes
+- Per-point fills and labels
+- Two value axes (worked: price and volume)
+- Marks at data positions (annotations)
+- Rows aligned to categories: figures, ovals and logos under the plot
 - What a default looks like in the report
 
 A chart is a spec you write. The emitter writes it as given and decides nothing: not
@@ -103,7 +111,7 @@ keybank (the pages named under "Proven on") and read from the render.
   spelling) or `{"position": "b" | "t" | "r" | "l" | "tr", "role", "ink_role",
   "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
 - A line, box, band, arrow, bracket, callout or badge at a data position is an
-  annotation on the slide, not a chart key (section "Annotations" below). It needs
+  annotation on the slide, not a chart key (section "Marks at data positions" below). It needs
   `plot_area` and the axis's `min`, `max` and `cross_between`.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
@@ -171,7 +179,14 @@ width over the categories, not the frame's (the frame's let "Transportation" bre
 LibreOffice wraps a little inside it, so a word just under it can still break; read the
 render.
 
-## Waterfall (bridge): an invisible first series as the running base
+## Invisible base series: marks that float
+
+A stacked chart draws each series from where the one before it ends. Give the first series
+no fill and no stroke and the visible series floats at whatever height you compute for it:
+a step of a bridge, a range on an axis, a gap between two values. You compute every base;
+the build checks the ones you declare.
+
+### A running base under each step (worked: a bridge)
 
 A stacked column whose first series is the running base with no fill and no stroke,
 whose second series carries each step's height, and whose third series of zeros
@@ -232,7 +247,7 @@ collide, and nothing in the build measures that. On keybank this page's first dr
 (long names, chart at flex weight 1.7 beside the text) rendered at 45 degrees, short
 names at 1.7 still did, and short names at weight 2.6 read level. Look at the render.
 
-## Bridge with negative steps that cross zero
+### Bases on both sides of zero (worked: a bridge that crosses zero)
 
 A native stack draws positive values up from zero and negative values down from zero,
 each in series order. So a bridge whose running total goes below zero takes four
@@ -288,7 +303,7 @@ On keybank, white on `color.accent3` (5E7C9E) reads 4.33:1, under AA at 10pt: th
 warned on the first draft of this page and the inks above are the fix (`color.ink`,
 4.85:1).
 
-## Football field as a chart: a stacked bar with an invisible low series
+### A base on horizontal bars (worked: valuation ranges against an offer)
 
 A horizontal stacked bar: the low end as an invisible series (its `inside_end` label
 sits just left of the bar, on the plot, and prints the low), the range as a visible
@@ -327,7 +342,7 @@ Proven on keybank (scratch page `ff`, five methods, $20 to $40).
 
 The offer price as a line across every method, the unaffected price as a second line
 and the committee's range as a shaded zone are annotations on this chart (section
-"Annotations", the football field recipe). Give the chart a `plot_area` and the value
+"Marks at data positions", the worked valuation ranges). Give the chart a `plot_area` and the value
 axis `min`, `max` and `cross_between`.
 
 A line at a price crosses every bar whose range spans it, and the low and high labels sit
@@ -344,7 +359,7 @@ The `football_field` component (`components/football_field`) draws the same exhi
 from rects with measured label widths; pick the chart when the page wants native,
 editable data, the component when it wants the label column the component lays out.
 
-## Mekko approximation: one 100% column per segment, widths by weight
+## Widths set by the layout: one full-height column per segment (worked: a mekko)
 
 A native chart cannot vary category widths, which is the point of a mekko. Approximate
 it with one single-category `COLUMN_STACKED_100` chart per segment, side by side in a
@@ -384,11 +399,11 @@ two-line title).
 The surface-coloured stroke between segments is a choice (a white hairline separates
 the stacks on a white page); drop it if the house draws flush blocks.
 
-## Labelled bars with no value axis
+## Labels without axes
 
-When every bar carries its value, the value axis repeats it: hide it, keep the category
-axis as the baseline, and put the labels `outside_end`. Pick out the bar the title is
-about with a point fill.
+When every mark carries its value, the value axis repeats it: hide it, keep the category
+axis as the baseline, and put the labels `outside_end`. Pick out the mark the title is
+about with a point fill (next section).
 
 Proven on: `examples/keybank-section.deck.json` page `s2-comps` (horizontal, First
 Niagara in `color.accent2` among peers in `color.accent1`, its label in type.emphasis)
@@ -413,7 +428,18 @@ and scratch page `cols` (vertical).
 For a horizontal bar write `BAR_CLUSTERED` and `"reverse": true` on the category axis,
 or the first category prints at the bottom.
 
-## Combo: a line and columns on two value axes (price and volume)
+## Per-point fills and labels
+
+`points` on a series overrides one mark: `{"index": i, "fill_role": ..., "label": {...}}`.
+A fill picks out the subject among its peers, tells a total from a step, or gives a sign
+its colour where the guide has one; a label override writes your own text on one mark
+(`"text"`), gives one label the ink its fill needs (`"ink_role"`), or hides it
+(`"show": false`) where a mark of your own carries the figure. The worked examples above
+use all three: the bridge colours its totals, the crossing bridge labels each step once,
+the ranges print their highs as text on an invisible series. A highlighted mark is native
+and moves with the data; prefer it to a shape drawn over the chart.
+
+## Two value axes (worked: price and volume)
 
 A price line on the left axis and daily volume as columns on the right: the chart's own
 type is the line, the volume series names `plot_type` and `axis: "secondary"`. Gap 0
@@ -470,7 +496,7 @@ may not cover a mark, and the fix was the smaller role the house uses for chart 
 Choose which series is primary by which scale the reader reads first; a line over
 columns reads as the subject.
 
-## Annotations: shapes at data positions
+## Marks at data positions (annotations)
 
 Humans annotate almost every data exhibit (7 of 291 charts in the coded corpus
 carry none); most moves are a shape placed at a data position. They are a list
@@ -485,8 +511,10 @@ under the slide, beside `charts` and `styling`:
 ```
 
 `host` is a chart or table element on the page. Nothing annotates by itself: you decide
-whether and what, from the house's habits and the message (the guide's `exhibit_habits.moves_by_data_shape`
-and `moves_by_message_kind`).
+whether and what, from where the claim lives on the exhibit and how the house marks such a
+place (the `marks` you wrote in the exhibit brief; the house's digest records say in words
+what each of its exhibits marks, and `variety.pages[].exhibit_facts.marks` lists the marks
+its files draw).
 
 Anchors, in the host's own data:
 
@@ -520,7 +548,7 @@ under the page's `annotations[].defaults_taken`):
 | `callout` | `line_role`, `line_width_pt`, `fill_role`, `label`, `position`, `gap_role` | `pad_role` (inside the box), `head` (`none`, `arrow`) | a filled box with a leader to the anchor |
 | `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role` | `style` (`square`, `brace`), `label`, `explained_by` | a bracket opening toward the span, beyond its marks, label beyond it |
 | `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding one line (a number keyed to text) |
-| `category_row` | `cells`, `position`, `gap_role` | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `cell_width`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Category rows") |
+| `category_row` | `cells`, `position`, `gap_role` | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `cell_width`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Rows aligned to categories") |
 
 A reference line's label also takes `middle_above` and `middle_below` (horizontal) or
 `middle_right` and `middle_left` (vertical): centred along the line, where a long line's
@@ -552,11 +580,12 @@ checks that the named thing is there and refuses `annotation unexplained` otherw
 | `{"annotation": "selected-note"}` | another annotation of the page, on the same host and the same anchor, that carries a label (a callout saying what a band marks) |
 | `{"legend": "Selected range"}` | the host chart draws a legend showing that series, and the series is drawn in the mark's own ink |
 | `{"footnote": {"marker": "*", "note": "source"}}` | a text the mark encloses (a cell, a category) ends with the marker, and a paragraph of `note` starts with it |
-| `{"house_precedent": {"slide": 5}}` | the guide's digest records, on reference slide 5, the same move answered `labelled: false` on an exhibit of the host's class (table or data chart) and, with `--plan`, of an exhibit type the plan lists for this page |
+| `{"house_precedent": {"slide": 10}}` | the reference's file draws, on slide 10, a mark of the same geometry (an outline box an outline, a band a fill, a reference line a line, a bracket a bracket) on its content, carrying no text of its own: the guide's `variety.pages[].exhibit_facts.marks`, read by the extractor. A ring drawn inside a pasted picture is pixels the file cannot show, so it is no precedent: explain such a mark another way |
 
 Each placed annotation's report entry says how it is explained (`explained_by`: `its own
-label`, or what was checked). The house's labelled and unlabelled marks are
-`exhibit_habits.marks_labelled` in the guide.
+label`, or what was checked). The marks the house's files draw, with whether each carries
+text, are listed per page in the draft report (`draft.md`, variety) and summed in
+complete_guide's `house_habits`.
 
 What the build refuses, by name, under `problems`:
 
@@ -592,14 +621,15 @@ PowerPoint places the inner plot rectangle the same way is not measured.
 Proven on: `examples/keybank-annotations.deck.json`, four pages rebuilt from corpus
 exhibits on keybank (all four fit, the judge files the deck under keybank).
 
-### Comps table: the median multiples and the subject row boxed
+### Worked: a row shaded, cells and a row boxed (on a comps table)
 
 keybank p5 (red boxes around the median multiples and the subject row; in the coded
 corpus, comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
 row is shaded with an `emphasis` group; the boxes are annotations in the house's
-look-here colour, `color.emphasis`. The house draws these boxes with no words of their own
-(digest slide 5, `labelled: false`) and lets the lead-in say why: one box names the lead's
-words, the other cites the house's precedent.
+look-here colour, `color.emphasis`. The house draws its boxes with no words of their own and
+lets the lead-in say why: one box names the lead's words, the other cites the house's
+precedent. Page 5's boxes are inside a pasted picture, which the file cannot show; slide
+10's file draws a red outline with no text over its rows, and that is the precedent cited.
 
 ```json
 "styling": {"comps": {"emphasis": [{"rows": [10], "fill_role": "color.accent1"}]}},
@@ -608,10 +638,10 @@ words, the other cites the house's precedent.
   "line_role": "color.emphasis", "line_width_pt": 1.5,
   "explained_by": {"text": "lead", "quote": "Above the median on P / TBV and P / E"}},
  {"id": "subject-box", "host": "comps", "kind": "outline_box", "anchor": {"row": 13},
-  "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"house_precedent": {"slide": 5}}}]
+  "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"house_precedent": {"slide": 10}}}]
 ```
 
-### Sensitivity grid: the scenario region boxed, a header group bracketed, the base case keyed
+### Worked: a region boxed, a header group bracketed, a row keyed (on a sensitivity grid)
 
 keybank p7 (a red box around the realistic region; corpus: a boxed cell or
 region on 17 of 29 sensitivity grids). The bracket needs room above the header: the table sits in a
@@ -630,7 +660,7 @@ way.
   "fill_role": "color.accent2", "label": {"text": "1", "role": "type.caption", "ink_role": "color.ink_inverse"}}]
 ```
 
-### Football field: the offer and unaffected prices as lines, the selected range as a zone
+### Worked: decision values as lines, a range as a zone (on valuation ranges)
 
 bmo p125 (the current offer as a labelled dashed line; corpus: a reference line at
 the offer on 4 of 4 football fields). On a horizontal bar with the categories reversed the
@@ -651,7 +681,7 @@ check.
   "label": {"text": "Offer $36.50", "role": "type.data_label", "ink_role": "color.emphasis", "position": "end_outside"}}]
 ```
 
-### Ranking: the subject highlighted, the mean as a line, an arrow carrying the subject's figure
+### Worked: one mark highlighted, the mean as a line, an arrow carrying its figure (on a ranking)
 
 bcg-dallas p15 and bmo p33 (sorted, labelled, subject highlighted, a dashed mean line;
 corpus: all three on 5 of 5 horizontal-bar rankings in one consulting group). The subject
@@ -672,7 +702,7 @@ Prefer native where a move can be native: a median row is an `emphasis` group, a
 bar is a point `fill_role`, a total is a series label. An annotation is a shape over the
 chart: it does not move when someone edits the chart's data.
 
-## Category rows: data rows, ovals and logos aligned under the categories
+## Rows aligned to categories: figures, ovals and logos under the plot
 
 29 exhibits in the coded corpus carry data rows aligned under the chart (22 of them in
 bank decks) and 20 use logos as category labels. A `category_row` is an annotation on a

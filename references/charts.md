@@ -1,107 +1,99 @@
-# Charts: questions, and what decks measurably do
+# Charts and other visuals: questions, and the evidence that changes the answer
 
-Questions to ask about a chart, with what professional decks measurably do; never rules.
-The house's `exhibit_habits` (moves by data shape and by message, labels, legend, colour
-logic) and its `charts` section decide whenever they have evidence. Counts are per exhibit
-over 601 coded exhibits (291 charts), one coder per page, good to about plus or minus 2 to
-3. How to write a chart and its annotations in the spec is in the chart recipes.
+There is no menu of chart types here, and none anywhere in this skill. Every exhibit is
+reasoned out from three things: what the reader must see, the data, and how this house
+draws its own exhibits. Write that reasoning down before the spec, as the plan's exhibit
+brief (planning-and-variety.md): what the reader must see, what is compared against what,
+the data's shape in your words, at least two forms weighed with why not or why, the form
+chosen and why, the house's nearest exhibit, and what will be marked.
+
+The house decides whenever it has evidence: its digest records (`exhibit_habits`: what each
+exhibit is, how it is drawn, what it marks, in words), what its files state
+(`variety.pages[].exhibit_facts`: native charts and their plot groups, tables, pictures,
+marks), and its `charts` section. The counts below are per exhibit over 601 coded exhibits
+(291 charts) in 24 professional decks, one coder per page, good to about plus or minus 2 to
+3. They are evidence for thinking, not a ranking to pick from. How to write a chart and its
+marks in the spec: chart-recipes.md.
 
 ## Contents
-- Questions per chart
-- Chart families by house type
+- Questions for every exhibit
+- Table or chart: what the corpus did
 - Annotation is the norm
-- Moves by data shape
-- Moves by message
+- Marks sit where the claim lives
+- Text adds what the exhibit cannot
 - Labels, legends, gridlines, colour
 - Lapses humans made
 
-## Questions per chart
+## Questions for every exhibit
 
-- What is the data's shape (time series, ranking, part-to-whole, bridge, distribution,
-  range, relation)? Which chart types fit it, and which does the house use? Would a table
-  say it better? (Lookup and reference content was a table in 71 of 71 cases; change over
-  time was a chart 93 times and a table 24 times, the tables being projections where every
-  number is read.)
-- If the house never showed this chart, how would its designers have drawn it with the
-  roles, rules and devices they do use?
-- What comparison is the reader making, and against what value? Is that value drawn?
-- Where on this chart does the claim live: a point, a region, a subset, an absence? How
-  does the house mark such a place?
-- How much to annotate, and what to leave out? How will the reader find the subject
-  (colour, position, order held across panels)?
-- What is estimate and what is fact? What explains the shape?
-- Do comparable charts share one scale? Do bars start at zero? (The two non-zero
-  baselines in the chart book were recorded as lapses.)
+- What must the reader see when they look at it for three seconds? Say it in one sentence.
+  If you cannot, the exhibit has no job yet.
+- What is compared against what? A value against a benchmark, a subject against peers, a
+  period against the last, parts against a whole, a range against a decision value? Is the
+  thing compared against drawn, or does the reader have to hold it in their head?
+- What is the data, in its own terms: how many things, measured how many ways, over what?
+  Which of those does the claim need, and which only support it?
+- Which forms could show that comparison? Weigh at least two. For each: what does the
+  reader do with their eyes to get the claim (read a length, find a position against a
+  line, follow a slope, look a value up, subtract two numbers)? The form where that act is
+  shortest and surest wins; say why the others lose.
+- Will the reader look values up, compare them, follow a sequence, or match items? Lookup
+  wants a grid; comparison wants a common scale; sequence wants direction; matching wants
+  alignment.
+- Which of the house's own exhibits is nearest? Open it (the digest crop, the gallery, the
+  render). What does the house do there that this exhibit should take: its order, its
+  emphasis, its labelling, its density? Where must this one depart, and why?
+- If the house never drew anything like this, how would its designers draw it with the
+  roles, inks and devices they do use?
+- Where on the exhibit does the claim live: a point, a gap, a region, a subset, a trend, an
+  absence? That is where the mark goes (below).
+- What is estimate and what is fact? What explains the shape, and should the exhibit say so?
+- Do sibling exhibits share one scale and one order? Does a bar start at zero?
 - Is the form unfamiliar enough to need a reading key?
 
-## Chart families by house type
+## Table or chart: what the corpus did
 
-| Family | Total | Bank | Consulting | Chart book |
-|---|---|---|---|---|
-| Line (incl. indexed, price, dual-axis) | 85 | 20 | 46 | 19 |
-| Column | 58 | 33 | 20 | 5 |
-| Stacked bar, column or area | 47 | 13 | 25 | 9 |
-| Horizontal bar | 21 | 7 | 12 | 2 |
-| Combo (bar plus line or dot) | 14 | 9 | 1 | 4 |
-| Football field or range bars | 14 | 11 | 1 | 2 |
-| Pie or donut | 13 | 10 | 3 | 0 |
-| Waterfall or bridge | 12 | 3 | 8 | 1 |
-| Map | 10 | 1 | 9 | 0 |
-| Scatter or bubble | 8 | 1 | 3 | 4 |
-| Histogram | 5 | 1 | 4 | 0 |
-
-Construction (native-pptx bank decks only): 27 of 33 data exhibits in three pitch books
-were pasted pictures, with annotations laid over them as separate shapes.
+Lookup and reference content was a table in 71 of 71 cases. Change over time was a chart 93
+times and a table 24 times; the 24 tables were projections where every number is read. In
+three native-pptx bank pitch books, 27 of 33 data exhibits were pasted pictures, with marks
+laid over them as separate shapes. The question is never which form is allowed; it is
+whether the reader reads numbers or reads shape.
 
 ## Annotation is the norm
 
 7 of 291 charts carry no annotation (bank 0 of 109, consulting 4 of 135, chart book 3 of
-47). Mean moves per exhibit: bank 2.25, consulting 2.09, chart book 2.02. Charts with no
-move that points at the message (labels, sorting, footnotes, totals or spanners only): bank
-36 of 109, consulting 27 of 135, chart book 12 of 47, about one in four.
+47); a chart averages about two marks (bank 2.25, consulting 2.09, chart book 2.02). About
+one chart in four marks nothing that points at the message (only labels, sorting,
+footnotes, totals or spanners): the reader is left to find the claim. A bare exhibit is
+the exception the house must show before you draw one.
 
-Moves on charts (n = 291): data labels on all marks 120; reference, benchmark or average
-line 61; callout, arrow or leader 56; end or direct labels 56; highlight one, mute the rest
-45; footnote markers 42; circled or boxed mark 39; sorted order 35; forecast demarcation
-31; totals above stacks 29; data rows aligned under the chart 29; event markers 27; delta
-or growth label 26; inset stats table 24; selective labels 22. CAGR arrows: 0 in the bank
-decks, 1 in consulting; growth is shown in a column, an inset table or an oval instead.
+## Marks sit where the claim lives
 
-## Moves by data shape
+The coders found the mark where the claim was: a line at the decision value on every
+valuation range in one group (4 of 4), the subject highlighted and the rest muted on peer
+rankings, a divider at the forecast boundary on projections, an event marker where a shape
+changes because of something that happened, a total over a stack when the claim is the
+total, a box round the one answer on a recommendation. Ask where your claim lives, then
+ask how this house marks such a place (its digest says, in its own words, what it marks and
+how). A mark elsewhere is decoration; a mark that says nothing about what it marks reads
+as a model's attempt to annotate (a blind rater, on an unlabelled red circle), so the build
+refuses one that names no explanation.
 
-| Data shape | n | Most frequent moves |
-|---|---|---|
-| Line or time series | 85 | end or direct labels 34; reference line 22; event markers 21; callout 17; inset stats table 15; forecast demarcation 13 |
-| Column | 58 | all labels 38; highlight one 17; sorted 14; reference line 14; footnotes 10; delta label 9 |
-| Horizontal bar (ranking) | 21 | all labels 20; sorted 15; highlight one 13 |
-| Stacked or 100% | 47 | all labels 23; totals or "100% =" bases 20; callout 13; rows aligned under the axis 9 |
-| Waterfall | 12 | labels 7; totals 6; connectors 6; footnotes 6 |
-| Football field or ranges | 14 | labels 10; reference line at the offer or price 8; end labels 6; method spanners 5 |
-| Scatter or bubble | 8 | callout 5; highlight the current point 4; reference line 3; regression and R-squared 3 |
-| Histogram | 5 | labels 4; reference lines 3; rows under the axis 2 |
+## Text adds what the exhibit cannot
 
-## Moves by message
-
-- Subject against peers: label, highlight the subject, a median line or row (bank); a
-  highlight, a mean line, a delta pill, sorted (consulting peer benchmarks).
-- Ranking: sorted, labelled and the subject highlighted.
-- Change over time: end labels; event markers when the message is what caused the shape; a
-  forecast divider for projections.
-- Valuation range: a reference line at the decision value on 4 of 4 football fields in one
-  group, plus brackets and data rows under the axis.
-- Composition: totals above stacks, "100% =" bases, row-aligned labels in place of a legend.
-- Estimate or scenario: dashed forecast with period shading, a baseline line, the headline
-  value circled.
-- Relationship: regression line, today's point highlighted, an R-squared box.
-- Choice or recommendation: a pointer or callout plus a box on the answer.
+The lead-in, sidebar or takeaway states the claim and what the exhibit cannot show: the
+cause, the consequence, the caveat, the number that is not on it. A sentence that restates
+what the bars already say is spent twice. Read the exhibit and its text together: is
+anything said twice, and is anything the reader needs said nowhere?
 
 ## Labels, legends, gridlines, colour
 
-- Labelling every mark is the most frequent chart move in every house type: 120 of 291
+- Labelling every mark was the most frequent chart move in every house type: 120 of 291
   charts (bank 65 of 109, consulting 43 of 135, chart book 12 of 47), usually beside one
-  highlighted item. Selective labels: 22.
+  highlighted item; selective labels 22.
 - Legend absent where recorded: bank 32 of 81, consulting 30 of 85, chart book 18 of 47.
-  Direct labels replace the legend mostly on lines and indexed series (34 of 85 lines).
+  Labels on the marks themselves replace the legend most often where series run side by
+  side over time (34 of 85).
 - Gridlines absent where recorded: bank 58 of 80, consulting 78 of 89; the chart book draws
   light horizontal gridlines on 47 of 47. Gridlines are a house habit.
 - Colour: one emphasis colour or a single hue is the norm; categorical colour is kept for

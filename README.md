@@ -30,14 +30,19 @@ behind each port recorded in `PORT_AUDIT.md`.
 
 Render the reference and look at it; triage a PDF first. Extract a guide draft
 (`extract_style.py`) and answer its open addresses by looking (`complete_guide.py`),
-including the house's title register, its exhibit digest (`gallery.py digest`) and which
-pages are content. Make a template from the reference with its slides removed, or a blank
+including the house's title register, its exhibit digest (`gallery.py digest`: every
+exhibit described in the model's own words) and which pages are content. Make a template from the reference with its slides removed, or a blank
 page-sized one for a PDF (`pptx_tools.py`). Round-trip one of the house's pages
-(`import_slide.py`). Plan the section and check the plan against the house's variety
-(`plan.py check`). Write page specs that name roles and weights, never sizes or
+(`import_slide.py`). Plan the section, with a brief for every exhibit written while
+looking at the house's nearest exhibits and the data (what the reader must see, what is
+compared, at least two forms weighed, the form chosen and why, the marks), and check the
+plan (`plan.py check`: briefs complete, variety against the house's). There is no list of
+chart types anywhere in the skill. Write page specs that name roles and weights, never sizes or
 coordinates, after looking at the house's nearest pages and the page library. Build
 (`build_deck.py --plan`): solve, emit, read back, validate, render, judge, and report the
-realised variety. Look at every render, write located findings, fix, rebuild within a cap,
+realised variety, measured from the written file (composition, and exhibit structure read
+from the chart XML, tables, pictures and drawn shapes, against the same reading of the
+house's own pages). Look at every render, write located findings, fix, rebuild within a cap,
 keep the best build. For a component the reference never showed, write an expander and
 admit it on held-out data in a held-out box (`component.py`).
 
@@ -128,7 +133,7 @@ references/              one level deep from SKILL.md, by domain:
   page-library, chart-recipes, build-report, components, review, editing, gotchas
   (procedures); storyline, titles-and-text, composition, charts, tables, typography,
   emphasis-and-decoration (design questions with measured tendencies);
-  page_craft_vocabulary.json (the closed vocabulary)
+  page_craft_vocabulary.json (the title vocabulary; no exhibit is read in a list)
 evals/                   nine end-to-end scenarios and the blind-round and fresh-agent protocol
 components/              four admitted components: football field, title block, bullet stack, KPI row
 examples/                deck specs, section plans, completions and digests for a pptx and a PDF

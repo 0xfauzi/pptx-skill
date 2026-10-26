@@ -9,12 +9,16 @@ extract_style.py and complete_guide.py), the plan (this script's `check`) and th
 (build_deck.py, the solved pages). Over the adjacent pairs of a sequence of pages:
 
 - V (composition) = pairs whose composition differs / pairs;
-- V (exhibits) = pairs whose exhibit-type set differs / pairs, a page with no exhibit
-  counting as the set {text_only}, a pair with a page whose exhibits were not read
-  left out (and counted as unread, never as a change or a repeat);
-- V (classes) = the same over exhibit-class sets: the house's from the digest, the build's
-  from its element kinds (the plan declares none). A class cannot be renamed the way a
-  plan's composition name can;
+- V (structures) = pairs whose exhibit structure differs / pairs. A page's exhibit
+  structure is read from the file (ooxml.exhibit_facts: its native charts by the plot
+  types and series counts the chart XML states, its tables, its pictures, drawn shapes,
+  and how many panels): the house's off the reference's own pages, the build's off the
+  file it wrote. Nobody names it, so renaming an exhibit cannot move it; a pair with a page
+  whose structure was not read is left out (and counted as unread, never as a change or a
+  repeat). A plan declares no structure: it describes each exhibit in a brief;
+- V (kinds) = the same over each page's exhibit kinds (exhibit_facts' `kinds`: the
+  structure with every chart read as "chart"), where a section that sets a table beside a
+  chart on page after page reads as the repeat it is whatever the charts plot;
 - distinct compositions per page = distinct compositions / pages, held against the house's
   10th percentile window of the same number of pages (distinct_windows);
 - the longest run of one composition, and every run of two or more with its pages.
@@ -30,18 +34,35 @@ plan.json (every key required; `deliberate_parallel` is null on a page that does
 repeat the previous page's composition, and the reason in words on one that does):
 
 {
- "schema": "pptx-skill section plan v1",
+ "schema": "pptx-skill section plan v2",
  "reference_sha256": "<the guide's reference.sha256: archetype ids belong to one reference>",
  "pages": [
   {"id": "<the deck slide id it becomes>", "intent": "...", "message": "the one message",
-   "composition": "arch-3 | new:<name>", "exhibit_types": ["<exhibit_type slug>", ...],
-   "data_shapes": ["<data_shape slug>", ...], "title_register": "topic|claim|question",
-   "deliberate_parallel": null}
+   "composition": "arch-3 | new:<name>", "title_register": "topic|claim|question",
+   "deliberate_parallel": null,
+   "exhibits": [<one brief per exhibit; [] on a page that holds none>]}
  ]
 }
 
-`check` refuses (exit 1), by name: a plan that is not this shape, a value outside the
-vocabulary, an archetype the guide does not hold, a reason on a page that repeats nothing,
+An exhibit brief, every field in the model's own words (nothing is chosen from a list):
+
+{"reader_must_see": "what the reader must see on it",
+ "comparison": "what is compared against what",
+ "data": "the data's shape, in words",
+ "forms_considered": [{"form": "...", "reason": "why not, or why"}, ...],   (two or more distinct forms)
+ "chosen_form": "...", "why": "why this form shows what the reader must see",
+ "nearest_house_exhibit": {"page": N, "what": "what that page does that this takes or departs from"}
+                          | {"none": "why no page of the reference is near, because ..."},
+ "marks": "what will be marked, where the claim lives, and why"}
+
+`check` reads a brief for completeness only, never for what it says: every field present,
+each text field a phrase of at least BRIEF_MIN_WORDS words (a form's name at least one),
+at least two distinct forms considered, and a nearest page that is a page of the reference
+(1 to reference.slides) or a reason why none is near.
+
+`check` refuses (exit 1), by name: a plan that is not this shape, a brief that is not
+complete, a title register outside the title vocabulary, an archetype the guide does not
+hold, a reason on a page that repeats nothing,
 and an UNDECLARED repeat that makes a run longer than the house's longest (with no house
 evidence for the longest run, every undeclared repeat is refused: there is nothing to hold
 it to). It warns when the plan's V falls below the house's 10th percentile deck, when its
@@ -78,29 +99,29 @@ def nearest(value, vocab) -> str:
     head = value.split("_")[0]
     near += [w for w in words if w.split("_")[0] == head and w not in near][:3]
     return f" (nearest: {', '.join(near[:4])})" if near else ""
-#: Element kinds whose exhibit class is the kind itself (page_craft_vocabulary exhibit_class).
-#: Their classes are the data exhibits: a page holding one is a data page, which the
-#: source-line habit is measured over (the digest) and held to (the build).
-REALISED_CLASS = {"table": "table", "chart": "data_chart"}
-DATA_CLASSES = frozenset(REALISED_CLASS.values())
 VARIETY_MIN_PAGES = 3  # definition: two pages make one pair, which is one observation, not a rate
-TEXT_ONLY = "text_only"  # the exhibit-type set of a page with no exhibit (A.10's {text only})
 WARN_PERCENTILE = 0.1  # unmeasured: the house's 10th percentile deck, a choice and not a reader's threshold
-PLAN_SCHEMA = "pptx-skill section plan v1"
-PAGE_KEYS = ("id", "intent", "message", "composition", "exhibit_types", "data_shapes", "title_register", "deliberate_parallel")
+PLAN_SCHEMA = "pptx-skill section plan v2"
+PAGE_KEYS = ("id", "intent", "message", "composition", "title_register", "deliberate_parallel", "exhibits")
+BRIEF_KEYS = ("reader_must_see", "comparison", "data", "forms_considered", "chosen_form", "why", "nearest_house_exhibit", "marks")
+BRIEF_TEXT = ("reader_must_see", "comparison", "data", "chosen_form", "why", "marks")
+BRIEF_MIN_WORDS = 3  # definition, unmeasured: a reason is a phrase ("n/a", "see above", "TBD" are not reasons)
+NAME_FIELDS = frozenset({"chosen_form"})  # a form's name may be one word
+_WORD = re.compile(r"[^\W_][\w'%.,/-]*")
 NEW_COMPOSITION = re.compile(r"new:[a-z0-9][a-z0-9_-]*")  # fullmatch: `$` also matches before a final newline
 CONTENT = "content"
 METHOD = ("Composition per page is the extractor's archetype (composition.archetypes): the page's content boxes (layout and master "
           "chrome and recurring furniture left out, the title kept) leader-clustered by slide_similarity, the Hungarian assignment of box "
-          "IoU over the larger set, at 0.5. Exhibit types per page are the completed digest's records (/exhibit_habits). Content pages are "
+          "IoU over the larger set, at 0.5. Exhibit structure per page is read from the file (ooxml.exhibit_facts): native charts by their plot "
+          "types and series counts, tables, pictures, drawn shapes, panels; nobody names it. Content pages are "
           "library.py's triage proposal (cover, divider, disclaimer, hidden and generated pages are not content) until /variety/content_pages "
           "answers it.")
 WEAKNESSES = (
     ("Boxes only: a full-width table and a full-width bullet block of the same extent are one archetype; what the boxes hold is not "
      "compared."),
     ("Arrangement, not kind: a table beside a chart, mirrored or re-weighted, is a different arrangement to box IoU (such pairs score "
-     "0.30 to 0.40), so the realised composition cannot see that kind of sameness; the exhibit classes the build reads, and the "
-     "plan's named compositions, are where it shows."),
+     "0.30 to 0.40), so the realised composition cannot see that kind of sameness; the exhibit structure read from the file, and "
+     "the plan's named compositions, are where it shows."),
     ("Leader clustering is order-dependent and not transitive: a page joins the first archetype whose anchor it matches, so two pages "
      "that match each other but not an earlier anchor can land in different archetypes."),
     ("The title is content to the extractor, so pages that differ only below the title look more alike than the build's frame-free "
@@ -109,8 +130,12 @@ WEAKNESSES = (
      "PDF house can read every page as its own archetype."),
     ("V counts adjacent pairs only: an arrangement used on every other page (A B A C A) reads 1.0; distinct compositions per page "
      "is the figure that shows it."),
-    ("The exhibit-type vocabulary has 25 types, finer than the 10 families the corpus rates were counted in, so exhibit V comes out "
-     "higher than those rates."),
+    ("A picture carries no structure: a house that pastes its charts and tables as pictures reads every such page as 'picture', so its "
+     "structure V is low and the build is held to a lenient line; what the picture shows is the digest's reading, never measured."),
+    ("A PDF states rectangles, paths and text, never a chart or a table, so a PDF house's structure reads only pictures, drawn shapes "
+     "and text, coarser than a native build's: the two are held to each other as change rates, each over its own pages."),
+    ("Structure is kind and count, not form: two column charts of three series are one structure whatever they compare, and a "
+     "waterfall drawn as stacked columns is a stacked column chart."),
 )
 
 
@@ -137,20 +162,19 @@ def runs_of(segment: list[dict]) -> list[list[dict]]:
     return out
 
 
-SET_FIELDS = (("exhibits", "/exhibit_habits not answered"), ("classes", "/exhibit_habits not answered"))
+STRUCTURE_UNREAD = "the guide carries no exhibit facts per page (extracted before they were read): re-run extract_style.py"
+#: the measures read from each page's file (ooxml.exhibit_facts), by the key each page carries
+FACT_MEASURES = (("structures", "structure"), ("kinds", "kinds"))
 
 
-def _sets_measure(pages: list[dict], pairs: list[tuple[dict, dict]], field: str, unread_why: str) -> dict:
-    """V over one per-page set field ("exhibits": exhibit-type slugs, "classes": exhibit-class
-    slugs): a page with none counts as {text_only}; a pair with an unread page (None) is left
-    out and counted as unread, never as a change or a repeat."""
-    def as_set(p: dict) -> frozenset | None:
-        return None if p[field] is None else frozenset(p[field] or [TEXT_ONLY])
-
-    read = [(as_set(a), as_set(b)) for a, b in pairs if as_set(a) is not None and as_set(b) is not None]
-    unread = sorted({p["slide"] for p in pages if p[field] is None})
+def _structure_measure(pages: list[dict], pairs: list[tuple[dict, dict]], unread_why: str, key: str) -> dict:
+    """V over one exhibit fact of each page (ooxml.exhibit_facts' `structure` or `kinds`
+    string): a pair with an unread page (None) is left out and counted as unread, never as
+    a change or a repeat."""
+    read = [(a[key], b[key]) for a, b in pairs if a[key] is not None and b[key] is not None]
+    unread = sorted({p["slide"] for p in pages if p[key] is None})
     if not read:
-        return {"status": "no evidence", "why": f"{field} not read on {len(unread)} of {len(pages)} content pages ({unread_why})" if unread else "no pair read"}
+        return {"status": "no evidence", "why": f"{key} not read on {len(unread)} of {len(pages)} content pages ({unread_why})" if unread else "no pair read"}
     changed = sum(1 for a, b in read if a != b)
     return {"V": round(changed / len(read), 3), "changed": changed, "pairs": len(read), "pages_unread": unread}
 
@@ -162,13 +186,12 @@ def distinct_windows(sequences: list[list[str]], n: int) -> list[float]:
     return [round(len(set(seq[i:i + n])) / n, 3) for seq in sequences for i in range(len(seq) - n + 1)]
 
 
-def measure_deck(name: str, segments: list[list[dict]], unread_why: dict[str, str] | None = None) -> dict:
+def measure_deck(name: str, segments: list[list[dict]], unread_why: str = STRUCTURE_UNREAD) -> dict:
     """One deck's variety. `segments` are lists of pages the reader sees in a row, each page
-    {"slide", "composition", "exhibits", "classes"}; `exhibits` and `classes` are lists of
-    slugs ([] for a page with none) or None when nobody read them, and `unread_why` names why
-    for each field. Evidence needs one segment of VARIETY_MIN_PAGES pages: pairs from shorter
-    segments still count once a deck has it, never on their own."""
-    whys = {**dict(SET_FIELDS), **(unread_why or {})}
+    {"slide", "composition", "structure", "kinds"}; `structure` and `kinds` are read from the
+    page's file, or None when it was not read, and `unread_why` says why. Evidence needs
+    one segment of VARIETY_MIN_PAGES pages: pairs from shorter segments still count once a
+    deck has it, never on their own."""
     pages = [p for seg in segments for p in seg]
     n = len(pages)
     pairs = [(a, b) for seg in segments for a, b in pairwise(seg)]
@@ -183,7 +206,7 @@ def measure_deck(name: str, segments: list[list[dict]], unread_why: dict[str, st
     distinct = len({p["composition"] for p in pages})
     return {**out, "status": "measured",
             "composition": {"V": round(changed / len(pairs), 3), "changed": changed, "pairs": len(pairs)},
-            **{field: _sets_measure(pages, pairs, field, whys[field]) for field, _ in SET_FIELDS},
+            **{name: _structure_measure(pages, pairs, unread_why, key) for name, key in FACT_MEASURES},
             "distinct": {"compositions": distinct, "pages": n, "per_page": round(distinct / n, 3)},
             "longest_run": max(len(r) for r in runs),
             "runs": [{"composition": r[0]["composition"], "pages": [p["slide"] for p in r]} for r in runs if len(r) > 1],
@@ -193,7 +216,7 @@ def measure_deck(name: str, segments: list[list[dict]], unread_why: dict[str, st
 def _pool_sets(measured: list[dict], field: str) -> dict:
     ex = [d for d in measured if "V" in d[field]]
     if not ex:
-        return {"status": "no evidence", "why": f"no deck's {field} were read (/exhibit_habits not answered)"}
+        return {"status": "no evidence", "why": f"no deck's {field} were read: " + "; ".join(f"{d['deck']}: {d[field].get('why')}" for d in measured)}
     pairs = sum(d[field]["pairs"] for d in ex)
     changed = sum(d[field]["changed"] for d in ex)
     return {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
@@ -216,7 +239,7 @@ def pool(decks: list[dict]) -> dict:
     return {"status": "measured", "decks": len(measured), "decks_without_evidence": [{"deck": d["deck"], "why": d["why"]} for d in decks if d["status"] != "measured"],
             "composition": {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
                             "p10_deck_V": round(percentile(vs, WARN_PERCENTILE), 3), "deck_V": vs, "p10_note": "unmeasured threshold" + one},
-            **{field: _pool_sets(measured, field) for field, _ in SET_FIELDS},
+            **{name: _pool_sets(measured, name) for name, _ in FACT_MEASURES},
             "distinct_per_page": {d["deck"]: d["distinct"]["per_page"] for d in measured},
             "longest_run": max(d["longest_run"] for d in measured),
             "sequences": [s for d in measured for s in d["sequences"]]}
@@ -238,22 +261,13 @@ def distinct_against(value: float, n: int, house: dict) -> dict:
 
 # --- the house, from a guide -------------------------------------------------------------------
 
-def content_segments(variety: dict, exhibit_habits: dict | None) -> list[list[dict]]:
+def content_segments(variety: dict) -> list[list[dict]]:
     """The guide's page sequence cut into the runs of content pages a reader sees in a row.
     A hidden page is not in the reading order and is skipped; any other page that is not
     content breaks the sequence, and so does a gap in the page numbers (a page not read).
-    Each page carries its exhibit types and exhibit classes from the digest's records, or
-    None when the digest did not read it (no digest, or the page outside its sample)."""
+    Each page carries its exhibit structure as the extractor read it from the file, or None
+    on a guide extracted before exhibit facts were read."""
     content = set(variety["content_pages"]["pages"])
-    read = None
-    by_slide: dict[int, dict[str, list[str]]] = {}
-    if exhibit_habits:
-        read = {r["slide"] for r in exhibit_habits["records"]} | set(exhibit_habits["sample"]["pages_without"])
-        for r in exhibit_habits["records"]:
-            got = by_slide.setdefault(r["slide"], {"exhibits": [], "classes": []})
-            for field, key in (("exhibits", "type"), ("classes", "class")):
-                if r[key] not in got[field]:
-                    got[field].append(r[key])
     segments: list[list[dict]] = [[]]
     last = None
     for page in variety["pages"]:
@@ -262,9 +276,9 @@ def content_segments(variety: dict, exhibit_habits: dict | None) -> list[list[di
         if page["slide"] not in content or (last is not None and page["slide"] != last + 1 and not _hidden_between(variety, last, page["slide"])):
             segments.append([])
         if page["slide"] in content:
-            got = None if read is None or page["slide"] not in read else by_slide.get(page["slide"], {"exhibits": [], "classes": []})
+            facts = page.get("exhibit_facts")
             segments[-1].append({"slide": page["slide"], "composition": page["composition"],
-                                 "exhibits": None if got is None else got["exhibits"], "classes": None if got is None else got["classes"]})
+                                 **{key: facts.get(key) if isinstance(facts, dict) else None for _, key in FACT_MEASURES}})
         last = page["slide"]
     return [s for s in segments if s]
 
@@ -282,9 +296,8 @@ def _is_int(v) -> bool:
 def read_house_guide(guide, where: str) -> dict:
     """A guide given as the house's evidence, proven at the boundary: a style guide (a
     reference with its sha256), whose variety, when it carries pages, lists each page once
-    with its number, composition and triage and names its content pages among them, and
-    whose exhibit digest, when there is one, gives every record a page, type and class.
-    Anything else is refused by name: a plan, a list or a guide from before the variety
+    with its number, composition and triage, names its content pages among them, and gives
+    each page's exhibit facts, when it carries them, a structure string. Anything else is refused by name: a plan, a list or a guide from before the variety
     measure is not evidence about the house's pages."""
     if not isinstance(guide, dict) or not isinstance(guide.get("reference"), dict) or not (isinstance(guide["reference"].get("sha256"), str) and guide["reference"]["sha256"]):
         raise Refused(f"{where}: not a style guide (no reference.sha256): a house deck is a guide or draft from extract_style.py")
@@ -307,14 +320,10 @@ def read_house_guide(guide, where: str) -> dict:
     cp = (variety.get("content_pages") or {}).get("pages") if isinstance(variety.get("content_pages"), dict) else None
     if not isinstance(cp, list) or not all(_is_int(v) and v in slides for v in cp) or len(set(cp)) != len(cp):
         raise Refused(f"{where}: variety.content_pages.pages {cp!r} is not a list of listed slides, each once")
-    eh = guide.get("exhibit_habits")
-    if eh is not None:
-        records = eh.get("records") if isinstance(eh, dict) else None
-        without = (eh.get("sample") or {}).get("pages_without") if isinstance(eh, dict) and isinstance(eh.get("sample"), dict) else None
-        if not isinstance(records, list) or not all(isinstance(r, dict) and _is_int(r.get("slide")) and isinstance(r.get("type"), str) and isinstance(r.get("class"), str) for r in records):
-            raise Refused(f"{where}: exhibit_habits.records is not a list of records with a slide, type and class")
-        if not isinstance(without, list) or not all(_is_int(v) for v in without):
-            raise Refused(f"{where}: exhibit_habits.sample.pages_without is not a list of slide numbers")
+    bad = [p["slide"] for p in pages if "exhibit_facts" in p and not (isinstance(p["exhibit_facts"], dict)
+                                                                     and all(isinstance(p["exhibit_facts"].get(key), str) for _, key in FACT_MEASURES))]
+    if bad:
+        raise Refused(f"{where}: variety.pages on slides {bad} carry exhibit_facts without structure and kinds strings (re-run extract_style.py)")
     return guide
 
 
@@ -326,7 +335,7 @@ def house_deck(guide: dict) -> dict:
         why = (variety or {}).get("why") if isinstance(variety, dict) else None
         return {"deck": name, "content_pages": 0, "pairs": 0, "status": "no evidence",
                 "why": why or "the guide carries no variety pages (extracted before plan.py, or a raster reference with no shapes): re-run extract_style.py"}
-    return measure_deck(name, content_segments(variety, guide.get("exhibit_habits")))
+    return measure_deck(name, content_segments(variety))
 
 
 def house_of(guides: list[dict], names: list[str] | None = None) -> dict:
@@ -348,8 +357,9 @@ def house_of(guides: list[dict], names: list[str] | None = None) -> dict:
 # --- the plan --------------------------------------------------------------------------------
 
 def read_plan(plan, guide: dict) -> list[dict]:
-    """The plan proven at the boundary: every page every key, every value in its vocabulary,
-    every archetype one the guide holds. All problems in one refusal."""
+    """The plan proven at the boundary: every page every key, every exhibit brief complete
+    (brief_errors), every title register in the title vocabulary, every archetype one the
+    guide holds. All problems in one refusal."""
     errors: list[str] = []
     if not isinstance(plan, dict) or plan.get("schema") != PLAN_SCHEMA or not isinstance(plan.get("pages"), list):
         raise Refused(f"plan: expected {{\"schema\": \"{PLAN_SCHEMA}\", \"reference_sha256\", \"pages\": [...]}}")
@@ -388,20 +398,12 @@ def read_plan(plan, guide: dict) -> list[dict]:
         if "composition" in page and not (isinstance(comp, str) and (comp in archetypes or NEW_COMPOSITION.fullmatch(comp))):
             errors.append(f"{where} composition: {comp!r} is neither an archetype of this guide ({sorted(archetypes, key=_arch_order)}) "
                           "nor a named new one (new:<lowercase-name>)")
-        for key, vocab in (("exhibit_types", "exhibit_type"), ("data_shapes", "data_shape")):
-            if key not in page:
-                continue
-            got = page[key]
-            if not isinstance(got, list):
-                errors.append(f"{where} {key}: a list ([] states the page has none)")
-                continue
-            bad = [v for v in got if not (isinstance(v, str) and v in VOCABULARY[vocab])]
-            if bad:
-                errors.append(f"{where} {key}: " + "; ".join(f"{v!r}{nearest(v, VOCABULARY[vocab])}" for v in bad)
-                              + f" not in {vocab} ({'|'.join(VOCABULARY[vocab])})")
-            twice = sorted({v for v in got if isinstance(v, str) and got.count(v) > 1})
-            if twice:
-                errors.append(f"{where} {key}: {twice} named more than once (the list is a set: two exhibits of one type are one entry)")
+        if "exhibits" in page:
+            if not isinstance(page["exhibits"], list):
+                errors.append(f"{where} exhibits: a list of exhibit briefs ([] states the page holds none)")
+            else:
+                for j, brief in enumerate(page["exhibits"]):
+                    errors += brief_errors(brief, f"{where} exhibits[{j}]", guide)
         if "title_register" in page and not (isinstance(page["title_register"], str) and page["title_register"] in registers):
             errors.append(f"{where} title_register: {page['title_register']!r}{nearest(page['title_register'], registers)} not in {'|'.join(registers)}")
         reason = page.get("deliberate_parallel")
@@ -419,17 +421,95 @@ def read_plan(plan, guide: dict) -> list[dict]:
     return pages
 
 
+def _words(text) -> int:
+    return len(_WORD.findall(text)) if isinstance(text, str) else 0
+
+
+def _phrase_error(value, where: str, least: int) -> str | None:
+    if not isinstance(value, str) or _words(value) < least:
+        return f"{where}: {'a phrase of at least ' + str(least) + ' words' if least > 1 else 'words'}, not {value!r}"
+    return None
+
+
+def _form_key(form: str) -> str:
+    """A form's name for telling two apart: case, spacing and punctuation left out."""
+    return " ".join(re.findall(r"[^\W_]+", form.lower()))
+
+
+def reference_pages(guide: dict) -> int | None:
+    """How many pages the reference holds (reference.slides), or None when the guide does not say."""
+    n = (guide.get("reference") or {}).get("slides")
+    return n if _is_int(n) and n > 0 else None
+
+
+def brief_errors(brief, where: str, guide: dict) -> list[str]:
+    """An exhibit brief checked for completeness, never for what it says: every key (BRIEF_KEYS)
+    and no other; each text field a phrase of BRIEF_MIN_WORDS words or more (a form's name one
+    word or more); forms_considered a list of {"form", "reason"} naming at least two distinct
+    forms; nearest_house_exhibit {"page": N, "what": ...} with N a page of the reference, or
+    {"none": ...} saying why no page is near."""
+    if not isinstance(brief, dict):
+        return [f"{where}: an exhibit brief ({', '.join(BRIEF_KEYS)}), not {type(brief).__name__}"]
+    out: list[str] = []
+    missing = [k for k in BRIEF_KEYS if k not in brief]
+    stray = sorted(set(brief) - set(BRIEF_KEYS))
+    if missing:
+        out.append(f"{where}: {missing} not answered")
+    if stray:
+        out.append(f"{where}: unknown keys {stray}")
+    for key in BRIEF_TEXT:
+        if key in brief:
+            e = _phrase_error(brief[key], f"{where} {key}", 1 if key in NAME_FIELDS else BRIEF_MIN_WORDS)
+            if e:
+                out.append(e)
+    forms = brief.get("forms_considered")
+    if "forms_considered" in brief:
+        if not isinstance(forms, list):
+            out.append(f"{where} forms_considered: a list of {{\"form\", \"reason\"}}, two or more")
+        else:
+            names = []
+            for k, f in enumerate(forms):
+                if not isinstance(f, dict) or set(f) != {"form", "reason"}:
+                    out.append(f"{where} forms_considered[{k}]: exactly {{\"form\", \"reason\"}} (the reason: why not, or why)")
+                    continue
+                out += [e for e in (_phrase_error(f["form"], f"{where} forms_considered[{k}] form", 1),
+                                    _phrase_error(f["reason"], f"{where} forms_considered[{k}] reason", BRIEF_MIN_WORDS)) if e]
+                if isinstance(f["form"], str):
+                    names.append(_form_key(f["form"]))
+            distinct = sorted({n for n in names if n})
+            if len(distinct) < 2:
+                out.append(f"{where} forms_considered: {len(distinct)} distinct form{'' if len(distinct) == 1 else 's'} ({distinct}); "
+                           "weigh at least two forms for what the reader must see, each with why not or why")
+    near = brief.get("nearest_house_exhibit")
+    if "nearest_house_exhibit" in brief:
+        n = reference_pages(guide)
+        if isinstance(near, dict) and set(near) == {"page", "what"}:
+            if not _is_int(near["page"]) or n is None or not 1 <= near["page"] <= n:
+                out.append(f"{where} nearest_house_exhibit: page {near['page']!r} is not a page of the reference "
+                           f"({'1 to ' + str(n) if n else 'the guide states no page count (reference.slides)'})")
+            e = _phrase_error(near["what"], f"{where} nearest_house_exhibit what", BRIEF_MIN_WORDS)
+            if e:
+                out.append(e)
+        elif isinstance(near, dict) and set(near) == {"none"}:
+            e = _phrase_error(near["none"], f"{where} nearest_house_exhibit none", BRIEF_MIN_WORDS)
+            if e:
+                out.append(e + " (say why no page of the reference is near)")
+        else:
+            out.append(f"{where} nearest_house_exhibit: {{\"page\": N, \"what\": ...}} for a page of the reference, "
+                       f"or {{\"none\": \"why none is near\"}}; not {near!r}")
+    return out
+
+
 def _arch_order(a: str) -> tuple:
     m = re.match(r"arch-(\d+)$", a)
     return (0, int(m.group(1))) if m else (1, a)
 
 
 def plan_segments(pages: list[dict]) -> list[list[dict]]:
-    return [[{"slide": i, "id": p["id"], "composition": p["composition"], "exhibits": list(p["exhibit_types"]), "classes": None}
-             for i, p in enumerate(pages, 1)]]
+    return [[{"slide": i, "id": p["id"], "composition": p["composition"], **{key: None for _, key in FACT_MEASURES}} for i, p in enumerate(pages, 1)]]
 
 
-PLAN_UNREAD = {"classes": "the plan declares exhibit types, not classes: the build measures the classes it realises"}
+PLAN_UNREAD = "a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes"
 
 
 def against(value: float | None, house: dict, key: str) -> dict:
@@ -495,15 +575,16 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
     comparison = {}
     if mine["status"] == "measured":
         comparison = {"composition_V": against(mine["composition"]["V"], pooled, "composition"),
-                      "exhibits_V": against(mine["exhibits"].get("V"), pooled, "exhibits"),
+                      **{f"{name}_V": {"value": None, "verdict": PLAN_UNREAD,
+                                        "house": (pooled.get(name) or {}).get("V", (pooled.get(name) or {}).get("why"))
+                                        if pooled["status"] == "measured" else "no evidence"} for name, _ in FACT_MEASURES},
                       "distinct_per_page": {**distinct_against(mine["distinct"]["per_page"], mine["content_pages"], pooled),
                                             "house_decks": pooled.get("distinct_per_page") if pooled["status"] == "measured" else "no evidence"},
                       "longest_run": {"plan": mine["longest_run"], "house": longest if longest is not None else "no evidence"}}
-        for key in ("composition_V", "exhibits_V"):
-            if comparison[key]["verdict"].startswith("below"):
-                c = comparison[key]
-                warnings.append(f"{key} {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
-                                "the threshold is unmeasured" + (parallels_note(repeats, mine["composition"]) if key == "composition_V" else ""))
+        c = comparison["composition_V"]
+        if c["verdict"].startswith("below"):
+            warnings.append(f"composition_V {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
+                            "the threshold is unmeasured" + parallels_note(repeats, mine["composition"]))
         d = comparison["distinct_per_page"]
         if d["verdict"].startswith("below"):
             warnings.append(f"distinct compositions per page {d['value']} is below the house's 10th percentile window of {d['window_pages']} pages "
@@ -520,6 +601,7 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
             warnings.append(f"page {p['id']!r} title_register {p['title_register']!r}: the house writes none ({house_registers})")
     return {"status": "refused" if refusals else "pass", "refusals": refusals, "warnings": warnings,
             "plan": mine, "house": house, "comparison": comparison, "repeats": repeats,
+            "exhibit_briefs": {p["id"]: len(p["exhibits"]) for p in pages},
             "compositions": {"house_archetypes_used": sorted({p["composition"] for p in pages} - set(new), key=_arch_order), "new": new},
             "title_registers": {"house": house_registers if house_registers is not None else "no evidence: /titles/register not completed",
                                 "plan": {r: sum(1 for p in pages if p["title_register"] == r) for r in VOCABULARY["title_register"]}}}
@@ -575,7 +657,9 @@ def verdict(report: dict, out: str | None) -> str:
     lines += [f"  refused: {r}" for r in report.get("refusals") or []]
     lines += [f"  warning: {w}" for w in report.get("warnings") or []]
     for key, v in (report.get("comparison") or {}).items():
-        if isinstance(v, dict) and "verdict" in v:
+        if key in {f"{name}_V" for name, _ in FACT_MEASURES} and isinstance(v, dict) and v.get("value") is None:
+            lines.append(f"  {key}: house {v.get('house')}; {v.get('verdict')}")
+        elif isinstance(v, dict) and "verdict" in v:
             house = v.get("house_p10_deck", v.get("house_p10_window"))
             lines.append(f"  {key}: {v.get('value')}, house 10th percentile {house} ({v['verdict']})")
         elif isinstance(v, dict):
@@ -584,8 +668,7 @@ def verdict(report: dict, out: str | None) -> str:
             lines.append(f"  {key}: {v}")
     decks = (report.get("house") or {}).get("decks") or []
     if len(decks) == 1:
-        lines.append("  note: the house is one deck, so each 10th percentile is that deck's own value; its exhibit and class V come "
-                     "from your digest reading, so a different reading moves these lines (pool sister decks with --house-deck)")
+        lines.append("  note: the house is one deck, so each 10th percentile is that deck's own value (pool sister decks with --house-deck)")
     regs = report.get("title_registers") or {}
     if regs:
         lines.append(f"  title registers: plan {regs.get('plan')}, house {regs.get('house')}")

@@ -140,8 +140,13 @@ the emitter corrects an ink.
 ## Repetition (the section's variety)
 
 Each solved page's content (the page frame left out: `frame_left_out`) gets a realised
-composition by the extractor's own clustering, and `measure` is plan.py's: composition V,
-class V (the exhibit classes the page realises), distinct per page, runs. `against_house`
+composition by the extractor's own clustering and an exhibit structure read back from the
+written file by the reader that read the house's pages (`ooxml.exhibit_facts`: native
+charts by plot type, bar direction, grouping and series count, tables, pictures, drawn
+shapes, panels 1, 2 or 3+; the drawn chrome left out; under `realised[].structure`), and
+`measure` is plan.py's: composition V, structure V, kinds V (the structure with any chart
+a chart, under `realised[].kinds`), distinct per page, runs. Nobody names a structure, so
+renaming an exhibit cannot move it. `against_house`
 sets each against the house (pooled with `--house-deck`), `runs_over_reference` lists runs
 longer than the house's longest, and `warnings` lists every figure below the house's 10th
 percentile; a composition V warning names each repeat the plan declared a deliberate
