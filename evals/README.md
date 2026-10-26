@@ -8,6 +8,7 @@ the same scenarios on the company's own templates and past decks.
 
 ## Contents
 - Scenario files
+- Holding out the worked examples
 - Running a scenario with a fresh agent
 - Scoring a scenario
 - The blind round (the primary success measure)
@@ -39,11 +40,39 @@ Each `NN-*.json` holds:
 | 08-confidentiality | scenario 01 with a seeded page library | the leakage report (chrome excluded), no network, library hygiene |
 | 09-template-without-past-decks | a template file with several masters | template choice, habits with no evidence flagged |
 
+## Holding out the worked examples
+
+The skill ships worked examples made from public reference decks: a completion, a digest,
+deck specs, plans and build proofs for keybank (`mi_keybank_first_niagara_fig_ma.pptx`),
+the McKinsey board PDF (`mckinsey-calstrs-future-of-boards-2024.pdf`) and the Goldman
+Airvana raster proof. An evaluation run on one of those decks grades the examples, not the
+skill: in blind round 2 a generator on keybank found `examples/keybank.completion.json`
+and the keybank digest, and step 2 could be copied instead of read off the renders.
+
+`examples/PROVENANCE.json` ties every file under `examples/` to the reference it was made
+from, by sha256 (or lists it as independent). Before any run on a reference, make the
+skill copy the agent will see with that deck's examples held out:
+
+```bash
+python3 evals/holdout.py --reference refs/files/mi_keybank_first_niagara_fig_ma.pptx \
+        [--reference OTHER ...] [--alias WORD ...] --out /abs/path/skill-under-test
+```
+
+It matches references by hash, not name; leaves out `evals/` (the expected behaviours);
+refuses when an example file is not in `PROVENANCE.json` (a new example must say which
+deck it came from before any evaluation runs); and prints every line of the copied tree
+that still names a tested deck by an alias (the references cite measurements taken on
+keybank, the McKinsey PDF and others). Read that list and record in the run's notes which
+of those lines the agent could have used. Give the agent the `--out` tree as the skill,
+never this checkout. A run on a deck with no worked examples (netflix, the BCG PDF) still
+goes through it, with `--alias`, to get the naming list.
+
 ## Running a scenario with a fresh agent
 
-1. Start an agent with only this skill directory and the scenario's reference files in a
-   new empty working directory. Give it the `brief` and the `data` as the user would, and
-   nothing else: not this README, not the expected behaviours, not earlier transcripts.
+1. Start an agent with only the held-out skill copy (above) and the scenario's reference
+   files in a new empty working directory. Give it the `brief` and the `data` as the user
+   would, and nothing else: not this README, not the expected behaviours, not earlier
+   transcripts.
 2. Let it run the skill's workflow to a delivered deck and final report. Build cap: 8 builds
    per 5 pages.
 3. Ask it to return what it did, what it could not do, and a friction list: each item with

@@ -112,7 +112,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "73-74% over the 12 years in the explicit forecast period (FY 15 \u2013 FY 26) ",
+             "text": "73-74% over the 12 years in the explicit forecast period (FY 15 – FY 26) ",
              "bullet_level": 0
             }
            ],
@@ -152,7 +152,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "9.0% (Slightly above company\u2019s current target of 8.5%) ",
+             "text": "9.0% (Slightly above company’s current target of 8.5%) ",
              "bullet_level": 0
             }
            ],
@@ -331,7 +331,6 @@
     "e1": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -345,7 +344,6 @@
     "e3": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -359,7 +357,6 @@
     "e5": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -373,7 +370,6 @@
     "e7": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -387,7 +383,6 @@
     "e9": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -401,7 +396,6 @@
     "e11": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -415,7 +409,6 @@
     "e13": {
      "anchor": "m",
      "fill_role": "color.accent1",
-     "pad_role": "space.xs",
      "paragraphs": {
       "0": {
        "align": "center",

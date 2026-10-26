@@ -153,6 +153,8 @@ def text_overflows(s: SlidePrint, *, strict: bool = False, substitutes: dict | N
             continue
         if sh.ph_type in ("sldNum", "ftr", "dt"):
             continue  # furniture in a box PowerPoint lets a line overhang; never content
+        if sh.text_wrap == "none":
+            continue  # one line that never wraps (drawn chrome, a turned copyright line): it overhangs its box by design
         runs = [r for p in sh.paragraphs for r in p["runs"] if not r.get("br")]
         if not runs:
             continue

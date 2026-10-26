@@ -228,11 +228,13 @@
      "annotation_moves": [
       {
        "move": "statistic_row_emphasis",
-       "anchor": "the median row"
+       "anchor": "the median row",
+       "labelled": true
       },
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the First Niagara row"
+       "anchor": "the First Niagara row",
+       "labelled": false
       }
      ],
      "emphasis_devices": [
@@ -259,7 +261,8 @@
      "annotation_moves": [
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the forward P / E rows"
+       "anchor": "the forward P / E rows",
+       "labelled": false
       },
       {
        "move": "nm_na_markers",
@@ -381,7 +384,8 @@
      "annotation_moves": [
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the full-synergy columns"
+       "anchor": "the full-synergy columns",
+       "labelled": false
       },
       {
        "move": "data_labels_all",
@@ -476,7 +480,8 @@
      "annotation_moves": [
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the percent of expenses phrases"
+       "anchor": "the percent of expenses phrases",
+       "labelled": false
       },
       {
        "move": "callout_to_insight",
@@ -566,7 +571,8 @@
       },
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the average"
+       "anchor": "the average",
+       "labelled": true
       }
      ],
      "emphasis_devices": [
@@ -624,7 +630,8 @@
      "annotation_moves": [
       {
        "move": "circled_or_boxed_mark",
-       "anchor": "the three rows that differ"
+       "anchor": "the three rows that differ",
+       "labelled": false
       }
      ],
      "emphasis_devices": [

@@ -165,7 +165,9 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
         name, d = nearest_colour(fill, colours, ("color.surface", "color.accent", "color.rule", *extra_fills))
         if name and d < 12:
             st["fill_role"] = name
-            st["pad_role"] = "space.xs"
+            # the box's own inset is not carried: a text element is measured at its full
+            # width, and a pad_role on it insets nothing (refused by the build)
+            notes.append(f"{ident}: filled text box written flush, without its inset; wrap it in a padded region to keep one")
         else:
             notes.append(f"{ident}: fill {fill} has no colour role within CIE76 12 (nearest {name} at {d:.1f}); left unfilled")
     if para_style:
@@ -392,6 +394,10 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
              "import_lost": lost + ["each element's exact position and size (rebuilt from roles and weights)",
                                     "each table's own fills, rules and column widths (the guide's table look; widths measured)"
                                     if any('"kind": "table"' in json.dumps(c) for c in body_children) else None]}
+    unknown = json.dumps(root, ensure_ascii=False).count("�")
+    if unknown:
+        # ooxml reads a glyph the PDF maps to no character as U+FFFD: the words are not known
+        slide["import_lost"].insert(0, f"{unknown} character(s) the PDF maps to no character (written as �): retype them from the render")
     slide["import_lost"] = [x for x in slide["import_lost"] if x]
     if images:
         slide["images"] = images

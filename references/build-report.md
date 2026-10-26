@@ -20,8 +20,13 @@
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
   -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
-  [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...]
+  [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...] \
+  [--computed "$DECK_WORK/figures.txt" ...]
 ```
+
+Give each build its own output folder (`out/b1/deck.pptx`, `out/b2/deck.pptx`, ...): a
+refused build moves an earlier build's files at the same paths aside to `.stale`, so with
+one folder the best build has to be rebuilt to be handed over.
 
 With `--plan`, the deck holds the whole plan or one run of consecutive planned pages, each
 slide's id its page id: to build one page while you work on it, give a deck of that one
@@ -68,19 +73,30 @@ Listed per page before the figures. A refusal turns a fit page `unfittable` with
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
-`annotation collides`, `annotation covers chart text`, `annotation render check failed`;
-`picture not drawn as written`, `picture too small to check`, `picture render check failed`; `font refused`; `no source line` where the house carries source lines as a rule (below).
+`annotation unexplained` (a ring, box, band, line or bracket with no label and no proven
+`explained_by`: chart-recipes.md, "A mark says what it means"), `annotation collides`,
+`annotation covers chart text`, `annotation render check failed`;
+`picture not drawn as written`, `picture too small to check`, `picture render check failed`;
+`font refused`; `no source line` where the house carries source lines as a rule (below).
 Warnings never refuse: `tieout` (a totals cell that does not equal its column), `no
-source line` elsewhere, and `plan figure not on the page` (a figure the plan's message
+source line` where the habit is common or unmeasured, `source line the house rarely
+carries`, and `plan figure not on the page` (a figure the plan's message
 for the page states that the page does not carry: the plan was written before the
 numbers moved, or the page lost its claim).
 
-`no source line` is a page with a table or chart and no `type.source_line` or
-`type.footnote` paragraph. The house's habit is the digest's count of data pages that
-carry one (`exhibit_habits.source_lines`). Where at least 80% of three or more house data
-pages carry one, the page is refused; otherwise it warns, with the house's count in the
-detail (keybank: 1 of 5, so it warns). A guide whose digest answered no `source_line`
-warns and says the habit is not measured. The 80% line is unmeasured.
+The house's source-line habit is the digest's count of data pages that carry a source
+or note line (`exhibit_habits.source_lines`), over three or more data pages: `rule` at 80%
+or more, `common` from 50%, `rare` below. `no source line` is a data page (a table or
+chart) with no `type.source_line` or `type.footnote` paragraph: refused where the habit is
+a rule, warned where it is common. Where it is rare, a page without one matches the house
+and nothing is said, and a page WITH one warns `source line the house rarely carries`
+(keybank: 1 of 5 data pages, so a keybank page with a source line warns). A guide whose
+digest answered no `source_line`, or fewer than three data pages, is `unmeasured`: a data
+page without one warns, never read as "the house carries none". Both lines are
+unmeasured. The deck-level `source_lines` sets the house's habit beside the deck's pages
+with one, and the brief prints both counts. In round 2 the old rule (warn on every data
+page without one, whatever the house did) told agents on keybank and netflix, houses with
+1 of 5 and 1 of 8, to add source lines to every page.
 
 ## What the file is written at
 
@@ -134,7 +150,10 @@ the plan check, `realised_by_page` sets each page's planned composition beside i
 realised one (realised names, b1, b2, ..., are this build's own clusters: two pages share
 one when they share an arrangement), and `pages_differing_from_plan` flags each page where
 plan and build disagree. A plan the check
-refuses is not built.
+refuses is not built. A pair whose similarity lies within 0.1 of the 0.5 line (unmeasured)
+is marked `borderline` under `pairs`, and a flag or a composition V warning that rests on
+one says so: one lead-in wrapping to a second line once moved a keybank pair from 0.434 to
+0.543. Change the arrangement, not the words, when two pages must read as different.
 
 ## Leakage
 
@@ -144,8 +163,16 @@ carries, with the past page it is on. The past decks are `--reference` and each
 `--house-deck`'s own file (found by its recorded sha256; one not found is named under
 `unread`, never taken as clean). Left out: the house's chrome (text a past deck repeats on
 half its pages or more, and the template's own text), and every word of a `--brief` file
-(the user's brief and data, as text). Pictures are compared by hash, the template's own
-excepted.
+(the user's brief and data, as text), and the text of the chrome the build drew (on a
+raster reference the past deck's copy of a footer is OCR text that never reads as chrome
+there). Pictures are compared by hash, the template's own excepted.
+
+`--computed FILE` takes the figures your own arithmetic produced from the user's data, as
+text (the output of the script that computes and asserts every stated figure). A past
+deck's figure that also appears there is listed once under `declared_computed`, with the
+past page it coincides with, instead of as distinctive: a computed 1.6% that a reference
+also prints is a coincidence you can name. Only figures: a name or a phrase in that file is
+still reported. Never put a figure you did not compute in it.
 
 Each finding is ranked by rarity against the public decks of other houses in
 `refs/files` (`rarity_basis`; the past decks and their twins left out). Low: a name or
@@ -177,6 +204,8 @@ the guide says is refused by name.
   step) on several pages whose top moves by more than that step.
 - `tieouts`: for each table with `totals_last_row`, each numeric column's body sum against
   its totals cell at the cell's decimals; median, average and mean rows are skipped.
+- `table_defaults_taken`: every table choice the spec left out (an emphasis group's
+  `bold`), with the value written.
 - `chart_defaults_taken`: every chart choice the spec left out, with the value the file
   got. None of these is the house's style: write each into the spec until the list holds
   only what you meant.

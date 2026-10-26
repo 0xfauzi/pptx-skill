@@ -145,6 +145,11 @@ rendered on 2026-10-20.
 | An unset shell variable gave a bare traceback or a write under `/` | `cli.run` refuses empty arguments and unopenable paths by name; `cli.out_path` refuses a missing top-level directory | Round 4: `gallery.py digest ""` |
 | Ten line_spacing answers one by one | `"/typography/roles/*/line_spacing"` answers every open one not named | Round 4: 7 answered, the named title kept 1.0 |
 | A plan warning on composition V ignored a declared parallel | The warning names each declared parallel with its reason and V over the other pairs, in plan.py and in the build | Round 4: haiku 0.667, 1.0 without the declared pair |
+| An unlabelled ring, box, band, line or bracket passed the build (blind round 2: "random red circle with no label looks like a model's attempt to annotate") | `annotation unexplained`: a mark carries a `label` (outline boxes now take one) or `explained_by` names words on the page that share a word or figure with what it encloses, a labelled callout on its anchor, a legend entry in its ink, a shared footnote marker, or a digest page where the house draws the same move `labelled: false` on the same class (and planned type) of exhibit; the digest answers `labelled` on every mark move | Round 5: bcg-sonnet's ring on the base-case line refused; labelled, it passed; with the gate broken the unlabelled ring read PASS. A label over a line series' stroke now collides (the ring's first label crossed the base line and passed before) |
+| The source-line check warned "add one where the house would" on every data page without one, whatever the house did | Habit `rule`, `common`, `rare`, `unmeasured` from the digest count; a page WITH one on a `rare` house warns; deck-level `source_lines` and the brief print both counts; complete_guide prints `house_habits` | Round 5: keybank (1 of 5) and netflix (1 of 8) pages carried source lines on every page; netflix's own round trip of a house page had warned "add one" |
+| The worked examples of the blind-round decks shipped with the skill | `examples/PROVENANCE.json` (every example tied to its reference by sha256) and `evals/holdout.py` (a held-out copy, evals/ left out, unnamed examples refused, lines still naming the deck listed) | Round 5: keybank-opus copied the keybank completion and digest |
+| Round 5 friction, each reproduced on the generators' files or a cut of the keybank comps page | Empty table cells drop their run and carry an end mark (a section row no longer moves the boxes below it); `pad_roles` per side and `homePlate` on regions, presets read by their solid body in the contrast gate; anchor, prst, pad_role on text, runs on a paragraph and unknown presets refused by name; emphasis `bold`; nearest vocabulary entries; plan figures by value; borderline variety pairs; `--computed` and drawn chrome in leakage; raster digest, `color.emphasis`, checked `/chrome`, `/composition`, `/spacing/steps`; U+FFFD for unmapped PDF glyphs; `validate --render` reads both pdftotext orders; a no-wrap chrome line is no overflow | Round 5 report (evals and the commit messages name each before and after) |
+| Round 5 verifier: `explained_by` ids given as lists crashed the build (`unhashable type: 'list'`); a quote tied a box round a whole row through a column head it crosses (`"P / TBV"`) or through a digit (`"1"` from `CET1`, or 1.34 at the quote's rounding); a whitespace label crashed the measurer; `/spacing/steps` stored 6 (points) as 6 EMU; `house_habits` said "put one where the house would" on a rare house | Every id `explained_by` names is one non-empty string, refused by name; a column head counts only where the mark encloses the head or only some columns, a row label only where it encloses the label or only some rows; a word runs on through digits; a figure of one significant digit ties only an equal value; a label's text must hold a word; a step under 12700 EMU (one point) is refused as a unit slip; `house_habits` prints the graded habit and what it asks (`SOURCE_LINE_ADVICE`, beside `source_line_habit`) | Each reproduced on the branch head with the verifier's specs, refused after the fix, and passing or crashing again with only that gate taken out; the keybank section (0.084) and annotations (0.117) examples unchanged, every mark still explained |
 
 ## Not ported, on merit
 
@@ -272,3 +277,23 @@ branch head before the fix, then fixed and shown failing with the fix taken out:
 
 The four rebuilds and their statuses, scales and judge totals are unchanged (p15 0.12,
 p24 0.114, p5 0.058, p9 0.112); the p15 icon now reads 0.02% differing against 0.0%.
+
+## Round 5 integration
+
+The exhibits and annotation branches merged with one definition per concept on each
+conflict: `Labeller.space` takes both the type-role distance (`gap_lines`, exhibits) and
+the explicit `"none"` zero (annotation); `resolve` places a category row and proves every
+mark's explanation; an outline box's label gap is listed when left out.
+
+One defect the annotation verifier found (D4) is fixed here rather than on its branch,
+because the one definition of a picture file (`images.read_picture`) arrived with the
+exhibits branch: a `/chrome` logo's `image_path`, a chrome logo drawn with `--chrome draw`
+and a `firm_chrome` replacement picture are each read through `emit_pptx.picture_file`,
+which calls it. Before: `/etc/passwd`, a text file named .png and an SVG with a script
+were each accepted by `complete_guide` and crashed the build with
+`PIL.UnidentifiedImageError`. After: each is refused by name at the completion
+(`/chrome[2] image_path: /etc/passwd is not a readable picture`) and, for a guide written
+before this change, before building; a logo extracted with `images.py extract` passes and
+builds. A firm_chrome replacement is matched to the template's picture by its read
+format, not its file name.
+

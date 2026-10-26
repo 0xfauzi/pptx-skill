@@ -163,8 +163,23 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   is reserved. A band carrying content on at least half the pages it appears on is a
   surface (a title band, a body band) and reserves nothing; text on it is scored against
   its fill, so text straddling a band edge is refused there.
-- A region may carry `fill_role` and `pad_role`: a filled box with padded children. Text
-  inside takes `ink_role` on its paragraph.
+- A region may carry `fill_role` (and `prst`, a preset drawn under its children: `rect`,
+  `roundRect`, `ellipse`, `homePlate`, `chevron`, `rightArrow`, `diamond`, `triangle`)
+  and padding in its layout: `pad_role` on every side, or `pad_roles` naming each of
+  `left`, `top`, `right`, `bottom` (a spacing role or null; a side left out is refused,
+  not read as zero). Text inside takes `ink_role` on its paragraph. A house's arrow or
+  chevron label is such a region: the contrast gate reads the text against the shape's
+  solid body (a homePlate's body ends half the shape's height before its point; a
+  chevron's runs between its notch and its point; an arrow's is its shaft), so give the
+  pointed side the padding that keeps the words on the body (a homePlate label with
+  `pad_roles` right `space.md` and the rest `space.sm` on keybank).
+- A text element takes `fill_role`, `line_role` and `anchor` (`t`, `m` or `b`) itself;
+  any other anchor is refused (it fell back to top in silence before). `prst` and
+  `pad_role` on a text element are refused: a text box is a rectangle measured at its
+  full width; put the words in a region that carries them.
+- A paragraph is `{"role", "text"}` plus `bullet_level`, `ink_role`, `align`. Bold or
+  coloured words go under `styling.<id>.paragraphs.<n>.runs`, the paragraph keeping the
+  whole text; `runs` on the paragraph itself is refused by name.
 - Height: a region is as tall as its content unless it is flexible (it holds a chart, image
   or rule with no height, or carries a `weight` inside a column); flexible regions share
   the spare height by weight. A row's `align` does not make it flexible: to fill the page,

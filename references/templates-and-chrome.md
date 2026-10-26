@@ -38,8 +38,9 @@ and in `draft.md`'s chrome list):
 "firm_chrome": {"chrome-13": {"text": "Harbour & Co."}, "chrome-9": "drop"}
 ```
 
-`"keep"`, `"drop"`, `{"text": "..."}` for a text entry, `{"image_path": "..."}` (same
-image type) for a logo. An id that is not firm chrome on these pages is refused, listing
+`"keep"`, `"drop"`, `{"text": "..."}` for a text entry, `{"image_path": "..."}` (a PNG,
+JPEG or GIF of the same format as the template's picture, read as a picture, not by its
+name) for a logo. An id that is not firm chrome on these pages is refused, listing
 the ones that are. The build reports every entry's decision, and marks each one the deck
 left to the default.
 

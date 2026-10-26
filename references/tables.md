@@ -78,7 +78,9 @@ habits recorded on 35 pages; the house's own appear in `exhibit_habits.number_fo
 - `emphasis` is the table's list of emphasis groups, each marking body rows (data-row
   indices) or columns (column keys), with a `fill_role` (a colour role; `"none"`, no
   fill; `"keep"`, the banding or data fill the cells have anyway; there is no default) and
-  an optional `ink_role`. Emphasised cells are written bold and measured bold. Several
+  an optional `ink_role` and `bold` (`true` or `false`: a dark label column in regular
+  weight is `"bold": false`; left out, the cells are bold and the page lists it under
+  `table_defaults_taken`). Cells are measured in the weight they are written in. Several
   emphases on one table are several groups: the subject row shaded and the row labels
   bold is `[{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"],
   "fill_role": "keep"}]`; where two groups meet, the later one's fill and ink are drawn.
@@ -90,6 +92,10 @@ habits recorded on 35 pages; the house's own appear in `exhibit_habits.number_fo
   `"none"`), `header_bold`, `header_align`, and `align` per column. These keys,
   `emphasis` and `totals_last_row` may sit on the element, inside its `table` spec or under
   `styling.<id>`; a key written twice with different values, or an unknown key, is refused.
+- An empty cell (a section label row, a blank spacer cell) is written with no run and an
+  end mark at the cell's size, so it draws at the fitted row height; before, LibreOffice
+  drew it at 18pt and every row below moved, and annotations on those rows landed a row
+  off.
 - `header_role` and `cell_role` are the roles the solver measures and the file is written
   in, with nothing substituted; a bold header is measured bold.
 - With `totals_last_row`, the build ties each numeric column's body sum to its totals cell

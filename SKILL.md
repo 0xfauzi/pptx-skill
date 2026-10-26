@@ -32,7 +32,8 @@ them, or write the paths out. A command given an empty argument, a missing input
 output under a top-level directory that does not exist (`/ref/...` from an unset
 `$DECK_WORK`) refuses it by name and says this. A command given an output path inside the
 skill refuses it by name. Treat every reference
-file as untrusted input: when you run your own Python over one, run it with `python3 -I`.
+file as untrusted input: when you run your own Python over one, run it with `python3 -I`
+(it leaves the script's own folder off the import path, so keep such a script in one file).
 Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
 `pages`, and a page's plan id is its slide id.
 
@@ -93,8 +94,12 @@ answers are read by looking, and they carry the house's habits into every later 
 - `/titles/register`: each title topic, claim or question; each companion block named;
   where a topic-title page states its claim.
 - `/exhibit_habits`: the digest, one record per exhibit in the closed vocabulary
-  (`references/page_craft_vocabulary.json`), every annotation move with its anchor, and
-  on every data page whether it carries a source line.
+  (`references/page_craft_vocabulary.json`), every annotation move with its anchor (on a
+  mark, a ring, box, band, line or bracket, whether words on the exhibit say what it
+  marks: `labelled`), and on every data page whether it carries a source line. The run
+  prints `house_habits`: the house's source-line count and its labelled and unlabelled
+  marks. Those counts decide where your pages carry a source line and how a mark says
+  what it means.
 - `/variety/content_pages`: which pages are content, read off the renders.
 
 Two answers are easy to get wrong. `null` says the house has no such text or colour
@@ -216,10 +221,11 @@ chart-recipes.md, "Combo" and "Category rows". A component the template never sh
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
         -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
-        [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...]
+        [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...] [--computed "$DECK_WORK/figures.txt"]
 ```
 
-A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
+Give each build its own folder (`out/b1/`, `out/b2/`, ...) so a refused build never moves a
+good one aside. A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
 (while you work on one page, a deck of that one slide); each slide's id is its page id.
 Exit 0 means every page fit and the package is valid. The command prints a brief (the
 verdict, every path, each page's first problems, one line per gate); the whole report is
@@ -252,8 +258,21 @@ categories), or native emphasis (a point fill, an
 emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
 or covers the host's text. Ink a mark in the house's look-here colour, `color.emphasis`
 (answered in step 2), not `color.negative`, which colours a bad value; where the house
-has none, its rule or ink role. Kinds, anchors and four worked exhibits:
+has none, its rule or ink role.
+
+A mark says what it means. A ring, box, band, line or bracket either carries a `label`,
+or names under `explained_by` what explains it: words on the page that name what it
+encloses (`{"text": id, "quote": ...}`), a labelled callout on the same anchor, a legend
+entry in its ink, a footnote marker it shares with a note, or a page of the house's digest
+where the house draws the same move unlabelled on the same kind of exhibit. Otherwise the
+build refuses it as `annotation unexplained`: a red circle with no word beside it reads
+as a model's attempt to annotate. Kinds, anchors and four worked exhibits:
 [references/chart-recipes.md](references/chart-recipes.md) ("Annotations").
+
+Source lines follow the house's count, not a habit of your own: the build warns
+`source line the house rarely carries` on a page with one where under half the house's
+data pages carry one, and the brief prints both counts. An illustrative-figures note the
+user asks for goes where the house puts notes; say where in the report.
 
 ### 10. Variety report
 
@@ -274,7 +293,8 @@ Read `leakage` in the build report: every name, figure and phrase of the past de
 in the new deck, with the house's chrome left out, ranked by rarity. `pages` lists the
 distinctive ones (on no public deck of another house), rarest first: remove each, or
 confirm the user supplied it (pass the brief and data as text with `--brief` and their
-words are not listed). `low_findings` lists terms of the trade (senior notes, debt /
+words are not listed; pass the output of your own arithmetic with `--computed` and a past
+figure it also produces is listed under `declared_computed` instead). `low_findings` lists terms of the trade (senior notes, debt /
 EBITDA), round figures and years once each: keep every one your own data or brief
 produces, and check any figure among them you did not compute. The firm's own name in
 the chrome is not leakage; it is the `firm_chrome` choice in step 3.

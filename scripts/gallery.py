@@ -758,10 +758,13 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def read_sources(deck_path: Path, guide_path: Path | None, include_generated: bool, pages: tuple[int, int] | None) -> tuple:
+def read_sources(deck_path: Path, guide_path: Path | None, include_generated: bool, pages: tuple[int, int] | None,
+                 raster_pages: bool = False) -> tuple:
     """The deck joined to its leaves and the slides that are evidence: (pdf, deck, shown,
-    sources, excluded, skipped, gap_emu, evidence, gutter). The gallery and the digest read the same
-    pages through this one path."""
+    sources, excluded, skipped, gap_emu, evidence, gutter, whole_pages). The gallery and the digest read the same
+    pages through this one path. A PDF with no vector page (a scan, a printed deck) has no
+    shapes to crop: the gallery refuses it by that name, and the digest, given
+    raster_pages, reads every page in range as a whole-page image instead."""
     pdf = is_pdf(deck_path)
     excluded: list[int] = []
     if pdf:
@@ -784,12 +787,19 @@ def read_sources(deck_path: Path, guide_path: Path | None, include_generated: bo
     if pages is not None:
         excluded = sorted(set(excluded) | {s.index + 1 for s in deck.slides if not pages[0] <= s.index + 1 <= pages[1]})
     sources = [slide for slide in shown if (include_generated or not slide.generated) and slide.index + 1 not in excluded]
+    if not sources and pdf and not any(slide.generated for slide in shown):
+        in_range = [slide for slide in shown if pages is None or pages[0] <= slide.index + 1 <= pages[1]]
+        if raster_pages and in_range:
+            return pdf, deck, shown, in_range, [], skipped, gap_emu, evidence, gutter, True
+        raise GalleryRefused("no_vector_pages", f"triage reads none of the {len(shown)} pages as vector: a raster reference (a scan or a printed deck) "
+                                                "has no shapes to crop. Read its pages with raster_style.py and the page images; the exhibit digest "
+                                                "still runs (gallery.py digest), on whole pages")
     if not sources:
         raise GalleryRefused("only_generated", f"all {len(shown)} visible slides carry the pptx-skill origin tag or are not evidence pages; --include-generated reads generated ones")
     pair_count = sum(len(content_leaves(s)) * (len(content_leaves(s)) - 1) // 2 for s in sources)
     if pair_count > MAX_SHAPE_PAIRS:
         raise GalleryRefused("too_many_shape_pairs", f"{pair_count} shape pairs to group against {MAX_SHAPE_PAIRS}")
-    return pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter
+    return pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter, False
 
 
 def render_setup(deck_path: Path, out: Path, width: int, deck: Deck, shown: list[Slide], pdf: bool) -> tuple:
@@ -828,7 +838,8 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     drawn shape with no text), with `exhibits: null` for the model to answer after looking. Candidates
     only aid the eye: the model decides what is an exhibit, and answers [] for a page
     that holds none. Nothing is classified here."""
-    pdf, deck, shown, sources, excluded, skipped, gap_emu, _, _ = read_sources(deck_path, guide_path, include_generated, pages)
+    pdf, deck, shown, sources, excluded, skipped, gap_emu, _, _, whole_pages = read_sources(deck_path, guide_path, include_generated, pages, raster_pages=True)
+    # whole_pages: a raster reference, every page one picture: the digest reads whole pages and cuts nothing
     page_of, fonts, raster_w, raster_h = render_setup(deck_path, out, width, deck, shown, pdf)
     if pdf:
         rendered = render.rasterize(deck_path, out / "pages", 110, [s.index + 1 for s in sources], width)
@@ -837,7 +848,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
     shutil.rmtree(out / "crops", ignore_errors=True)
     (out / "crops").mkdir(parents=True)
-    found = components(deck, sources, gap_emu)
+    found = [] if whole_pages else components(deck, sources, gap_emu)
     by_slide: dict[int, list[Component]] = {}
     for c in found:
         by_slide.setdefault(c.slide.index, []).append(c)
@@ -845,7 +856,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     rows: list[str] = []
     for slide in sources:
         n = slide.index + 1
-        body = [leaf for leaf in content_leaves(slide) if leaf.role not in ("title", "ctrTitle")]
+        body = [] if whole_pages else [leaf for leaf in content_leaves(slide) if leaf.role not in ("title", "ctrTitle")]
         entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [], "exhibits": None, "source_line": None}
         if body:
             extents = [extent_of(leaf) for leaf in body]
@@ -882,12 +893,13 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "render_fidelity": render_fidelity(fonts),
         "raster": {"width_px": raster_w, "height_px": raster_h, "px_per_pt": round(raster_w / (deck.width_emu / 12700), 2)},
         "vocabulary": str(vocab_path),
-        "sample_policy": "every evidence page" + (f" in {pages[0]}-{pages[1]}" if pages else ""),
+        "sample_policy": ("every page, whole (a raster reference: no shapes to crop)" if whole_pages else "every evidence page") + (f" in {pages[0]}-{pages[1]}" if pages else ""),
         "pages_not_read": excluded,
         "generated_slides_skipped": skipped,
         "record_template": {"candidate": "<a candidate id on this page, or null>", "class": "exhibit_class", "type": "exhibit_type",
                             "data_shape": "data_shape", "message": "<the one message, in words>", "message_kind": "message_kind",
-                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>"}],
+                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>",
+                                                  "labelled": "<on a mark move only (" + ", ".join(sorted({m for ms in json.loads(vocab_path.read_text())["annotation_kind_moves"].values() for m in ms})) + "): true or false>"}],
                             "emphasis_devices": ["emphasis_device"], "number_formats": ["number_format"], "legend": "legend",
                             "data_labels": "data_labels", "colour_logic": "colour_logic", "why": "<optional>"},
         "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere",
@@ -903,7 +915,11 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
         f"`{vocab_path.name}` (an empty list states the page has no exhibit). On every page holding a data chart or a",
         "table, answer `source_line`: true when the page carries a source or note line naming where its figures come",
-        "from, false when it carries none; on other pages leave it null. Keep every page and its candidates as cut:",
+        "from, false when it carries none; on other pages leave it null. On every mark move (a ring or box, a band or",
+        "shading, a reference or event line, a bracket) answer `labelled`: true when words on the exhibit say what the mark",
+        "marks (a label beside it, the figure it rings), false when it stands alone and only the text around it explains it.",
+        "An unlabelled mark on a new page is refused unless it names its explanation, and this answer is the house's precedent.",
+        "Keep every page and its candidates as cut:",
         "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
         "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
     return stub
@@ -919,7 +935,7 @@ def build(
     include_generated: bool = False,
     pages: tuple[int, int] | None = None,
 ) -> dict[str, object]:
-    pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter = read_sources(deck_path, guide_path, include_generated, pages)
+    pdf, deck, shown, sources, excluded, skipped, gap_emu, evidence, gutter, _ = read_sources(deck_path, guide_path, include_generated, pages)
     page_of, fonts, raster_w, raster_h = render_setup(deck_path, out, width, deck, shown, pdf)
     fidelity = render_fidelity(fonts)
     # The raster preserves the page aspect and a pixel is square, so one scale

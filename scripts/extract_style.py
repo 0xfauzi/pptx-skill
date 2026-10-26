@@ -1695,6 +1695,7 @@ RASTER_OPEN = (
     ("/color/roles/color.accent4", "fourth accent"),
     ("/color/roles/color.surface_alt", "panel and band fill"),
     ("/color/roles/color.ink_inverse", "text on dark fills"),
+    ("/color/roles/color.emphasis", "the look-here colour of outline boxes, rings and highlights, read off the pages (null when the house marks nothing)"),
     ("/spacing/steps", "the spacing scale"),
     ("/spacing/margins", "page margins per side"),
     ("/chrome", "recurring furniture: rules, bands, logo block, page number"),
@@ -1715,6 +1716,11 @@ def _raster_run(self: "Extractor") -> dict:
                          ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
                          ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
         self.open(path, reason)
+    self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at its pages: the digest of a raster reference "
+              "cuts whole pages (no shapes to crop); copy the stub to digest.json beside it, complete every page, and answer with "
+              "complete_guide.py --digest <dir>",
+              {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json",
+               "vocabulary": "references/page_craft_vocabulary.json"})
     self.notes.append("raster reference: the text layer is a wrapper or an OCR layer and was not mined. Next: "
                       "python3 scripts/raster_style.py <ref.pdf> --out work/ref/raster, read raster.md and the chrome mask, "
                       "then complete the guide from the page images with raster_inference provenance at confidence <= 0.5.")

@@ -367,15 +367,21 @@ def _norm(text: str) -> str:
 
 def undrawn_paragraphs(path: str, pdf: Path) -> list[str]:
     """Paragraph texts of each slide against pdftotext of the rendered page: a paragraph
-    whose first twelve letters do not appear on its page did not draw."""
+    whose first twelve letters appear on its page in neither reading (-layout, which keeps
+    columns apart, nor the content-stream order, which keeps a wrapped heading in one
+    piece when columns sit side by side) did not draw. Measured on a bcg page whose two
+    column heads wrapped beside each other: -layout alone interleaved their lines and
+    reported both undrawn although both were on the page."""
     out: list[str] = []
     prs = Presentation(path)
     for i, slide in enumerate(prs.slides, 1):
-        try:
-            page = subprocess.run(["pdftotext", "-f", str(i), "-l", str(i), "-layout", str(pdf), "-"], capture_output=True, text=True, timeout=60).stdout
-        except (OSError, subprocess.TimeoutExpired):
-            return out
-        haystack = _norm(page)
+        readings = []
+        for mode in (["-layout"], ["-raw"]):
+            try:
+                readings.append(subprocess.run(["pdftotext", "-f", str(i), "-l", str(i), *mode, str(pdf), "-"], capture_output=True, text=True, timeout=60).stdout)
+            except (OSError, subprocess.TimeoutExpired):
+                return out
+        haystack = "|".join(_norm(page) for page in readings)
         for shape in slide.shapes:
             if not shape.has_text_frame:
                 continue

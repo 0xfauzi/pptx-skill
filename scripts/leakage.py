@@ -2,7 +2,7 @@
 """The leakage report: content of the past decks found in a new deck.
 
     leakage.py NEW.pptx --past REF.pptx [--past OTHER.pdf ...] [--brief brief.txt ...]
-               [--template tpl.pptx] [-o leakage.json]
+               [--computed figures.txt ...] [--template tpl.pptx] [-o leakage.json]
 
 The build runs this on every deck it writes (its `leakage` field), against the reference
 and the house decks it was given; this command runs it on any deck. A new deck may carry
@@ -27,6 +27,10 @@ is `distinctive`, listed per page, rarest first (most words no public deck uses)
 Not reported: chrome, which is any text a past deck repeats on at least CHROME_SHARE of its
 pages (the bank name in the footer, a confidentiality line) and the text the template
 itself draws; and anything found in a --brief file (the user's brief and data, as text).
+A figure found in a --computed file (the output of the model's own arithmetic over the
+user's data, as text) is not distinctive either, and not silent: it is listed under
+`declared_computed` with the past pages it coincides with. Only figures: a name or phrase
+in a --computed file is still reported, since arithmetic produces no names.
 Pictures are compared by hash: a picture of a past deck in the new deck is listed unless
 the template carries it too (a logo on the master).
 
@@ -193,10 +197,16 @@ def media_hashes(path: str) -> dict[str, str]:
         return {hashlib.sha256(z.read(n)).hexdigest(): n for n in z.namelist() if n.startswith("ppt/media/")}
 
 
-def leakage(new: str, past: list[str], briefs: list[str] | None = None, template: str | None = None, page_ids: list | None = None) -> dict:
+def leakage(new: str, past: list[str], briefs: list[str] | None = None, template: str | None = None, page_ids: list | None = None,
+            computed: list[str] | None = None, furniture: list[str] | None = None) -> dict:
     briefs = briefs or []
+    computed = computed or []
+    declared = features([Path(c).read_text(errors="replace") for c in computed])["figure"]
+    coincident: dict[str, dict] = {}
     allowed = features([Path(b).read_text(errors="replace") for b in briefs])
     excluded: dict[str, set] = {k: set(v) for k, v in allowed.items()}
+    for k, v in features(list(furniture or [])).items():
+        excluded[k] |= v  # the chrome the build drew (its text lines), furniture like the template's
     if template:
         for strings in page_texts(template):
             for k, v in features(strings).items():
@@ -223,6 +233,10 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
                 if not where:
                     continue
                 text = " ".join(f)
+                if kind == "figure" and f in declared:
+                    entry = coincident.setdefault(text, {"text": text, "past": where[:3], "pages": []})
+                    entry["pages"].append(i + 1)
+                    continue
                 rank = rarity(kind, f, text, decks, vocabulary)
                 if rank["tier"] == "low":
                     entry = low.setdefault(text, {"kind": kind, "text": text, "why": rank["why"], "pages": []})
@@ -245,7 +259,8 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
         verdict = f"no distinctive carry-over; {len(low)} low finding(s): keep each that your own data or brief produces"
     else:
         verdict = "clean"
-    return {"past_decks": [Path(d).name for d in past], "briefs": [Path(b).name for b in briefs],
+    return {"past_decks": [Path(d).name for d in past], "briefs": [Path(b).name for b in briefs], "computed": [Path(c).name for c in computed],
+            "declared_computed": sorted(coincident.values(), key=lambda x: x["text"]),
             "findings": distinctive, "distinctive": distinctive, "low": len(low), "pages": report_pages, "images": images,
             "low_findings": sorted(low.values(), key=lambda x: x["text"]),
             "what_to_do": {"distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, "
@@ -265,12 +280,14 @@ def main(argv: list[str]) -> int:
     ap.add_argument("new")
     ap.add_argument("--past", action="append", required=True, help="a past deck used as evidence (.pptx or .pdf), repeatable")
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file: its words are allowed")
+    ap.add_argument("--computed", action="append", default=[], help="figures your own arithmetic produced from the user's data, as text: "
+                    "a matching figure is listed under declared_computed, not as distinctive")
     ap.add_argument("--template", default=None, help="the template the deck was built on: its own text and pictures are furniture")
     ap.add_argument("-o", "--out", default=None)
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out")
-    report = leakage(args.new, args.past, args.brief, args.template)
+    report = leakage(args.new, args.past, args.brief, args.template, computed=args.computed)
     text = json.dumps(report, indent=1)
     if args.out:
         Path(args.out).write_text(text + "\n")

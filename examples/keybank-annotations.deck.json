@@ -178,17 +178,6 @@
         "header_role": "type.table_header",
         "cell_role": "type.table_cell"
        }
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: illustrative figures; FactSet consensus, S&P Capital IQ. Prices at 16-Oct-26. Statistics exclude Harbor Point."
-        }
-       ]
       }
      ]
     }
@@ -223,7 +212,11 @@
       ]
      },
      "line_role": "color.emphasis",
-     "line_width_pt": 1.5
+     "line_width_pt": 1.5,
+     "explained_by": {
+      "text": "lead",
+      "quote": "Above the median on P / TBV and P / E"
+     }
     },
     {
      "id": "subject-box",
@@ -233,7 +226,12 @@
       "row": 13
      },
      "line_role": "color.emphasis",
-     "line_width_pt": 1.5
+     "line_width_pt": 1.5,
+     "explained_by": {
+      "house_precedent": {
+       "slide": 5
+      }
+     }
     }
    ]
   },
@@ -475,17 +473,6 @@
          "text": "1  Base case: a 27.5% premium, set in bold. The boxed region is the realistic case: 10-20% synergies at a 22.5-32.5% premium."
         }
        ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: illustrative merger model; company filings."
-        }
-       ]
       }
      ]
     }
@@ -520,7 +507,11 @@
       ]
      },
      "line_role": "color.emphasis",
-     "line_width_pt": 1.5
+     "line_width_pt": 1.5,
+     "explained_by": {
+      "text": "key",
+      "quote": "The boxed region is the realistic case: 10-20% synergies at a 22.5-32.5% premium"
+     }
     },
     {
      "id": "syn-range",
@@ -673,17 +664,6 @@
         }
        ],
        "weight": 1.0
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: illustrative figures; FactSet consensus, S&P Capital IQ. Prices at 16-Oct-26. Per share."
-        }
-       ]
       }
      ]
     }
@@ -835,7 +815,10 @@
        35.0
       ]
      },
-     "fill_role": "color.accent1"
+     "fill_role": "color.accent1",
+     "explained_by": {
+      "annotation": "selected-note"
+     }
     },
     {
      "id": "selected-note",
