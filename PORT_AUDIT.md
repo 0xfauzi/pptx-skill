@@ -756,3 +756,36 @@ ruff 0.16.9: 144 findings on main and 144 here, the same set.
 Open: a centred label wider than its bar is warned, but its contrast is scored on the bar's
 fill only, so white ink running past the bar onto a white plot (`pW-fill200`, drawn 'or term')
 is not refused; the turned-run reader is proven on LibreOffice's -45 and automatic turns only.
+
+### Round 8, part 3: the skill against Anthropic's authoring guidance, and its name
+
+Guidance fetched 2026-10-26: platform.claude.com Agent Skills best practices and overview,
+agentskills.io/specification, code.claude.com skills and commands pages. Each row was
+measured on main (a2d1091) and on d7aeea9 first with `r8x/sweep/guidance.py` (and the probes
+`r8x/sweep/probes/ported_constants.py`, `cites.py`), then fixed, then broken in a copy
+(`r8x/sweep/brk`) to show the failure return (`brk-*.txt`).
+
+| Item | Before | Now | Fix broken |
+|---|---|---|---|
+| Name | `building-pptx-decks`: valid, gerund, but names a file format and leaves out PDF references and the no-reference path | `designing-presentations`: 23 of 64 characters, lowercase and hyphens, no reserved word, none of Anthropic's skill names (pptx, xlsx, docx, pdf, the open-source list, Claude Code's bundled commands); frontmatter, heading, README, all ten evaluations' `skills` | old frontmatter: "name is the chosen name" fails; one eval on the old name: "every evaluation names this skill" fails |
+| Description | 786 characters, third person, says what and when; "builds pages" only | 842 characters: designs and builds, a pptx or PDF reference followed, full latitude with none, and when to use it | as above |
+| Directory name (agentskills.io: must match `name`) | the repository is `pptx-skill` and README said nothing | README says to install the tree as `designing-presentations/`; the repository keeps its name | not code |
+| SKILL.md under 500 lines | 502 lines at d7aeea9 (499 on main), 5029 words | 405 lines, 3618 words; tokens unmeasured (no tokenizer reachable here) | old SKILL.md: "file under 500 lines" fails at 502 |
+| Concise; detail in references | SKILL.md restated the plan check's refusals, the report's fields, the chrome, leakage and structure rules the references hold | pointers; facts only SKILL.md held moved to the step's reference (templates-and-chrome, page-specs, build-report, planning-and-variety); every number of the old text is still in SKILL.md or a reference (checked by script); no gate dropped | not code |
+| Workflows with feedback loops | checklist without stated loops | the checklist names steps 5, 7, 8, 9 as loops and step 2's `--check` until nothing is open | not code |
+| Consistent terms | planning-and-variety.md called the kinds measure "class V", the measure it replaced | kinds V, with what it sees | "class V" back: the term check fails |
+| Time-sensitive wording | components.md "not yet fixed" | "an open defect (README.md, Known gaps)" | wording back: the check fails |
+| References one level deep, contents lists | all 21 linked from SKILL.md; all 11 over 100 lines open with Contents; two cite TARGET_SPEC.md and PORT_AUDIT.md as provenance only | no change needed | none |
+| Scripts solve, usage documented | `ooxml.py --help` refused as a missing file '--help'; `ooxml.py triage` with no file raised IndexError; the docstring never named triage; layout.py's `solve` had no help line; gallery.py's usage named `guide.style.json` | help printed (exit 0); a bad triage call prints its usage (exit 2); solve's help line; `draft.json` | the help branch removed: '--help' refused again |
+| Voodoo constants | `ALIGNMENT_EDGE_CAP` 53 against deckgen's 64 (tokens.py:256), recorded nowhere: keybank has exactly 53 edges, so the McKinsey and BCG drafts were cut at 53; three deckgen line citations wrong (226, 34, 38 for 227, 39, 42); 13 constants with no word of why | 64 again (McKinsey and BCG guides now carry 64 edges, keybank still 53); citations right; each constant says its source or that it is an asserted bound | 53 back: probe DIFFER; one citation back: `cites.py` OFF |
+| Smaller | a doubled word ("reference reference's"); README counted nine scenarios (there are ten) and left no-reference-design out of the reference list; a stale "SKILL.md section 3" in a complete_guide.py comment | fixed | not code |
+
+Rebuilt from a FRESH extraction on main, d7aeea9 and here (`r8x/sweep/rb.sh` with
+`FIDC=r8x/fidc`, `r8x/sweep/genre.sh`): the 40 result lines are identical on all three
+(keybank-roundtrip-slide3 refused everywhere, as before). Against d7aeea9 every report,
+plan check and guide is identical and all 133 renders are pixel-identical, but for the
+McKinsey and BCG guides' 11 more alignment edges (the cap). Against main, as at d7aeea9: 101
+of 106 example renders identical (the 5 that differ are the no-reference books' title band)
+and 15 of 27 genre renders; the reports differ by the earlier parts of round 8.
+
+ruff 0.16.9 over the tree: 144 findings on main and 144 here, the same set.
