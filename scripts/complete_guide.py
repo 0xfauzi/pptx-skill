@@ -44,10 +44,10 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import layout as L
 import plan  # noqa: E402
 from emit_pptx import CHROME_TEXT_KINDS, GUIDE_LEGEND_POSITIONS  # noqa: E402
-import layout as L  # noqa: E402
-from layout import PRODUCT_SAFETY_FLOOR_PT  # noqa: E402
+from layout import PRODUCT_SAFETY_FLOOR_PT
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: the title register and the title companions (references/page_craft_vocabulary.json); an exhibit is never read in a list

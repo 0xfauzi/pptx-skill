@@ -76,8 +76,8 @@ roles} (or a list of those); tables.cell_padding_role | tables.cell_padding_emu
 
 from __future__ import annotations
 
-import dataclasses
 import argparse
+import dataclasses
 import json
 import sys
 from collections.abc import Iterator, Mapping, Sequence
