@@ -23,7 +23,8 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 
 - A key outside `unresolved` is refused. Always writable: `/description`,
   `/derivation_rules`, `/continuation`, `/typography/families/substitutes`, `/notes/*`, a
-  new `/extra_roles/<name>`, and a new type role at a size the levels table shows, or at
+  new `/extra_roles/<name>`, with no reference a further colour role
+  (`/color/roles/color.accent4`) beside the core ones, and a new type role at a size the levels table shows, or at
   another size with a `why` of three words or more (then tagged `off_ladder` and listed
   under `completion.off_ladder`: a weaker model given continuous sizes drifted to 8.5,
   9.5, 20 and 22pt, so the reference's levels are the first evidence, and a departure is

@@ -443,6 +443,11 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
     # levels table had 14, 16, 18 and 20pt with 270 votes and no role on one deck,
     # and "use the levels the histogram shows" could not be followed without this
     parts = [q for q in path.split("/") if q]
+    if (len(parts) == 3 and parts[:2] == ["color", "roles"] and parts[2].startswith("color.") and not plan.has_reference(guide)
+            and parts[2] not in (guide.get("color", {}).get("roles") or {})):
+        # with no reference every colour is the model's choice: a further role (color.accent4)
+        # is written where the core roles are, not only under /extra_roles (round 7)
+        return
     levels = size_levels(guide)
     new_role = (len(parts) == 3 and parts[0] == "typography" and parts[1] == "roles" and parts[2] not in guide["typography"]["roles"]
                 and isinstance(value, dict) and value.get("size_pt") is not None)
@@ -461,7 +466,8 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
     off = (f"; {value['size_pt']}pt is off the reference's levels {sorted(levels)}: a new role there needs a why of at least "
            f"{plan.BRIEF_MIN_WORDS} distinct words (it is then tagged off_ladder and listed; a model given continuous sizes was "
            "measured drifting to 8.5, 9.5, 20 and 22pt, so the reference's levels are the first evidence)") if new_role and not raster else ""
-    raise PatchError(f"{path}: not an open address{under}. A patch answers the draft's unresolved list and nothing else (a new "
+    extra = (f"; a colour the reference does not name goes under /extra_roles/{parts[2]}" if len(parts) == 3 and parts[:2] == ["color", "roles"] else "")
+    raise PatchError(f"{path}: not an open address{under}{extra}. A patch answers the draft's unresolved list and nothing else (a new "
                      f"type role at a size the reference writes, levels {sorted(levels)}, or off them with a why"
                      f"{'; on this raster reference, a new role with provenance raster_inference' if raster else ''}){off}; open: {sorted(open_paths)}")
 
