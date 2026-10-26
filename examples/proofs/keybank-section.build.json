@@ -1,66 +1,22 @@
 {
- "out": "(scratch)/out/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
  "ruler": "pillow_x128",
  "slides": [
   {
    "id": "s1-exec",
    "status": "fit",
-   "problems": [],
-   "title": {
-    "element": "title",
-    "text": "Executive Summary",
-    "register_stated": "topic",
-    "length": {
-     "chars": {
-      "value": 17,
-      "house": {
-       "median": 35.0,
-       "p90": 40.0,
-       "max": 57,
-       "n": 11
-      },
-      "verdict": "within house p90"
-     },
-     "words": {
-      "value": 2,
-      "house": {
-       "median": 5.0,
-       "p90": 6.0,
-       "max": 7,
-       "n": 11
-      },
-      "verdict": "within house p90"
-     },
-     "lines": {
-      "value": 1,
-      "house": {
-       "median": 1.0,
-       "p90": 1.0,
-       "max": 2,
-       "n": 11
-      },
-      "verdict": "within house p90"
-     }
-    },
-    "register": {
-     "house_counts": {
-      "topic": 8,
-      "claim": 0,
-      "question": 3
-     },
-     "share": 0.727,
-     "threshold": 0.1,
-     "threshold_basis": "unmeasured",
-     "verdict": "house register"
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
     }
-   },
+   ],
    "scale": 1.0,
    "violations": [],
    "text_lines": {
     "title": 1,
     "left": 19,
-    "takeaway": 3,
-    "source": 1
+    "takeaway": 3
    },
    "tables": {
     "kpis": {
@@ -75,11 +31,13 @@
     }
    },
    "density": {
-    "words": 204,
-    "elements": 6,
-    "covered_area_fraction": 0.681,
+    "words": 192,
+    "elements": 5,
+    "covered_area_fraction": 0.417,
+    "text_boxes_mostly_empty": "none",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
-     "value": 204,
+     "value": 192,
      "band": [
       32.8,
       159.3
@@ -87,7 +45,7 @@
      "verdict": "above"
     },
     "elements_per_slide": {
-     "value": 6,
+     "value": 5,
      "band": [
       2.0,
       15.0
@@ -95,7 +53,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.681,
+     "value": 0.417,
      "band": [
       0.4116,
       0.7078
@@ -104,25 +62,23 @@
     }
    },
    "contrast": {
-    "checked": 17,
+    "checked": 16,
     "violations": [],
     "warnings": [],
     "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
-     "element": "source",
-     "paragraph": 0,
-     "run": 0,
-     "role": "type.source_line",
-     "ink": "color.ink_muted",
-     "text": "Source: company filings, FactSet as of 3",
-     "ratio": 7.0,
+     "element": "chrome-5",
+     "part": "chrome text",
+     "text": "Test Footer",
+     "ink": "observed ink 404040 of chrome-5",
+     "ratio": 10.37,
      "threshold": 4.5,
-     "size_pt": 10.0,
+     "size_pt": 12.0,
      "bold": false,
      "backing": "color.surface",
-     "ink_hex": "595959",
+     "ink_hex": "404040",
      "backing_hex": "FFFFFF"
     },
     "precedent_source": "reference"
@@ -130,7 +86,7 @@
    "register": {
     "kind_counts": {
      "text": {
-      "value": 4,
+      "value": 3,
       "band": [
        2.0,
        15.0
@@ -195,19 +151,21 @@
      "verdict": "in band"
     }
    },
-   "tieouts": []
-  },
-  {
-   "id": "s2-comps",
-   "status": "fit",
+   "tieouts": [],
+   "bridge_ties": [],
+   "source_line": {
+    "data_page": true,
+    "source_line": false
+   },
+   "solver_status": "fit",
    "problems": [],
    "title": {
     "element": "title",
-    "text": "Precedent Transactions",
+    "text": "Executive Summary",
     "register_stated": "topic",
     "length": {
      "chars": {
-      "value": 22,
+      "value": 17,
       "house": {
        "median": 35.0,
        "p90": 40.0,
@@ -248,7 +206,25 @@
      "threshold_basis": "unmeasured",
      "verdict": "house register"
     }
-   },
+   }
+  },
+  {
+   "id": "s2-comps",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "2 violation(s)"
+    },
+    {
+     "scale": "49/50",
+     "result": "fit"
+    },
+    {
+     "scale": "99/100",
+     "result": "2 violation(s)"
+    }
+   ],
    "scale": 0.98,
    "violations": [],
    "text_lines": {
@@ -275,7 +251,9 @@
    "density": {
     "words": 182,
     "elements": 5,
-    "covered_area_fraction": 0.713,
+    "covered_area_fraction": 0.644,
+    "text_boxes_mostly_empty": "none",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 182,
      "band": [
@@ -293,12 +271,12 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.713,
+     "value": 0.644,
      "band": [
       0.4116,
       0.7078
      ],
-     "verdict": "above"
+     "verdict": "in band"
     }
    },
    "contrast": {
@@ -397,23 +375,26 @@
      "note": "totals row 'Median' is a statistic over the column, not its sum"
     }
    ],
-   "chart_defaults_taken": {
-    "chart": [
-     "plot_area: automatic: each renderer places the plot inside the frame itself"
-    ]
-   }
-  },
-  {
-   "id": "s3-football",
-   "status": "fit",
-   "problems": [],
+   "bridge_ties": [],
+   "source_line": {
+    "data_page": true,
+    "source_line": true
+   },
+   "solver_status": "fit",
+   "problems": [
+    {
+     "kind": "source line the house rarely carries",
+     "severity": "warning",
+     "detail": "the page carries a type.source_line or type.footnote paragraph; house: 1 of 5 house data pages carry one (20%: pages 9; the lines at 80% and 50% are unmeasured). Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"
+    }
+   ],
    "title": {
     "element": "title",
-    "text": "Valuation Summary",
+    "text": "Precedent Transactions",
     "register_stated": "topic",
     "length": {
      "chars": {
-      "value": 17,
+      "value": 22,
       "house": {
        "median": 35.0,
        "p90": 40.0,
@@ -455,6 +436,21 @@
      "verdict": "house register"
     }
    },
+   "chart_defaults_taken": {
+    "chart": [
+     "plot_area: automatic: each renderer places the plot inside the frame itself"
+    ]
+   }
+  },
+  {
+   "id": "s3-football",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
    "scale": 1.0,
    "violations": [],
    "text_lines": {
@@ -479,16 +475,24 @@
     "ff-tk2": 1,
     "ff-tk3": 1,
     "ff-tk5": 1,
-    "commentary": 15,
-    "source": 1
+    "commentary": 15
    },
    "tables": {},
    "density": {
-    "words": 157,
-    "elements": 43,
-    "covered_area_fraction": 0.436,
+    "words": 145,
+    "elements": 42,
+    "covered_area_fraction": 0.237,
+    "text_boxes_mostly_empty": [
+     {
+      "id": "commentary",
+      "text_ends_in": 4.05,
+      "box_ends_in": 6.9,
+      "empty_share": 0.48
+     }
+    ],
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
-     "value": 157,
+     "value": 145,
      "band": [
       32.8,
       159.3
@@ -496,7 +500,7 @@
      "verdict": "in band"
     },
     "elements_per_slide": {
-     "value": 43,
+     "value": 42,
      "band": [
       2.0,
       15.0
@@ -504,34 +508,32 @@
      "verdict": "above"
     },
     "content_area_fraction": {
-     "value": 0.436,
+     "value": 0.237,
      "band": [
       0.4116,
       0.7078
      ],
-     "verdict": "in band"
+     "verdict": "below"
     }
    },
    "contrast": {
-    "checked": 30,
+    "checked": 29,
     "violations": [],
     "warnings": [],
     "house_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
-     "element": "source",
-     "paragraph": 0,
-     "run": 0,
-     "role": "type.source_line",
-     "ink": "color.ink_muted",
-     "text": "Source: FactSet, Bloomberg consensus as ",
-     "ratio": 7.0,
+     "element": "chrome-5",
+     "part": "chrome text",
+     "text": "Test Footer",
+     "ink": "observed ink 404040 of chrome-5",
+     "ratio": 10.37,
      "threshold": 4.5,
-     "size_pt": 10.0,
+     "size_pt": 12.0,
      "bold": false,
      "backing": "color.surface",
-     "ink_hex": "595959",
+     "ink_hex": "404040",
      "backing_hex": "FFFFFF"
     },
     "precedent_source": "reference"
@@ -539,7 +541,7 @@
    "register": {
     "kind_counts": {
      "text": {
-      "value": 23,
+      "value": 22,
       "band": [
        2.0,
        15.0
@@ -604,19 +606,21 @@
      "verdict": "in band"
     }
    },
-   "tieouts": []
-  },
-  {
-   "id": "s4-synergies",
-   "status": "fit",
+   "tieouts": [],
+   "bridge_ties": [],
+   "source_line": {
+    "data_page": false,
+    "source_line": false
+   },
+   "solver_status": "fit",
    "problems": [],
    "title": {
     "element": "title",
-    "text": "Cost Synergies",
+    "text": "Valuation Summary",
     "register_stated": "topic",
     "length": {
      "chars": {
-      "value": 14,
+      "value": 17,
       "house": {
        "median": 35.0,
        "p90": 40.0,
@@ -657,13 +661,27 @@
      "threshold_basis": "unmeasured",
      "verdict": "house register"
     }
+   }
+  },
+  {
+   "id": "s4-synergies",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "table_defaults_taken": {
+    "walk": [
+     "emphasis[0].bold: true (left out, emphasised cells are bold)"
+    ]
    },
    "scale": 1.0,
    "violations": [],
    "text_lines": {
     "title": 1,
-    "risks": 7,
-    "source": 1
+    "risks": 7
    },
    "tables": {
     "walk": {
@@ -677,11 +695,20 @@
     }
    },
    "density": {
-    "words": 104,
-    "elements": 5,
-    "covered_area_fraction": 0.698,
+    "words": 95,
+    "elements": 4,
+    "covered_area_fraction": 0.58,
+    "text_boxes_mostly_empty": [
+     {
+      "id": "risks",
+      "text_ends_in": 5.58,
+      "box_ends_in": 6.9,
+      "empty_share": 0.48
+     }
+    ],
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
-     "value": 104,
+     "value": 95,
      "band": [
       32.8,
       159.3
@@ -689,7 +716,7 @@
      "verdict": "in band"
     },
     "elements_per_slide": {
-     "value": 5,
+     "value": 4,
      "band": [
       2.0,
       15.0
@@ -697,7 +724,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.698,
+     "value": 0.58,
      "band": [
       0.4116,
       0.7078
@@ -706,7 +733,7 @@
     }
    },
    "contrast": {
-    "checked": 17,
+    "checked": 16,
     "violations": [],
     "warnings": [],
     "house_precedent": [],
@@ -729,7 +756,7 @@
    "register": {
     "kind_counts": {
      "text": {
-      "value": 3,
+      "value": 2,
       "band": [
        2.0,
        15.0
@@ -795,6 +822,61 @@
     }
    },
    "tieouts": [],
+   "bridge_ties": [],
+   "source_line": {
+    "data_page": true,
+    "source_line": false
+   },
+   "solver_status": "fit",
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Cost Synergies",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 14,
+      "house": {
+       "median": 35.0,
+       "p90": 40.0,
+       "max": 57,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "words": {
+      "value": 2,
+      "house": {
+       "median": 5.0,
+       "p90": 6.0,
+       "max": 7,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     },
+     "lines": {
+      "value": 1,
+      "house": {
+       "median": 1.0,
+       "p90": 1.0,
+       "max": 2,
+       "n": 11
+      },
+      "verdict": "within house p90"
+     }
+    },
+    "register": {
+     "house_counts": {
+      "topic": 8,
+      "claim": 0,
+      "question": 3
+     },
+     "share": 0.727,
+     "threshold": 0.1,
+     "threshold_basis": "unmeasured",
+     "verdict": "house register"
+    }
+   },
    "chart_defaults_taken": {
     "chart": [
      "plot_area: automatic: each renderer places the plot inside the frame itself"
@@ -802,6 +884,26 @@
    }
   }
  ],
+ "source_lines": {
+  "house": {
+   "habit": "rare",
+   "share": 0.2,
+   "pages_with": [
+    9
+   ],
+   "evidence": "1 of 5 house data pages carry one (20%: pages 9; the lines at 80% and 50% are unmeasured)"
+  },
+  "deck": {
+   "data_pages": 3,
+   "with_source_line": [
+    "s2-comps"
+   ],
+   "data_pages_without": [
+    "s1-exec",
+    "s4-synergies"
+   ]
+  }
+ },
  "position_drift": {
   "_ids_reused_across_arrangements": {
    "chart": [
@@ -817,7 +919,6 @@
  "repetition": {
   "threshold": 0.5,
   "frame_left_out": [
-   "source",
    "title"
   ],
   "pairs": [
@@ -826,7 +927,7 @@
      1,
      2
     ],
-    "similarity": 0.324,
+    "similarity": 0.318,
     "similar": false
    },
    {
@@ -834,7 +935,7 @@
      2,
      3
     ],
-    "similarity": 0.01,
+    "similarity": 0.011,
     "similar": false
    },
    {
@@ -1014,7 +1115,8 @@
    "check": {
     "status": "pass",
     "refusals": [],
-    "warnings": []
+    "warnings": [],
+    "subset": null
    },
    "measure": {
     "deck": "plan",
@@ -1060,6 +1162,33 @@
      ]
     ]
    },
+   "realised_by_page": [
+    {
+     "page": 1,
+     "id": "s1-exec",
+     "planned": "new:sections-beside-table",
+     "realised": "b1"
+    },
+    {
+     "page": 2,
+     "id": "s2-comps",
+     "planned": "new:table-over-chart-beside-reading",
+     "realised": "b2"
+    },
+    {
+     "page": 3,
+     "id": "s3-football",
+     "planned": "new:field-beside-commentary",
+     "realised": "b3"
+    },
+    {
+     "page": 4,
+     "id": "s4-synergies",
+     "planned": "new:bridge-over-table-beside-risks",
+     "realised": "b1"
+    }
+   ],
+   "names": "realised names (b1, b2, ...) are this build's own clusters of pages with alike boxes, not the plan's names: two pages share a realised name when they share an arrangement",
    "composition_V": {
     "planned": 1.0,
     "realised": 1.0
@@ -1075,33 +1204,388 @@
    "pages_differing_from_plan": []
   }
  },
- "validation_ok": true,
- "problems": [],
+ "emitted_slides": 4,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [
+   "SLIDE_NUMBER"
+  ],
+  "slide_layer_entries": [],
+  "notes": [],
+  "firm": [
+   {
+    "chrome_id": "chrome-6",
+    "kind": "label",
+    "text": "Goldman Stanley",
+    "layers": [
+     "master"
+    ],
+    "decision": "keep",
+    "chosen": false
+   }
+  ],
+  "drawn": [
+   [],
+   [],
+   [],
+   []
+  ]
+ },
+ "validation": {
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
+  "slides": 4,
+  "problems": [],
+  "ok": true
+ },
+ "leakage": {
+  "past_decks": [
+   "mi_keybank_first_niagara_fig_ma.pptx"
+  ],
+  "briefs": [],
+  "computed": [],
+  "declared_computed": [],
+  "findings": 12,
+  "distinctive": 12,
+  "low": 13,
+  "pages": [
+   {
+    "page": 1,
+    "id": "s1-exec",
+    "findings": [
+     {
+      "kind": "name",
+      "text": "first niagara",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p1",
+       "mi_keybank_first_niagara_fig_ma.pptx p2",
+       "mi_keybank_first_niagara_fig_ma.pptx p4",
+       "and 2 more"
+      ],
+      "past_pages": 5,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.33x",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p3"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "10.5%",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p10"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "11%",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p10"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "$11.40",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p2",
+       "mi_keybank_first_niagara_fig_ma.pptx p4",
+       "mi_keybank_first_niagara_fig_ma.pptx p6",
+       "and 2 more"
+      ],
+      "past_pages": 5,
+      "rare_words": 1
+     }
+    ]
+   },
+   {
+    "page": 2,
+    "id": "s2-comps",
+    "findings": [
+     {
+      "kind": "name",
+      "text": "first niagara",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p1",
+       "mi_keybank_first_niagara_fig_ma.pptx p2",
+       "mi_keybank_first_niagara_fig_ma.pptx p4",
+       "and 2 more"
+      ],
+      "past_pages": 5,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.33x",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p3"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "11%",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p10"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "12%",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p10"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     }
+    ]
+   },
+   {
+    "page": 3,
+    "id": "s3-football",
+    "findings": [
+     {
+      "kind": "figure",
+      "text": "$11.40",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p2",
+       "mi_keybank_first_niagara_fig_ma.pptx p4",
+       "mi_keybank_first_niagara_fig_ma.pptx p6",
+       "and 2 more"
+      ],
+      "past_pages": 5,
+      "rare_words": 1
+     }
+    ]
+   },
+   {
+    "page": 4,
+    "id": "s4-synergies",
+    "findings": [
+     {
+      "kind": "figure",
+      "text": "12%",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p10"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "$4.1",
+      "past": [
+       "mi_keybank_first_niagara_fig_ma.pptx p1",
+       "mi_keybank_first_niagara_fig_ma.pptx p2",
+       "mi_keybank_first_niagara_fig_ma.pptx p6"
+      ],
+      "past_pages": 3,
+      "rare_words": 1
+     }
+    ]
+   }
+  ],
+  "images": [],
+  "low_findings": [
+   {
+    "kind": "figure",
+    "text": "$400",
+    "why": "a round figure",
+    "pages": [
+     4
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "1.5%",
+    "why": "a round figure",
+    "pages": [
+     3
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "10.0%",
+    "why": "a round figure",
+    "pages": [
+     3
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "25%",
+    "why": "a round figure",
+    "pages": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "30%",
+    "why": "a round figure",
+    "pages": [
+     2
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "40%",
+    "why": "a round figure",
+    "pages": [
+     1,
+     2,
+     4
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "50%",
+    "why": "a round figure",
+    "pages": [
+     2
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "55%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "8.5%",
+    "why": "a round figure",
+    "pages": [
+     3
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "80%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "9.0%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "executive summary",
+    "why": "a term of the trade: also in 4 public deck(s) of other houses (mckinsey_uf_road_ahead_2023.pdf, mi_jazz_pharma_sellside_pitchbook.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "valuation summary",
+    "why": "a term of the trade: also in 3 public deck(s) of other houses (mi_jazz_pharma_sellside_pitchbook.pdf, mi_jazz_pharma_sellside_pitchbook.pptx)",
+    "pages": [
+     3
+    ]
+   }
+  ],
+  "what_to_do": {
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
+  },
+  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files",
+  "chrome_excluded": {
+   "mi_keybank_first_niagara_fig_ma.pptx": {
+    "phrase": 0,
+    "name": 2,
+    "figure": 0
+   }
+  },
+  "images_checked": "pptx media by sha256",
+  "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
+  "verdict": "possible carry-over: 12 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
+ },
+ "renders": {
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 72,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 12,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Wingdings": {
+    "rendered_with": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+    "fidelity": "substituted",
+    "codepoints_checked": 1,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": true
+   }
+  },
+  "pages": 4,
+  "images": [
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-04.png"
+  ]
+ },
  "judge": {
   "reference": "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
-  "total": 0.09,
+  "total": 0.084,
   "components": {
    "families": 0.0,
-   "size_hist": 0.178,
-   "size_ladder": 0.042,
+   "size_hist": 0.119,
+   "size_ladder": 0.045,
    "title_size": 0,
-   "bold_ratio": 0.185,
-   "text_colors": 0.075,
+   "bold_ratio": 0.201,
+   "text_colors": 0.026,
    "fills": 0.0,
    "lines": null,
-   "aligns": 0.124,
-   "kinds": 0.412,
+   "aligns": 0.122,
+   "kinds": 0.433,
    "background": 0.0,
    "margins": 0.364,
-   "coverage": 0.057,
-   "count": 0.401,
+   "coverage": 0.064,
+   "count": 0.368,
    "overlap": 0.0,
    "overflow": 0.0
   },
   "per_slide": [
    {
     "slide": 1,
-    "total": 0.061,
+    "total": 0.064,
     "worst": [
      [
       "margins",
@@ -1109,11 +1593,11 @@
      ],
      [
       "kinds",
-      0.276
+      0.324
      ],
      [
-      "coverage",
-      0.158
+      "count",
+      0.239
      ]
     ]
    },
@@ -1137,7 +1621,7 @@
    },
    {
     "slide": 3,
-    "total": 0.127,
+    "total": 0.119,
     "worst": [
      [
       "count",
@@ -1145,7 +1629,7 @@
      ],
      [
       "kinds",
-      0.457
+      0.468
      ],
      [
       "margins",
@@ -1155,19 +1639,19 @@
    },
    {
     "slide": 4,
-    "total": 0.094,
+    "total": 0.092,
     "worst": [
      [
       "bold_ratio",
-      0.394
+      0.455
+     ],
+     [
+      "kinds",
+      0.4
      ],
      [
       "margins",
       0.363
-     ],
-     [
-      "kinds",
-      0.333
      ]
     ]
    }
@@ -1181,25 +1665,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/45541_Header.pptx": 0.507,
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.62,
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/themes.pptx": 0.492
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/45541_Header.pptx": 0.501,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.618,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/themes.pptx": 0.492
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.076,
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.08,
-   "/home/user/pptx-skill/.claude/worktrees/wf_5eaf75bf-b8b-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.096
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.074,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.076,
+   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_netflix_financing_pitchbook.pptx": 0.089
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -1208,10 +1692,10 @@
   "layout_clean": true,
   "filed_under_reference": true
  },
- "renders": [
-  "(scratch)/out/renders/slide-01.png",
-  "(scratch)/out/renders/slide-02.png",
-  "(scratch)/out/renders/slide-03.png",
-  "(scratch)/out/renders/slide-04.png"
- ]
+ "outputs": {
+  "verdict": "built",
+  "moved_aside": [],
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders"
+ }
 }

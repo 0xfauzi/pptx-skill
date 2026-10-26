@@ -943,7 +943,7 @@ def build(
     emu_per_px = deck.width_emu / raster_w
     pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
 
-    found = [] if whole_pages else components(deck, sources, gap_emu)
+    found = components(deck, sources, gap_emu)
     if not found:
         raise GalleryRefused("no_components", "the deck declares no content shapes to crop")
     if len(found) > MAX_COMPONENTS:

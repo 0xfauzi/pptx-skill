@@ -75,17 +75,6 @@
          ]
         }
        ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: company disclosures, Goldman Stanley estimates. EPS in $ per share."
-        }
-       ]
       }
      ]
     }
@@ -356,17 +345,6 @@
            "text": "$1.1bn of common and $0.4bn of preferred restore $0.5bn of headroom"
           }
          ]
-        }
-       ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: company disclosures, Goldman Stanley estimates. Excess over a 10% CET1 target, $bn."
         }
        ]
       }

@@ -197,17 +197,6 @@
          ]
         }
        ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: company filings, FactSet as of 30 September 2015, Goldman Stanley analysis."
-        }
-       ]
       }
      ]
     }
@@ -690,17 +679,6 @@
          ]
         }
        ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: FactSet, Bloomberg consensus as of 30 September 2015, Goldman Stanley analysis."
-        }
-       ]
       }
      ]
     }
@@ -859,17 +837,6 @@
            "text": "The $105m gap between precedented and required synergies equals 3% of the $4.1bn purchase price"
           }
          ]
-        }
-       ]
-      },
-      {
-       "type": "element",
-       "id": "source",
-       "kind": "text",
-       "paragraphs": [
-        {
-         "role": "type.source_line",
-         "text": "Source: company disclosures, Goldman Stanley estimates. NIE: non-interest expense."
         }
        ]
       }

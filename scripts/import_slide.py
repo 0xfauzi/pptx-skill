@@ -165,7 +165,9 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
         name, d = nearest_colour(fill, colours, ("color.surface", "color.accent", "color.rule", *extra_fills))
         if name and d < 12:
             st["fill_role"] = name
-            st["pad_role"] = "space.xs"
+            # the box's own inset is not carried: a text element is measured at its full
+            # width, and a pad_role on it insets nothing (refused by the build)
+            notes.append(f"{ident}: filled text box written flush, without its inset; wrap it in a padded region to keep one")
         else:
             notes.append(f"{ident}: fill {fill} has no colour role within CIE76 12 (nearest {name} at {d:.1f}); left unfilled")
     if para_style:
