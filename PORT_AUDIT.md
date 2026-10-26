@@ -575,3 +575,50 @@ Left with the word in it, on purpose: the refusals of old spellings (`plan.py`,
 development corpus's own field name read as written (`library.CORPUS_FIELD`), deckgen's
 fixture path `default_house_style` (oracles), this audit's earlier rows, and the worktree
 path inside the proof reports.
+
+## Round 7: the verifier's leftovers and the preview runs' friction
+
+Sources: the six leftovers of the freedom verifier, and the friction lists of four agents
+who built sections with the skill (with a reference, with none, Netflix, BCG). Each item
+was reproduced on main (b75b108) before the change; proofs and break-the-fix copies are in
+the session scratchpad (`r7v/proof`, `r7v/brk`).
+
+| Item | Before (main) | Change | After | Gate removed (scratch copy) |
+|---|---|---|---|---|
+| Title vocabularies | library `title_register` refused `{"other": words}` and took a bare `"other"`; a companion took a bare `"other"` | one rule, `complete_guide.term_error`: a coded term or `{"other": words}`, read by the guide (register and companions) and the library; `companions_other_in_words`; examples answer their companions in words | library `"other"`: "say what it is"; companion bare other refused | library takes a bare `"other"` again |
+| Minority chrome | an entry on under half the reference's pages could never be drawn | a page adds it: `{"add": true, "why"}` (`emit_pptx.minority_chrome`); zones, contrast and the emitter read the same list; firm choice applies | keybank chrome-1 drawn and its zone reserved (the title must move: refused by name) | not drawn, no zone, PASS |
+| Docs | page-specs register a closed set; TARGET_SPEC `never_does`; eval 09 wording | words; `not_seen`, old key refused; the warning named | | |
+| Runs | runs compared with spaces removed: "from$142.0m" written | exact, with the character where they part | refused with the first difference | PASS, the joined word written |
+| Hollow marker | a surface-filled, outlined scatter marker drew nothing in LibreOffice; no gate saw it | `emit_pptx.marker_divergence`: LibreOffice draws a marker in one colour, never its outline (measured), so a two-colour or hollow marker is a renderer divergence | refused, pointing to an outline_box ellipse on the point | PASS, invisible markers |
+| Hidden secondary axis | written `c:delete`; LibreOffice dropped its 0..30 scale and drew the line flat on 0..250 | written present with no line, ticks or labels | line at 150..208 on the 250 scale, as written | `<c:delete/>` again |
+| Unnamed series | LibreOffice legend "Series2" | its legend entry hidden; refused on BAR_* with a legend | legend shows only Revenue | no legendEntry written |
+| Gaps | a null in any series refused every annotation on the chart | a gap draws no mark (`drawn_marks`); a stack's blank adds 0; an anchor on the gap still refused, named | line-with-gaps and its trigger line PASS | refused again |
+| Crossing lines | a vertical line through a horizontal one: `annotation collides` | two bare lines may cross; a line through words still collides | the pair passes; the label over the series still refused | both refused again |
+| Empty region | an empty region with top padding was flexible and took the spare height (note at 5.76 in) | as tall as its padding; a spacer only with a weight in a column | note at 2.44 in | 5.76 in again |
+| Picks | `--gallery` without `--guide` answered "no evidence" for every intent | refused by name (`untagged_gallery`); the commands carry `--guide` | refusal | "no evidence" again |
+| Warnings meant | a deliberate warning returned on every build | `slide.answered`: kept in `problems` with its reason, listed as answered; a refusal never answered; a stale answer warns | brief: "0 open warning(s), 1 answered" | the warning open again |
+| Cell anchor | no way to centre a figure beside a wrapped label | table `cell_anchor` t, m, b | `anchor="ctr"` on every cell | |
+| Layouts | `layouts` on a template: "on 0 of 0 slides" | `--reference` counts the reference's slides; without it "not counted" | "on 11 of 12 reference slides" | |
+| Held-out panel | the copy linked the whole `refs/files`, the deck under test included | a folder of links without the tested deck (by sha256 and by name) | both jazz files withheld | both reachable |
+| Short marks | "nothing ringed" refused (3 words) | marks takes any words | accepted | refused again |
+| No-reference sizes | a new role warned "levels no evidence ... nearest Nonept" | no ladder, no off_ladder tag, with no reference | none; with a reference still tagged | tagged again |
+| Title band, no reference | `carries_content_on` refused; the title pushed under the band | completion chrome `carries_content: true` on a band, stored as the extractor's count, read by `is_surface` | title on the band, scored against its fill | zone reserved again |
+| Unfittable reason | the reason named what crossed at the smallest scale (a heading over a rule) | the full-scale cause first; a table's row budget first only when its own rows outgrow it | "at full scale: exceeds_page: body short by 0.131 in" | the 0.85 cause again |
+| Bridge | an empty list for "ties" | each declared bridge named with "ties" or its failures | | |
+| Label interval | documented as honoured | measured: LibreOffice 24.2.7 ignores tickLblSkip and tickMarkSkip; a warning, category_row as the way to draw the same labels in both | warning | no warning |
+| Smaller | panel header, computed figures, survey JSON, axis title "none", XY cross_between | docs: a role you add, the figures script prints `--computed`, `-o`, already shipped (ac11b6c), XY needs min and max only | | |
+
+Rebuilt from a FRESH extraction on main and on this branch (`r7v/scripts/run.sh`):
+keybank section, annotations, bridge and round trip, McKinsey PDF, the four fidelity
+pages and the no-reference deck give the same status, scale, text lines and judge totals,
+and all 49 renders are pixel-identical. The only report differences: `bridge_ties` says
+what it found, Netflix p5 warns its two category intervals, and the guides answer
+companions in words. The fidelity completions' bare companion `other`s were answered in
+words in scratch (`r7v/fidc`). `fidelity-jazz-p9.build.json` was not rebuilt (no input).
+
+Not done, with what was found: the no-reference demo's source line measured at 2 lines and
+drawn at 3 (only the final spec was kept; not reproduced); annotation collisions found only
+by a full build (capacity does not place annotations); two brackets at one height meeting
+end to end; a closer installed face than fc-match's (writing that face in the file is the
+user's call); the round trip not naming a lead-in moved into another zone; judge filing
+flipping on a 0.004 change; describing every reference page in the digest.

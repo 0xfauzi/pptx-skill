@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -167,7 +167,7 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": false
@@ -407,7 +407,7 @@
      "note": "totals row 'Median' is a statistic over the column, not its sum"
     }
    ],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": true
@@ -707,7 +707,7 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": false,
     "source_line": false
@@ -935,7 +935,7 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": false
@@ -1382,7 +1382,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1660,7 +1660,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/nohouse/refs/files",
+  "rarity_basis": "12 public decks of other firms in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -1673,7 +1673,7 @@
   "verdict": "possible carry-over: 12 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1705,14 +1705,14 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/renders/slide-04.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.083,
   "components": {
    "families": 0.0,
@@ -1815,25 +1815,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/45541_Header.pptx": 0.5,
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.517,
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/themes.pptx": 0.505
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/45541_Header.pptx": 0.5,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.517,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/themes.pptx": 0.505
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/perella_weinberg_pitch.pdf"
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/bmo_fairness_opinion_board.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_style_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.074,
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.076,
-   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_netflix_financing_pitchbook.pptx": 0.088
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.074,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.076,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/br/refs/files/mi_netflix_financing_pitchbook.pptx": 0.088
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -1845,7 +1845,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/section/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/kb/section/renders"
  }
 }

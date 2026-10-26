@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -126,7 +126,7 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": true
@@ -273,7 +273,7 @@
     }
    },
    "tieouts": [],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": true
@@ -450,7 +450,7 @@
      "status": "ok"
     }
    ],
-   "bridge_ties": [],
+   "bridge_ties": "no chart on this page declares a bridge",
    "source_line": {
     "data_page": true,
     "source_line": true
@@ -777,7 +777,7 @@
   "reference": "no reference"
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
   "slides": 3,
   "problems": [],
   "ok": true
@@ -786,7 +786,7 @@
   "verdict": "no reference: no past deck, so no past content can be found in this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -818,9 +818,9 @@
   },
   "pages": 3,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/renders/slide-03.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders/slide-03.png"
   ]
  },
  "judge": {
@@ -830,7 +830,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/noref/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r7v/out/br/noref/deck/renders"
  }
 }
