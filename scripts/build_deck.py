@@ -69,6 +69,7 @@ import math
 import re
 import sys
 from collections import Counter
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
@@ -1892,8 +1893,12 @@ def label_text(value: float, number_format: str | None) -> str | None:
     m = _NUMBER_FORMAT.match(number_format)
     if not m:
         return None
-    v = value * (100 if m["pct"] else 1)
-    body = f"{v:{',' if ',' in m['int'] else ''}.{len(m['dec'] or '')}f}"
+    # a half rounds away from zero, as LibreOffice and PowerPoint draw it (1234.5 under #,##0
+    # is '1,235', 1.25 under 0.0"x" is '1.3x'); Python's format rounds a half to even. The
+    # value is read at its shortest decimal spelling, so 2.675 is a half, as the file shows it
+    v = Decimal(repr(float(value))) * (100 if m["pct"] else 1)
+    v = v.quantize(Decimal(1).scaleb(-len(m["dec"] or "")), rounding=ROUND_HALF_UP)
+    body = f"{v:{',' if ',' in m['int'] else ''}f}"
     lit = lambda part: re.sub(r'"([^"]*)"', r"\1", part or "")  # noqa: E731
     return lit(m["pre"]) + body + m["pct"] + lit(m["post"])
 
