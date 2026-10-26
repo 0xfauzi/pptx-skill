@@ -378,6 +378,8 @@ def _check_keys(ann: dict, where: str) -> str:
         missing = [k for k in ("text", "role", "ink_role") if not lab.get(k)]
         if missing:
             raise AnnotationRefused(f"{where} label: needs {missing} (the ink is yours: nothing picks one for a fill)")
+        if not isinstance(lab["text"], str) or not lab["text"].strip():
+            raise AnnotationRefused(f"{where} label: text {lab['text']!r} says nothing; a label is words (leave the label out, and explain the mark another way)")
     if ann.get("dash") is not None and ann["dash"] not in DASHES:
         raise AnnotationRefused(f"{where}: dash {ann['dash']!r} not in {list(DASHES)}")
     if "line_width_pt" in ann and (not _num(ann["line_width_pt"]) or ann["line_width_pt"] <= 0):
@@ -670,7 +672,8 @@ EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words na
                      '{"footnote": {"marker": "*", "note": "<text element id whose paragraph starts with the marker>"}} or '
                      '{"house_precedent": {"slide": N}} (a digest record on reference slide N with the same move drawn unlabelled)')
 FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
-_TOKEN = re.compile(r"[A-Za-z][A-Za-z'&]*|\d[\d,]*(?:\.\d+)?")
+#: a word runs on through letters and digits ("CET1" is one word, not "CET" and a "1")
+_TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9'&]*|\d[\d,]*(?:\.\d+)?")
 _STOP = {"the", "and", "for", "with", "from", "that", "this", "are", "was", "its", "per", "than", "into", "over", "all", "but", "not", "has", "have"}
 
 
@@ -702,10 +705,20 @@ def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], lis
         r0, r1, c0, c1 = table_anchor(host, anchor, where)["cells"]
         h = int(host.get("header_rows", 1))
         cols = host["columns"]
-        texts += [str(cols[c].get("label") or "") for c in range(c0, c1 + 1)]
+        n_body = len(host["rows"])
+        # a heading or a row label names what the mark encloses only where it picks the
+        # mark out: a column's heading for a mark that encloses the heading or only some
+        # of the columns, a row's label for a mark that encloses the label or only some
+        # of the rows. A box round one whole row is not named by the heading of every
+        # column it crosses ("P / TBV" does not say which company is boxed).
+        every_column = c0 <= 1 and c1 == len(cols) - 1
+        every_row = r0 <= h and r1 == h + n_body - 1
+        if r0 < h or not every_column:
+            texts += [str(cols[c].get("label") or "") for c in range(c0, c1 + 1)]
         for r in range(max(r0, h), r1 + 1):
             row = host["rows"][r - h]
-            texts.append(str(row[0]))
+            if c0 > 0 and not every_row:
+                texts.append(str(row[0]))
             texts += [str(row[c]) for c in range(c0, c1 + 1)]
         return texts, numbers
     geo = ChartGeometry(host, host["box"])
@@ -743,9 +756,17 @@ def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], lis
     return texts, numbers
 
 
+def _significant(v: float, decimals: int) -> int:
+    """Significant digits of a figure as written ("1.4" 2, "75" 2, "1" 1, "0.05" 1)."""
+    digits = f"{v:.{decimals}f}".replace(".", "").lstrip("0")
+    return len(digits)
+
+
 def _ties(quote: str, texts: list[str], numbers: list[float]) -> list[str]:
     """What the quote shares with the anchor: a word, or a number equal to an anchored
-    value at the quote's own rounding (a value of 0.1 also reads as 10%)."""
+    value at the quote's own rounding (a value of 0.1 also reads as 10%). A figure of
+    one significant digit ties only a value it equals exactly: "1" read at its own
+    rounding would tie every value from 0.5 to 1.5."""
     q_words, q_numbers = _words(quote)
     a_words: set[str] = set()
     a_numbers = list(numbers)
@@ -755,7 +776,7 @@ def _ties(quote: str, texts: list[str], numbers: list[float]) -> list[str]:
         a_numbers += [v for v, _ in n]
     shared = sorted(q_words & a_words)
     for v, d in q_numbers:
-        tol = 0.5 * 10 ** -d + 1e-9
+        tol = 0.5 * 10 ** -d + 1e-9 if _significant(v, d) >= 2 else 1e-9
         if any(abs(abs(a) - v) <= tol or abs(abs(a) * 100 - v) <= tol for a in a_numbers):
             shared.append(f"{v:g}")
     return shared
@@ -763,6 +784,14 @@ def _ties(quote: str, texts: list[str], numbers: list[float]) -> list[str]:
 
 def _paragraph_texts(el: dict) -> list[str]:
     return ["".join(r.get("text") or "" for r in p.get("runs") or []) for p in el.get("paragraphs") or []]
+
+
+def _id_of(value, where: str) -> str:
+    """An id or name the explanation looks up: one non-empty string, refused otherwise
+    (a list names no one element)."""
+    if not isinstance(value, str) or not value.strip():
+        raise AnnotationRefused(f"{where} is one id, a non-empty string; got {value!r}")
+    return value
 
 
 def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan_types: list[str] | None, where: str,
@@ -791,6 +820,9 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan
     shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"house_precedent"})
     if not isinstance(how, dict) or set(how) not in shapes:
         raise AnnotationRefused(f"{where}: explained_by is one of {EXPLAINED_EXAMPLE}; got {how!r}")
+    for key in ("text", "annotation", "legend"):
+        if key in how:
+            _id_of(how[key], f"{where}: explained_by.{key}")
     if "text" in how:
         el = by_id.get(how["text"])
         if el is None or el.get("kind") != "text":
@@ -837,6 +869,7 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, plan
         fn = how["footnote"]
         if not isinstance(fn, dict) or set(fn) != {"marker", "note"}:
             raise AnnotationRefused(f"{where}: explained_by.footnote is {{\"marker\", \"note\"}}")
+        _id_of(fn["note"], f"{where}: explained_by.footnote.note")
         mk = fn["marker"]
         if not isinstance(mk, str) or not FOOTNOTE_MARKER.match(mk):
             raise AnnotationRefused(f"{where}: footnote marker {mk!r} is not a marker (*, **, †, ‡, §, (1), [a])")

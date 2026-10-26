@@ -1019,6 +1019,15 @@ SOURCE_LINE_RARE = 0.5
 SOURCE_LINE_MIN_PAGES = 3
 
 
+#: what each habit asks of a new page, as source_line_problem enforces it
+SOURCE_LINE_ADVICE = {
+    "rule": "the house carries them as a rule: a data page without one is refused",
+    "common": "add one where the house would (a data page without one is warned)",
+    "unmeasured": "add one where the house would (a data page without one is warned)",
+    "rare": "the house's data pages mostly carry none: keep one only where the user's data needs it (a page with one is warned)",
+}
+
+
 def source_line_habit(guide: dict) -> dict:
     """The house's source-line habit from the digest, with its count: `rule` (refuse a data
     page without one), `common` (warn without one), `rare` (warn WITH one: the house's

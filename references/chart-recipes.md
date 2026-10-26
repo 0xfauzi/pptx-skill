@@ -440,7 +440,7 @@ checks that the named thing is there and refuses `annotation unexplained` otherw
 
 | `explained_by` | what the build checks |
 |---|---|
-| `{"text": "lead", "quote": "Above the median on P / TBV"}` | `lead` is a text element of the page, the quote is in it word for word, and the quote shares a word or a figure (at the quote's rounding; 10% also matches 0.1) with what the mark encloses: the anchored cells, their row labels and column heads, or the categories, series names and values the anchor spans |
+| `{"text": "lead", "quote": "Above the median on P / TBV"}` | `lead` is a text element of the page, the quote is in it word for word, and the quote shares a word or a figure (at the quote's rounding; 10% also matches 0.1) with what the mark encloses: the anchored cells, a column head where the mark encloses the head or only some columns, a row label where it encloses the label or only some rows (a box round one whole row is not named by the heads of the columns it crosses), or the categories, series names and values the anchor spans. A word runs on through digits (`CET1` is one word); a figure of one significant digit (`1`) ties only a value it equals exactly |
 | `{"annotation": "selected-note"}` | another annotation of the page, on the same host and the same anchor, that carries a label (a callout saying what a band marks) |
 | `{"legend": "Selected range"}` | the host chart draws a legend showing that series, and the series is drawn in the mark's own ink |
 | `{"footnote": {"marker": "*", "note": "source"}}` | a text the mark encloses (a cell, a category) ends with the marker, and a paragraph of `note` starts with it |

@@ -117,9 +117,10 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/typography/families", '{"major": "<face>", "minor": "<face>"}', None),
     (r"/typography/families/substitutes", '{"<face named in the file>": "<installed face measured in its place>"}', None),
     (r"/typography/scale_ratio", "a number, e.g. 1.25", "the levels are not a geometric ladder"),
-    (r"/spacing/steps/[^/]+", "an integer EMU", None),
-    (r"/spacing/steps", '{"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} '
-     '(integers; space.xs, space.sm, space.margin and space.gutter are required: the round trip and the components read them)', None),
+    (r"/spacing/steps/[^/]+", "an integer EMU, 12700 (one point) or more", None),
+    (r"/spacing/steps", ('{"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} '
+                         '(integers of 12700 EMU, one point, or more; space.xs, space.sm, space.margin and space.gutter are required: '
+                         'the round trip and the components read them)'), None),
     (r"/spacing/baseline_emu", "an integer EMU", "no baseline grid"),
     (r"/density_bands/table_rows_per_inch", '{"metric": "table_rows_per_inch", "low", "high", "median", "n"}', "no table to measure"),
     (r"/floors/[^/]+/floor_pt", "a number of points, never below absolute_floor_pt", "no run in this family: the absolute floor holds"),
@@ -141,6 +142,12 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/composition", '{"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"}', None),
     (r"/notes/[^/]+", "a string", None),
 )
+#: a spacing step is answered in EMU; one under a point (12,700 EMU) is a value written in
+#: points or pixels (6 meant as 6 pt is 6 EMU, 0.0005 pt), refused rather than stored.
+#: In the guides built for this repo's proofs, observed steps (a zero margin aside) start at
+#: 27,432 EMU (2.2 pt).
+MIN_STEP_EMU = 12_700
+STEP_UNIT_HINT = "a step is EMU (12,700 per point, 91,440 per 0.1 in): was it written in points or pixels?"
 #: the spacing steps the round trip (import_slide) and the components read by name
 SPACING_STEPS_NEEDED = ("space.margin", "space.gutter", "space.xs", "space.sm")
 TABLE_KEYS = {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules", "cell_padding_role", "cell_padding_emu",
@@ -828,6 +835,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
     elif path.startswith("/spacing/steps/"):
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise PatchError(f"{path}: a positive integer EMU, got {value!r}")
+        if value < MIN_STEP_EMU:
+            raise PatchError(f"{path}: {value} EMU is {value / 12700:.4f} pt; " + STEP_UNIT_HINT)
         guide["spacing"]["steps"][parts[2]] = {"emu": value, "provenance": model_prov("completion")}
     elif path == "/spacing/steps":
         # the whole scale at once (a raster draft opens it whole): proven here, stored as the
@@ -836,9 +845,11 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             raise PatchError(f"{path}: expected {value_shape(path)[0]}")  # type: ignore[index]
         bad = sorted(k for k, v in value.items() if not isinstance(v, int) or isinstance(v, bool) or v <= 0)
         missing = sorted(set(SPACING_STEPS_NEEDED) - set(value))
-        if bad or missing:
+        tiny = sorted(k for k, v in value.items() if k not in bad and v < MIN_STEP_EMU)
+        if bad or missing or tiny:
             raise PatchError(f"{path}: " + "; ".join(([f"{bad} must each be a positive integer EMU (\"space.sm\": 91440, not an object)"] if bad else [])
-                                                     + ([f"{missing} not answered: the round trip and the components read them"] if missing else [])))
+                                                     + ([f"{missing} not answered: the round trip and the components read them"] if missing else [])
+                                                     + ([f"{tiny} are under {MIN_STEP_EMU} EMU; " + STEP_UNIT_HINT] if tiny else [])))
         guide["spacing"]["steps"] = {k: {"emu": v, "provenance": model_prov("completion")} for k, v in value.items()}
     elif path.startswith("/notes"):
         guide.setdefault("notes", []).append(str(value))
@@ -932,10 +943,10 @@ def main(argv: list[str]) -> int:
     eh = guide.get("exhibit_habits")
     if isinstance(eh, dict):
         # the habits every later step reads, with their counts, where the model sees them first
-        sl = eh["source_lines"]
+        from build_deck import SOURCE_LINE_ADVICE, source_line_habit
+        habit = source_line_habit(guide)
         summary["house_habits"] = {
-            "source_lines": f"{sl['with_source_line']} of {sl['data_pages']} data pages carry a source or note line"
-                            + (f" (pages {sl['pages_with']})" if sl["pages_with"] else "") + ": put one where the house would",
+            "source_lines": f"house {habit['habit']}: {habit['evidence']}: {SOURCE_LINE_ADVICE[habit['habit']]}",
             "marks": f"{len(eh['marks_labelled']['labelled'])} labelled, {len(eh['marks_labelled']['unlabelled'])} unlabelled "
                      f"(unlabelled on slides {sorted({m['slide'] for m in eh['marks_labelled']['unlabelled']})}): an unlabelled mark on a new page "
                      "names what explains it (annotation explained_by)",
