@@ -543,6 +543,17 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
         else:
             after.extend(drawn)
         report.append(entry)
+    placed = {e["id"]: e for e in report if e.get("status") == "placed"}
+    for e in placed.values():
+        how = e.get("explained_by")
+        if isinstance(how, dict) and "_placement" in how:
+            other = placed.get(how.pop("_placement"))
+            why = label_on_mark(e, other) if other is not None else "it was not placed"
+            if why:
+                e["explained_by"] = f"not found: annotation {e['id']!r}: annotation {how['annotation']!r} names another anchor and {why}"
+                problems.append({"kind": "annotation explanation not found", "severity": "refusal", "detail": e["explained_by"][len("not found: "):]})
+            else:
+                how["placed"] = "its label is drawn on this mark"
     out: list[dict] = []
     for el in elements:
         out.extend(before.get(el["id"], []))
@@ -1354,8 +1365,9 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
     nothing to prove). Otherwise `explained_by` names one of: a text element on the page
     and the words in it that name what the mark encloses (a word or figure of the anchored
     cells, categories, series or values, or of the host's own words); another annotation
-    of the page (siblings, by id) on the same host and anchor that carries a label (a
-    callout or arrow saying what the band or box marks); a legend entry of the host chart
+    of the page (siblings, by id) on the same host that carries a label (a callout or arrow
+    saying what the band or box marks), on the same anchor or with its label drawn on or
+    against this mark (label_on_mark); a legend entry of the host chart
     drawn in the mark's own ink; a footnote marker that closes a text the mark encloses as
     its own token and opens a paragraph of the named note; or a page of the reference whose
     file draws a mark of the same geometry carrying no text of its own on the same kind of
@@ -1403,10 +1415,15 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         other = (siblings or {}).get(how["annotation"])
         if not isinstance(other, dict) or other is ann:
             raise ExplanationNotFound(f"{where}: explained_by.annotation {how['annotation']!r} is not another annotation of this page")
-        if not isinstance(other.get("label"), dict) or other.get("host") != ann.get("host") or other.get("anchor") != ann.get("anchor"):
-            raise ExplanationNotFound(f"{where}: annotation {how['annotation']!r} explains this mark only with a label, on the same host and the same anchor "
-                                      f"(it has {'a' if isinstance(other.get('label'), dict) else 'no'} label, host {other.get('host')!r}, anchor {other.get('anchor')!r})")
-        return {"by": "annotation", "annotation": how["annotation"], "says": other["label"].get("text")}
+        if not isinstance(other.get("label"), dict) or other.get("host") != ann.get("host"):
+            raise ExplanationNotFound(f"{where}: annotation {how['annotation']!r} explains this mark only with a label, on the same host "
+                                      f"(it has {'a' if isinstance(other.get('label'), dict) else 'no'} label, host {other.get('host')!r})")
+        found = {"by": "annotation", "annotation": how["annotation"], "says": other["label"].get("text")}
+        if other.get("anchor") != ann.get("anchor"):
+            # on another anchor its words must be drawn on or against this mark: checked once
+            # both are placed (annotate: label_on_mark), since either may be placed first
+            found["_placement"] = how["annotation"]
+        return found
     if "legend" in how:
         from emit_pptx import chart_legend
         name = how["legend"]
@@ -1517,6 +1534,15 @@ def covers(fp: dict, rect: tuple) -> bool:
     return _intersects(fp["rect"], rect)
 
 
+def _parts_meet(fp: dict, other: dict) -> bool:
+    """Whether two footprint parts share ink: against an outline only its strokes count,
+    never its interior (round 7: a label set inside an outlined exit zone was read as
+    covering the zone, so the zone's words could only sit outside it)."""
+    if "outline" in other:
+        return any(covers(fp, strip) for strip in _outline_strips(other["outline"], other["width"]))
+    return covers(fp, _bbox(other))
+
+
 def _bbox(fp: dict) -> tuple:
     if "segment" in fp:
         (x1, y1), (x2, y2) = fp["segment"]
@@ -1536,6 +1562,25 @@ def _covering(e: dict) -> list[dict]:
 def _bare_line(fp: dict) -> bool:
     """A footprint that is a stroke with no words on it."""
     return "segment" in fp and not fp.get("text")
+
+
+def label_on_mark(mark: dict, other: dict) -> str | None:
+    """None when one of `other`'s label boxes shares area with `mark`'s drawn extent (the
+    bounding box of its footprints, grown by that label's own height so words set against
+    an edge count): the words a reader takes as the mark's own. Else why not, in words."""
+    boxes = [_bbox(fp) for fp in mark["_footprint"]]
+    if not boxes:
+        return "this mark draws nothing to set words on"
+    x0, y0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    x1, y1 = max(b[0] + b[2] for b in boxes), max(b[1] + b[3] for b in boxes)
+    labels = [fp["rect"] for fp in other["_footprint"] if fp.get("text")]
+    if not labels:
+        return "its label is not drawn"
+    for r in labels:
+        grow = r[3]
+        if min(x1 + grow, r[0] + r[2]) > max(x0 - grow, r[0]) and min(y1 + grow, r[1] + r[3]) > max(y0 - grow, r[1]):
+            return None
+    return "its label is drawn away from this mark (more than one label height from it): set it on or against the mark"
 
 
 def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: int, zones: list[dict]) -> list[dict]:
@@ -1579,7 +1624,7 @@ def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: in
                 continue
             # two bare lines crossing (a "latest actual" line through a trigger line) hide
             # nothing: lines cross by design; a line through words, or a shape on a shape, does
-            if any(covers(fp, _bbox(ofp)) for fp in _covering(e) for ofp in _covering(other)
+            if any(_parts_meet(fp, ofp) for fp in _covering(e) for ofp in _covering(other)
                    if not (_bare_line(fp) and _bare_line(ofp))):
                 hits.append(f"annotation {other['id']}")
         hits = list(dict.fromkeys(hits))
