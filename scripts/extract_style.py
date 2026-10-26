@@ -174,19 +174,19 @@ RULE_LINE_MAX_WIDTH_EMU = 38100  # 3pt; deckgen tokens.py:210; PowerPoint's line
 INK_CONTRAST_MIN = 4.5  # WCAG 2.x AA
 INK_MUTED_CONTRAST_MIN = 3.0  # WCAG 2.1 SC 1.4.11 non-text
 INK_INVERSE_CONTRAST_MAX = 2.0  # deckgen tokens.py:236; asserted
-RULE_CONTRAST_FLOOR = 1.05  # deckgen tokens.py:226; asserted
+RULE_CONTRAST_FLOOR = 1.05  # deckgen tokens.py:227; asserted
 SURFACE_MIN_BOX_FRACTION = 0.25  # deckgen tokens.py:220; asserted ('a panel or a sidebar')
 SEMANTIC_MIN_SATURATION = 0.2  # deckgen tokens.py:241; asserted
 POSITIVE_HUE = (90, 165)  # deckgen tokens.py:242; asserted hue bands
-NEGATIVE_HUE = (345, 15)
-POSITION_DIAMETER_EMU = 76_200  # 6pt; deckgen shapes.py:34
-ARCHETYPE_IOU_THRESHOLD = 0.5  # PASCAL VOC match criterion; deckgen shapes.py:38
+NEGATIVE_HUE = (345, 15)  # deckgen tokens.py:243; asserted hue band, wrapping through 0 (reds)
+POSITION_DIAMETER_EMU = 76_200  # 6pt; deckgen shapes.py:39
+ARCHETYPE_IOU_THRESHOLD = 0.5  # PASCAL VOC match criterion; deckgen shapes.py:42
 MOTIF_RECURRENCE_FLOOR = RECURRENCE_FLOOR  # deckgen tokens.py:5754, defined once in ooxml.py (the PDF title slot reads it too)
 MOTIF_FULL_SPAN = 0.9  # deckgen tokens.py:5761
 MOTIF_RULE_ASPECT = 20  # deckgen tokens.py:5767
-ALIGNMENT_EDGE_MIN_MEMBERS = 3
-ALIGNMENT_EDGE_CAP = 53
-EVIDENCE_CAP = 8
+ALIGNMENT_EDGE_MIN_MEMBERS = 3  # deckgen tokens.py:255: an edge of fewer members is coincidence, not discipline
+ALIGNMENT_EDGE_CAP = 64  # deckgen tokens.py:256: bounds the guide on very long decks; the port had 53, recorded nowhere
+EVIDENCE_CAP = 8  # deckgen tokens.py:250: provenance keeps this many refs as examples; `frequency` keeps the full count
 # Asserted, unmeasured: a block counts as sitting at the kicker (above) or subtitle and
 # units-line (below) position when its gap to the title is within one title line pitch.
 TITLE_COMPANION_GAP_PITCHES = 1.0

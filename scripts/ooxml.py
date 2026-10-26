@@ -7,7 +7,8 @@ sizes are capped. Inheritance order and colour arithmetic are ported (see
 PORT_AUDIT.md); the reader is validated against the walker it was ported from on
 the corpus decks, not against itself.
 
-    ooxml.py deck.pptx            # JSON dump of every slide's resolved runs and shapes
+    ooxml.py deck.pptx                   # JSON dump of every slide's resolved runs and shapes
+    ooxml.py triage ref.pdf [MAX_PAGES]  # per-page vector or raster, and the deck_class (PDF only)
 """
 
 from __future__ import annotations
@@ -64,6 +65,8 @@ BODY_TYPES = {"body", "subTitle"}
 CHROME_TYPES = {"dt", "ftr", "sldNum"}
 DEFAULT_SIZE_PT = 18.0  # ECMA-376 default when no level declares sz
 DEFAULT_LINE_WIDTH_EMU = 9525  # 0.75pt, ECMA-376 default for a:ln without w
+#: zip-bomb bounds on an untrusted package, asserted and unmeasured: a reference past either
+#: is refused by name, never read in part
 MAX_ZIP_MEMBERS = 5000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
 EMU_PER_PT = 12700
@@ -2692,10 +2695,13 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
 
 
 def main(argv: list[str]) -> int:
-    if not argv:
+    if not argv or argv[0] in ("-h", "--help"):
         print(__doc__)
-        return 1
+        return 0 if argv else 1
     if argv[0] == "triage":
+        if len(argv) not in (2, 3) or (len(argv) == 3 and not argv[2].isdigit()):
+            print("usage: ooxml.py triage ref.pdf [MAX_PAGES]  (MAX_PAGES a whole number of pages)", file=sys.stderr)
+            return 2
         with open(argv[1], "rb") as fh:
             if fh.read(5) != b"%PDF-":
                 print(f"triage: {argv[1]} is not a PDF (no %PDF- header); a .pptx needs no triage: run extract_style.py on it", file=sys.stderr)

@@ -75,7 +75,7 @@ seeds, single-line figures, contrast, a package that validates):
   bands the first other accent (on keybank the marker is the deep blue at 11.2:1 and the
   bands the light grey, where accent1 had put a 1.5:1 grey marker on blue bars); roles
   and the label share, line cap, minimum width, value share and marker width are open.
-  Seen on two renders and not yet fixed: the tick labels sat off their values, unevenly
+  An open defect (README.md, Known gaps): on two renders the tick labels sat off their values, unevenly
   spaced, and on one page the $14 tick was missing; read the axis on every render.
 - `title_block`: optional kicker, the title, a closing hairline (`rule: false` leaves it
   out); the data picks the variant, and asking for `no_kicker` with a kicker in the data

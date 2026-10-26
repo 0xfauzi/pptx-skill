@@ -1826,7 +1826,7 @@ def capacity_slide(path: str, slide_id: str | None) -> dict:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Solve a slide spec to EMU boxes with measured text fit.")
     sub = parser.add_subparsers(dest="command", required=True)
-    p = sub.add_parser("solve")
+    p = sub.add_parser("solve", help="one spec solved to EMU boxes (the build runs this; for inspecting a solve)")
     p.add_argument("spec")
     p.add_argument("--guide", required=True)
     p.add_argument("--scale", type=float, default=None, help="one scale only (no descent)")

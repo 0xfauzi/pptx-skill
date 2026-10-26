@@ -55,6 +55,8 @@ MERGE_DELTA_E = 6.0
 """Quantised colours closer than this (CIE76) are one colour: anti-aliasing and JPEG noise
 spread a flat fill over neighbours a few units apart."""
 INK_LUMA_DROP = 0.25
+"""A pixel is ink when its luma (0 to 1) sits this far below the surface's. Asserted, not
+measured; the read-back of keybank at 100 dpi it served is in README.md (ink within 1 unit)."""
 CAP_HEIGHT_EM = 0.716
 """Arial and Helvetica cap height; an ink run of a line without descenders is this tall.
 Times is 0.66 and Calibri 0.64, so a size read this way carries a 10% band."""

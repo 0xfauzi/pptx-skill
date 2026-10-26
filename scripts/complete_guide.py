@@ -1039,8 +1039,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         else:
             raise PatchError(f"{path}: expected a hex colour")
     elif parts[0] == "extra_roles":
-        # the same two forms a colour role takes: a bare hex, or {"hex", "why"} (SKILL.md
-        # section 3 asks for the why, so the object form is the documented one)
+        # the same two forms a colour role takes: a bare hex, or {"hex", "why"} (guide-completion.md
+        # asks for the why, so the object form is the documented one)
         if isinstance(value, str) and HEX_RE.match(value):
             spec = {"hex": value.upper(), "provenance": model_prov(f"completion of {path}")}
         elif isinstance(value, dict) and isinstance(value.get("hex"), str) and HEX_RE.match(value["hex"]):

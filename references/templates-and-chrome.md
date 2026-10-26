@@ -47,7 +47,7 @@ What a PDF's chrome is drawn from, so it matches the reference:
 
 ## The reference firm's own chrome
 
-The template carries the reference reference's name and logo on its master. For a deck of that
+The template carries the reference firm's name and logo on its master. For a deck of that
 firm, keep them. For a deck of another firm, or of a made-up one, they would put the wrong
 name on every page: ask the user whether to keep, replace or drop each, and write the
 answer in the deck JSON by chrome id (the ids are in the build report's `chrome.firm`,
@@ -60,8 +60,9 @@ and in `draft.md`'s chrome list):
 `"keep"`, `"drop"`, `{"text": "..."}` for a text entry, `{"image_path": "..."}` (a PNG,
 JPEG or GIF of the same format as the template's picture, read as a picture, not by its
 name) for a logo. An id that is not firm chrome on these pages is refused, listing
-the ones that are. The build reports every entry's decision, and marks each one the deck
-left to the default.
+the ones that are. The build applies the choice to this deck's copy of the master,
+reports every entry's decision, and says "not chosen by the deck" for each entry left to
+the default (keep).
 
 ## How chrome is drawn
 
@@ -120,8 +121,14 @@ row bold throughout becomes an `emphasis` group), so a reference that pastes its
 pictures still has candidates.
 
 ```bash
-python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/survey.json"   # --pages 30-45 on a long deck
 ```
+
+It prints one line per page for reading; the JSON, for a script, is the file `-o` names.
+The survey reads the reference once; on a long PDF give it `--pages` (bain's pages 34 to
+45: under a minute). A page that does not fit at full scale says why
+(`why_not_full_scale`: the element, the violation, the shortfall). With no candidate,
+take the content page that loses least and name each loss in the report.
 
 Then import and build the one you chose:
 
@@ -141,5 +148,6 @@ reference page to the rest). Then LOOK at the render beside the reference page: 
 does not see what was lost. Measured: a bank page round-tripped at 0.056 (reference spread
 0.055 to 0.372) and matched the original to the eye; a consulting PDF page round-tripped at
 0.097, filed, while its render had lost the ring diagram, the gradient ground and the
-block positions. The imported spec is also your seed: a page that starts from the reference's
+block positions. Name everything else the render lost; the import's `lost` list names what
+it knows of (positions, a table's own fills and widths). The imported spec is also your seed: a page that starts from the reference's
 own page begins inside its bands and columns.

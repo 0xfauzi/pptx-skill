@@ -135,12 +135,12 @@ scripts/
   import_slide.py        a reference slide into a spec of roles: the round trip, and a seed
   pptx_tools.py          template, blank, layouts, text, duplicate, delete, clean, validate
 references/              one level deep from SKILL.md, by domain:
-  intake, guide-completion, templates-and-chrome, planning-and-variety, page-specs,
+  intake, no-reference-design, guide-completion, templates-and-chrome, planning-and-variety, page-specs,
   page-library, chart-recipes, build-report, components, review, editing, gotchas
   (procedures); storyline, titles-and-text, composition, charts, tables, typography,
   emphasis-and-decoration (design questions with measured tendencies);
   page_craft_vocabulary.json (the title vocabulary; no exhibit is read in a list)
-evals/                   nine end-to-end scenarios and the blind-round and fresh-agent protocol
+evals/                   ten end-to-end scenarios and the blind-round and fresh-agent protocol
 components/              four admitted components: football field, title block, bullet stack, KPI row
 examples/                deck specs, section plans, completions and digests for a pptx and a PDF
                          reference, and for a deck with no reference; proofs/ build reports

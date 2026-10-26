@@ -60,6 +60,8 @@ from lxml import etree
 from PIL import Image
 
 SVG_NS = "http://www.w3.org/2000/svg"
+#: runaway bounds on untrusted input, asserted and unmeasured, as layout.py's tree limits are:
+#: an icon the model writes is a few shapes; a page picture is a logo or a photo
 MAX_SVG_BYTES = 64 * 1024
 MAX_SHAPES = 400
 MAX_PATH_COMMANDS = 20_000
@@ -634,6 +636,8 @@ def _coverage(polys: list[list[tuple[float, float]]], rule: str, w: int, h: int)
     return buf
 
 
+#: subpixels per pixel side when an icon is rasterised for `check`: anti-aliasing for the
+#: preview and the contrast read, a rendering choice, not a measurement
 SUPERSAMPLE = 4
 
 
@@ -995,6 +999,7 @@ DPI_RANGE = (72, 1200)
 #: characters a PDF box must hold for its text layer to state the size: fewer is a label,
 #: not a table (asserted; a 3 x 3 grid of two-digit figures already holds 18)
 TEXT_LAYER_MIN_CHARS = 20
+#: a hung pdftoppm is refused, not waited on; asserted, a bound, not a measured render time
 PDFTOPPM_TIMEOUT_S = 120
 
 

@@ -3,7 +3,7 @@
 interesting components, one whole-slide render per composition family, and a
 text-free skeleton of each exemplar.
 
-    gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json] [--include-generated] [--pages 1-40]
+    gallery.py deck.pptx --out DIR [--width 1600] [--guide draft.json] [--include-generated] [--pages 1-40]
     gallery.py ref.pdf --out DIR --guide draft.json [--pages 30-70]
     gallery.py pick DIR --guide guide.json --intent "two column comparison table beside commentary"
 

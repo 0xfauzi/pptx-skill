@@ -45,7 +45,8 @@ the paths given (they are made at staging paths and moved there). A refused buil
 renders at the asked-for paths to `<stem>.stale.pptx` and `<renders>.stale`
 (`outputs.moved_aside`), so a file at the asked-for path is never older than the spec. A
 refusal before solving (a malformed spec) writes a report holding only `outputs.verdict:
-"refused before building"` and the refusal; the next passing build removes the `.refused`
+"refused before building"` and the refusal, and does not count against the build cap
+(review.md); the next passing build removes the `.refused`
 files. Leave `--others` alone: the
 judge's panel is every deck under `refs/files` (fetch once with `refs/fetch.sh`), the
 reference's twin removed by hash, scans skipped, decks inside the reference's own spread
@@ -140,7 +141,8 @@ refuses: the count is evidence beside the choice, answered in the report. The de
 `source_lines` sets the reference's count beside the deck's pages with one, and the brief
 prints both. In round 2 the old rule (warn on every data page without one, whatever the
 reference did) told agents on keybank and netflix, references with 1 of 5 and 1 of 8, to add
-source lines to every page.
+source lines to every page. With no reference a source line is your call. An
+illustrative-figures note goes where the deck puts notes; say where in the report.
 
 ## What the file is written at
 
@@ -282,7 +284,8 @@ or confirm the user supplied it for this deck, in the final report. `what_to_do`
 same in the report. `verdict` is `clean`, `no distinctive carry-over` (low findings only)
 or `possible carry-over`. The thresholds are unmeasured. The
 same report runs on any deck: `python3 scripts/leakage.py DECK.pptx --past PAST.pptx
-[--brief brief.txt] [--template tpl.pptx]`.
+[--brief brief.txt] [--template tpl.pptx]`. The firm's own name in the chrome is not
+leakage: it is the deck's `firm_chrome` choice (below).
 
 ## Firm chrome
 
@@ -353,7 +356,9 @@ page fit with a valid package. `judge.components` names what is off (`size_hist`
 when the reference has no type evidence (a scan): the verdict is yours, from the renders.
 The judge does not track a reader's eye: in a blind round, decks filed at 0.068 and 0.085
 were caught on every page, and one the judge could not file fooled the rater 4 of 5
-times. A filed deck is necessary, not sufficient.
+times. A filed deck is necessary, not sufficient, and is not thereby finished. A deck
+nearer another panel deck than its reference shows in `judge.components` which components
+carry the distance: fix what it names, or say in the report why it stands.
 
 ## Density is a loop
 

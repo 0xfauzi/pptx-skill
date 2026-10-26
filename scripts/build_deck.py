@@ -2500,6 +2500,9 @@ def solve_slide(slide: dict, guide: dict, chrome: str, lg: L.Guide, ruler, index
 
 #: Text appended to an element to find its budget: mean-advance English with figures.
 FILLER = (L.REFERENCE_ALPHABET + " ") * 200
+#: where the budget search stops: past this many spare characters an element is reported as
+#: ">= 4000", not counted. A search bound, not a measurement (a capacity run on a keybank
+#: page found 3219 spare on its source line, layout.py's docstring and page-specs.md).
 CAPACITY_MAX_CHARS = 4000
 
 

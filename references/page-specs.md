@@ -79,6 +79,11 @@ filler is mean-advance English with figures, so a run of capitals or wide figure
 fewer characters than `free` says. Write the skeleton with short placeholder text, read
 the budgets, then write the words.
 
+The same run prints, per table, its body rows, the height they need and `rows_to_fit`
+(the rows the page holds at full scale with everything else as written); each annotation
+placed as the build places it, with its refusals and collisions; and, for a page over
+budget, `why_not_full_scale`, the causes in words.
+
 ## Pictures: logos, icons and the user's files
 
 A picture is an `image` node in the tree with its source under `slide.images[<id>]`,

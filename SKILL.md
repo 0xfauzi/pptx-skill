@@ -9,62 +9,56 @@ You design; the scripts measure and refuse. You decide the template and layouts,
 storyline, what each page says, its composition, every exhibit, every annotation, every
 ink, and whatever the evidence never showed. Scripts read files, measure text with the real
 fonts, solve geometry, write valid packages, render, and refuse what is measurably wrong.
-No script picks a colour, a chart or a layout for you; when you leave a choice out, the
-build writes a named neutral value and lists it, so you see every choice you did not make.
+No script picks a colour, a chart or a layout for you; a choice you leave out is written as
+a named neutral value and listed, so you see every choice you did not make.
 
-**One reference deck, or none.** The user drops in one deck and its look is followed. If
-they give several, use the one they name, or ask which to follow; nothing pools decks.
-With a reference, it governs the LOOK only: faces, colours, spacing, chrome, how marks are
-drawn, title and text habits. With no reference, you choose the whole look yourself (see
-"No reference" below). Either way, design comes from the data and the reader: every
-exhibit is reasoned out from what the reader must see, the comparison and the data, and
-written down as a brief before its spec.
+**One reference deck, or none.** Follow the one deck the user names; given several and no
+name, ask which; nothing pools decks. A reference governs the LOOK only: faces, colours,
+spacing, chrome, how marks are drawn, title and text habits. With no reference you choose
+the whole look ("No reference" below). Either way, design comes from the reader and the
+data: every exhibit is reasoned out as a written brief before its spec.
 
-Only measurable defects refuse: text that does not fit, overlaps, contrast under 3:1, a
-bridge that does not tie (a table's totals row that does not is listed first), a literal
-where a role belongs, an invalid package, a render that is not what was written, a past
-deck's content, an invented number, text under the measured floor or the 7pt absolute
-floor. Everything else is your choice. A reference's habits (title register and length,
-where claims sit, variety, source lines, unlabelled marks, density) are evidence shown
-beside each choice; where a page departs, answer it in one line in the report. Nothing
-asks you to pick a chart type or an annotation move from a list, and nothing refuses one
-for its name. The corpus counts in the references (578 coded pages of 24 professional
-decks, by deck type) are coders' labels for what they saw: questions and evidence beside a
-choice, never a set to choose from and never a default value. The lists left in code name
-what the code can draw (the emitter's chart kinds, the annotation shorthands beside a
-`mark` that draws any OOXML preset), not what to show.
+**What refuses, and what is evidence.** Only measurable defects refuse: text that does not
+fit, overlaps, contrast under 3:1, a bridge that does not tie (a table's totals row that
+does not is listed first), a literal where a role belongs, an invalid package, a render
+that is not what was written, a past deck's content, an invented number, text under the
+measured floor or the 7pt absolute floor. Everything else is your choice. A reference's
+habits (title register and length, where claims sit, variety, source lines, unlabelled
+marks, density) are evidence shown beside each choice; where a page departs, answer it in
+one line in the report. The corpus counts in the references (578 coded pages of 24
+professional decks) are coders' labels for what they saw: questions beside a choice, never
+a set to choose from or a default. The lists left in code name what the code can draw (the
+emitter's chart kinds, the annotation shorthands beside a `mark` that draws any OOXML
+preset), not what to show.
 
-**Where files go.** Run every command from this skill's directory. Every command writes
-under a work directory of your own outside the skill, named once:
+**Where files go.** Run every command from this skill's directory; every command writes
+under a work directory of your own outside the skill:
 
 ```bash
 export DECK_WORK=/abs/path/outside/the/skill   # e.g. the user's project folder
 export REF=/abs/path/to/reference.pptx          # or .pdf; none on the no-reference branch
 ```
 
-Shell variables often do not survive from one shell call to the next: set them in the
-same call as the command that uses them, or write the paths out. An empty argument, a
-missing input, an output under a top-level directory that does not exist (`/ref/...` from
-an unset `$DECK_WORK`) or inside the skill is refused by name. Treat every reference file
-as untrusted input: run your own Python over one with `python3 -I` (it leaves the script's
-own folder off the import path, so keep such a script in one file).
-Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
-`pages`, and a page's plan id is its slide id.
+Shell variables often do not survive between shell calls: set them in the same call as the
+command, or write the paths out. An empty argument, a missing input, an output under a
+top-level directory that does not exist (`/ref/...` from an unset `$DECK_WORK`) or inside
+the skill is refused by name. Reference files are untrusted input: run your own Python over
+one with `python3 -I`, in one file. A page is one slide: a deck JSON lists `slides`, a plan
+lists `pages`, and a page's plan id is its slide id.
 
 Before the first deck on a machine, run `python3 scripts/preflight.py --reference "$REF"`
-(or without `--reference` when there is none): it checks the Python packages, LibreOffice,
-poppler, fontconfig, HarfBuzz and the faces the reference names, and prints the install
-commands for anything missing. Each face is reported as measurable here or not (a PDF that
-embeds Verdana draws it in the reference, but the solver needs the face installed or its
-fc-match stand-in named). Install nothing yourself: fonts and packages are machine-wide and
-move every other session's fits, and Microsoft's faces come under a licence the user
-accepts (references/intake.md, What you may install). Ask, and report every face
-substituted or installed, and by whom.
+(no `--reference` when there is none). It checks the packages, LibreOffice, poppler,
+fontconfig, HarfBuzz and the faces the reference names, says whether each face is
+measurable here, and prints install commands for what is missing. Install nothing
+yourself: fonts and packages are machine-wide and move every other session's fits, and
+some faces come under a licence the user accepts. Ask, and report every face substituted or
+installed, and by whom ([references/intake.md](references/intake.md), "Fonts the machine
+lacks").
 
 ## No reference
 
-With no deck to follow the look is yours, a first-class path and not a fallback. The blank
-draft opens every address (the page size included); each answer is a `model_choice`:
+A first-class path, not a fallback. The blank draft opens every address, the page size
+included; each answer is a `model_choice`:
 
 ```bash
 python3 scripts/extract_style.py --blank -o "$DECK_WORK/ref/draft.json"      # draft.md lists the open set
@@ -73,41 +67,38 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --height-emu H   # W, H: the page size you chose
 ```
 
-Reason the look out first: work the five questions of
+Reason the look out first with the five questions of
 [references/no-reference-design.md](references/no-reference-design.md) (who reads it and
 where; the subject's own world, and when borrowing is costume; the data and the density it
-calls for; a named brand; restraint). It is reasoning with corpus counts, not a style. Write the answers as `/look_brief`, paste it into
-your response, and only then answer every other address: the page size, installed faces
-(so fit is measured), a ladder with nothing under 7pt, the palette, spacing and margins,
-the chrome or `[]`, tables, charts and `/description`. Every address is core (nothing has
-a default); the brief is refused only when missing or a placeholder, never weighed. Then
-steps 5 to 11 with no `--reference`, `--chrome draw`, a null `reference_sha256` and no
-`in_reference_look`: every hard limit runs, a look left to the stock theme or a constant
-is refused, and every comparison reports "no reference".
-Worked: `examples/no-reference.*` (a board review) and `no-reference-credit.*` (a dense
-credit book), with their reports in `examples/proofs/`.
+calls for; a named brand; restraint). Write the answers as `/look_brief`, paste it into
+your response, and only then answer every other address (page size, installed faces, a
+ladder with nothing under 7pt, palette, spacing, chrome or `[]`, tables, charts,
+`/description`). Nothing has a default; the brief is refused only when missing or a
+placeholder, never weighed. Then steps 5 to 11 with no `--reference`, `--chrome draw`, a
+null `reference_sha256` and no `in_reference_look`: every hard limit runs, a look left to
+the stock theme or a constant is refused, and every comparison reports "no reference".
+Worked: `examples/no-reference.*` (a board review) and `examples/no-reference-credit.*` (a
+dense credit book), with their reports in `examples/proofs/`.
 
 ## Workflow
 
-Copy this checklist into your response and tick it off:
+Copy this checklist into your response and tick it off. Steps 5, 7, 8 and 9 are loops: run
+the check, fix what it names, run it again.
 
 ```
 Deck progress:
 - [ ] 1. Intake: render, extract, gallery (triage a PDF first); no reference: the blank draft
 - [ ] 2. Guide: answer every open address, including /titles/register,
-         /exhibit_habits (from the digest) and /variety/content_pages
+         /exhibit_habits (from the digest) and /variety/content_pages; --check until nothing is open
 - [ ] 3. Template: the reference's template with its slides removed, or a blank page
 - [ ] 4. Round trip: rebuild one of the reference's own pages and compare renders
          (nothing to round-trip with no reference)
-- [ ] 5. Section plan: plan.json with an exhibit brief per exhibit, written from what
-         the reader must see and the data; plan.py check until it passes
+- [ ] 5. Section plan: plan.json with an exhibit brief per exhibit; plan.py check until it passes
 - [ ] 6. Page specs: context first, then capacity, then the spec
-- [ ] 7. Build with --plan; read the report; fix refusals
-- [ ] 8. Review every render at full size against each exhibit's brief (and, with a
-         reference, beside its pages); write located findings; fix; rebuild
-         (cap 8 builds per 5-page section; keep the best build)
-- [ ] 9. Annotation: can each exhibit's claim be found on it? Mark, or say why not;
-         rebuild
+- [ ] 7. Build with --plan; read the report; fix refusals; rebuild
+- [ ] 8. Review every render at full size against each exhibit's brief; located findings;
+         fix; rebuild (cap 8 builds per 5-page section; keep the best build)
+- [ ] 9. Annotation: can each exhibit's claim be found on it? Mark, or say why not; rebuild
 - [ ] 10. Variety report: realised variety against the plan, with the reference's beside it
 - [ ] 11. Validate the package; final report
 ```
@@ -123,9 +114,8 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster"  # only whe
 ```
 
 Look at `renders/grid.png`, then read `draft.md` in full, `renders/fonts.json`, and
-`gallery/MANIFEST.md` with its exemplars. The skill follows one reference deck: given
-several, use the one the user names, or ask which to follow. Details, PDF triage, scans and
-missing fonts: [references/intake.md](references/intake.md).
+`gallery/MANIFEST.md` with its exemplars. PDF triage, scans and missing fonts:
+[references/intake.md](references/intake.md).
 
 ### 2. Complete the guide
 
@@ -138,31 +128,15 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 ```
 
 Answer exactly the open addresses, no others; observed values are never overwritten. Three
-answers are read by looking, and they carry the reference's habits into every later step
-as evidence beside your choices:
-
-- `/titles/register`: each title topic, claim, question, or other in your words; each companion block named;
-  where a topic-title page states its claim.
-- `/exhibit_habits`: the digest, one record per exhibit in your own words after looking at
-  its crop: what it is, its message, how the reference draws it, what it marks and whether
-  words beside the mark say what it marks; whether it is a chart or a table, and whether
-  it sets axis labels and values on its marks; and on every page holding a chart or a
-  table whether it carries a source line. Nothing is chosen from a list. Each stub page
-  also shows `file_facts`, what the file itself states (its exhibit structure and the
-  marks it draws, with whether each carries text). The run prints `reference_habits`: the
-  reference's source-line count and the marks its files draw: the evidence beside your
-  choices of where a page carries a source line and how a mark says what it means.
-- `/variety/content_pages`: which pages are content, read off the renders.
-
-Two answers are easy to get wrong. `null` says the reference has no such text or colour
-anywhere; text or a colour the reference shows only inside pasted pictures (axis labels on
-a chart image, the red box round a figure) is answered with its value and `"evidence":
-"pictures"`, so native charts and marks can use it. `color.emphasis` is the reference's
-look-here colour (outline boxes, circles), never inferred from a hue. Many open
-`line_spacing` addresses take one answer: `"/typography/roles/*/line_spacing": 1.2`. A run
-reports every refusal at once and writes nothing until all pass; repeat until `--check`
-lists nothing open. Value shapes, floors, rules and worked completions:
-[references/guide-completion.md](references/guide-completion.md).
+answers are read by looking, and carry the reference's habits into every later step as
+evidence: `/titles/register` (each title topic, claim, question or other, in your words),
+`/exhibit_habits` (the digest: one record per exhibit in your own words after looking at
+its crop, beside the `file_facts` the file itself states) and `/variety/content_pages`.
+`null` means the reference has no such text or colour anywhere; a value seen only inside
+pasted pictures is answered with `"evidence": "pictures"`. `color.emphasis` is the
+reference's look-here colour, never inferred from a hue. A run reports every refusal at
+once and writes nothing until all pass. Value shapes, floors, the digest and worked
+completions: [references/guide-completion.md](references/guide-completion.md).
 
 ### 3. Template
 
@@ -177,89 +151,62 @@ pages like this, and does this page need the same frame? `layouts` prints how ma
 reference's slides use each one, an unused layout included. A PDF reference, and a deck
 with no reference, builds with `--chrome draw`.
 
-**The reference firm's own chrome.** The template draws the reference firm's name and
-logo on every page. When the deck is for that firm, keep them. When it is for another firm
-or a fictional one, ask the user, then write the choice in the deck JSON, one entry per
-chrome id the build lists under `chrome.firm`: `"firm_chrome": {"chrome-13": "drop"}`,
-`{"chrome-13": {"text": "Harbour & Co."}}` or, for a logo, `{"image_path": ...}`. The
-build applies it to this deck's copy of the master and reports each entry's decision, and
-says "not chosen by the deck" for every entry left to the default (keep). Chrome and
-layouts: [references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
-reordering or editing an existing deck (its own pages are the reference; `template --keep`,
-`duplicate`, `delete`): [references/editing.md](references/editing.md).
+The template draws the reference firm's name and logo on every page. For a deck of that
+firm, keep them; for another firm or a fictional one, ask the user, then write the choice
+per chrome id in the deck JSON (`"firm_chrome": {"chrome-13": "drop"}`, a `{"text": ...}`
+or a logo's `{"image_path": ...}`); the build reports each entry's decision. Chrome,
+layouts and the round trip:
+[references/templates-and-chrome.md](references/templates-and-chrome.md). Extending,
+reordering or editing an existing deck (its own pages are the reference):
+[references/editing.md](references/editing.md).
 
 ### 4. Round trip
 
 ```bash
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/survey.json"   # --pages 30-45 on a long deck
 python3 scripts/import_slide.py "$REF" --slide N --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/rt.deck.json"
 python3 scripts/build_deck.py "$DECK_WORK/rt/rt.deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
         -o "$DECK_WORK/rt/rt.pptx" --reference "$REF" --renders "$DECK_WORK/rt/renders" [--chrome draw]
 ```
 
-Pick N with the survey, which imports every page as the round trip would and lists what
-each holds, what it would lose (a chart becomes a placeholder line, a PDF table too,
-turned text is left out, merged cells are unmerged) and whether it fits at full scale:
-
-```bash
-python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/survey.json"   # --pages 30-45 on a long deck
-```
-
-It prints one line per page for reading; the JSON, for a script, is the file `-o` names.
-The survey reads the reference once; on a long PDF give it `--pages` (bain's pages 34 to
-45: under a minute). A page that does not fit at full scale says why
-(`why_not_full_scale`: the element, the violation, the shortfall).
-
-Take a CANDIDATE (a content page on the reference's most used layout, with a title, text
-and an exhibit, nothing lost, fitting); a pasted picture travels with its own bytes and a
-native table as a table spec, so a reference whose exhibits are pictures still has
-candidates. With none, take the content page that loses least, and name each loss in the
-report. Read `judge.total` against `judge.reference_spread`, then put the render beside the
-original page. Name everything else the render lost (the import's `lost` list names what it
-knows of: positions, a table's own fills and widths); the distance does not see it (a
-consulting page round-tripped at 0.097, filed, with its diagram and gradient gone).
+The survey imports every page as the round trip would and lists what each holds, what it
+would lose and whether it fits at full scale. Take a candidate it marks (a content page on
+the reference's most used layout, with a title, text and an exhibit, nothing lost,
+fitting); with none, the page that loses least, and name each loss in the report. Read
+`judge.total` against `judge.reference_spread`, then put the render beside the original:
+the distance does not see what was lost (a consulting page round-tripped at 0.097, filed,
+with its diagram and gradient gone). How to choose and read it:
+[references/templates-and-chrome.md](references/templates-and-chrome.md), "The round trip".
 
 ### 5. Section plan
 
-Write the storyline and `$DECK_WORK/plan.json` (schema and fields:
-[references/planning-and-variety.md](references/planning-and-variety.md)), then:
+Write the storyline and `$DECK_WORK/plan.json`, then:
 
 ```bash
 python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/plan.check.json"
 ```
 
-It prints a short verdict; the whole report is the JSON. Each exhibit on a page gets a brief in the plan, and the brief is where you think hard
-about the visual. Start from the reader and the data: what the reader must see; what is
-compared against what; the data's shape in your words; at least two forms you weighed,
-each with why not or why; the form chosen and why it shows what the reader must see; and
-what will be marked, where the claim lives. With a reference, `in_reference_look` (optional)
-says how its look (faces, colours, spacing, how it draws marks) applies to the form you
-chose; the digest crops, the gallery and the renders show that look. A form you cannot
-argue for against another is not chosen yet. Questions and evidence:
-[references/charts.md](references/charts.md).
-
-It refuses a guide made before the current readings (re-extract and complete it again),
-a malformed plan, an incomplete brief (a field missing or a word or two, a placeholder
-such as TBD or n/a, one form considered, a chosen form that is none of those weighed, one
-brief pasted for two exhibits, `in_reference_look` on a guide with no reference), and an
-archetype the guide does not hold; it reads a brief for being there, never for what it
-says. It warns, with the reference's figure beside yours, when a repeat runs longer than
-the reference's longest run, when the plan's composition variety falls below the
-reference's, and when a coded title register is one the reference never writes: each is a
-departure to answer in one line in the report. Name compositions honestly: the same name
-whenever two pages share an arrangement, and a reason in `deliberate_parallel` when a page
-repeats the one before it. Compute every figure a title or lead-in states from the data,
-with a script that asserts it, before writing the sentence; have the same script print
-every figure it asserted (`python3 "$DECK_WORK/figures.py" > "$DECK_WORK/figures.txt"`,
-as `examples/no-reference.figures.py` does), so the file you pass to the build's
-`--computed` is the arithmetic's own output and never a copy typed by hand.
+Each exhibit gets a brief in the plan, and the brief is where you think hard about the
+visual: what the reader must see; what is compared against what; the data's shape in your
+words; at least two forms weighed, each with why not or why; the form chosen and why; what
+will be marked, where the claim lives; with a reference, optionally `in_reference_look`
+(how its look applies to the form chosen). A form you cannot argue for against another is
+not chosen yet. The check reads a brief for being there, never for what it says; it warns,
+with the reference's figure beside yours, where the plan departs from the reference's
+variety or title register. Name compositions honestly, and give `deliberate_parallel` a
+reason where a page repeats the one before it. Compute every figure a title or lead-in
+states with a script that asserts it and prints what it asserted
+(`python3 "$DECK_WORK/figures.py" > "$DECK_WORK/figures.txt"`, as
+`examples/no-reference.figures.py` does); that output is what the build's `--computed`
+reads. Schema, what refuses and warns, and the brief:
+[references/planning-and-variety.md](references/planning-and-variety.md). Questions and
+evidence for exhibits: [references/charts.md](references/charts.md).
 
 ### 6. Page specs
 
-No exhibit spec is written before its brief exists. If the spec you are about to write
-draws a different form or marks a different place than the brief says, the brief was not
-finished: go back to the reader and the data, and rewrite the brief first.
-For each page, gather its context before writing anything (see "Designing a page" below),
-then budget the text:
+No exhibit spec is written before its brief. If the spec draws a different form or marks a
+different place than the brief says, the brief was not finished: rewrite the brief first.
+Gather each page's context ("Designing a page" below), then budget the text:
 
 ```bash
 python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "WHAT THE PAGE DOES" --guide "$DECK_WORK/ref/guide.json"
@@ -268,176 +215,135 @@ python3 scripts/library.py pick --intent "WHAT THE PAGE DOES" --data-shape "THE 
 python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guide "$DECK_WORK/ref/guide.json" [--chrome draw]
 ```
 
-`capacity` solves the page exactly as the build will (page size, chrome zones, title band,
-components) and prints, per text element, its box, its lines now and how many characters
-more it takes before the page stops fitting at full scale; per table, its body rows, the
-height they need and `rows_to_fit` (the rows the page holds at full scale with everything
-else as written); each annotation placed as the build places it, with its refusals and
-collisions; and, for a page over budget, `why_not_full_scale`, the causes in words.
-Write the page's skeleton with short placeholder text first, read the budgets, then write
-the words.
+`capacity` solves the page exactly as the build will and prints each text element's box,
+lines and spare characters at full scale, each table's `rows_to_fit`, each annotation as
+placed, and, for a page over budget, the causes in words. Write the skeleton with short
+placeholder text, read the budgets, then write the words.
 
-Write the deck as one JSON (`{"slides": [...]}`, each slide `id`, `layout`, `spec`,
-optional `charts`, `styling`, `annotations`, `notes`, and `"title": {"register": ...}`;
-optional deck-level `firm_chrome`). A node in the spec tree carries its id, kind, weight
-and its text or table; a chart's own keys (type, series, axes, plot_area, legend) go in
-`slide.charts[<its id>]`, and a key on a node that nothing reads is refused by name.
-Per-table emphasis (the subject row shaded, the row labels bold) is the table's
-`emphasis` list of roles, never a literal. Roles only; a literal colour, size, font or
-coordinate is refused. Grammar, limits and
-conventions: [references/page-specs.md](references/page-specs.md). How to draw the form
-your brief chose, technique by technique (not a menu of forms):
-[references/chart-recipes.md](references/chart-recipes.md). Table spec keys:
-[references/tables.md](references/tables.md). Logos, icons and the user's pictures
-(a file, a logo taken from the reference with `images.py extract`, or an icon you write
-as a small SVG in colour roles), in boxes sized by roles: page-specs.md, "Pictures". A
-line and columns on two axes, data rows or logos aligned under a chart's categories:
-chart-recipes.md, "Two value axes" and "Rows aligned to categories". A component the template never showed:
-[references/components.md](references/components.md). Building a company page library:
-[references/page-library.md](references/page-library.md).
+The deck is one JSON, `{"slides": [...]}`, each slide with `id`, `layout`, `spec`, and
+optional `charts`, `styling`, `annotations`, `notes` and `"title": {"register": ...}`.
+Roles only; a literal colour, size, font or coordinate is refused, and so is a key on a
+node that nothing reads. Where to read:
+
+| For | Read |
+|---|---|
+| the spec grammar, limits, pictures (logos, icons as small SVG in colour roles, the user's files) | [references/page-specs.md](references/page-specs.md) |
+| drawing the form your brief chose, technique by technique (two value axes, rows aligned to categories, marks) | [references/chart-recipes.md](references/chart-recipes.md) |
+| table spec keys and per-table `emphasis` roles | [references/tables.md](references/tables.md) |
+| a component the template never showed | [references/components.md](references/components.md) |
+| building a company page library | [references/page-library.md](references/page-library.md) |
 
 ### 7. Build
 
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
-        -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
+        -o "$DECK_WORK/out/b1/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/b1/renders" --plan "$DECK_WORK/plan.json" \
         [--chrome draw] [--brief "$DECK_WORK/brief.txt" ...] [--computed "$DECK_WORK/figures.txt"]   # no reference: no --reference
 ```
 
-Give each build its own folder (`out/b1/`, `out/b2/`, ...) so a refused build never moves a
-good one aside. A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
-(while you work on one page, a deck of that one slide); each slide's id is its page id.
-Exit 0 means every page fit and the package is valid. The command prints a brief (the
-verdict, every path, each page's first problems, one line per gate); the whole report is
-`$DECK_WORK/out/deck.build.json`. Only a passing build writes `deck.pptx` and the renders
-at the paths you gave; a refused build writes `deck.refused.pptx` and `renders.refused`
-beside them for diagnosis, and moves an earlier build's files there to `.stale`, so nothing
-at the asked-for paths is ever older than the spec. A refusal before solving (a malformed
-spec, exit 1 with one line) writes only the report and does not count against the build
-cap. Read the report: refusals first, then `chart_defaults_taken` (write each choice into the spec until only
-what you meant remains), `title`, `density`, `contrast`, `repetition`, `leakage`, `judge`. An
-unfittable page: re-arrange, cut words, or split at a declared boundary; never drop
-content. Every field: [references/build-report.md](references/build-report.md).
+Give each build its own folder (`out/b1/`, `out/b2/`, ...). With `--plan` the deck holds the
+whole plan or one run of consecutive planned pages (one slide while you work on one page).
+Exit 0 means every page fit and the package is valid; only a passing build writes the deck
+and renders at the paths given. The command prints a brief; the whole report is
+`deck.build.json` beside the deck. Read refusals first, then `chart_defaults_taken` (write
+each choice into the spec until only what you meant remains), `title`, `density`,
+`contrast`, `repetition`, `leakage`, `judge`. An unfittable page: re-arrange, cut words, or
+split at a declared boundary; never drop content. Every field, refused-build files and
+what counts against the cap: [references/build-report.md](references/build-report.md).
 
 ### 8. Review every render
 
-Open every page image in `$DECK_WORK/out/renders/` at full size (with a reference, beside
-its pages nearest in intent). Then check each exhibit against its brief: does the reader
-see what `reader_must_see` says, in three seconds, without arithmetic? Is the comparison
-the brief names drawn, the value compared against on the exhibit? Are the marks where the
-claim lives, and does each say what it marks? Does the text add what the exhibit cannot?
-A render that fails its brief is a finding even when every gate passed. Write located
-findings as a senior reviewer would (element id, what is wrong, the change; never a
-score), fix the specs, rebuild. Cap: 8 builds per 5-page section. Keep every build; hand
-over the best one by refusals, then open findings, then likeness to the reference's look
-(with none, to the look you chose), not the last one. What to look for and in what order:
+Open every page image in the build's renders at full size (with a reference, beside its
+pages nearest in intent) and hold each exhibit to its brief: does the reader see what
+`reader_must_see` says, in three seconds, without arithmetic? Is the comparison the brief
+names drawn? Are the marks where the claim lives, and does each say what it marks? Does the
+text add what the exhibit cannot? A render that fails its brief is a finding even when
+every gate passed. Write located findings as a senior reviewer would (element id, what is
+wrong, the change; never a score), fix the specs, rebuild. Cap: 8 builds per 5-page
+section. Hand over the best build by refusals, then open findings, then likeness to the
+look, not the last one. What to look for, in order:
 [references/review.md](references/review.md).
 
 ### 9. Annotation
 
-For each exhibit, take the `marks` line of its brief. Can the claim be found on the
+For each exhibit, take the `marks` line of its brief: can the claim be found on the
 exhibit? With a reference, its records of what it marks (`exhibit_habits.records[].marks`
 and the marks its files draw) are evidence beside your choice (7 of 291 coded charts are
-bare). The means are open: `annotations` on the slide (reference lines, outline boxes,
-bands, brackets, callouts, badges, rows of figures or logos under the categories, or a
+bare). The means are open: `annotations` on the slide (reference
+lines, outline boxes, bands, brackets, callouts, badges, rows under the categories, or a
 `mark` in any OOXML preset or line end, at data positions or on any element's box), or
-native emphasis (a point fill, an emphasis row). Nothing annotates by itself; the build
-refuses an annotation that collides or covers the host's text. Ink a mark in
-`color.emphasis`, not `color.negative` (a bad value); with none, the rule or ink role.
+native emphasis (a point fill, an emphasis row). Nothing annotates by itself; an annotation
+that collides or covers the host's text is refused. Ink a mark in `color.emphasis`, not
+`color.negative` (a bad value); with none, the rule or ink role.
 
-A mark says what it means. A ring, box, band, line or bracket either carries a `label`,
-or names under `explained_by` what explains it: words on the page that name what it
-encloses (`{"text": id, "quote": ...}`), a labelled callout on the same anchor, a legend
-entry in its ink, a footnote marker it shares with a note, or a page of the reference whose
-file draws a mark of the same geometry with no text of its own (`reference_precedent`).
-Otherwise the build warns `annotation unexplained`, with the reference's own count of such
-marks (or "no reference"), and you answer it in the report: a red circle with no word
-beside it read to a blind rater as a model's attempt to annotate. A named explanation that
-is not there is refused. Kinds, anchors and four worked exhibits:
-[references/chart-recipes.md](references/chart-recipes.md) ("Marks at data positions").
-
-Source lines: with a reference, a data page without one warns where at least half of the
-reference's data pages carry one (or the habit is unmeasured), quoting its count; add one
-or say why not. A page with one is never a departure; with no reference it is your call.
-An illustrative-figures note goes where the deck puts notes; say where in the report.
+A mark says what it means: a ring, box, band, line or bracket carries a `label` or names
+under `explained_by` what explains it. Otherwise the build warns `annotation unexplained`
+with the reference's own count, and you answer it in the report; a named explanation that
+is not there is refused. A data page without a source line warns where most of the
+reference's data pages carry one; add one or say why not. Kinds, anchors, explanations and
+worked exhibits: [references/chart-recipes.md](references/chart-recipes.md), "Marks at data
+positions"; source lines: [references/build-report.md](references/build-report.md).
 
 ### 10. Variety report
 
 From `repetition` in the build report: realised composition V, exhibit structure V and
-exhibit kinds V, with the reference's beside them (`against_reference`; "no reference"
-with none), runs over the reference's longest, `warnings`, and every page in
-`plan.pages_differing_from_plan`. All are read from what was built, never from names:
-structure is each page's exhibits as the written file states them (chart plot types and
-series counts, tables, pictures, a structure built from shapes, panels; a banner, frame or
-callout beside a native exhibit is decoration and counts as neither; three or more charts
-of one form and one size are one small multiple), kinds the distinct exhibit kinds with each chart by
-its form and no count, each held against the same reading of the reference's own pages. Each
-page's briefs are held to its file (`slides[].briefs`): an exhibit on a page whose plan
-briefs none is refused. Explain each warning and each disagreement in one line: a
-deliberate parallel, or a fix you made. Composition V cannot see a table beside a chart
-mirrored; kinds V can, and it changes when the chart form changes (a scatter, then a
-bridge) even beside the same tables.
+exhibit kinds V, with the reference's beside them ("no reference" with none), runs over
+the reference's longest, `warnings`, and every page in `plan.pages_differing_from_plan`.
+All are read from what was built, never from names. Explain each warning and each
+disagreement in one line: a deliberate parallel, or a fix you made. What each measure
+reads and cannot see: [references/planning-and-variety.md](references/planning-and-variety.md),
+"What the build reports against the plan".
 
 ### 11. Validate and report
 
 ```bash
-python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --render
-python3 scripts/pptx_tools.py validate "$DECK_WORK/out/deck.pptx" --emit --guide "$DECK_WORK/ref/guide.json"
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/b1/deck.pptx" --render
+python3 scripts/pptx_tools.py validate "$DECK_WORK/out/b1/deck.pptx" --emit --guide "$DECK_WORK/ref/guide.json"
 ```
 
-Read `leakage` in the build report: every name, figure and phrase of the past deck found
-in the new deck, with the reference's chrome left out, ranked by rarity. `pages` lists the
-distinctive ones (on no public deck of another firm), rarest first: remove each, or
-confirm the user supplied it (pass the brief and data as text with `--brief` and their
-words are not listed; pass the output of your own arithmetic with `--computed` (the figures script's printed
-output, regenerated before each build) and a past figure it also produces is listed under `declared_computed` instead). `low_findings` lists terms of the trade (senior notes, debt /
-EBITDA), round figures and years once each: keep every one your own data or brief
-produces, and check any figure among them you did not compute. The firm's own name in
-the chrome is not leakage; it is the `firm_chrome` choice in step 3. With no reference
-there is no past deck, and the report says so.
+Read `leakage` (every name, figure and phrase of the past deck found in the new deck, the
+reference's chrome left out): remove each distinctive one in `pages`, or confirm the user
+supplied it; `--brief` and `--computed` keep the user's words and your own arithmetic off
+the list. Read `judge.components`: a deck nearer another panel deck than its reference
+shows which components carry the distance; fix it or say why it stands. With no reference
+both read "no reference". Both: [references/build-report.md](references/build-report.md),
+"Leakage" and "The judge".
 
-Read `judge.components` in the build report: a deck nearer another panel deck than its
-reference shows which components carry the distance. Fix what it names, or say in the
-report why it stands; a deck filed under its reference is not thereby finished either.
-With no reference the judge reports "no reference": there is no look to measure against.
+The final report states:
 
-The final report states: template and layouts chosen and why; what was measured, what you
-completed by judgement (with confidence) or, with no reference, chose (with why), what was
-substituted (fonts), and what the user must supply (placeholder figures, logos); every
-page's status and scale; open findings from the last review; the variety report; each
-departure from a reference habit in one line; the leakage report; the firm chrome kept,
-replaced or dropped; the judge's verdict, labelled as necessary and not sufficient; any
-conflict between sources (template against brand guideline) and how you resolved it,
-never silently.
+```
+- template and layouts chosen, and why
+- what was measured; what you completed by judgement (with confidence) or, with no
+  reference, chose (with why); fonts substituted; what the user must supply
+- every page's status and scale; open findings from the last review
+- the variety report; each departure from a reference habit in one line
+- the leakage report; the firm chrome kept, replaced or dropped
+- the judge's verdict, labelled as necessary and not sufficient
+- any conflict between sources (template against brand guideline) and how you resolved it
+```
 
 ## Designing a page
 
 High freedom: many designs are valid. Give yourself the context, then reason; no rule here
 fixes a design.
 
-Context for every page:
-- the guide (`description`, `derivation_rules`, roles, `titles`, `exhibit_habits`,
-  `variety`, density bands) and your plan's line for the page;
-- the data, with every stated figure computed;
-- with a reference, its own pages nearest this intent (renders, gallery exemplars, digest
-  records) for their look, and library picks with their `why` and `ask` lines.
+Context for every page: the guide (`description`, `derivation_rules`, roles, `titles`,
+`exhibit_habits`, `variety`, density bands) and your plan's line for the page; the data,
+with every stated figure computed; with a reference, its own pages nearest this intent
+(renders, gallery exemplars, digest records) and library picks with their `why` and `ask`
+lines.
 
 Questions to answer before writing the spec:
 - What should the reader leave with: the page's message, or what they look up on a
-  reference page? Which slot carries it (the corpus found titles, lead-ins, sidebars,
-  takeaway bands, kickers, units lines, row labels; with a reference,
-  `guide.titles.claims_elsewhere` shows where it states claims), or does this page need
-  somewhere else?
-- Is this a page of argument or of reference?
-- Does each block's size say how much it matters? Where does the eye finish?
-- If blocks are co-equal: are they a comparison (pages and panels meant to be compared
-  share one scale and one order) or unrelated facts?
-- What will the reader do with this content, and what form serves that?
+  reference page? Which slot carries it (with a reference, `guide.titles.claims_elsewhere`
+  shows where it states claims), or does this page need somewhere else?
+- Is this a page of argument or of reference? Does each block's size say how much it
+  matters? Where does the eye finish?
+- Co-equal blocks: a comparison (one scale, one order) or unrelated facts?
 - What is the data's shape, in its own terms? Which forms could show the comparison the
-  reader must make, and what does each ask of the reader's eye? How does the look (the
-  reference's, or the one you chose) draw the form you pick, with its roles?
-- Where on the exhibit does the claim live, and how will you mark such a place? How much
-  does it label, does it use legends and gridlines?
+  reader must make, and what does each ask of the eye? How does the look draw the form?
+- Where on the exhibit does the claim live, and how will you mark it? How much does it
+  label; does it need a legend or gridlines?
 - What does the text add that the exhibit cannot? Is anything said twice?
 - What would a managing director circle in red?
 
@@ -459,15 +365,14 @@ around a refusal by changing the guide.
 - Roles only in a spec; no literal colour, size, font or coordinate.
 - Every page on a named layout of the chosen template.
 - Figures from the user's data, byte for byte; every stated figure computed; a missing
-  figure is a named placeholder.
+  figure is a named placeholder. Never invent a number.
 - Nothing dropped to make a page fit; unfittable is a report.
 - Never below `max(floor_pt, absolute_floor_pt)`; observed guide values are never
   overwritten by completion.
 - Contrast under 3:1 refuses the page, and so does a bridge that does not tie; a table's
   totals row that does not tie out is listed first in the problems.
-- No content from a past deck that the user did not supply for this deck (the build's
-  `leakage` report lists every candidate); company files, guides, digests and libraries
-  stay in `$DECK_WORK`, outside this skill.
+- No content from a past deck that the user did not supply for this deck; company files,
+  guides, digests and libraries stay in `$DECK_WORK`, outside this skill.
 
 ## Files
 
@@ -490,11 +395,9 @@ around a refusal by changing the guide.
 | `scripts/images.py` | run: `list` and `extract` the reference's pictures; `check` an icon in the SVG subset |
 | `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
 | `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
-| [references/no-reference-design.md](references/no-reference-design.md) | read before choosing a look with no reference: the look brief |
-| [references/editing.md](references/editing.md) | read to extend, reorder or edit an existing deck |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
-| `components/` | admitted components and the contract (`components/README.md`) |
+| `components/` | admitted components and their contract (`components/README.md`) |
 | `examples/` | worked deck specs, plans, completions, digests (with a reference and with none), and `proofs/` build reports |
 | `evals/` | end-to-end scenarios and the blind-round protocol |
 

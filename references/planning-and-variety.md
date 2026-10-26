@@ -193,7 +193,8 @@ table under it, and a logo wall is many pictures under one brief.
 - Boxes only: a full-width table and a full-width bullet block of the same extent are one
   archetype.
 - Box IoU sees arrangement, not kind: a table beside a chart, mirrored, reads as different;
-  class V is where that sameness shows.
+  kinds V is where that sameness shows, and it changes when the chart form changes (a
+  scatter, then a bridge) even beside the same tables.
 - Leader clustering is order-dependent and not transitive.
 - The reference's title is content to the extractor; the build leaves the frame out, so the
   reference is held to the more lenient count.
