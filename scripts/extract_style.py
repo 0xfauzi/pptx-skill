@@ -2040,7 +2040,7 @@ def variety_report(v: dict | None) -> list[str]:
                f"distinct compositions {m['distinct']['compositions']} over {m['distinct']['pages']} pages ({m['distinct']['per_page']} per page); "
                f"longest run {m['longest_run']}; segments {m['segments']}")
     out.append(f"Runs of one composition: {m['runs'] or 'none'}")
-    for name, what in (("structures", "exhibit structure"), ("kinds", "exhibit kinds, any chart a chart")):
+    for name, what in (("structures", "exhibit structure"), ("kinds", "exhibit kinds, each chart by its form")):
         st = m[name]
         out.append(f"V ({what}, read from the file): {st['V'] if 'V' in st else st['why']}")
     return out

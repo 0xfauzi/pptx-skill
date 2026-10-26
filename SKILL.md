@@ -368,12 +368,14 @@ with none), runs over the reference's longest, `warnings`, and every page in
 `plan.pages_differing_from_plan`. All are read from what was built, never from names:
 structure is each page's exhibits as the written file states them (chart plot types and
 series counts, tables, pictures, a structure built from shapes, panels; a banner, frame or
-callout beside a native exhibit is decoration and counts as neither), kinds the same with
-any chart a chart, each held against the same reading of the reference's own pages. Each
+callout beside a native exhibit is decoration and counts as neither; three or more charts
+of one size are one small multiple), kinds the distinct exhibit kinds with each chart by
+its form and no count, each held against the same reading of the reference's own pages. Each
 page's briefs are held to its file (`slides[].briefs`): an exhibit on a page whose plan
 briefs none is refused. Explain each warning and each disagreement in one line: a
 deliberate parallel, or a fix you made. Composition V cannot see a table beside a chart
-mirrored; kinds V can, even when each page's chart plots something else.
+mirrored; kinds V can, and it changes when the chart form changes (a scatter, then a
+bridge) even beside the same tables.
 
 ### 11. Validate and report
 

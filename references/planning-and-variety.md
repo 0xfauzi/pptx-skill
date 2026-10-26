@@ -82,8 +82,12 @@ sits on, whether it carries text, and whether it sits on a shape-built structure
   is "text only"; a page whose facts were not read is left out, never counted as a
   change). Nobody names a structure, so renaming an exhibit in a plan or a digest cannot
   move it;
-- V (kinds): the same over exhibit kinds, the structure with any chart read as "chart":
-  a table beside a line chart and a table beside a column chart are one kind of page;
+- V (kinds): the same over exhibit kinds: the distinct kinds of exhibit with no count,
+  each chart by its form (plot type, bar direction, grouping; not its series count). A
+  table beside a column chart and two tables beside a column chart are one kind of page; a
+  table beside a scatter and a table beside a stacked-column bridge are two. Three or more
+  charts drawn at one size (a sparkline per tile) are one small multiple: one panel, one
+  brief;
 - distinct compositions per page; the longest run; every run of two or more.
 
 A deck with no stretch of 3 content pages in a row is `no evidence`, and so is a raster

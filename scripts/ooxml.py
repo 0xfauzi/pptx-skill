@@ -624,9 +624,13 @@ STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as on
 #: process, a matrix of boxes); fewer are a band, a callout or a frame. Keybank's shape-built
 #: pages draw 13 to 21; a banner over a chart's title is 1
 DRAWN_STRUCTURE_MIN = 3
+#: definition, unmeasured: this many charts drawn at one size are one small multiple (one
+#: panel, one brief); two are left as two, since a pair of same-size charts is
+#: as often two exhibits with a brief each (round 7: investor's six sparklines under one brief)
+SMALL_MULTIPLE_MIN = 3
 #: which reading of a page made a guide's exhibit facts: a guide whose pages carry another
 #: (or none) was read under a different definition, and plan.py refuses it by name
-EXHIBIT_FACTS_READER = "exhibit_facts 2: decoration on a page holding a native exhibit is not drawn shapes"
+EXHIBIT_FACTS_READER = "exhibit_facts 3: kinds read each chart's form; three or more charts of one size are one small multiple"
 
 
 def shares_area(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
@@ -678,9 +682,14 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
       a logo wall of 48 pictures and one of 50 are one structure), in one string. Two pages
       hold the same exhibit structure when these strings are equal; renaming an exhibit in a
       plan cannot change it;
-    - kinds: the same with every chart read as "chart", whatever its plot groups: two pages
-      that each set a table beside a chart hold the same kinds though one chart is a line
-      and the other columns (the sameness a reader of a section sees first);
+    - kinds: the distinct kinds of exhibit with no count: each chart by its form (plot type,
+      bar direction and grouping, not series count), a table, a picture, drawn shapes. Two
+      pages that each set a table beside a chart hold different kinds when one chart is a
+      scatter and the other a bridge of stacked columns, and the same kinds when both are
+      column charts, however many tables sit beside them;
+    - a small multiple: SMALL_MULTIPLE_MIN or more charts drawn at one size (a sparkline per
+      tile, whatever each plots) are one panel, read "small multiple of N charts: ...", so
+      its one brief agrees;
     - drawn: the fills, outlines and brackets that sit on no chart, table or picture, and
       what they were read as: a structure, or decoration (a band, a frame or a callout:
       fewer than DRAWN_STRUCTURE_MIN of them, or any number beside a native exhibit, where
@@ -698,15 +707,27 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
     extent = {id(sh): visual_extent(sh.box, sh.rotation) for sh in content}  # type: ignore[arg-type]
     plots = {c.ref: c.plots for c in print_.charts}
     signature: list[str] = []
+    forms: list[str] = []
     charts: list[dict] = []
+    # SMALL_MULTIPLE_MIN or more charts drawn at one size are one small multiple (a sparkline
+    # per tile): one panel and one brief, however many charts it repeats
+    multiples: dict[tuple, list] = {}
     for sh in content:
         if sh.kind == "chart":
             got = plots.get(sh.ref)
             charts.append({"ref": sh.ref, "plots": got})
-            signature.append("chart " + (" + ".join(f"{p['type']}{' ' + p['dir'] if p['dir'] else ''}{' ' + p['grouping'] if p['grouping'] else ''} x{p['series']}"
-                                                    for p in got) if got else "(plots unread)"))
+            multiples.setdefault((sh.box[2], sh.box[3]), []).append((sh, got))  # type: ignore[index]
         elif sh.kind in ("table", "picture"):
             signature.append(sh.kind)
+            forms.append(sh.kind)
+    for group in multiples.values():
+        details = [" + ".join(f"{form_of(p)} x{p['series']}" for p in got) if got else "(plots unread)" for _, got in group]
+        if len(group) >= SMALL_MULTIPLE_MIN and all(got for _, got in group):
+            signature.append(f"small multiple of {len(group)} charts: {' / '.join(sorted(set(details)))}")
+            forms.append(f"small multiple of {' / '.join(sorted({chart_form(got) for _, got in group}))}")
+        else:
+            signature.extend("chart " + d for d in details)
+            forms.extend("chart " + chart_form(got) for _, got in group)
     under_of = {id(sh): [o for o in content if o is not sh and shares_area(extent[id(sh)], extent[id(o)])] for sh in content}
     # the fills, outlines and brackets a page draws of its own, on no native exhibit
     units = [sh for sh in content if mark_geometry(sh) not in (None, "line") and not any(o.kind in HOST_KINDS for o in under_of[id(sh)])]
@@ -729,9 +750,21 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
                else "decoration: beside a native exhibit" if any(s != "drawn shapes" for s in signature)
                else f"decoration: fewer than {DRAWN_STRUCTURE_MIN}")
     return {"reader": EXHIBIT_FACTS_READER, "signature": distinct, "panels": panels, "structure": "; ".join(distinct) + count,
-            "kinds": "; ".join(sorted({"chart" if s.startswith("chart ") else s for s in distinct})) + count,
+            "kinds": "; ".join(sorted(set(forms))) if forms else ("drawn shapes" if structure else "text only"),
             "drawn": {"count": len(units), "read_as": read_as},
             "elements": dict(sorted(Counter(sh.kind for sh in content).items())), "charts": charts, "marks": marks}
+
+
+def form_of(plot: dict) -> str:
+    """One plot group's form as the chart XML states it: its type, bar direction and
+    grouping (a column chart, a stacked horizontal bar, a scatter), not its series count."""
+    return f"{plot['type']}{' ' + plot['dir'] if plot['dir'] else ''}{' ' + plot['grouping'] if plot['grouping'] else ''}"
+
+
+def chart_form(plots: list[dict] | None) -> str:
+    """A chart's form over every plot group it draws (a combo of columns and a line is one
+    form); "(plots unread)" when the chart XML was not read."""
+    return " + ".join(form_of(p) for p in plots) if plots else "(plots unread)"
 
 
 def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:

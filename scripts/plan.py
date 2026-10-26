@@ -17,8 +17,10 @@ build (build_deck.py, the solved pages). Over the adjacent pairs of a sequence o
   structure was not read is left out (and counted as unread, never as a change or a
   repeat). A plan declares no structure: it describes each exhibit in a brief;
 - V (kinds) = the same over each page's exhibit kinds (exhibit_facts' `kinds`: the
-  structure with every chart read as "chart"), where a section that sets a table beside a
-  chart on page after page reads as the repeat it is whatever the charts plot;
+  distinct kinds of exhibit with no count, each chart by its form: plot type, bar
+  direction and grouping), where a section that sets a table beside a column chart on page
+  after page reads as the repeat it is, and one that pairs tables with a scatter, then a
+  bridge, then a line does not;
 - distinct compositions per page = distinct compositions / pages, held against the
   reference's 10th percentile window of the same number of pages (distinct_windows);
 - the longest run of one composition, and every run of two or more with its pages.
