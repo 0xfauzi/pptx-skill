@@ -1762,11 +1762,13 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
         tables = {el["id"]: el for el in page["elements"] if el["kind"] == "table"}
         page_words = words[i] if i < len(words) else []
         checked, wrapped = {}, []
+        not_drawn: list[str] = []
         for shape in slides[offset + i].shapes:
             if shape.name in tables and shape.has_table:
-                found_cells, wrapped_cells = _table_cells_drawn(shape, page_words, tables[shape.name])
+                found_cells, wrapped_cells, missing_cells = _table_cells_drawn(shape, page_words, tables[shape.name])
                 checked[shape.name] = found_cells
                 wrapped += wrapped_cells
+                not_drawn += missing_cells
                 continue
             if shape.name not in solved or not shape.has_text_frame:
                 continue
@@ -1799,26 +1801,31 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
                 wrapped.append(f"{shape.name}: written in {written} line(s) the solver measured, drawn in {len(lines)} by the renderer "
                                f"({[' '.join(t) for _, t in lines]}); a measured line was set wider than the ruler measured it. "
                                "Shorten the text or widen its box, so the line that wrapped has room")
-        out_pages.append({"checked": checked, "wrapped": wrapped})
+        out_pages.append({"checked": checked, "wrapped": wrapped, "not_drawn": not_drawn})
     return out_pages
 
 
-def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, list[str]]:
-    """Each table cell as the renderer drew it: the render's words in its column, below the
-    table's top, in reading order (lines top down, words left to right); the cell's
-    characters found there in row order as consecutive words (spaces aside), and the lines
-    they sit on counted against the lines the cell writes. A spanner and a cell whose words
-    are not found are counted, never refused (round 7 open item: the check read text boxes
-    only, not table cells)."""
+def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, list[str], list[str]]:
+    """Each table cell as the renderer drew it: the render's words in its column, between
+    the table's top and bottom (a word below the table is another element's: round 8
+    verifier, keybank's 'Required for FY17 accretion' was read through words under the
+    table and not found), in reading order (lines top down, words left to right); the
+    cell's characters found there in row order as consecutive words (spaces aside), and the
+    lines they sit on counted against the lines the cell writes. A spanner is not read. A
+    cell whose characters the render does not hold in its column, in its order, is returned
+    as not drawn: a refusal, as a text box's words not found are, since a cell the renderer
+    dropped or broke out of its column is a page that does not read as written."""
     from pptx.oxml.ns import qn as pqn
     table = shape.table
     widths = [c.width for c in table.columns]
     edges = [shape.left + sum(widths[:k]) for k in range(len(widths) + 1)]
     counts = {"cells": 0, "drawn as written": 0, "not found": 0}
     wrapped: list[str] = []
+    missing: list[str] = []
+    bottom = shape.top + shape.height + annotate.EMU_PER_PT
     for ci in range(len(widths)):
         col = [(b, t) for b, t in page_words if edges[ci] - annotate.EMU_PER_PT <= b[0] + b[2] / 2 <= edges[ci + 1] + annotate.EMU_PER_PT
-               and b[1] + b[3] / 2 >= shape.top]
+               and shape.top <= b[1] + b[3] / 2 <= bottom]
         col.sort(key=lambda w: (round((w[0][1] + w[0][3] / 2) / max(1.0, w[0][3] / 2)), w[0][0]))
         at = 0
         for ri, row in enumerate(table.rows):
@@ -1847,6 +1854,9 @@ def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, 
                     break
             if hit is None:
                 counts["not found"] += 1
+                missing.append(f"{shape.name} row {ri} column {ci}: {' '.join(p.text for p in paras)!r} is not drawn as written in its column "
+                               "of the render (its characters are not there, in order, between the table's top and bottom): the renderer "
+                               "dropped or moved it; widen the column (width_share), shorten the cell, or give the table more height")
                 continue
             at = hit[1]
             lines: list[float] = []
@@ -1859,7 +1869,7 @@ def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, 
                                "renderer; widen the column (width_share) or shorten the cell, so the line that wrapped has room")
             else:
                 counts["drawn as written"] += 1
-    return counts, wrapped
+    return counts, wrapped, missing
 
 
 def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: dict, ctx: L.Context) -> list[list[dict]]:
@@ -3068,8 +3078,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 entry["drawn_lines"] = found["checked"]
                 for f in found["wrapped"]:
                     entry["problems"].append({"kind": "renderer divergence: text wrapped", "severity": "refusal", "detail": f})
-                if found["wrapped"] and entry["status"] == "fit":
-                    entry["status"], entry["reason"] = "unfittable", "renderer divergence: text wrapped"
+                for f in found["not_drawn"]:
+                    entry["problems"].append({"kind": "renderer divergence: table cell", "severity": "refusal", "detail": f})
+                if (found["wrapped"] or found["not_drawn"]) and entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", ("renderer divergence: text wrapped" if found["wrapped"] else "renderer divergence: table cell")
             # every chart's categories and data labels against the words the renderer drew
             for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:], turned[len(turned) - len(emitted):]), strict=True):
                 if found["checked"]:

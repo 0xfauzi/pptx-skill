@@ -95,7 +95,7 @@ refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `cont
 deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
 or says no chart on the page declares one; a zero step that draws no bar ties, and is
 a warning, `bridge zero step unlabelled`, only when no series labels it); `chart label breaks mid-word`; `emitted text overflows`;
-`renderer divergence: text wrapped`; `renderer divergence: chart text`;
+`renderer divergence: text wrapped`; `renderer divergence: table cell`; `renderer divergence: chart text`;
 `chart labels taller than their band`; `chart label covered`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
@@ -155,7 +155,11 @@ per box `{"written", "drawn"}`, or why it was not found: its words are not one r
 render, or are drawn more than once). A box drawn in more lines than written refuses the
 page as `renderer divergence: text wrapped`, naming the lines as drawn: the renderer set a
 measured line wider than the ruler did, and the box runs below its measured height. Shorten
-the text or widen the box so the line that wrapped has room. Without a render
+the text or widen the box so the line that wrapped has room. A table is read cell by
+cell (`drawn_lines.<table>`: cells, drawn as written, not found), from the render's words
+in each column between the table's top and bottom: a cell drawn in more lines than the
+fitter measured is `renderer divergence: text wrapped`, and a cell whose characters are
+not there in order refuses the page as `renderer divergence: table cell`. Without a render
 (`--no-render`) nothing is checked, and `drawn_lines` says why.
 
 Each chart's text is read the same way (`slides[].chart_text_drawn`: per chart, how many of
