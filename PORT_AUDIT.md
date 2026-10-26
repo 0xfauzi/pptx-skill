@@ -686,7 +686,38 @@ from one-page repros otherwise (`r8x/repro/`); each fix then broken (its commit'
 | explained_by another anchor | refused unless the same anchor; a label inside an outline collided with it | passes when the label is drawn on the mark or within a label height; only an outline's strokes collide | `e4` PASS, `e4far` refused by name | both refusals back |
 | BAR legend order | LibreOffice lists it last series first (rendered, both positions, reversed axis or not) | warned with the drawn order; nothing reordered (PowerPoint unmeasured) | `e5` | no warning |
 | Hidden series position | not reproduced: `dLblPos` is written on every point label (investor b1 to b3, `e6`) and drawn there | no change | | |
-| Labels on steep lines | 19 labels under line segments passed (`e7`) | warned before the render from the measured offset (37,411 to 38,050 EMU above, 38,908 to 39,379 below); refused on the render against the label's ink band, and two labels drawn over each other | 17 warned, 18 refused on the render; `e7f` PASS | PASS again |
+| Labels on steep lines | labels under line segments passed (`e7`, 12 months, two series) | warned before the render from the measured offset (37,411 to 38,050 EMU above, 38,908 to 39,379 below); refused on the render when a line's centre enters a label's ink band (insets measured on the render), and two labels drawn over each other | the 16 labels warned are the 16 refused; `e7f` PASS | PASS again |
 | capacity annotations | none placed | placed with the build's own resolve, problems listed | `e4far` lists the refusal | none listed |
 | Brackets end to end | two brackets over adjacent groups met at one point | a bracket spans its marks; a pair closer than its depth warned | `e8b` render, `e8c` warned | meet again |
-| drawn_lines on tables | text boxes only | each cell found in its column of the render and held to the lines the fitter measured | dense-ref 1,400 cells drawn as written | not checked |
+| drawn_lines on tables | text boxes only | each cell found in its column of the render and held to the lines the fitter measured (a first version held cells to their paragraphs and refused 27 correct dense-noref cells) | genre rebuilds: 3,836 of 3,853 cells drawn as written, 17 not found, none wrapped | no divergence reproduced, so no break run |
+
+Rebuilt from a FRESH extraction on main and on this branch (`r8x/rb/run.sh`, `FIDC=r8x/fidc`:
+the r7v answers for bcg, the fr2 ones for netflix, since fr2's bcg completion is refused on
+main for its bare "other"s): the 25 result lines are identical. Reports differ only where
+intended: every guide gains the `table` floor family (keybank, mckinsey and bcg leave
+`/floors/table/floor_pt` open, having no native table text; netflix measures 12.0pt and its
+body family loses its 39 table runs, its floor unchanged); exhibit kinds lose the panel
+count, so the references' kinds V move (keybank 1.0 to 0.7, mckinsey 0.75 to 0.583, bcg 0.467
+to 0.433, netflix 0.692 to 0.615) and keybank-annotations' realised kinds V from 0.333 to
+0.667; every page gains `chart_text_drawn` and table counts under `drawn_lines`. 101 of 106
+renders are pixel-identical; the 5 that differ are the two no-reference books, whose kicker
+and title now take the title band, so the content starts a gap below the rule.
+
+The five round-7 genre sections rebuilt from their own completions on both trees
+(`r8x/scripts/genre.sh`): main passes all five; here dense-noref and investor pass and three
+pages are refused by the new render checks, each confirmed on its render: dense-ref p2's
+'CLKB 1.58x' and public p1's 'Low: 330,000 in January' drawn on two lines where the file
+writes one, consulting p3's four segment labels wrapped likewise. Kinds V: dense-ref 0.0 to
+1.0, dense-noref 0.0 to 1.0, consulting 0.25 to 0.75, investor 0.0 to 1.0, public 1.0. Investor
+p1 now reads 3 exhibits (six sparklines one small multiple) against 4 briefs, the fourth
+being its tile strip, plain text. dense-noref p1 fits at 0.98: its head region now takes the
+band the builder had moved the rule up to dodge. Renders: dense-ref and investor identical,
+dense-noref and consulting move below the title band, public p2 its bracket.
+
+ruff: 144 findings on main and 144 here, the same set.
+
+Open: the table cell check found no divergence to break on; the 0.06 descender inset and
+the label offsets are measured on Inter at 9pt only; PowerPoint's legend order on a bar
+chart is unmeasured; `--computed` still takes one file and figures as cells write them
+(dense-ref), not asked for here; a plain-text tile strip is no exhibit, so a brief for one
+still reads as a difference.
