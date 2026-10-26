@@ -195,17 +195,21 @@ VOCABULARY = plan.VOCABULARY
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
 # Product safety floor per family: layout.PRODUCT_SAFETY_FLOOR_PT (deckgen E45, 7.0pt for
 # display, body, annotation and chart alike). Never generate below it.
-PRODUCT_SAFETY_FLOOR_PT = {fam: _layout.PRODUCT_SAFETY_FLOOR_PT for fam in ("body", "annotation", "display", "chart")}
+PRODUCT_SAFETY_FLOOR_PT = {fam: _layout.PRODUCT_SAFETY_FLOOR_PT for fam in ("body", "annotation", "display", "chart", "table")}
 CORE_TYPE_ROLES = ("type.title", "type.kicker", "type.h1", "type.h2", "type.body", "type.emphasis", "type.caption",
                    "type.footnote", "type.source_line", "type.table_header", "type.table_cell", "type.axis_label", "type.data_label")
 CORE_COLOR_ROLES = ("color.surface", "color.surface_alt", "color.ink", "color.ink_muted", "color.accent1", "color.accent2",
                     "color.accent3", "color.rule", "color.positive", "color.negative", "color.emphasis")
 STEP_NAMES = ("space.xs", "space.sm", "space.md", "space.lg", "space.xl")
+# table text is its own family: a dense reference sets its tables smaller than its body
+# (keybank's picture tables 6.9 to 8.6pt under a 12pt body), and a table tied to the body
+# floor was reachable only by shrinking the whole page
 FLOOR_FAMILIES = {
-    "body": ("type.body", "type.emphasis", "type.h1", "type.h2", "type.table_header", "type.table_cell"),
+    "body": ("type.body", "type.emphasis", "type.h1", "type.h2"),
     "annotation": ("type.kicker", "type.caption", "type.footnote", "type.source_line"),
     "display": ("type.title",),
     "chart": ("type.axis_label", "type.data_label"),
+    "table": ("type.table_header", "type.table_cell"),
 }
 
 
@@ -1734,7 +1738,7 @@ class Extractor:
             if r.ph_class == "title":
                 fam = "display"
             elif r.row_class is not None:
-                fam = "body"
+                fam = "table"  # a run in a native table cell
             elif not role_sizes:
                 continue
             else:

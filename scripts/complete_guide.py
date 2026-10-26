@@ -46,7 +46,8 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
 from emit_pptx import CHROME_TEXT_KINDS, GUIDE_LEGEND_POSITIONS  # noqa: E402
-from layout import PRODUCT_SAFETY_FLOOR_PT
+import layout as L  # noqa: E402
+from layout import PRODUCT_SAFETY_FLOOR_PT  # noqa: E402
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: the title register and the title companions (references/page_craft_vocabulary.json); an exhibit is never read in a list
@@ -85,9 +86,10 @@ SECTION_PATHS = {"/description", "/derivation_rules", "/continuation", "/tables"
                  "/typography/scale_ratio", "/density_bands/table_rows_per_inch", "/typography/families/substitutes"}
 TYPE_MEMBERS = {"size_pt", "weight", "italic", "family", "alignment", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", "case", "ink_role"}
 FLOOR_FAMILY = {}
-for fam, roles in {"body": ("type.body", "type.emphasis", "type.h1", "type.h2", "type.table_header", "type.table_cell"),
+for fam, roles in {"body": ("type.body", "type.emphasis", "type.h1", "type.h2"),
                    "annotation": ("type.kicker", "type.caption", "type.footnote", "type.source_line"),
-                   "display": ("type.title",), "chart": ("type.axis_label", "type.data_label")}.items():
+                   "display": ("type.title",), "chart": ("type.axis_label", "type.data_label"),
+                   "table": ("type.table_header", "type.table_cell")}.items():
     for r in roles:
         FLOOR_FAMILY[r] = fam
 
@@ -382,6 +384,10 @@ def floor_family(guide: dict, role: str) -> str:
 
 def floor_for(guide: dict, role: str, fam: str | None = None) -> float:
     fam = fam or floor_family(guide, role)
+    if fam == "table" and isinstance((guide.get("floors") or {}).get("table"), dict):
+        # the one table floor the solver and validate --emit read: the family's floor lowered
+        # to the reference's own picture tables where those are measured (/tables/picture_text)
+        return L.table_floor_pt(guide)
     f = (guide.get("floors") or {}).get(fam) or {}
     observed = f.get("floor_pt")
     absolute = f.get("absolute_floor_pt") or 0.0
@@ -1059,10 +1065,12 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             if float(spec["size_pt"]) < floor_for(guide, role, fam_asked):
                 fam = fam_asked or floor_family(guide, role)
                 observed = ((guide.get("floors") or {}).get(fam) or {}).get("floor_pt") is not None and "/floors/" + fam + "/floor_pt" not in open_paths
-                raise PatchError(f"{path}: {spec['size_pt']}pt is below the {fam} floor {floor_for(guide, role)}pt"
+                floor = floor_for(guide, role, fam_asked)
+                raise PatchError(f"{path}: {spec['size_pt']}pt is below the {fam} floor {floor}pt"
                                  + (f"; that floor is the smallest {fam} text the reference sets as text, observed, so it cannot be lowered. "
-                                    f"Answer {floor_for(guide, role)}pt or more; if the reference's own tables are pictures set smaller, "
-                                    "native tables will read larger than they do: say so in the report" if observed else ""))
+                                    f"Answer {floor}pt or more" if observed else "")
+                                 + ("; a table set smaller in the reference's pasted pictures is measured with /tables/picture_text, "
+                                    "which lowers the table floor to that size" if fam == "table" else ""))
             spec["provenance"] = model_prov(value.get("why", ""), value)
             spec.update(seen_in(path, value))
             levels = size_levels(guide)

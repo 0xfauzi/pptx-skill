@@ -160,10 +160,12 @@ below it. A size set on two or more pages counts even when the Tukey fence would
 (source lines that are 10 of 44 annotation runs set the floor at 8.0, not the fence's
 9.0); a size on one page under the fence is trimmed, and turned text is never a sample.
 When the body floor equals the body size there is no headroom: density comes from
-arrangement and content. An observed floor also binds the table roles: when the reference's
-own tables are pictures set below its body floor (keybank's are about 10pt over a 12pt
-body floor), native tables will be set at the floor and read larger than the reference's; say
-so in the report rather than asking for a smaller size, or measure them (below). You may lower a floor in the completion when the reference's
+arrangement and content. Table text is its own family, `table` (`type.table_header`,
+`type.table_cell`): its floor is the smallest text the reference sets in native table
+cells, so a dense reference's 7pt tables do not wait on its 12pt body. A reference with
+no native table text leaves `/floors/table/floor_pt` open (null: the absolute floor
+holds); where its tables are pictures, measure them (below) and the table floor drops to
+their size. You may lower a floor in the completion when the reference's
 captions show a smaller size in use, never below `absolute_floor_pt` (7.0pt, measured on
 two screen media by one rater for Arial and Calibri; print was not measured, so for a deck
 that will be printed keep the reference's own floor).
@@ -179,7 +181,8 @@ drops to the smallest, never below the absolute floor. Measured on jazz: 7.8 and
 pictures took the table floor from 12pt to 8.0pt and the dense comps pages fit.
 
 A role you add (`/typography/roles/<new>`) clears a floor family: name it with
-`"floor_family": "body|annotation|display|chart"` in the role's answer; left out, it is
+`"floor_family": "body|annotation|display|chart|table"` in the role's answer (a second
+table style, a grid cell, is `table`); left out, it is
 the body family and the completion lists that under `completion.defaults_taken`. A core
 role's family is fixed.
 

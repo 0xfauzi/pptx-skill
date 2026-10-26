@@ -273,7 +273,8 @@ def table_floor_pt(raw: Mapping[str, Any]) -> float:
     """The one floor every run in a table clears, whatever role it is set in: a written
     table run carries no role, so `pptx_tools validate --emit` can only read where it sits,
     and the build applies the same rule. It is the lowest floor of the table roles'
-    families (each max(floor_pt, absolute_floor_pt)), or with no table role the lowest
+    families (each max(floor_pt, absolute_floor_pt); extract_style files them in a `table`
+    family of their own, measured on native table cells), or with no table role the lowest
     family floor; lowered to the reference's own table text where its tables are pasted
     pictures and the guide holds that size as measured (tables.picture_text, read off the
     pictures by images.py textsize at completion), never below the absolute floor: the
