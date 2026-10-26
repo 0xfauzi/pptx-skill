@@ -1531,8 +1531,9 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
                 got: list = []
                 if _match_on_line(lines, "".join(text.split()), used, got):
                     if not part.startswith("category"):
-                        drawn_at[part] = (min(b[0] for b in got), min(b[1] for b in got),
-                                          max(b[0] + b[2] for b in got) - min(b[0] for b in got), max(b[1] + b[3] for b in got) - min(b[1] for b in got))
+                        drawn_at[part] = ink_band((min(b[0] for b in got), min(b[1] for b in got),
+                                                   max(b[0] + b[2] for b in got) - min(b[0] for b in got),
+                                                   max(b[1] + b[3] for b in got) - min(b[1] for b in got)), text)
                     continue
                 if part.startswith("category") or "\n" in text:
                     if all(_match_on_line(lines, tok, used) for tok in text.split()):
@@ -1556,12 +1557,8 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
             for a_i, a in enumerate(parts):
                 for b in parts[a_i + 1:]:
                     ra, rb = drawn_at[a], drawn_at[b]
-                    # a word box runs the face's ascent to descent (1.21 x the size for Inter,
-                    # measured), wider than the ink: two labels collide when they share width and
-                    # more than LABEL_OVERLAP_SHARE of the smaller box's height (a definition,
-                    # unmeasured; stacked end labels 888 EMU apart in their boxes read clear)
-                    if (min(ra[0] + ra[2], rb[0] + rb[2]) > max(ra[0], rb[0])
-                            and min(ra[1] + ra[3], rb[1] + rb[3]) - max(ra[1], rb[1]) > LABEL_OVERLAP_SHARE * min(ra[3], rb[3])):
+                    # their ink bands (ink_band): the empty ascent and descent of stacked labels may meet
+                    if min(ra[0] + ra[2], rb[0] + rb[2]) > max(ra[0], rb[0]) and min(ra[1] + ra[3], rb[1] + rb[3]) > max(ra[1], rb[1]):
                         crossings.append(f"{el['id']} {a}: the render draws it over {b}; move one (position), shorten one, or label one")
             for part, crossed in lines_through_labels(el, drawn_at):
                 crossings.append(f"{el['id']} {part}: the render draws it under {crossed}; set it on the other side of its point "
@@ -1577,7 +1574,6 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
 #: `below` label's starts 38,908 to 39,379 EMU under it, over 12 points each, and the word
 #: box is 1.21 times the size tall. With a marker the offset is unmeasured.
 LINE_LABEL_GAP_EMU = {"above": 37_700, "below": 39_100}
-LABEL_OVERLAP_SHARE = 0.25
 
 
 def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
@@ -1610,15 +1606,33 @@ def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
                 h = entry.size_pt * 1.21 * L.EMU_PER_POINT
                 x, y = geo.point(si, pi)
                 top = y - LINE_LABEL_GAP_EMU["above"] - h if pos == "above" else y + LINE_LABEL_GAP_EMU["below"]
-                out[f"series[{si}] {s.get('name')!r} point {pi} label"] = (x - w / 2, top, w, h)
+                out[f"series[{si}] {s.get('name')!r} point {pi} label"] = ink_band((x - w / 2, top, w, h), str(text))
     except GeometryRefused:
         return {}
     return out
 
 
+#: A word box runs the face's ascent to descent; the ink sits inside it. Measured, round 8,
+#: on LibreOffice's render of Inter labels at 9pt (10 words, 16 to 19 px boxes): ink starts
+#: 0.17 to 0.38 of the box below its top and ends 0.21 to 0.31 above its bottom, or 0.06
+#: with a descender ('Aug'). A line is held to the ink band, never to the empty ascent and
+#: descent (investor p3: a cohort line ran under '1.47x' through its box's descent). Other
+#: faces are unmeasured; the insets are under the smallest measured.
+INK_TOP_INSET = 0.15
+INK_BOTTOM_INSET = {"descender": 0.05, "none": 0.2}
+DESCENDERS = set("gjpqy,;()[]{}|/")
+
+
+def ink_band(box: tuple, text: str) -> tuple:
+    """The part of a word box its ink can occupy (INK_TOP_INSET, INK_BOTTOM_INSET)."""
+    bottom = INK_BOTTOM_INSET["descender" if set(text) & DESCENDERS else "none"]
+    return (box[0], box[1] + INK_TOP_INSET * box[3], box[2], box[3] * (1 - INK_TOP_INSET - bottom))
+
+
 def lines_through_labels(el: dict, boxes: dict[str, tuple]) -> list[tuple[str, str]]:
-    """Each label box (part -> box) a stroked line segment of the chart crosses, with the
-    segment named (annotate.line_strokes, the strokes an annotation label must clear)."""
+    """Each label box (part -> box, already its ink band) a stroked line segment of the chart
+    crosses, with the segment named (annotate.line_strokes, the strokes an annotation label
+    must clear)."""
     from chart_geometry import ChartGeometry, GeometryRefused
     if el["kind"] != "chart" or not boxes:
         return []
@@ -1688,12 +1702,12 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
     out_pages = []
     for i, page in enumerate(emit_pages):
         solved = {el["id"] for el in page["elements"] if el["kind"] == "text"}
-        tables = {el["id"] for el in page["elements"] if el["kind"] == "table"}
+        tables = {el["id"]: el for el in page["elements"] if el["kind"] == "table"}
         page_words = words[i] if i < len(words) else []
         checked, wrapped = {}, []
         for shape in slides[offset + i].shapes:
             if shape.name in tables and shape.has_table:
-                found_cells, wrapped_cells = _table_cells_drawn(shape, page_words)
+                found_cells, wrapped_cells = _table_cells_drawn(shape, page_words, tables[shape.name])
                 checked[shape.name] = found_cells
                 wrapped += wrapped_cells
                 continue
@@ -1732,7 +1746,7 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
     return out_pages
 
 
-def _table_cells_drawn(shape, page_words: list[tuple]) -> tuple[dict, list[str]]:
+def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, list[str]]:
     """Each table cell as the renderer drew it: the render's words in its column, below the
     table's top, in reading order (lines top down, words left to right); the cell's
     characters found there in row order as consecutive words (spaces aside), and the lines
@@ -1760,6 +1774,9 @@ def _table_cells_drawn(shape, page_words: list[tuple]) -> tuple[dict, list[str]]
                 continue
             counts["cells"] += 1
             written = sum(1 + len(p._p.findall(pqn("a:br"))) for p in paras if p.text.strip())
+            # the lines the fitter measured the cell in (a cell wraps inside its row's height)
+            key = el["columns"][ci].get("key") if ci < len(el.get("columns") or []) else None
+            written = max(written, (el.get("measured_cell_lines") or {}).get(f"{ri},{key}", 0))
             hit = None
             for k in range(at, len(col)):
                 spelled, j = "", k
@@ -1781,7 +1798,7 @@ def _table_cells_drawn(shape, page_words: list[tuple]) -> tuple[dict, list[str]]
                 if not any(abs(cy - y) < box[3] / 2 for y in lines):
                     lines.append(cy)
             if len(lines) > written:
-                wrapped.append(f"{shape.name} row {ri} column {ci}: written in {written} line(s) the fitter measured, drawn in {len(lines)} by the "
+                wrapped.append(f"{shape.name} row {ri} column {ci}: {written} line(s) the fitter measured, drawn in {len(lines)} by the "
                                "renderer; widen the column (width_share) or shorten the cell, so the line that wrapped has room")
             else:
                 counts["drawn as written"] += 1
@@ -2354,7 +2371,8 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[di
             out.append({"id": nid, "kind": "table", "box": b, "columns": t["columns"], "rows": t["rows"], "header_rows": t.get("header_rows", 1),
                         "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"], **roles,
                         "fit_header": {k: r["header"][k] for k in FIT_KEYS} if r.get("header") else None, "fit_cell": {k: r["cell"][k] for k in FIT_KEYS},
-                        "fit_padding_emu": r["cell_margins_emu"]["marL"], "cell_indents_emu": r.get("cell_indents_emu") or {}, **extra})
+                        "fit_padding_emu": r["cell_margins_emu"]["marL"], "cell_indents_emu": r.get("cell_indents_emu") or {},
+                        "measured_cell_lines": {k: len(v) for k, v in (r.get("cells") or {}).items()}, **extra})
         elif kind == "chart":
             c = charts.get(nid)
             if not c:
