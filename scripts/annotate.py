@@ -1531,6 +1531,11 @@ def _covering(e: dict) -> list[dict]:
     return [fp for fp in e["_footprint"] if e["kind"] != "band" or fp.get("text")]
 
 
+def _bare_line(fp: dict) -> bool:
+    """A footprint that is a stroke with no words on it."""
+    return "segment" in fp and not fp.get("text")
+
+
 def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: int, zones: list[dict]) -> list[dict]:
     """Refusals from the solved boxes: an annotation over another page element (a filled
     ground that contains it is no collision), over another annotation (a band is ground),
@@ -1570,7 +1575,10 @@ def collisions(elements: list[dict], report: list[dict], page_w: int, page_h: in
         for other in placed:
             if other is e:
                 continue
-            if any(covers(fp, _bbox(ofp)) for fp in _covering(e) for ofp in _covering(other)):
+            # two bare lines crossing (a "latest actual" line through a trigger line) hide
+            # nothing: lines cross by design; a line through words, or a shape on a shape, does
+            if any(covers(fp, _bbox(ofp)) for fp in _covering(e) for ofp in _covering(other)
+                   if not (_bare_line(fp) and _bare_line(ofp))):
                 hits.append(f"annotation {other['id']}")
         hits = list(dict.fromkeys(hits))
         e["collisions"] = hits
