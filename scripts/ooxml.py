@@ -1478,7 +1478,58 @@ def _covers(outer: tuple[int, int, int, int], x: float, y: float) -> bool:
     return outer[0] <= x <= outer[0] + outer[2] and outer[1] <= y <= outer[1] + outer[3]
 
 
-def ink_backings(slides: list[SlidePrint]) -> dict[tuple[str, str], dict]:
+EMU_PER_INCH = 914400
+#: pdftoppm's own rounding of a flat fill, measured on bcg-nycha at 150 and 300 dpi: E2E2E2
+#: draws as E3E3E3 and B2B2B2 as B3B3B3, so two colours this close per channel are one colour
+RENDER_ROUNDING = 2
+#: WCAG AA for body text: a pair at or above it never needs a precedent, so it is not confirmed
+PRECEDENT_BELOW = 4.5
+PRECEDENT_DPI = 150
+
+
+def _same_colour(a: tuple[int, int, int], b: tuple[int, int, int]) -> bool:
+    return all(abs(x - y) <= RENDER_ROUNDING for x, y in zip(a, b))
+
+
+def confirm_on_render(pdf: str, samples: list[tuple[int, tuple[int, int, int, int], str, str]]) -> list[str | None]:
+    """Whether each (page, run box EMU, ink hex, backing hex) a PDF reading recorded is what
+    the page draws: the render's pixels in the run's box that are not the ink must be the
+    recorded backing. None = confirmed, else why not. A PDF keeps no draw order, so the
+    backing is inferred (the smallest filled area under the run) and a shading or a picture
+    under the words is missed: on bcg-nycha p54 white words on a green gradient read as
+    white on the white page, and black words on white on p39 read as black on black. Text
+    drawn in the colour of everything under it is invisible, never a house choice."""
+    import tempfile
+
+    import render
+    from PIL import Image
+    out: list[str | None] = []
+    with tempfile.TemporaryDirectory() as tmp:
+        pages = sorted({page for page, _, _, _ in samples})
+        drawn = dict(zip(pages, render.rasterize(Path(pdf), Path(tmp), PRECEDENT_DPI, pages)))
+        images: dict[int, Image.Image] = {}
+        for page, box, ink_hex, backing_hex in samples:
+            im = images.setdefault(page, Image.open(drawn[page]).convert("RGB"))
+            k = PRECEDENT_DPI / EMU_PER_INCH
+            crop = im.crop((int(box[0] * k), int(box[1] * k), max(int(box[0] * k) + 1, round((box[0] + box[2]) * k)), max(int(box[1] * k) + 1, round((box[1] + box[3]) * k))))
+            ink = tuple(int(ink_hex[i:i + 2], 16) for i in (0, 2, 4))
+            backing = tuple(int(backing_hex[i:i + 2], 16) for i in (0, 2, 4))
+            rest = Counter(px for px in crop.getdata() if not _same_colour(px, ink))  # type: ignore[arg-type]
+            if not rest:
+                out.append(f"page {page}: nothing but the ink {ink_hex} is drawn in the run's box: the words are invisible")
+                continue
+            ground = rest.most_common(1)[0][0]
+            if not _same_colour(ground, backing):  # type: ignore[arg-type]
+                out.append(f"page {page}: the render draws the words over {''.join(f'{c:02X}' for c in ground)}, not the recorded {backing_hex}")
+                continue
+            if _same_colour(ink, backing):  # type: ignore[arg-type]
+                out.append(f"page {page}: the ink {ink_hex} is its backing's colour: the words are invisible")
+                continue
+            out.append(None)
+    return out
+
+
+def ink_backings(slides: list[SlidePrint], pdf: str | None = None) -> dict[tuple[str, str], dict]:
     """Every (text ink, backing fill) pair the reference draws, with the smallest size it
     sets that pair at, the characters and the pages. In a pptx the backing of a run is its
     own shape's fill, else the topmost filled shape drawn before it whose box holds the
@@ -1486,8 +1537,15 @@ def ink_backings(slides: list[SlidePrint]) -> dict[tuple[str, str], dict]:
     ground; in a PDF, the smallest filled area holding the run's centre. A run over a
     picture, a pattern or a shading has no known backing and is left out, as are table
     runs (cell fills are per cell) and chrome runs (their shape ids repeat across layers).
-    Raster pages and generated slides are not evidence."""
+    Raster pages and generated slides are not evidence.
+
+    Given `pdf` (the reference the slides were read from), every PDF run under
+    PRECEDENT_BELOW is confirmed on the page's render (confirm_on_render) and counted only
+    when it is: a pair none of whose runs is confirmed is kept with `confirmed` False and
+    the reasons, so a deck that draws it is told why the house's pages are no precedent."""
+    from extract_style import contrast
     out: dict[tuple[str, str], dict] = {}
+    pending: list[tuple[Run, SlidePrint, str]] = []
     for s in slides:
         if not is_type_evidence(s) or s.generated:
             continue
@@ -1527,10 +1585,21 @@ def ink_backings(slides: list[SlidePrint]) -> dict[tuple[str, str], dict]:
                         backing = s.background
             if not backing or backing == "picture":
                 continue
-            entry = out.setdefault((r.color, backing), {"min_size_pt": r.size_pt, "chars": 0, "pages": set()})
-            entry["min_size_pt"] = min(entry["min_size_pt"], r.size_pt)
-            entry["chars"] += r.chars
-            entry["pages"].add(s.index + 1)
+            pending.append((r, s, backing))
+    check = [(r, s, b) for r, s, b in pending if pdf is not None and s.source == "pdf" and r.box is not None and contrast(r.color, b) < PRECEDENT_BELOW]
+    verdicts = confirm_on_render(pdf, [(s.index + 1, r.box, r.color, b) for r, s, b in check]) if check and pdf is not None else []  # type: ignore[misc]
+    why = {id(r): v for (r, _, _), v in zip(check, verdicts)}
+    for r, s, backing in pending:
+        entry = out.setdefault((r.color, backing), {"min_size_pt": None, "chars": 0, "pages": set(), "confirmed": False, "not_confirmed": []})
+        reason = why.get(id(r))
+        if reason is not None:
+            if len(entry["not_confirmed"]) < 3:
+                entry["not_confirmed"].append(reason)
+            continue
+        entry["confirmed"] = True
+        entry["min_size_pt"] = r.size_pt if entry["min_size_pt"] is None else min(entry["min_size_pt"], r.size_pt)
+        entry["chars"] += r.chars
+        entry["pages"].add(s.index + 1)
     return out
 
 

@@ -44,6 +44,7 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
 import textfit  # noqa: E402
+import layout as _layout  # noqa: E402  the product safety floor, one definition
 from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, vector_shapes, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
@@ -190,10 +191,9 @@ TITLE_COMPANION_GAP_PITCHES = 1.0
 #: The closed vocabulary (TARGET_SPEC Appendix A) the model classifies titles and exhibits in.
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
-# Product safety floor: the smallest size the specimen stays legible at on both render media,
-# measured in deckgen docs/measurements/E45-decision.md (recorded 7.0 pt for display, body,
-# annotation and chart, Calibri 700 being the binding face). Never generate below it.
-PRODUCT_SAFETY_FLOOR_PT = {"body": 7.0, "annotation": 7.0, "display": 7.0, "chart": 7.0}
+# Product safety floor per family: layout.PRODUCT_SAFETY_FLOOR_PT (deckgen E45, 7.0pt for
+# display, body, annotation and chart alike). Never generate below it.
+PRODUCT_SAFETY_FLOOR_PT = {fam: _layout.PRODUCT_SAFETY_FLOOR_PT for fam in ("body", "annotation", "display", "chart")}
 CORE_TYPE_ROLES = ("type.title", "type.kicker", "type.h1", "type.h2", "type.body", "type.emphasis", "type.caption",
                    "type.footnote", "type.source_line", "type.table_header", "type.table_cell", "type.axis_label", "type.data_label")
 CORE_COLOR_ROLES = ("color.surface", "color.surface_alt", "color.ink", "color.ink_muted", "color.accent1", "color.accent2",

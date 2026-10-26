@@ -454,8 +454,11 @@ class RulerUnavailableError(LookupError):
 def ruler_named(name: str) -> Ruler:
     if name == HarfBuzzRuler.name:
         if hb is None:
-            raise RulerUnavailableError("the guide pins the harfbuzz ruler and uharfbuzz is not importable here: install it "
-                                        "(python3 -m pip install uharfbuzz), or work with the machine the guide was extracted on")
+            raise RulerUnavailableError("the guide pins the harfbuzz ruler and uharfbuzz is not importable here. Do not install it "
+                                        "yourself: a package installed machine-wide moves every other session's fit budgets. Tell the "
+                                        "user it is missing and that the command is python3 -m pip install uharfbuzz, for them to run "
+                                        "or to tell you to; or build on the machine the guide was extracted on (references/intake.md, "
+                                        "What you may install)")
         return HarfBuzzRuler()
     if name == PillowRuler.name:
         return PillowRuler()

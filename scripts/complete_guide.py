@@ -397,6 +397,8 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
         if got != sha:
             raise PatchError(f"/exhibit_habits: the {name} was cut from {got}, this guide's reference is {sha}")
     want = _stub_pages(stub)
+    cut = {p["slide"]: [c.get("box_in") for c in p.get("candidates") or []] for p in stub["pages"]}
+    recut: list[int] = []
     errors: list[str] = []
     seen: list[int] = []
     answered: list[dict] = []
@@ -416,9 +418,15 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
     for page in answered:
         slide = page["slide"]
         exhibits = page.get("exhibits")
-        given_ids = [c.get("id") if isinstance(c, dict) else c for c in page.get("candidates") or []]
+        given = page.get("candidates") or []
+        given_ids = [c.get("id") if isinstance(c, dict) else c for c in given]
         if given_ids != want[slide]:
             errors.append(f"slide {slide}: candidates {given_ids} differ from the stub's {want[slide]}")
+            recut.append(slide)
+        elif [c.get("box_in") if isinstance(c, dict) else None for c in given] != cut[slide]:
+            # same ids, other crops: the answers were read off pictures this stub no longer holds
+            errors.append(f"slide {slide}: candidate boxes {[c.get('box_in') if isinstance(c, dict) else None for c in given]} differ from the stub's {cut[slide]}")
+            recut.append(slide)
         if not isinstance(exhibits, list):
             errors.append(f"slide {slide}: exhibits not answered (an empty list states the page has none)")
             continue
@@ -481,7 +489,14 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
                             errors.append(f"{where} annotation_moves[{j}]: anchor names what the move points at")
             records.append({"slide": slide, **ex})
     if errors:
-        raise PatchError(f"/exhibit_habits: {len(errors)} problem{'s' if len(errors) > 1 else ''}: " + "; ".join(errors))
+        lead = ""
+        if recut:
+            # a digest.json answers the cut it was completed on; a newer extractor or draft cuts
+            # other candidates, and which old answer belongs to which new crop is a reading
+            lead = (f"the stub was cut again since this digest was completed ({len(recut)} page(s) carry other candidates: {recut}), "
+                    "so its answers were read off crops the stub no longer holds. Re-run gallery.py digest, copy the new "
+                    "digest.stub.json to digest.json and answer it from its crops; nothing here carries old answers over. ")
+        raise PatchError(f"/exhibit_habits: {lead}{len(errors)} problem{'s' if len(errors) > 1 else ''}: " + "; ".join(errors))
 
     def count(values) -> dict:
         return dict(sorted(Counter(values).items(), key=lambda kv: (-kv[1], kv[0])))
@@ -579,10 +594,18 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
     if (guide.get("variety") or {}).get("pages"):
         # re-measured on every completion: the content pages or the exhibit types may have just been answered
         guide["variety"]["measure"] = plan.house_deck(guide)
-    guide.setdefault("completion", {"applied": []})["applied"].extend(applied)
+    completion_record(guide)["applied"].extend(applied)
     if bulk_notes:
-        guide["completion"].setdefault("bulk", []).extend(bulk_notes)
+        completion_record(guide).setdefault("bulk", []).extend(bulk_notes)
     return guide, applied, refusals
+
+
+def completion_record(guide: dict) -> dict:
+    """The guide's one completion record, whoever writes to it first: every reader takes
+    `applied` as a list, so the record is never made without one."""
+    record = guide.setdefault("completion", {})
+    record.setdefault("applied", [])
+    return record
 
 
 def table_role_errors(guide: dict) -> list[str]:
@@ -849,7 +872,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
                             f["roles"].remove(role)
                     floors[fam].setdefault("roles", []).append(role)
                 if fam_asked is None:
-                    guide.setdefault("completion", {}).setdefault("defaults_taken", []).append(
+                    completion_record(guide).setdefault("defaults_taken", []).append(
                         f"{path}: floor_family body (left out: an added role clears the body floor)")
         elif parts[3] == "members":
             if role not in roles:

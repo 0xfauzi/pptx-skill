@@ -239,6 +239,11 @@ def _set_line(sp_pr: etree._Element, hex_color: str | None, width_emu: int | Non
 ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT, "justify": PP_ALIGN.JUSTIFY}
 
 
+def paragraph_align(para: dict, spec: dict) -> str:
+    """The alignment a paragraph is written with: its own, else its role's, else left."""
+    return para.get("align") or spec.get("alignment") or "left"
+
+
 def _end_paragraph_like(p, run) -> None:
     """The paragraph's end mark set like its run (a:endParaRPr, a copy of the run's rPr).
     A paragraph whose run is empty (an empty table cell) is drawn at the end mark's size;
@@ -290,8 +295,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
     aft = etree.SubElement(p_pr, qn("a:spcAft"))
     etree.SubElement(aft, qn("a:spcPts")).set("val", str(max(0, fit["spcAft"] if fit else int(round((para.get("space_after_pt", spec.get("space_after_pt")) or 0.0) * 100)))))
     level = para.get("bullet_level")
-    align = para.get("align") or spec.get("alignment") or "left"
-    p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
+    p.alignment = ALIGN.get(paragraph_align(para, spec), PP_ALIGN.LEFT)
     if level is None:
         etree.SubElement(p_pr, qn("a:buNone"))
         p_pr.set("marL", "0")

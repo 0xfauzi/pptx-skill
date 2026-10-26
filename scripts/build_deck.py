@@ -75,11 +75,10 @@ import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
-from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, table_emphasis, emphasised, Guide as EmitGuide, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, table_emphasis, emphasised, Guide as EmitGuide, paragraph_align, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
-from ooxml import paragraphs_words, visual_extent  # noqa: E402
+from ooxml import EMU_PER_INCH, paragraphs_words, visual_extent  # noqa: E402
 
-EMU_PER_INCH = 914400
 #: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
 #: AA_NORMAL, AA_LARGE, LARGE_REGULAR_PT, LARGE_BOLD_PT), cited there to
 #: https://www.w3.org/TR/WCAG22/#contrast-minimum and #dfn-large-scale.
@@ -342,11 +341,8 @@ def check_node_keys(node: dict) -> None:
                                  + (". Runs go under styling: \"styling\": {\"" + str(node.get("id")) + "\": {\"paragraphs\": {\"" + str(i)
                                     + "\": {\"runs\": [{\"text\": ...}, {\"text\": ..., \"emphasis\": true}]}}}}, and the paragraph keeps the whole text"
                                     if isinstance(p, dict) and "runs" in p else ""))
-        if node.get("size") is not None:
-            # a literal height on text would be a coordinate; the title's band is the build's
-            raise SystemExit(f"text {node.get('id')!r}: size is not read on text; a text box is as tall as its measured lines, or takes a "
-                             "share of a column by weight (inside a region with a weight). Space above or below it is a gap_role or "
-                             "a region's pad_roles; the title's height above a top rule is the build's own band")
+        if refusal := L.sized_text_refusal(node.get("id"), node.get("size") or {}):
+            raise SystemExit(refusal)
     if kind not in NODE_KIND_KEYS or kind == "table":
         return  # an unknown kind is layout's to refuse; a table's keys are lift_table_style's
     stray = sorted(set(node) - NODE_KEYS - NODE_KIND_KEYS[kind] - set(PRESENTATION_KEYS))
@@ -623,6 +619,28 @@ def ground_extremes(path: str, page: list[int], box: list[int]) -> list[str]:
     return list(dict.fromkeys("{:02X}{:02X}{:02X}".format(*c) for c in (lo, hi)))
 
 
+def ink_columns(el: dict, measured: dict, eg: EmitGuide) -> tuple[int, int]:
+    """The leftmost and rightmost EMU a text element's measured lines draw at, from each
+    line's measured width, its paragraph's indent and the alignment it is written with
+    (emit_pptx.paragraph_align). A bulleted or justified paragraph is taken from the box's
+    left (a bullet hangs left of the indent) or across its whole width."""
+    x, _, w, _ = el["box"]
+    left, right = x + w, x
+    for para, meas in zip(el["paragraphs"], measured.get("paragraphs") or []):
+        align = paragraph_align(para, eg.type_spec(para["role"], where=el["id"]))
+        indent = int(meas.get("marL") or 0)
+        alloc = int(meas.get("allowance_emu") or (w - indent))
+        for width in meas.get("line_widths_emu") or []:
+            if para.get("bullet_level") is not None or align == "justify":
+                lo, hi = x, x + w
+            else:
+                start = {"center": (alloc - width) // 2, "right": alloc - width}.get(align, 0)
+                lo = x + indent + max(0, start)
+                hi = min(x + w, lo + width)
+            left, right = min(left, lo), max(right, hi)
+    return (left, right) if right > left else (x, x + w)
+
+
 def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict[str, str], chrome: list[dict] | None = None) -> tuple[list[str], bool]:
     """Every colour that can lie under element `index`, and whether an image can: the
     guide's color.surface (the emitter's ground), then every chrome band whose box
@@ -723,8 +741,11 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
     House precedent: a pair under AA that the reference itself draws (the same ink hex
     over the same backing hex, ooxml.ink_backings) at this size or smaller is the house's
     own choice, not a defect of the deck. It is filed under `house_precedent` with the
-    reference's evidence, neither refused nor warned. `precedent` None means no reference
-    was given, and every pair is judged on WCAG alone."""
+    reference's evidence, neither refused nor warned. On a PDF reference a pair counts only
+    where the page's render draws it (ooxml.confirm_on_render): a misread backing or words
+    in their backing's own colour are no precedent, and the finding names why under
+    `no_precedent`. `precedent` None means no reference was given, and every pair is judged
+    on WCAG alone."""
     eg = EmitGuide(guide)
     out: dict = {"checked": 0, "violations": [], "warnings": [], "house_precedent": [], "undecidable": [], "unbound": [], "nearest_pass": None,
                  "precedent_source": "reference" if precedent is not None else "none: no --reference, so no pair can claim the house's precedent"}
@@ -732,6 +753,10 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
     def file(finding: dict) -> None:
         out["checked"] += 1
         seen = (precedent or {}).get((finding["ink_hex"], finding["backing_hex"]))
+        if seen and not seen["confirmed"] and finding["ratio"] < finding["threshold"]:
+            # the reference's runs of this pair were read, but the render does not draw them so
+            finding = {**finding, "no_precedent": seen["not_confirmed"]}
+            seen = None
         if finding["ratio"] < finding["threshold"] and seen and isinstance(finding["size_pt"], (int, float)) and seen["min_size_pt"] <= finding["size_pt"]:
             out["house_precedent"].append({**finding, "reference": {"min_size_pt": seen["min_size_pt"], "chars": seen["chars"], "pages": sorted(seen["pages"])[:12]}})
             return
@@ -763,13 +788,16 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
         names = {}
         scored = elements
         height = (resolved["elements"].get(el["id"]) or {}).get("height_emu") if el["kind"] == "text" else None
-        if height is not None and height < el["box"][3]:
+        if height is not None and height <= el["box"][3]:
             # the words lie in their measured lines, not in the whole box: a title box that
-            # ends on a band's edge has no ink there (bain's title box meets the yellow rule)
-            x, y, w, h = el["box"]
+            # ends on a band's edge has no ink there (bain's title box meets the yellow rule),
+            # and a centred label in a homePlate stops short of the point its box reaches
+            # into (bain's phase chevrons)
+            _, y, _, h = el["box"]
             top = y + {"m": (h - height) // 2, "b": h - height}.get(el.get("anchor") or "t", 0)
+            left, right = ink_columns(el, resolved["elements"][el["id"]], eg)
             scored = list(elements)
-            scored[i] = {**el, "box": [x, top, w, height]}
+            scored[i] = {**el, "box": [left, top, right - left, height]}
         lower, image_below = _lower_backings(scored, i, eg, names, chrome)
         own = eg.hex(el.get("fill_role"), where=el.get("id", el["kind"])) if el.get("fill_role") else None
         if own:
@@ -2071,7 +2099,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     if reference:
         from ooxml import fingerprint_deck, ink_backings
         ref_slides = fingerprint_deck(reference)
-        precedent = ink_backings(ref_slides)
+        precedent = ink_backings(ref_slides, reference if str(reference).lower().endswith(".pdf") else None)
     pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
     emitted: list[dict] = []  # the report entry of every emitted page, in emit order
     annotation_pages: dict[int, list[dict]] = {}  # emitted page index -> its annotations as resolved

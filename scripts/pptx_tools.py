@@ -56,10 +56,9 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
 from ooxml import visual_extent  # noqa: E402  the area a rotated shape covers, one definition
+from layout import PRODUCT_SAFETY_FLOOR_PT, table_floor_pt  # noqa: E402  the build's own floors: one rule for both gates
 # 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
 RULE_WEIGHT_FLOOR_EMU = 6350
-# The product safety floor: 7.0pt on both render media (deckgen E45), the floor with no guide.
-PRODUCT_SAFETY_FLOOR_PT = 7.0
 # Every DrawingML stroke: a:ln on shapes and charts, the six table cell borders.
 LINE_TAGS = ("a:ln", "a:lnL", "a:lnR", "a:lnT", "a:lnB", "a:lnTlToBr", "a:lnBlToTr")
 # Plot groups whose schema carries c:varyColors (ECMA-376 21.2.2).
@@ -434,10 +433,7 @@ def _guide_floors(guide: dict | None) -> dict:
         for role in f.get("roles") or []:
             by_role[role] = floor
     any_floor = min(by_family.values()) if by_family else absolute
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    # the build's own table floor: one rule for both gates
-    from layout import table_floor_pt
-    table = (table_floor_pt(guide) if guide else None) or any_floor
+    table = table_floor_pt(guide) if guide else any_floor
     chart = min([by_role[r] for r in ("type.axis_label", "type.data_label") if r in by_role] or [by_family.get("chart", any_floor)])
     return {"slide": any_floor, "table": table, "chart": chart, "source": "guide floors" if by_family else f"no guide: {absolute}pt product safety floor (deckgen E45)"}
 

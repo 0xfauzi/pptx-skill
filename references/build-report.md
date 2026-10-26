@@ -123,8 +123,14 @@ against the fill drawn behind it. Below 3.0:1 refuses; below AA (4.5:1, or 3.0:1
 or 14pt bold) warns. House precedent first: a pair the reference itself draws (same ink
 over same backing, read from `--reference`) at that size or smaller is filed under
 `house_precedent`, neither refused nor warned (a consulting house sets its titles in a
-green at 2.51:1 on white on 23 pages; its decks keep the green). With no `--reference`
-nothing claims precedent. `undecidable` lists text over images; `unbound` lists runs with
+green at 2.51:1 on white on 23 pages; its decks keep the green). On a PDF reference a
+pair counts only where the page's render draws it so: a PDF keeps no draw order, so the
+backing is inferred, and a gradient or a picture under the words is missed (bcg-nycha's
+white words on a green gradient read as white on white). A pair the render does not
+confirm, and words drawn in their backing's own colour, are no precedent; the finding
+names why under `no_precedent`. A run is scored where its measured lines draw (their
+height, width and alignment), not across its whole box. With no `--reference` nothing
+claims precedent. `undecidable` lists text over images; `unbound` lists runs with
 no ink role. A column's label taller than its segment is scored against the plot too and
 carries `overflows_bar_at_points` (chart-recipes.md). The fix is a role change; nothing in
 the emitter corrects an ink.
@@ -184,8 +190,11 @@ there). Pictures are compared by hash, the template's own excepted.
 text (the output of the script that computes and asserts every stated figure). A past
 deck's figure that also appears there is listed once under `declared_computed`, with the
 past page it coincides with, instead of as distinctive: a computed 1.6% that a reference
-also prints is a coincidence you can name. Only figures: a name or a phrase in that file is
-still reported. Never put a figure you did not compute in it.
+also prints is a coincidence you can name. A figure matches on its value and its unit
+(thousands commas and trailing zeros aside): write each figure with the unit the page shows,
+`36%` and not a bare `36`, since a count of 36 in the file does not excuse a 36% on the page.
+Only figures: a name or a phrase in that file is still reported. Never put a figure you did
+not compute in it.
 
 Each finding is ranked by rarity against the public decks of other houses in
 `refs/files` (`rarity_basis`; the past decks and their twins left out). Low: a name or

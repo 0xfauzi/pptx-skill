@@ -97,8 +97,10 @@ def main(argv: list[str]) -> int:
             note = ("bullet glyphs only, moves no text" if e.get("bullets_only") else
                     "an unrelated face: do not read text fit off its renders" if bad else fidelity)
             print(f"{'missing' if bad or unmeasured else 'ok':8} face {face}: drawn as {e.get('rendered_with')} ({note}); {measures}")
+    if missing_pip or optional_pip or missing_apt:
+        print("\nfor the user to run (or to tell you to); never run them yourself: packages are machine-wide (references/intake.md, What you may install)")
     if missing_pip:
-        print(f"\ninstall: python3 -m pip install {' '.join(missing_pip)}")
+        print(f"install: python3 -m pip install {' '.join(missing_pip)}")
     if optional_pip:
         print(f"optional: python3 -m pip install {' '.join(optional_pip)}")
     if missing_apt:
