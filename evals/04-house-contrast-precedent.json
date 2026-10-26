@@ -90,12 +90,12 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Titles are in the house's register and within its length.",
-   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, with its marks where the claim lives, the way the house marks such places, or the report says why not. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief, open the house page it names (digest crop and record) and the render: the reader sees reader_must_see without arithmetic, the compared value is drawn, and the marks sit where the brief and the house's digest records (marks, in words) put them."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
    "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
@@ -118,12 +118,12 @@
    "check": "deck.build.json contrast.house_precedent lists FFFFFF on 5E7C9E where the deck uses it; contrast.violations empty; no sub-AA warning on a pair the house never draws."
   },
   {
-   "statement": "The sensitivity grid boxes the scenario region the claim rests on.",
-   "check": "An outline_box annotation with a table anchor on the relevant cells."
+   "statement": "On the sensitivity grid the scenario region the claim rests on can be found.",
+   "check": "The region is marked (an emphasis group naming its rows and columns, an annotation with a table anchor) or the report says why not (pass or fail); the device is a diagnostic."
   },
   {
-   "statement": "Source lines follow the house's measured habit.",
-   "check": "The digest answers source_line on every data page; each 'no source line' problem is a refusal or a warning per exhibit_habits.source_lines, and each warning is answered in the report."
+   "statement": "Each data page's source line is set against the house's measured count, and every warning about it is answered.",
+   "check": "The digest answers source_line on every data page; each 'no source line' problem is a warning quoting the house's count (exhibit_habits.source_lines; nothing about source lines refuses), and each is answered in the report: the line added, or why this page carries none."
   }
  ]
 }

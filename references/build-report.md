@@ -3,7 +3,7 @@
 ## Contents
 - The command and the judge's panel
 - Fit and scale
-- Unfittable pages: your moves, in order
+- Unfittable pages: what moves a page
 - Refusals and warnings (`problems`)
 - What the file is written at
 - Contrast
@@ -66,16 +66,19 @@ the pin, this machine's default, which changes when `uharfbuzz` is installed or 
 and moves every fit budget with it. A pinned ruler that is not installed is refused, never
 replaced. Report the ruler with any fit result you compare across builds.
 
-## Unfittable pages: your moves, in order
+## Unfittable pages: what moves a page
 
 `status: unfittable` names the smallest admitted scale, every violation, and for each
 table `rows_to_fit_slide`, the body-row count at which to split (`layout.py capacity`
-prints the same count as `rows_to_fit`, and the causes in words, before you build). A title that needs two
-lines is named first, because every other violation on that page follows from it. Nothing
-is dropped. Your moves: re-arrange (two columns instead of one, a table beside the chart
+prints the same count as `rows_to_fit`, and the causes in words, before you build). A
+title that needs more lines than the band above the top rule holds does not fit, and is
+named first, with the lines the band holds, because every other violation on that page
+follows from it: shorten it, or move a clause to where the house states claims (the reason
+names the places, from the guide's `claims_elsewhere`). Nothing is dropped. Moves, for
+instance, in no order: re-arrange (two columns instead of one, a table beside the chart
 instead of below, a compact component variant), cut words, split at a declared boundary
-(the fitting rows become page one, the rest page two under the guide's continuation
-convention). Then build again.
+(the fitting rows become page one, the rest page two under the house's continuation, as
+its pages show it). Then build again.
 
 ## Refusals and warnings (`problems`)
 
@@ -87,30 +90,34 @@ deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation re
 `explained_by`: chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
 `picture not drawn as written`, `picture too small to check`, `picture render check failed`;
-`font refused`; `no source line` where the house carries source lines as a rule (below);
-`exhibit without a brief` (with `--plan`: the written page holds a chart, a table, a
+`font refused`; `exhibit without a brief` (with `--plan`: the written page holds a chart, a table, a
 picture or a structure built from shapes, and its plan page briefs none; `slides[].briefs`
 gives both counts). Warnings never refuse: `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
 which exhibit), `tieout` (a totals cell that does not equal its column), `no
-source line` where the habit is common or unmeasured, `source line the house rarely
-carries`, and `plan figure not on the page` (a figure the plan's message
-for the page states that the page does not carry: the plan was written before the
-numbers moved, or the page lost its claim).
+source line` (below), `renderer-unmeasured preset` (a shape in a preset no render here has
+shown: look at it, and open the deck in PowerPoint before release), `type size off the
+house's ladder` (a role the completion wrote off the house's levels, with the levels, the
+reason given and the judge's `size_hist` distance), and `plan figure not on the page` (a
+figure the plan's message for the page states that the page does not carry: the plan was
+written before the numbers moved, or the page lost its claim). Answer every warning in the
+report: what you kept and why, or what you changed.
 
 The house's source-line habit is the digest's count of data pages that carry a source
-or note line (`exhibit_habits.source_lines`), over three or more data pages: `rule` at 80%
-or more, `common` from 50%, `rare` below. `no source line` is a data page (a table or
-chart) with no `type.source_line` or `type.footnote` paragraph: refused where the habit is
-a rule, warned where it is common. Where it is rare, a page without one matches the house
-and nothing is said, and a page WITH one warns `source line the house rarely carries`
-(keybank: 1 of 5 data pages, so a keybank page with a source line warns). A guide whose
-digest answered no `source_line`, or fewer than three data pages, is `unmeasured`: a data
-page without one warns, never read as "the house carries none". Both lines are
-unmeasured. The deck-level `source_lines` sets the house's habit beside the deck's pages
-with one, and the brief prints both counts. In round 2 the old rule (warn on every data
-page without one, whatever the house did) told agents on keybank and netflix, houses with
-1 of 5 and 1 of 8, to add source lines to every page.
+or note line (`exhibit_habits.source_lines`), over three or more data pages: `most` where
+at least half do, `few` below (the half is a definition of the house's majority, not a
+measured line). `no source line` is a data page (a table or chart) with no
+`type.source_line` or `type.footnote` paragraph, warned with the house's count ("the house
+sources 41 of 44 data pages; this page has none") where the habit is `most`; where it is
+`few`, a page without one does what most of the house's pages do and nothing is said. A
+page WITH one is never a problem: citing a source is never wrong. A guide whose digest
+answered no `source_line`, or fewer than three data pages, is `unmeasured`: a data page
+without one warns, never read as "the house carries none". Nothing about source lines
+refuses: the count is evidence beside the choice, answered in the report. The deck-level
+`source_lines` sets the house's count beside the deck's pages with one, and the brief
+prints both. In round 2 the old rule (warn on every data page without one, whatever the
+house did) told agents on keybank and netflix, houses with 1 of 5 and 1 of 8, to add
+source lines to every page.
 
 ## What the file is written at
 
@@ -142,8 +149,12 @@ the emitter corrects an ink.
 ## Titles, register and density
 
 - `title`: characters, words and solved lines against the house's median, p90 and max
-  (above the max warns), and the register the slide states against the house's counts (a
-  register on under 10% of the house's titles warns; that line is unmeasured).
+  (above the max warns), and the register the slide states (`title.register`, in words,
+  as the plan states it). A register naming a term the house's titles are coded in (by
+  slug or label: "Claim sentences" reads as claim) is set against the house's counts (one
+  on under 10% of the house's titles warns; that line is unmeasured); any other words are
+  reported as "no house count", with the counts beside them. Only a register that is not
+  words (a number, empty, "TBD") is refused.
 - `register`: element kind counts, decoration count and container ratio against the
   reference's bands; a native table or chart against a band of 0 to 0 reads `no evidence`
   (a house that pastes exhibits as pictures).
@@ -237,11 +248,23 @@ the guide says is refused by name.
   its totals cell at the cell's decimals, by the column's `total` (`sum`, the default and
   reported as such, or `mean`; `none` is skipped and says so); a totals row headed median,
   average or mean is skipped.
-- `table_defaults_taken`: every table choice the spec left out (an emphasis group's
-  `bold`), with the value written.
+- `table_defaults_taken`: every table choice neither the spec nor the guide states (an
+  emphasis group's weight, a totals row's bold, the banding phase, the header's weight,
+  the cell padding, a column's alignment), with the value written (tables.md).
 - `chart_defaults_taken`: every chart choice the spec left out, with the value the file
-  got. None of these is the house's style: write each into the spec until the list holds
-  only what you meant.
+  got.
+- `layout_defaults_taken`: every layout choice a region left out (a flex region's align,
+  stretch, and justify, start; no padding; children with no weight, weight 1 in the split
+  of free space), and the bullet indents a page gets when the reference shows no bullets
+  (with the question whether the text needs bullets at all).
+- `emit_defaults_taken`: every other value the file got that neither the spec nor the
+  guide states, per element: a bullet glyph or indent the guide names none for, an outline
+  or rule width (0.75pt), a rule's colour, a chrome entry's face or size.
+- None of the defaults-taken lists is the house's style: write each choice into the spec
+  until the lists hold only what you meant, or name what is left in the report as
+  intended. The brief prints each page's counts.
+- `layout_depth`: the page tree's deepest chain of ids and its depth (the runaway bound,
+  12, is a guard against a looping generator, never a design limit).
 - `chart_label_breaks`: words a renderer must break between characters at the chart
   text's size (category labels against their slot, centred data labels against a column's
   width), and under `spills` each horizontal bar's label wider than its bar, warned as
@@ -270,5 +293,10 @@ times. A filed deck is necessary, not sufficient.
 
 ## Density is a loop
 
-Add content, build, read the report. When a page fits with room at the upper density
-band, add the next item. When it does not fit at the floor, split or re-arrange.
+Add content, build, read the report. `density` says where the page sits in the house's
+own band (words, elements, covered area: its 10th to 90th percentile), as evidence, not a
+target. A page below the band with room left is one to ask about: is something the
+reader needs missing? Measured on hand-built specimen pages against 96 corpus pages (median
+ink coverage 0.21 to 0.25 against 0.576, TARGET_SPEC.md 14.3), what closed the gap was
+adding the exhibits a page lacked, not enlarging the ones it had. When a page does not fit
+at the floor, split or re-arrange.

@@ -173,10 +173,15 @@ def print_text(entries: list[dict]) -> None:
 
 
 def layouts(path: str) -> dict:
+    """Every master and layout of the deck, each layout with its placeholders, its other
+    shapes and how many of the deck's slides use it ("used_by_slides", 0 included, "used"
+    in words): an unused layout is listed like any other, with its count. Usage is counted
+    by the layout's part, so two masters' layouts of one name are two counts."""
     prs = Presentation(path)
     usage: dict[str, int] = {}
     for slide in prs.slides:
-        usage[slide.slide_layout.name] = usage.get(slide.slide_layout.name, 0) + 1
+        part = str(slide.slide_layout.part.partname)
+        usage[part] = usage.get(part, 0) + 1
     masters = []
     for mi, master in enumerate(prs.slide_masters):
         lay = []
@@ -189,7 +194,8 @@ def layouts(path: str) -> dict:
             others = [{"name": s.name, "kind": str(s.shape_type).split(" ")[0] if s.shape_type else "?",
                        "box_in": [round(v / EMU_PER_INCH, 3) for v in (s.left or 0, s.top or 0, s.width or 0, s.height or 0)]}
                       for s in layout.shapes if not s.is_placeholder]
-            lay.append({"name": layout.name, "part": str(layout.part.partname), "used_by_slides": usage.get(layout.name, 0),
+            used = usage.get(str(layout.part.partname), 0)
+            lay.append({"name": layout.name, "part": str(layout.part.partname), "used_by_slides": used, "used": f"on {used} of {len(prs.slides)} slides",
                         "placeholders": phs, "other_shapes": others})
         masters.append({"index": mi, "part": str(master.part.partname), "layouts": lay,
                         "shapes": [{"name": s.name, "placeholder": s.is_placeholder} for s in master.shapes]})

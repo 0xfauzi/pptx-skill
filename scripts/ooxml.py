@@ -1611,6 +1611,10 @@ PRECEDENT_BELOW = 4.5
 PRECEDENT_DPI = 150
 
 
+def _rgb(hexv: str) -> tuple[int, int, int]:
+    return (int(hexv[0:2], 16), int(hexv[2:4], 16), int(hexv[4:6], 16))
+
+
 def _same_colour(a: tuple[int, int, int], b: tuple[int, int, int]) -> bool:
     return all(abs(x - y) <= RENDER_ROUNDING for x, y in zip(a, b))
 
@@ -1665,8 +1669,10 @@ def ink_backings(slides: list[SlidePrint], pdf: str | None = None) -> dict[tuple
 
     Given `pdf` (the reference the slides were read from), every PDF run under
     PRECEDENT_BELOW is confirmed on the page's render (confirm_on_render) and counted only
-    when it is: a pair none of whose runs is confirmed is kept with `confirmed` False and
-    the reasons, so a deck that draws it is told why the house's pages are no precedent."""
+    when it is. A pptx run whose ink is its backing's colour (within RENDER_ROUNDING) is
+    invisible and never counted. A pair none of whose runs is counted is kept with
+    `confirmed` False and the reasons, so a deck that draws it is told why the house's
+    pages are no precedent."""
     from extract_style import contrast
     out: dict[tuple[str, str], dict] = {}
     pending: list[tuple[Run, SlidePrint, str]] = []
@@ -1713,6 +1719,11 @@ def ink_backings(slides: list[SlidePrint], pdf: str | None = None) -> dict[tuple
     check = [(r, s, b) for r, s, b in pending if pdf is not None and s.source == "pdf" and r.box is not None and contrast(r.color, b) < PRECEDENT_BELOW]
     verdicts = confirm_on_render(pdf, [(s.index + 1, r.box, r.color, b) for r, s, b in check]) if check and pdf is not None else []  # type: ignore[misc]
     why = {id(r): v for (r, _, _), v in zip(check, verdicts)}
+    # a file's run in its backing's own colour is invisible on a pptx page too (hidden
+    # notes, white words on white): read off the file, it is never the house's choice
+    for r, s, backing in pending:
+        if s.source != "pdf" and _same_colour(_rgb(r.color), _rgb(backing)):
+            why[id(r)] = f"page {s.index + 1}: the ink {r.color} is its backing's colour ({backing}): the words are invisible"
     for r, s, backing in pending:
         entry = out.setdefault((r.color, backing), {"min_size_pt": None, "chars": 0, "pages": set(), "confirmed": False, "not_confirmed": []})
         reason = why.get(id(r))

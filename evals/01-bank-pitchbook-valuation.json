@@ -172,12 +172,12 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Titles are in the house's register and within its length.",
-   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, with its marks where the claim lives, the way the house marks such places, or the report says why not. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief, open the house page it names (digest crop and record) and the render: the reader sees reader_must_see without arithmetic, the compared value is drawn, and the marks sit where the brief and the house's digest records (marks, in words) put them."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
    "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
@@ -196,16 +196,16 @@
    "check": "Read the final report."
   },
   {
-   "statement": "Titles are topic phrases; claims sit in lead-ins or numbered rows as in the house.",
-   "check": "slides[].title.register == 'topic' or 'question'; no 'claim'."
+   "statement": "Where a page's claim sits is reported against the house's habit (topic titles, claims in lead-ins and numbered rows), and a departure is answered.",
+   "check": "Diagnostic, not pass or fail: slides[].title.register beside the house's counts; any 'title register rare in the house' warning answered in the report. The blind round caught claim titles in topic houses on every page (evals/README.md), so read the titles beside the renders."
   },
   {
-   "statement": "The football field draws the offer as a reference line and its midpoints claim is computed (the offer is above four of five midpoints).",
-   "check": "Midpoints 19.80, 22.25, 21.00, 24.25, 21.70: offer $24.00 is above four of five; any sentence stating a count must match."
+   "statement": "The football field's midpoints claim is computed (the offer is above four of five midpoints), and the offer can be found on the exhibit.",
+   "check": "Midpoints 19.80, 22.25, 21.00, 24.25, 21.70: offer $24.00 is above four of five; any sentence stating a count must match (pass or fail). The offer is drawn where a reader finds it against the ranges, by whatever device the brief chose (a line, a label, a marker), named in the report."
   },
   {
-   "statement": "The comps table marks the subject and a median row in the house's way.",
-   "check": "Annotations or emphasis rows on the subject and the median."
+   "statement": "On the comps table the subject and the median row can be found, by a device the report names.",
+   "check": "The subject and the median rows are each marked (an emphasis group, an annotation, a row of their own) or the report says why not (pass or fail); how the marking compares with the house's digest is a diagnostic."
   },
   {
    "statement": "The bridge declares `bridge` and ties.",

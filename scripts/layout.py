@@ -93,10 +93,12 @@ from textfit import (  # noqa: E402
     Ruler,
     SubstituteMismatchError,
     UnknownFamilyError,
+    UnknownStyleError,
     UnmeasurableTextError,
     advance_emu,
     break_opportunities,
     default_index,
+    measure_runs,
     measure_text,
     resolve_measured,
     ruler_for,
@@ -106,11 +108,13 @@ EMU_PER_POINT = 12_700
 EMU_PER_HUNDREDTH_POINT = 127
 #: deckgen config/provisional.py:35 - the one font grid; 0.5 pt lands on sz.
 FONT_QUANTUM_PT = Fraction(1, 2)
-#: deckgen contracts limits.py: MAX_TREE_DEPTH 5 (docs/measurements/E10-decision.md):
-#: observed shape-containment depth 3 on three reference decks plus a fixed headroom
-#: of 2, a runaway bound. That measured shapes, not this tree's layout regions, so it
-#: says nothing about how deep a well-designed layout tree needs to be.
-MAX_TREE_DEPTH, MAX_NODES, MAX_GRID_TRACKS = 5, 400, 64
+#: Runaway bounds, never design limits. MAX_NODES and MAX_GRID_TRACKS are deckgen's
+#: (contracts limits.py). Its MAX_TREE_DEPTH of 5 measured shape containment (depth 3 on
+#: three reference decks plus 2 of headroom, docs/measurements/E10-decision.md), not this
+#: tree's layout regions, and refused a component placed three regions down (root > body
+#: > col > component > its rows); the depth bound here is a finite guard against a
+#: runaway tree, and the build reports each page's deepest chain (Spec.deepest).
+MAX_TREE_DEPTH, MAX_NODES, MAX_GRID_TRACKS = 12, 400, 64
 #: deckgen measure/tolerance.py:157 - what the emit gate forgives between two
 #: measurements of the same text; the table fitter's height budget slack.
 EMIT_SLACK_EMU = 13
@@ -406,7 +410,16 @@ class Paragraph:
     role: str
     text: str
     bullet_level: int | None
-    emphasis: bool = False  # measured with the bold face: the emitter bolds emphasis runs, and a bold word is wider
+    emphasis: bool = False  # the whole paragraph set bold: one run, bold (run_faces)
+    # the runs as the emitter writes them: (text, bold, italic), None taking the role's own;
+    # each is measured whole in its own face (textfit.measure_runs)
+    runs: tuple[tuple[str, bool | None, bool | None], ...] = ()
+
+
+def run_faces(paragraph: Paragraph) -> tuple[tuple[str, bool | None, bool | None], ...]:
+    """The paragraph's runs, the one reading of how its words are set: its own runs, else
+    one run of the whole text, bold when the paragraph is emphasis."""
+    return paragraph.runs or ((paragraph.text, True if paragraph.emphasis else None, None),)
 
 @dataclass(frozen=True)
 class Column:
@@ -466,7 +479,10 @@ class Table:
     cell_role: str
     cell_padding_role: str | None
     totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
-    emphasis_cells: frozenset = frozenset()  # (data row, column) body cells the emitter bolds (emit_pptx.emphasised)
+    # every cell in the setting the emitter writes it in, (grid row, column, bold, italic,
+    # indent role), header rows first (emit_pptx.table_row_styles, the one reader); a table
+    # parsed without them (a component's probe) is measured by header_bold and totals_last_row
+    cell_styles: tuple[tuple[int, int, bool, bool, str | None], ...] = ()
     header_bold: bool = False  # the emitter bolds the header row (the guide's or the table's header_bold), so it is measured bold
 
 @dataclass(frozen=True)
@@ -502,6 +518,7 @@ class Spec:
     groups: tuple[SplittableGroup, ...]
     zones: tuple[tuple[Box, str], ...]
     bullet_indent_roles: dict[int, str]
+    deepest: tuple[str, ...] = ()  # the longest root-to-node chain of ids, reported by the build
 
 def walk(node: Region | Element, depth: int = 0) -> Iterator[tuple[Region | Element, int]]:
     yield node, depth
@@ -582,7 +599,8 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     paragraphs: tuple[Paragraph, ...] = ()
     table: Table | None = None
     if kind == "text":
-        paragraphs = tuple(Paragraph(p["role"], p["text"], p.get("bullet_level"), bool(p.get("emphasis"))) for p in raw.get("paragraphs", []))
+        paragraphs = tuple(Paragraph(p["role"], p["text"], p.get("bullet_level"), bool(p.get("emphasis")),
+                                     tuple((str(r[0]), r[1], r[2]) for r in p.get("runs") or ())) for p in raw.get("paragraphs", []))
         if not paragraphs or any(not p.text.strip(" ") for p in paragraphs):
             raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs; an empty cell that keeps a row or grid in step is a region with no children "
                                       "(in a row or column a weight gives it its share), not blank text")
@@ -607,7 +625,7 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         if not 0 <= header_rows <= 4 or (not rows and not header_rows):
             raise LayoutContractError(f"table {node_id!r}: header_rows outside 0..4 or no rows at all")
         table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"),
-                      bool(t.get("totals_last_row")), frozenset((int(r), int(c)) for r, c in (t.get("emphasis_cells") or [])),
+                      bool(t.get("totals_last_row")), tuple((int(r), int(c), bool(b), bool(i), ind) for r, c, b, i, ind in (t.get("cell_styles") or [])),
                       header_bold=bool(t.get("header_bold")))
     elif kind not in ("image", "chart", "rule"):
         raise LayoutContractError(f"element {node_id!r}: kind must be text, table, image, chart or rule")
@@ -628,15 +646,18 @@ def parse_spec(raw: Mapping[str, Any]) -> Spec:
     seen: set[str] = set()
     count = 0
     chain: list[str] = []
+    deepest: list[str] = []
     for node, depth in walk(root):
         count += 1
         del chain[depth:]
         chain.append(node.id)
+        if len(chain) > len(deepest):
+            deepest = list(chain)
         if node.id in seen:
             raise LayoutContractError(f"duplicate node id {node.id!r}: every region and element id must be unique on the page")
         if depth > MAX_TREE_DEPTH:
-            raise LayoutContractError(f"tree too deep: {' > '.join(chain)} puts {node.id!r} at depth {depth}; the limit is {MAX_TREE_DEPTH} levels below the root "
-                                      "(root = 0). Remove a region that wraps a single child, or merge a column into its parent column")
+            raise LayoutContractError(f"tree too deep: {' > '.join(chain)} puts {node.id!r} at depth {depth}, past the runaway bound of {MAX_TREE_DEPTH} "
+                                      "levels below the root (root = 0); a tree this deep is a generator looping, not a layout")
         if count > MAX_NODES:
             raise LayoutContractError(f"tree past {MAX_NODES} nodes (reached at {node.id!r}); split the page")
         seen.add(node.id)
@@ -645,7 +666,40 @@ def parse_spec(raw: Mapping[str, Any]) -> Spec:
         if g.kind not in ("node_range", "table_row_range") or any(n not in seen for n in g.node_ids) or (g.kind == "table_row_range") != (g.row_range is not None):
             raise LayoutContractError(f"splittable group {g.group_id!r} is malformed")
     zones = tuple((Box(int(z["left"]), int(z["top"]), int(z["width"]), int(z["height"])), str(z.get("source", "zone"))) for z in page.get("reserved_zones", []))
-    return Spec(int(page["width_emu"]), int(page["height_emu"]), root, groups, zones, {int(k): v for k, v in (raw.get("bullet_indent_roles") or {}).items()})
+    return Spec(int(page["width_emu"]), int(page["height_emu"]), root, groups, zones, {int(k): v for k, v in (raw.get("bullet_indent_roles") or {}).items()},
+                tuple(deepest))
+
+
+def defaults_taken(raw_root: Mapping[str, Any]) -> list[str]:
+    """Every layout choice a region left out, with the value the solver takes for it
+    (_parse_layout, _weighted_sizes): a flex region's align (stretch) and justify (start),
+    a region's padding (none), and children with no weight (each flexible one an equal
+    share, weight 1). The build lists them per page as `layout_defaults_taken`, as a
+    chart's are listed, so a value nobody chose is read back."""
+    out: list[str] = []
+
+    def visit(node: Mapping[str, Any]) -> None:
+        if node.get("type", node.get("node_type")) != "region":
+            return
+        nid, lay = node.get("id"), node.get("layout") or {}
+        kind = lay.get("kind", lay.get("layout_type"))
+        if kind == "flex":
+            for key, value in (("align", "stretch"), ("justify", "start")):
+                if key not in lay:
+                    out.append(f"{nid}: {key} {value} (left out)")
+        if lay.get("pad_role") is None and lay.get("pad_roles") is None:
+            out.append(f"{nid}: no padding (pad_role left out)")
+        children = node.get("children") or []
+        unweighted = [c.get("id") for c in children if c.get("weight") is None]
+        if kind == "flex" and len(children) > 1 and unweighted:
+            share = "an equal share" if len(unweighted) == len(children) else "weight 1 against its siblings' weights"
+            out.append(f"{nid}: {unweighted} carry no weight: each that is flexible (not sized by its own content) takes {share} "
+                       f"in the split of the free {lay.get('direction', '')} space")
+        for c in children:
+            visit(c)
+
+    visit(raw_root)
+    return out
 
 # --- type resolution and scale admission (deckgen typestyles.py, design_scale.py) ---
 
@@ -1083,13 +1137,15 @@ class Context:
     def entry(self, element: Element, role: str, scale: Fraction) -> TypeEntry:
         return resolve_type_entry(self.guide, role, Fraction(1) if element.scale_class == "fixed" else scale)
 
-    def face(self, entry: TypeEntry, *, bold: bool | None = None) -> Face:
+    def face(self, entry: TypeEntry, *, bold: bool | None = None, italic: bool | None = None) -> Face:
         """The face `entry` is measured with: its family, a metric alias, or the guide's
-        stand-in, which must be the face the renderer draws (textfit.resolve_measured)."""
+        stand-in, which must be the face the renderer draws (textfit.resolve_measured). A
+        style the family has no file for (an italic run of a face installed upright only)
+        is refused, never measured upright."""
         try:
-            return resolve_measured(self.index, entry.family, bold=entry.bold if bold is None else bold, italic=entry.italic,
+            return resolve_measured(self.index, entry.family, bold=entry.bold if bold is None else bold, italic=entry.italic if italic is None else italic,
                                     substitute=self.guide.substitutes.get(entry.family))
-        except (SubstituteMismatchError, UnknownFamilyError) as error:
+        except (SubstituteMismatchError, UnknownFamilyError, UnknownStyleError) as error:
             raise FaceRefused(str(error)) from None
 
 def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -> list[ParagraphMeasurement]:
@@ -1097,8 +1153,11 @@ def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -
     out: list[ParagraphMeasurement] = []
     for index, paragraph in enumerate(element.paragraphs):
         entry = ctx.entry(element, paragraph.role, scale)
-        face = ctx.face(entry, bold=True) if paragraph.emphasis else ctx.face(entry)
-        text = apply_case(paragraph.text, entry.case)
+        runs = run_faces(paragraph)
+        cased = apply_case_runs([r[0] for r in runs], entry.case)
+        text = "".join(cased)
+        faces = [ctx.face(entry, bold=b, italic=i) for _, b, i in runs]
+        face = faces[0]
         indent = 0
         if paragraph.bullet_level is not None:
             role = ctx.spec.bullet_indent_roles.get(paragraph.bullet_level, ctx.guide.bullet_indent_roles.get(paragraph.bullet_level))
@@ -1108,7 +1167,11 @@ def measure_element(ctx: Context, element: Element, box: Box, scale: Fraction) -
         allowance = box.width - indent
         if allowance <= 0:
             raise CandidateRefused(f"element {element.id!r} paragraph {index}: the indent leaves {allowance} EMU of usable width")
-        lines = measure_text(ctx.ruler, text, max(1, allowance - ctx.ruler.fit_epsilon_emu), face.path, entry.size_pt)
+        spans, at = [], 0
+        for part, f in zip(cased, faces, strict=True):
+            spans.append((at, at + len(part), f.path, entry.size_pt))
+            at += len(part)
+        lines = measure_runs(ctx.ruler, text, [sp for sp in spans if sp[1] > sp[0]], max(1, allowance - ctx.ruler.fit_epsilon_emu))
         if entry.tracking_pt > 0:
             for line in lines:
                 drawn = tracked_width_emu(line.width_emu, line.text, entry.tracking_pt)
@@ -1323,23 +1386,41 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     case = header.entry.case if header else "as_typed"
     header_text = [[apply_case(c.labels[r] if r < len(c.labels) else "", case) for c in table.columns] for r in range(table.header_rows)]
     spans = header_spans([[header_text[r][ci] for r in range(table.header_rows)] for ci in range(len(table.columns))], table.header_rows)
-    # a header cell narrows only its own column; a spanner is measured across its span below
-    own = [[header_text[r][ci] for r in range(table.header_rows) if (ci, ci) in spans[r]] for ci in range(len(table.columns))]
     grid: list[list[str]] = [list(row) for row in header_text]
     grid.extend([apply_case(v, cell.entry.case) for v in row] for row in table.rows)
     keys = [c.key for c in table.columns]
     charge = 2 * padding + ctx.ruler.fit_epsilon_emu
     natural, minimum = {}, {}
-    last = len(table.rows) - 1
+    styled = {(r, c): (b, i, ind) for r, c, b, i, ind in table.cell_styles}
+    kinds: dict[tuple, DrawnRole] = {}
+
+    def kind_of(gr: int, ci: int) -> DrawnRole:
+        """A cell's face: its own setting (cell_styles), else its row's."""
+        base = header if gr < table.header_rows and header else cell
+        if (gr, ci) not in styled:
+            return cell_bold if base is cell and table.totals_last_row and gr == len(grid) - 1 else base
+        b, i, _ = styled[(gr, ci)]
+        if (base.entry.role, b, i) not in kinds:
+            kinds[(base.entry.role, b, i)] = DrawnRole(base.entry, ctx.face(base.entry, bold=b, italic=i).path)
+        return kinds[(base.entry.role, b, i)]
+
+    def indent_of(gr: int, ci: int) -> int:
+        """A cell's own indent (an emphasis group's indent_role, written as its marL)."""
+        role = styled.get((gr, ci), (None, None, None))[2]
+        return space_emu(guide, role, scale, "x") if role else 0
+
     for ci, column in enumerate(table.columns):
-        texts = ([(label, header, False) for label in own[ci]] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or (ri, ci) in table.emphasis_cells) else cell, True) for ri, row in enumerate(grid[table.header_rows:])]
+        # a header cell narrows only its own column; a spanner is measured across its span below
+        heads = [r for r in range(table.header_rows) if (ci, ci) in spans[r]] if header else []
+        texts = ([(header_text[r][ci], kind_of(r, ci), False, indent_of(r, ci)) for r in heads]
+                 + [(grid[gr][ci], kind_of(gr, ci), True, indent_of(gr, ci)) for gr in range(table.header_rows, len(grid))])
         widest = widest_segment = widest_value = 0
-        for text, kind, is_value in texts:
+        for text, kind, is_value, indent in texts:
             if not text.strip():
                 continue
-            one = one_line_width(ctx, text, kind)
+            one = one_line_width(ctx, text, kind) + indent
             widest = max(widest, one)
-            widest_segment = max(widest_segment, min_content_width(ctx, text, kind))
+            widest_segment = max(widest_segment, min_content_width(ctx, text, kind) + indent)
             if is_value:
                 widest_value = max(widest_value, one)
         floor = max(widest_segment, widest_value) if column.value_kind in NUMERIC_VALUE_KINDS else widest_segment
@@ -1378,16 +1459,15 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     cell_lines: dict[tuple[int, str], tuple[str, ...]] = {}
     row_heights: list[int] = []
     for ri, texts in enumerate(grid):
-        data_ri = ri - table.header_rows
         row_kind = header if (ri < table.header_rows and header) else (cell_bold if (table.totals_last_row and ri == len(grid) - 1) else cell)
         counts = []
         cells = spans[ri] if ri < table.header_rows else [(ci, ci) for ci in range(len(keys))]
         for c0, c1 in cells:
             key, text = keys[c0], texts[c0]
-            kind = cell_bold if (row_kind is cell and (data_ri, c0) in table.emphasis_cells) else row_kind
+            kind = kind_of(ri, c0)
             # a spanner wraps across the columns it spans (their widths, less one inset pair)
             width = sum(widths[keys[c]] for c in range(c0, c1 + 1))
-            lines = wrapped_lines(ctx, text, max(1, width - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
+            lines = wrapped_lines(ctx, text, max(1, width - 2 * padding - indent_of(ri, c0) - ctx.ruler.fit_epsilon_emu), kind)
             cell_lines[(ri, key)] = lines
             for c in range(c0 + 1, c1 + 1):
                 cell_lines[(ri, keys[c])] = ()
@@ -1582,7 +1662,9 @@ def resolved_json(ctx: Context, resolved: Resolved) -> dict[str, Any]:
             elements[node.id] = {"kind": "text", "lines": sum(len(p["lines"]) for p in paragraphs), "height_emu": element_height_emu(resolved.measurements[node.id]), "bodyPr": {"wrap": "square", "anchor": "t", "lIns": 0, "tIns": 0, "rIns": 0, "bIns": 0, "autofit": "noAutofit"}, "paragraphs": paragraphs}
         elif node.table is not None:
             fit = resolved.table_fits[node.id]
-            elements[node.id] = {"kind": "table", "gridCol_w": [fit.column_widths[c.key] for c in node.table.columns], "tr_h": list(fit.row_heights), "total_height_emu": fit.total_height_emu, "cell_margins_emu": {"marL": fit.padding_emu, "marR": fit.padding_emu, "marT": fit.padding_emu, "marB": fit.padding_emu}, "header_rows": fit.header_rows, "header": _entry_hints(fit.header.entry) if fit.header else None, "cell": _entry_hints(fit.cell.entry), "overflow": fit.overflow, "width_deficit_emu": fit.width_deficit_emu, "column_deficits_emu": fit.column_deficits, "fitting_row_prefix": fit.fitting_row_prefix, "cells": {f"{r},{k}": list(v) for (r, k), v in fit.cell_lines.items()}}
+            elements[node.id] = {"kind": "table", "gridCol_w": [fit.column_widths[c.key] for c in node.table.columns], "tr_h": list(fit.row_heights), "total_height_emu": fit.total_height_emu, "cell_margins_emu": {"marL": fit.padding_emu, "marR": fit.padding_emu, "marT": fit.padding_emu, "marB": fit.padding_emu}, "header_rows": fit.header_rows, "header": _entry_hints(fit.header.entry) if fit.header else None, "cell": _entry_hints(fit.cell.entry), "overflow": fit.overflow, "width_deficit_emu": fit.width_deficit_emu, "column_deficits_emu": fit.column_deficits, "fitting_row_prefix": fit.fitting_row_prefix, "cells": {f"{r},{k}": list(v) for (r, k), v in fit.cell_lines.items()},
+                                 # the indent each cell's indent role measured at this scale: the file writes these marL
+                                 "cell_indents_emu": {ind: space_emu(ctx.guide, ind, resolved.scale, "x") for *_, ind in node.table.cell_styles if ind}}
         else:
             elements[node.id] = {"kind": node.kind}
     return {"scale": str(resolved.scale), "scale_float": float(resolved.scale), "ruler": resolved.ruler, "fit_epsilon_emu": resolved.fit_epsilon_emu, "boxes": {k: v.as_dict() for k, v in resolved.boxes.items()}, "elements": elements, "violations": [v.as_dict() for v in resolved.violations]}

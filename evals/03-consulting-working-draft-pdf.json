@@ -99,12 +99,12 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Titles are in the house's register and within its length.",
-   "check": "deck.build.json slides[].title: register verdict 'house register'; characters <= guide.titles max; no two-line title the house never wrote."
+   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, with its marks where the claim lives, the way the house marks such places, or the report says why not. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief, open the house page it names (digest crop and record) and the render: the reader sees reader_must_see without arithmetic, the compared value is drawn, and the marks sit where the brief and the house's digest records (marks, in words) put them."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
    "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
@@ -131,8 +131,8 @@
    "check": "--chrome draw; the chrome (the working-draft label, the status tags, the logo, the source line and the confidentiality line) is drawn on every page; no contrast refusal."
   },
   {
-   "statement": "Titles follow the house's register as completed, part counters included where a page continues a set.",
-   "check": "deck.build.json slides[].title register verdicts; a continued set carries the house's '(n/m)' counter."
+   "statement": "Where a page continues a set, it carries the house's continuation as its pages show it, or the report says why not.",
+   "check": "Diagnostic: slides[].title register verdicts beside the house's counts; a continued set carries the house's '(n/m)' counter where the guide's /continuation records one, or the report answers its absence."
   },
   {
    "statement": "The round trip's render was compared with the original page and its losses named.",

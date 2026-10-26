@@ -87,7 +87,12 @@ goes through it, with `--alias`, to get the naming list.
 Check every `expected_behavior` statement with its `check`, against the files the run
 produced (`deck.build.json`, `plan.check.json`, the deck, the renders, the report). Record
 each as met, not met (with the evidence), or not checkable (with why). A statement is never
-scored by reading the agent's own claim that it was met. Reproduce every friction item
+scored by reading the agent's own claim that it was met. A statement passes or fails only
+on its measurable half: a claim computes, the subject can be found, totals tie, a page
+fits, a warning is answered in the report. What a check calls a diagnostic (a title's
+register, a variety measure, which device marks a place, how close a mark sits to the
+house's) is recorded beside the score and never fails a run: the blind round below is the
+judge of taste. Reproduce every friction item
 before acting on it; measured on an earlier build, the large majority of 71 friction items
 from six runs reproduced.
 

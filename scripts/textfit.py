@@ -22,6 +22,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -276,6 +277,13 @@ def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[Wrapped
     """Greedy wrap under E16's rules: break after space or hyphen, trailing
     spaces free, a token wider than the line breaks between characters, every
     candidate line measured as one string. Port of deckgen measure/text.py:203."""
+    return wrap_spans(text, budget_units, lambda a, b: advance(text[a:b]))
+
+
+def wrap_spans(text: str, budget_units: float, span: Callable[[int, int], float]) -> tuple[WrappedLine, ...]:
+    """wrap_text with the advance of text[a:b] given by offsets, so a line whose runs are
+    set in different faces is measured run by run (measure_runs); every candidate line is
+    one call, from the line's start."""
     if not text.strip(" "):
         raise UnmeasurableTextError("whitespace alone wraps to no line")
     stops = break_opportunities(text)
@@ -294,15 +302,15 @@ def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[Wrapped
         # search bound the longest prefix that could fit, so no stop past it
         # is ever shaped (deckgen measured 9.55 s per call without this).
         end_of_text = stops[-1]
-        span = 16
-        upper = min(position + span, end_of_text)
-        while upper < end_of_text and advance(text[position:upper]) <= budget_units:
-            span *= 2
-            upper = min(position + span, end_of_text)
+        width = 16
+        upper = min(position + width, end_of_text)
+        while upper < end_of_text and span(position, upper) <= budget_units:
+            width *= 2
+            upper = min(position + width, end_of_text)
         low, high = position, upper
         while low < high:
             mid = (low + high + 1) // 2
-            if advance(text[position:mid]) <= budget_units:
+            if span(position, mid) <= budget_units:
                 low = mid
             else:
                 high = mid - 1
@@ -318,7 +326,7 @@ def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[Wrapped
             candidate = text[position:stop].rstrip(" ")
             if not candidate:
                 continue
-            measured = advance(candidate)
+            measured = span(position, position + len(candidate))
             if measured <= budget_units:
                 chosen, chosen_advance = stop, measured
             else:
@@ -329,11 +337,11 @@ def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[Wrapped
             while lower < len(text) and text[lower] == " ":
                 lower += 1
             lower += 1
-            chosen, chosen_advance = lower, advance(text[position:lower])
+            chosen, chosen_advance = lower, span(position, lower)
             low, high = lower, first
             while low < high:
                 mid = (low + high + 1) // 2
-                measured = advance(text[position:mid])
+                measured = span(position, mid)
                 if measured <= budget_units:
                     low = mid
                     chosen, chosen_advance = mid, measured
@@ -497,6 +505,40 @@ def measure_text(
         MeasuredLine(line.text, line.start, ruler.to_emu(path, size_pt, line.advance_units))
         for line in wrap_text(text, budget, advance)
     )
+
+def measure_runs(ruler: Ruler, text: str, spans: Sequence[tuple[int, int, str, float]], width_emu: int) -> tuple[MeasuredLine, ...]:
+    """`text` whose characters [a, b) are set in the face at `path` and `size_pt`, for each
+    (a, b, path, size_pt) of `spans` (covering the text in order), wrapped into
+    `width_emu`. A line's advance is the sum, over the runs it crosses, of each run's part
+    shaped WHOLE in its own face: a run is what a renderer shapes as one string, so kerning
+    never crosses a change of face, and no run is ever cut into fragments that are summed.
+    One face throughout is measure_text, unchanged."""
+    if not text.strip(" "):
+        raise UnmeasurableTextError("whitespace alone wraps to no line")
+    if width_emu <= 0:
+        raise ValueError(f"width_emu must be positive, got {width_emu}")
+    covered = 0
+    for a, b, _, _ in spans:
+        if a != covered or b < a:
+            raise ValueError("spans must cover the text in order, end to end")
+        covered = b
+    if covered != len(text):
+        raise ValueError("spans must cover the text in order, end to end")
+    faces = {(path, size) for _, _, path, size in spans}
+    if len(faces) == 1:
+        path, size = faces.pop()
+        return measure_text(ruler, text, width_emu, path, size)
+
+    def span(a: int, b: int) -> float:
+        total = 0
+        for s0, s1, path, size in spans:
+            lo, hi = max(a, s0), min(b, s1)
+            if lo < hi:
+                total += advance_emu(ruler, text[lo:hi], path, size)
+        return float(total)
+
+    return tuple(MeasuredLine(line.text, line.start, round(line.advance_units)) for line in wrap_spans(text, float(width_emu), span))
+
 
 def advance_emu(ruler: Ruler, text: str, path: str, size_pt: float) -> int:
     """The whole-run advance of ONE string in EMU. One string by signature: a

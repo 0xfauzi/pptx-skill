@@ -141,7 +141,8 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
      '"row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, '
      '"cell_padding_role" (a spacing step) or, when no step is near the house\'s inset, "cell_padding_role": null with '
      '"cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", '
-     '"merged_cell_convention", "why"}'), None),
+     '"totals_bold" (true or false; left out, the build lists the bold it writes), "banding_phase" (0: the first body row banded, 1: '
+     'the second; left out, the build lists 0), "merged_cell_convention", "why"}'), None),
     (r"/charts", ('{"series_color_roles": [roles in order], "per_kind": {"<bar|column|line|...>": {"gridlines_major": 0..1, '
      '"data_labels": 0..1, "legend_position": "' + "|".join(GUIDE_LEGEND_POSITIONS) + '"}}, "why"}'), None),
     (r"/continuation", ('what the house does when a page continues onto the next, read off its pages: in words ("none seen" is an '
@@ -168,7 +169,7 @@ SPACING_STEPS_NEEDED = ("space.margin", "space.gutter", "space.xs", "space.sm")
 #: the colour roles a completed /tables names, each answered (null: the house has none)
 TABLE_ROLE_KEYS = ("header_fill_role", "header_ink_role", "banding_role")
 TABLE_KEYS = {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules", "cell_padding_role", "cell_padding_emu",
-              "alignment_by_column_type", "totals_rule", "merged_cell_convention", "why", "provenance"}
+              "alignment_by_column_type", "totals_rule", "totals_bold", "banding_phase", "merged_cell_convention", "why", "provenance"}
 CHART_KEYS = {"series_color_roles", "per_kind", "why", "provenance"}
 ABSENT_SHAPE = "absent_roles"
 
@@ -207,6 +208,10 @@ def shape_error(path: str, value) -> str | None:
         pad = value.get("cell_padding_emu") if path == "/tables" else None
         if pad is not None and (not isinstance(pad, int) or isinstance(pad, bool) or pad < 0):
             return f"/tables: cell_padding_emu {pad!r} is a whole number of EMU, 0 or more (45,720 is 0.05 in, 3.6 pt)"
+        if path == "/tables" and value.get("totals_bold") is not None and not isinstance(value["totals_bold"], bool):
+            return "/tables: totals_bold is true or false (whether the house sets its totals rows bold), or null when its pages show none"
+        if path == "/tables" and value.get("banding_phase") is not None and (value["banding_phase"] not in (0, 1) or isinstance(value["banding_phase"], bool)):
+            return "/tables: banding_phase is 0 (the house bands its first body row) or 1 (its second), or null when it bands none"
         if path == "/charts":
             per_kind = value.get("per_kind") or {}
             bad = {k: v.get("legend_position") for k, v in per_kind.items() if isinstance(v, dict) and "legend_position" in v

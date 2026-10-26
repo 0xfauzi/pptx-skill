@@ -18,9 +18,11 @@ The pptx template is the reference with every slide removed: masters, layouts, t
 chrome intact (PowerPoint opens and re-saves such packages without repair and draws chrome
 once per slide, measured). Page numbers and footers the reference carried
 on its slides are copied from the layout onto each new slide. Every page names one of the
-template's layouts; an unknown layout is refused by name. Choose the layout per page the
-way the house's past pages use them (`pptx_tools.py text` on a past deck prints each
-slide's layout).
+template's layouts; an unknown layout is refused by name. Which layout did the house use
+for pages like this, and does this page need the same frame? `pptx_tools.py text` on a
+past deck prints each slide's layout, and `pptx_tools.py layouts` lists every layout of
+the template with how many of the reference's slides use it ("on 0 of 12 slides" for one
+the house never used, which is still yours to choose; say why in the report).
 
 For a PDF reference the template is blank at the reference's page size, and
 `build_deck.py --chrome draw` paints the guide's chrome (rules, bands, footer labels, a
@@ -80,8 +82,23 @@ left to the default.
   theme's drop shadow on every rule in LibreOffice).
 - In the default `--chrome auto`, slide-layer chrome the reference pastes on every page is
   drawn on every generated page; chrome the layout already carries is inherited, never
-  redrawn. The report's `chrome` section lists what each page drew and what could not be
-  drawn as observed.
+  redrawn. The report's `chrome` section lists the house's chrome with its counts
+  (`chrome.house`: "on 12 of 12 reference pages"), what each page drew and what could not
+  be drawn as observed.
+- The house's chrome is where a page starts, not a rule over it. A page may leave an
+  entry off, or set other words in a text entry's place, with a reason:
+  `"chrome": {"chrome-7": {"omit": true, "why": "a full-bleed divider page, as the house's
+  own section openers carry no number"}}` or `{"chrome-4": {"text": "Appendix", "why":
+  "..."}}`. The zones, the contrast gate and the emitter read the same per-page list, so
+  an entry left off frees its zone and a replaced line is scored in its new words. Never
+  page by page: the firm's own chrome (decided for the whole deck in `firm_chrome`), a
+  legal or confidentiality mark, or, under `--chrome auto`, an entry the page inherits
+  from its layout (choose a layout without it). The build reports each page's choices
+  under `chrome_choices`.
+- A value a drawn entry does not record (a rule's width, a text entry's face or size) is
+  written from the guide (its minor face, `type.caption`'s size, `color.rule`) or 0.75pt,
+  and listed under the page's `emit_defaults_taken`; an entry whose text has no face at
+  all is refused.
 
 ## The round trip: prove the chain on the house's own page
 

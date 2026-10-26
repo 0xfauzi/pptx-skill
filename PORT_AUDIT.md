@@ -436,3 +436,52 @@ outside the vocabulary (`build_deck.title_report`, WP2); off-ladder roles are li
 completion but not yet warned in the build with the judge's size_hist distance (WP2);
 `totals_bold` and the banding phase need the emitter to read them before the guide can
 carry them (`shape_error` refuses keys nothing reads) (WP2); chrome per page (WP2).
+
+## Design freedom, WP2: build gates, emitter and solver
+
+The second work package of the merged design-freedom audit: where the build, the emitter or
+the solver held a design choice to a closed set, refused a house habit, or wrote a value
+nobody chose without saying so. Each case ran first on the tree before the change
+(b5e9804), then on the change; each gate added or changed was then taken out in a scratch
+copy of the changed tree and its case run again. Cases are one-page decks cut from the
+shipped examples, built on guides from a fresh extraction of keybank and the McKinsey PDF.
+
+| Item | Before | Change | After | Gate removed |
+|---|---|---|---|---|
+| V1 title register, build side | `title.register` "a label and a figure", "Claim sentences", 3, "TBD" each refused: not one of the vocabulary | `build_deck.title_report` takes the plan's rule (`plan._words`, `plan.register_term`): any words; a coded term against the house counts, other words "no house count" with the counts | the words build ("no house count"); "Claim sentences" reads as claim and warns rare in the house (0 of 11); 3 and "TBD" refused, naming the terms | 3 is a TypeError traceback; "TBD" builds |
+| D2 title band | "holds 1 at 24.0pt. Shorten the title before anything else." | the reason names the lines the band holds and both fixes, with the house's `claims_elsewhere` places and counts | "holds 1 line ... so it does not fit. Shorten the title, or move a clause of it to where the house states claims (claims_elsewhere: ...)" | |
+| T1 source line | a data page without one, house at 41 of 44: refused; a keybank page WITH one (house 1 of 5) warned "rarely carries" | `source_line_problem` warns only, quoting the count, where at least half the house's data pages carry one or the habit is unmeasured; the per-page "rarely carries" warning removed; `SOURCE_LINE_HOUSE_SHARE` and `SOURCE_LINE_RARE` removed | warning "the house sources 41 of 44 data pages (93%); this page has none"; the keybank page with one: no problem | refused again |
+| V8 off-ladder role in the build | a page set in a 13pt role (levels 10, 12, 18, 24) built silently | `off_ladder_problems` after the judge: a warning with the levels, the nearest, the why and the judge's `size_hist` | warning, `size_hist` 0.073 | no warning |
+| V5 presets | `wedgeRectCallout` under text, a `parallelogram` with no text and `notAShape` each refused: not one of 15 | any OOXML preset by name (`emit_pptx.preset_shape`); under words only the presets the contrast gate bounds (`build_deck.PRESET_BODIES`, the one definition `preset_holds` reads); a preset outside the 15 drawn before warns renderer-unmeasured | the callout under text refused by name; the parallelogram drawn, warned; `notAShape` refused by name; a roundRect under text builds as before | the callout under text builds (drawn); with the build's name check removed the emitter still refuses `notAShape` (one function) |
+| V10 depth | a football field two regions further down refused: depth 6, limit 5 | `MAX_TREE_DEPTH` 12, a runaway bound; every page reports `layout_depth` (its deepest chain) | builds, deepest 7 (root > body > wrap-a > wrap-b > ff > ff-markerrow > ff-marker > ff-msp) | refused at 5 |
+| V6 table emphasis | `italic`, `indent_role`, `include_header` refused as unknown keys; rows AND columns already allowed | groups take `italic`, `indent_role` and `include_header`; every cell's face and indent come from `emit_pptx.table_row_styles` into the fitter (`Table.cell_styles`, replacing `emphasis_cells`), the file writes the indent as marL, the file check subtracts it | italic and indented label cells (i="1", marL 304800), the header cell over a highlighted column filled and bold; a 0.6 in indent (space.lg) on four comps rows: the table grows from 3,020,314 to 3,569,716 EMU and fits | indent not measured: refused, "the file's rows draw 4,299,458 EMU in the table's 3,020,314 EMU box" |
+| V6 per-table rules | `edge_rules` on a table refused as an unknown key | `emit_pptx.table_edge_rules`: the guide's shape per class, roles only, no stroke under 0.5pt unless the guide's own table rules declare it | header rule 1.5pt in color.accent3 written (lnB 19050, 5E7C9E); 0.25pt refused; a hex refused | 0.25pt written (3175) |
+| C4 table defaults | an emphasis group without `bold` written bold; `totals_bold` false in the guide ignored (totals bold); banding always from the first body row | the neutral weight is the cell's own; `totals_bold` and `banding_phase` read from the table, then the guide (`/tables` takes both), else written as before and listed; padding, alignment and the header's weight listed when neither says | row cells regular, listed; totals regular with the guide's false; phase 1 bands rows 2 and 4; `table_defaults_taken` names each default | bold again; totals bold whatever the guide says |
+| V7 runs | a run's `italic` or `bold` refused as unknown keys; a paragraph with any emphasis run measured bold throughout | a run takes `bold`, `italic`, `ink_role` (`emit_pptx.run_style`, the one reading); each run is measured whole in its own face (`textfit.measure_runs`; `wrap_text` measures by offsets) by the solver and by the file check (`fingerprint.wrap_shape`); a style the family has no file for is `font refused` | an italic bold accent3 run written b=1 i=1 and scored 4.33:1 bold (warned under AA); a paragraph bold after its first word fits; an italic run in DejaVu Sans (no italic file) refused "font refused" | runs measured in the lead face: refused, "written line(s) ... re-wrap at the box width"; italic not caught: an UnknownStyleError traceback |
+| C1, C2 layout defaults | nothing listed | `layout.defaults_taken` (align, justify, padding, weights) and the bullet indents a bullet-less reference gets, per page as `layout_defaults_taken`, with the question whether the text needs bullets | 5 entries on the exec page, the bullet line among them | |
+| C5 emitter fallbacks | a role with no face written in Arial; a rule in color.accent3 at the first motif's width (1.75pt) | `Guide.face` refuses; a rule takes the width of the house's line motif in its own role, else 0.75pt listed; bullet glyph, indent, outline widths, chrome rule width, colour, face and size listed under `emit_defaults_taken` | `emit_pptx.py` refuses the face; color.rule at 1.75pt as before, color.accent3 at 0.75pt listed; a missing glyph listed | Arial written again |
+| C6 chrome per page | a page's `chrome` key ignored: the page number drawn | `emit_pptx.page_chrome` and `chrome_on_page(guide, mode, page)`: a page leaves a non-firm entry off or sets other words with a why; zones, contrast and the emitter read the same list; the firm's chrome, legal and confidentiality marks and inherited entries refused; `chrome.house` lists each entry "on N of M reference pages" | McKinsey page without its number: drawn chrome-1 only; the McKinsey label refused (firm), no why refused, keybank's inherited number refused | the label omitted; a choice without a why taken; the inherited number "omitted" and drawn anyway |
+| Invisible words, pptx | jazz page 20 sets "Broad Marketing" white on white (nothing shows on the render); a deck's white heading on white filed under `house_precedent` | `ooxml.ink_backings`: a pptx run whose ink is its backing's colour is never counted | refused, contrast 1.0:1, `no_precedent` naming page 20 | filed as precedent again |
+| T4 layouts listing | themes.pptx (7 masters, one layout name on each): every "Title Slide" read 5 | `pptx_tools.layouts` counts by layout part and says "on N of M slides" | 1, 0, 2, 0, 1, 0, 1 | 5 on every master |
+| T6, T3 evals | register, device and variety statements passed or failed a run | evals 01 to 05: pass or fail on the measurable half, the rest diagnostics (evals/README.md); 05 states the corpus run rule | | |
+
+Docs changed with the code they describe: tables.md (the ranked family and per-family move
+tables replaced by totals that answer a question, the D1 sentence, the emphasis, totals,
+banding, rule and defaults keys), templates-and-chrome.md (the layout question with counts,
+chrome per page, chrome defaults), build-report.md (D2, D3 in no order and with the measured
+density finding, T1, the new warnings and defaults lists), guide-completion.md (the `/tables`
+row regenerated from `--shapes`), evals/README.md.
+
+Rebuilt from a FRESH extraction on b5e9804 and on this change (scratchpad fr3, run.sh): the
+23 builds give the same status and scale per page, the same measured text lines on every
+page, and the same filing. Three judge totals move by 0.001 (keybank section 0.084 to 0.083,
+annotations 0.118 to 0.117, house specimen 08 0.216 to 0.215), each by `bold_ratio` alone:
+emphasis groups that left `bold` out are now written in the cell's own weight (C4). The only
+change in the problem lists is the removed "source line the house rarely carries" warning
+(seven reports). b5e9804 itself equals main (3952e74) on every build. The eight proof reports
+are refreshed from this run. ruff over `scripts/`: 120 before and after.
+
+Left open: annotation kinds, the unexplained-mark severity, component constants and
+variants are WP3; doctrine and spec text, including page-specs.md's preset and depth lines,
+are WP4. The emitter's own face refusal in drawn chrome (a text entry with no face and no
+minor face in the guide) has no case of its own: the solver refuses such a guide first.

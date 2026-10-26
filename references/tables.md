@@ -1,14 +1,14 @@
 # Tables: questions, measured habits, and the table spec
 
 Questions to ask about a table, with what professional decks measurably do; never rules.
-The guide's `tables` section and the house's `exhibit_habits` decide whenever they have
-evidence. Counts are per exhibit over 192 coded tables, one coder per page, good to about
-plus or minus 2 to 3.
+The house's measured habits (the guide's `tables` section, its `exhibit_habits`, its
+digest pages) are the strongest evidence you have. Start there; where a table departs,
+say why in the report. Only measurable defects refuse. Counts are per exhibit over 192
+coded tables, one coder per page, good to about plus or minus 2 to 3.
 
 ## Contents
 - Questions per table
-- Table families by house type
-- Moves on tables
+- What the corpus counted
 - Number craft
 - The table spec: what you write and what the build measures
 
@@ -28,43 +28,21 @@ plus or minus 2 to 3.
 - If it will not fit: which rows split to the next page under the house's continuation
   convention? Never drop rows.
 
-## What coders counted, by house type
+## What the corpus counted
 
-The rows are the coders' own labels for the tables they saw, with counts: evidence of what
-houses did, never a set of table types to pick from.
+Totals that answer a question, with the house's own pages ahead of them: read the house's
+digest records (`gallery.py digest`: each table page's marks and how they are drawn) for
+what THIS house does, and these only for how common a move is elsewhere.
 
-| Family | Total | Bank | Consulting | Chart book |
-|---|---|---|---|---|
-| Text or data table | 53 | 29 | 21 | 3 |
-| Financial or projection table | 42 | 31 | 11 | 0 |
-| Sensitivity grid | 29 | 29 | 0 | 0 |
-| Framework matrix or placemat | 24 | 11 | 11 | 2 |
-| Status or check matrix | 16 | 1 | 15 | 0 |
-| Comps or benchmark table | 15 | 14 | 1 | 0 |
-| Table with in-cell bars | 13 | 2 | 11 | 0 |
-
-In the bank decks tables outnumber charts (117 to 109). Harvey balls: 0 in the bank decks,
-0 in the chart book, 2 Harvey-style tables in 317 consulting pages; check, status and
-red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph moves).
-
-## What coders saw marked on tables
-
-Over 192 tables: circled or boxed mark 50; column spanners 45; shaded or bold total row 47;
-footnote markers 36; highlight one item 34; italic ratio rows 16; statistic or median row
-15; status glyphs 16; NM, NA markers 13; sorted 10; input cells or base case 8. By family:
-
-| Family | n | Most frequent moves |
-|---|---|---|
-| Financial or projection | 42 | shaded total rows 27; italic ratio rows 16; spanners 13; highlight 13; boxed rows 12 |
-| Comps or benchmark | 15 | median or statistic row 12; spanners 9; subject highlighted 8; NM 5 |
-| Sensitivity grid | 29 | boxed cell or region 17; spanners 7; base case marked 3 |
-| Text or data | 53 | total row 14; footnotes 13; spanners 9 |
-| Status or check matrix | 16 | glyphs 9; highlight 4; footnotes 4 |
-
-Several emphases on one table are normal: comps tables emphasise the median row on 12 of
-15 and the subject on 8 of 15, often both; projection tables shade several total rows on
-27 of 42; sensitivity grids box a region. Shaded key rows, cells or columns appear on 52
-pages; dark label cells and banners on 37.
+- Table or chart: in the bank decks tables outnumber charts, 117 to 109.
+- Several emphases on one table are normal: comps tables mark the median or a statistic
+  row on 12 of 15 and the subject on 8 of 15, often both; projection tables shade several
+  total rows on 27 of 42; sensitivity grids box a cell or a region on 17 of 29.
+- Shaded key rows, cells or columns appear on 52 pages; dark label cells and banners on 37;
+  italic ratio rows on 16 of 42 financial tables.
+- Harvey balls: 0 in the bank decks, 2 Harvey-style tables in 317 consulting pages; check,
+  status and red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph
+  moves).
 
 ## Number craft
 
@@ -79,22 +57,38 @@ habits recorded on 35 pages; the house's own are in its digest records (`how_dra
   `min_width_role` (a spacing role it never narrows below); the fitter honours both, still
   measures every cell, and reports a share below a column's widest word as a width deficit.
 - `emphasis` is the table's list of emphasis groups, each marking body rows (data-row
-  indices) or columns (column keys), with a `fill_role` (a colour role; `"none"`, no
-  fill; `"keep"`, the banding or data fill the cells have anyway; there is no default) and
-  an optional `ink_role` and `bold` (`true` or `false`: a dark label column in regular
-  weight is `"bold": false`; left out, the cells are bold and the page lists it under
-  `table_defaults_taken`). Cells are measured in the weight they are written in. Several
-  emphases on one table are several groups: the subject row shaded and the row labels
-  bold is `[{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"],
-  "fill_role": "keep"}]`; where two groups meet, the later one's fill and ink are drawn.
-  Cell-level marks (a boxed median, a bracketed group) are annotations with a table
-  anchor. (`emphasis_rows`, `emphasis_fill_role` and `emphasis_ink_role` were replaced
-  by `emphasis`, and are refused with the new spelling.)
-- The guide's table look is the default; each table may override it as roles:
+  indices), columns (column keys), or both (only the cells where they cross: a base-case
+  region of a sensitivity grid is `{"rows": [2, 3], "columns": ["y2025", "y2026"], ...}`),
+  with a `fill_role` (a colour role; `"none"`, no fill; `"keep"`, the banding or data fill
+  the cells have anyway; there is no default) and optionally `ink_role`, `bold` and
+  `italic` (`true` or `false`; left out, the cells keep their own setting: the cell role's
+  weight and a totals row's `totals_bold`, and the page lists it under
+  `table_defaults_taken`), `indent_role` (a spacing step the cells' words are set in by:
+  a sub-row under its parent) and `include_header` (with `columns`: the header cells above
+  them take the group's fill, ink and setting too: a highlighted subject column). Cells
+  are measured in the face, weight and indent they are written in. Several emphases on one
+  table are several groups: the subject row shaded and the row labels bold is
+  `[{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"], "fill_role":
+  "keep", "bold": true}]`, italic ratio rows are `{"rows": [3, 6], "fill_role": "keep",
+  "italic": true}`; where two groups meet, the later one's settings are drawn. Cell-level
+  marks (a boxed median, a bracketed group) are annotations with a table anchor.
+  (`emphasis_rows`, `emphasis_fill_role` and `emphasis_ink_role` were replaced by
+  `emphasis`, and are refused with the new spelling.)
+- The guide's table look is where a table starts; each table may override it as roles:
   `header_fill_role`, `header_ink_role`, `banding_role`, `data_fill_role` (a colour role or
-  `"none"`), `header_bold`, `header_align`, and `align` per column. These keys,
-  `emphasis` and `totals_last_row` may sit on the element, inside its `table` spec or under
-  `styling.<id>`; a key written twice with different values, or an unknown key, is refused.
+  `"none"`), `header_bold`, `totals_bold` (whether a totals row is bold), `banding_phase`
+  (0: the first body row banded, 1: the second), `edge_rules` (the guide's own shape, for
+  the classes it names: `{"header_bottom": {"color_role": "color.rule", "width_pt": 1.0},
+  "row_interior": {"none": true}}`; roles only, and no stroke under 0.5pt unless the
+  guide's own table rules declare that width), `header_align`, and `align` per column.
+  These keys, `emphasis` and `totals_last_row` may sit on the element, inside its `table`
+  spec or under `styling.<id>`; a key written twice with different values, or an unknown
+  key, is refused.
+- `table_defaults_taken` lists every table value neither the table nor the guide states,
+  with what the file got: an emphasis group's weight, a totals row's bold, the banding
+  phase, the header's weight, the cell padding (0.05 in, OOXML's own) and a column's
+  alignment (figures right, text left) where the guide's `alignment_by_column_type` says
+  nothing. Write each one you mean, or name it in the report.
 - An empty cell (a section label row, a blank spacer cell) is written with no run and an
   end mark at the cell's size, so it draws at the fitted row height; before, LibreOffice
   drew it at 18pt and every row below moved, and annotations on those rows landed a row
@@ -107,10 +101,10 @@ habits recorded on 35 pages; the house's own are in its digest records (`how_dra
   default, reported as taken), `"mean"` (the plain mean of the body rows), or `"none"` (no
   simple aggregate: a weighted average span, a ratio of two totals), which skips it and
   says so under `tieouts`.
-- An emphasis group may name `rows` and `columns` together: it marks only the cells where
-  they cross (the label cell of each gap row bold and red is `{"rows": [1, 3], "columns":
-  ["skill"], "fill_role": "keep", "ink_role": "color.negative"}`). The solver measures
-  exactly the cells the emitter bolds (one definition, `emit_pptx.emphasised`).
+- The solver measures every cell in the setting the emitter writes it in (one reader,
+  `emit_pptx.table_row_styles`): the label cell of each gap row bold and red is
+  `{"rows": [1, 3], "columns": ["skill"], "fill_role": "keep", "ink_role":
+  "color.negative", "bold": true}`.
 - Grouped headers are native. With `header_rows` N above 1, every column's `label` is a
   list of N strings, top row first; in each row above the last, adjacent columns with the
   same text are one merged cell (a spanner), and `""` leaves a cell empty:

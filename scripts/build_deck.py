@@ -38,11 +38,9 @@ labels included, against the fill the page draws behind it; below 3.0:1 refuses 
 page with reason "contrast", below AA warns; no ink is ever swapped to pass it), `register` (kind counts, decoration count and container ratio against the
 reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
 a warning listed first under `problems`), the source-line check (a table or chart with
-no type.source_line or type.footnote paragraph refuses the page where the house's digest
-shows source lines on at least 80% of its data pages and warns where 50% or more do or
-the habit is unmeasured; a page WITH one warns where under 50% of the house's data pages
-carry one; both lines unmeasured, and the deck-level `source_lines` sets the deck's count
-beside the house's), and `title` (the page title's characters, words and lines against the house's
+no type.source_line or type.footnote paragraph warns, quoting the house's count, where at
+least half the house's data pages carry one or the habit is unmeasured; it never refuses,
+and the deck-level `source_lines` sets the deck's count beside the house's), and `title` (the page title's characters, words and lines against the house's
 titles, and the register the slide states against the house's register counts; warnings only).
 `repetition` at deck level is the section's realised variety: each page's content (the
 frame left out) assigned a realised composition by the extractor's own leader clustering,
@@ -75,7 +73,7 @@ import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
-from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, table_emphasis, emphasised, Guide as EmitGuide, paragraph_align, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, Guide as EmitGuide, paragraph_align, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_defaults_taken, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import EMU_PER_INCH, paragraphs_words, visual_extent  # noqa: E402
 
@@ -112,7 +110,7 @@ def is_surface(ch: dict) -> bool:
     return ch["kind"] == "band" and ch.get("carries_content_on", 0) >= 0.5 * max(1, ch.get("slides_present", 0))
 
 
-def chrome_zones(guide: dict, mode: str = "auto") -> list[dict]:
+def chrome_zones(guide: dict, mode: str = "auto", page: dict | None = None) -> list[dict]:
     """Reserved zones from the chrome a page carries in this --chrome mode
     (emit_pptx.chrome_on_page). Furniture anchored to the bottom edge reserves everything
     below it (the reference's content never runs under its footer rule); a top-anchored
@@ -121,7 +119,7 @@ def chrome_zones(guide: dict, mode: str = "auto") -> list[dict]:
     zones = []
     page_h = guide["reference"]["page"]["height_emu"]
     page_w = guide["reference"]["page"]["width_emu"]
-    for ch in chrome_on_page(guide, mode):
+    for ch in chrome_on_page(guide, mode, page):
         if ch["kind"] not in ("footer", "page_number", "date", "logo", "rule", "band", "label") or is_surface(ch):
             continue
         left, top, width, height = chrome_box_emu(ch)
@@ -245,35 +243,38 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
     if node.get("kind") == "text":
         for i, p in enumerate(node.get("paragraphs", [])):
             ps = (st.get("paragraphs") or {}).get(str(i), {})
-            if any(r.get("emphasis") for r in ps.get("runs") or []):
-                p["emphasis"] = True
+            if ps.get("runs"):
+                # each run measured whole in the face the emitter writes it in (run_style)
+                runs = [(r["text"], *run_style(r, f"text {node.get('id')!r} paragraph {i} run {ri}")) for ri, r in enumerate(ps["runs"])]
+                joined = "".join(r[0] for r in runs)
+                if joined.replace(" ", "") != str(p.get("text", "")).replace(" ", ""):
+                    raise SystemExit(f"text {node.get('id')!r} paragraph {i}: its runs spell {joined!r} and the paragraph's text is {p.get('text')!r}; "
+                                     "the runs are the paragraph's words, cut where the setting changes")
+                p["runs"] = [list(r) for r in runs]
     elif node.get("kind") == "table":
         table = node.setdefault("table", {})
         table["totals_last_row"] = bool(st.get("totals_last_row"))
-        # the cells the emitter bolds, as the emitter reads them (emit_pptx.table_emphasis, emit_pptx.emphasised)
-        groups = table_emphasis({"id": node.get("id"), "columns": table.get("columns") or [], "rows": table.get("rows") or [], **st})
-        n_cols = len(table.get("columns") or [])
-        table["emphasis_cells"] = [[r, c] for r in range(len(table.get("rows") or [])) for c in range(n_cols)
-                                   if (g := emphasised(groups, r, c)) is not None and g["bold"]]
+        # every cell in the setting the emitter writes it in (emit_pptx.table_row_styles, the
+        # one reader of cell styles): (grid row, column, bold, italic, indent role)
+        rows = table_row_styles(table_element(node, st), EmitGuide(guide))
+        table["cell_styles"] = [[ri, ci, c["bold"], c["italic"], c["indent_role"]] for ri, row in enumerate(rows) for ci, c in enumerate(row["cells"])]
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
 
 
-def spanned_tables(node: dict) -> dict[str, int]:
-    """{table id: header_rows} for every table whose header has a spanner (layout.header_spans)."""
-    out: dict[str, int] = {}
+def table_element(node: dict, st: dict) -> dict:
+    """A table node as the emitter's readers take it (emit_pptx.table_row_styles,
+    table_defaults_taken) before the solve: its spec, the roles the solver will measure
+    (layout's own defaults when the spec names none) and its drawing keys."""
+    t = node.get("table") or {}
+    return {"id": node.get("id"), "columns": t.get("columns") or [], "rows": t.get("rows") or [], "header_rows": t.get("header_rows", 1),
+            "header_role": t.get("header_role", "type.table_header"), "cell_role": t.get("cell_role", "type.table_cell"),
+            **({"cell_padding_role": t["cell_padding_role"]} if t.get("cell_padding_role") else {}), **st}
+
+
+def table_nodes(node: dict) -> list[dict]:
     if node.get("type") == "region":
-        for c in node.get("children", []):
-            out.update(spanned_tables(c))
-    elif node.get("kind") == "table":
-        t = node.get("table") or {}
-        n = int(t.get("header_rows", 1))
-        try:
-            labels = [L.header_labels(c, n, "table") for c in t.get("columns") or []]
-        except L.LayoutContractError:
-            return out  # refused by name when the page is solved
-        if any(c1 > c0 for row in L.header_spans(labels, n) for c0, c1 in row):
-            out[node["id"]] = n
-    return out
+        return [t for c in node.get("children", []) for t in table_nodes(c)]
+    return [node] if node.get("kind") == "table" else []
 
 
 def slide_picture(slide: dict, nid: str, guide: dict) -> images.Picture:
@@ -304,14 +305,18 @@ TEXT_ANCHORS = ("t", "m", "b")
 #: the paragraph keys the solver reads on a text node; runs (bold or coloured words) go
 #: under styling, where the emitter reads them, never on the node
 PARAGRAPH_KEYS = {"role", "text", "bullet_level", "ink_role", "align", "emphasis"}
-RUN_KEYS = {"text", "emphasis", "ink_role"}
+#: a run: its words, and optionally its ink (a colour role), bold and italic (true or
+#: false; left out, the role's own), and `emphasis: true`, shorthand for bold, the inline
+#: emphasis the emitter has drawn since runs existed
+RUN_KEYS = {"text", "emphasis", "ink_role", "bold", "italic"}
+
 
 
 def check_presentation(nid: str, kind: str, st: dict) -> None:
     """A presentation value nothing would draw is refused by name, never dropped: an
     anchor outside t, m, b fell back to top in silence (round 5: "middle" on three
     houses), and a prst on a text element drew a plain box."""
-    from emit_pptx import RECT_PRESETS
+    from emit_pptx import SpecError, preset_shape
     if "anchor" in st and st["anchor"] not in TEXT_ANCHORS:
         raise SystemExit(f"{kind} {nid!r}: anchor {st['anchor']!r} is not one of {list(TEXT_ANCHORS)} (t top, m middle, b bottom)")
     if kind == "text" and st.get("pad_role") is not None:
@@ -321,13 +326,16 @@ def check_presentation(nid: str, kind: str, st: dict) -> None:
         if kind == "text":
             raise SystemExit(f"text {nid!r}: prst draws nothing on a text element (a text box is a rectangle). Put the text in a region whose "
                              "styling carries fill_role, prst and a pad_role deep enough to keep the words inside the shape's body; the region's fill is drawn under them")
-        if st["prst"] not in RECT_PRESETS:
-            raise SystemExit(f"{kind} {nid!r}: prst {st['prst']!r} is not one of {sorted(RECT_PRESETS)}")
+        try:
+            preset_shape(st["prst"], f"{kind} {nid!r}")
+        except SpecError as error:
+            raise SystemExit(str(error.code)) from None
     for pi, ps in (st.get("paragraphs") or {}).items():
         for ri, run in enumerate((ps or {}).get("runs") or []):
             stray = sorted(set(run) - RUN_KEYS) if isinstance(run, dict) else ["(not an object)"]
             if stray:
                 raise SystemExit(f"{kind} {nid!r} paragraph {pi} run {ri}: {stray} not read on a run; a run is {{\"text\"}} plus {sorted(RUN_KEYS - {'text'})}")
+            run_style(run, f"{kind} {nid!r} paragraph {pi} run {ri}")
 
 
 def check_node_keys(node: dict) -> None:
@@ -541,37 +549,69 @@ def _ellipse_contains(outer: list, inner: list) -> bool:
     return all(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0 for x in (inner[0], inner[0] + inner[2]) for y in (inner[1], inner[1] + inner[3]))
 
 
+def _corner(ss: float) -> float:
+    return ss * 16667 / 100000  # roundRect's default adj
+
+
+#: The solid body of each filled preset text may stand on, at the preset's default
+#: adjustments (the emitter writes none), taken conservatively, as rectangles of which any
+#: one must hold the words: a homePlate's body before its point, a chevron's between its
+#: notch and its point, an arrow's shaft (half its breadth; the head half the shorter side
+#: long), a rounded rectangle without its corners. An ellipse is held by its inscribed
+#: curve (preset_holds). Any other preset (a bracket, a brace, a diamond, a triangle, a
+#: callout, a cloud) has no body bounded here, so no text may stand on it: the contrast
+#: gate could not say what lies under the words (check_text_preset).
+PRESET_BODIES = {
+    "rect": lambda x, y, w, h, ss: [[x, y, w, h]],
+    "roundRect": lambda x, y, w, h, ss: [[x, y + _corner(ss), w, h - 2 * _corner(ss)], [x + _corner(ss), y, w - 2 * _corner(ss), h]],
+    "homePlate": lambda x, y, w, h, ss: [[x, y, w - ss * 0.5, h]],
+    "chevron": lambda x, y, w, h, ss: [[x + ss * 0.5, y, w - ss, h]],
+    "rightArrow": lambda x, y, w, h, ss: [[x, y + h * 0.25, w - ss * 0.5, h * 0.5]],
+    "leftArrow": lambda x, y, w, h, ss: [[x + ss * 0.5, y + h * 0.25, w - ss * 0.5, h * 0.5]],
+    "downArrow": lambda x, y, w, h, ss: [[x + w * 0.25, y, w * 0.5, h - ss * 0.5]],
+    "upArrow": lambda x, y, w, h, ss: [[x + w * 0.25, y + ss * 0.5, w * 0.5, h - ss * 0.5]],
+}
+TEXT_BEARING_PRESETS = ("ellipse", *PRESET_BODIES)
+
+
 def preset_holds(prst: str, outer: list, inner: list) -> bool:
-    """Whether a filled preset drawn in `outer` lies under every point of `inner`, at the
-    preset's default adjustments (the emitter writes none): the solid body of each shape,
-    taken conservatively (a homePlate's body before its point, a chevron's between its
-    notch and its point, an arrow's shaft, a rounded rectangle without its corners). An
-    arrow's default shaft is half its breadth and its head half the shorter side long."""
-    x, y, w, h = outer
-    ss = min(w, h)
-    if prst == "rect":
-        return _contains(outer, inner)
+    """Whether a filled preset drawn in `outer` lies under every point of `inner`
+    (PRESET_BODIES; an ellipse by its inscribed curve). False for any other preset."""
     if prst == "ellipse":
         return _ellipse_contains(outer, inner)
-    if prst == "roundRect":
-        r = ss * 16667 / 100000
-        return _contains([x, y + r, w, h - 2 * r], inner) or _contains([x + r, y, w - 2 * r, h], inner)
-    if prst == "homePlate":
-        return _contains([x, y, w - ss * 0.5, h], inner)
-    if prst == "chevron":
-        return _contains([x + ss * 0.5, y, w - ss, h], inner)
-    if prst == "rightArrow":
-        return _contains([x, y + h * 0.25, w - ss * 0.5, h * 0.5], inner)
-    if prst == "leftArrow":
-        return _contains([x + ss * 0.5, y + h * 0.25, w - ss * 0.5, h * 0.5], inner)
-    if prst == "downArrow":
-        return _contains([x + w * 0.25, y, w * 0.5, h - ss * 0.5], inner)
-    if prst == "upArrow":
-        return _contains([x + w * 0.25, y + ss * 0.5, w * 0.5, h - ss * 0.5], inner)
-    return False  # a bracket, brace, diamond or triangle: no body to stand text on
+    body = PRESET_BODIES.get(prst)
+    return body is not None and any(_contains(b, inner) for b in body(*outer, min(outer[2], outer[3])))
 
 
-def chrome_layers(guide: dict, mode: str) -> list[dict]:
+def carries_text(node: dict) -> bool:
+    """Whether a spec node draws words: a text, a table or a chart anywhere under it."""
+    if node.get("type") == "region":
+        return any(carries_text(c) for c in node.get("children") or [])
+    return node.get("kind") in ("text", "table", "chart")
+
+
+def check_text_preset(node: dict, st: dict) -> None:
+    """A region whose fill is drawn in a preset under words must use a preset whose body
+    the contrast gate can bound (TEXT_BEARING_PRESETS); any preset may be drawn with
+    nothing on it."""
+    prst = st.get("prst") or "rect"
+    if (st.get("fill_role") or st.get("line_role")) and prst not in TEXT_BEARING_PRESETS and carries_text(node):
+        raise SystemExit(f"region {node['id']!r}: prst {prst!r} is drawn under words, and its body is not bounded here, so the contrast gate "
+                         f"cannot say what lies under them. Under text use one of {list(TEXT_BEARING_PRESETS)}; any preset is drawn on a region "
+                         "or rect with no words in it (a shape beside the text, the text in its own region)")
+
+
+def unmeasured_presets(elements: list[dict]) -> list[dict]:
+    """A rect drawn in a preset no earlier render has shown (emit_pptx.PRESETS_DRAWN_BEFORE):
+    a warning, since the renderers may draw it differently and nothing here measured how."""
+    from emit_pptx import PRESETS_DRAWN_BEFORE
+    seen = sorted({(el.get("prst") or "rect", el["id"]) for el in elements if el["kind"] == "rect" and (el.get("prst") or "rect") not in PRESETS_DRAWN_BEFORE})
+    return [{"kind": "renderer-unmeasured preset", "severity": "warning",
+             "detail": f"{nid}: prst {prst!r} has not been drawn in either renderer by this skill's proofs: check its render, and open the deck in "
+                       "PowerPoint before release (references/review.md), since the two renderers may draw it differently"} for prst, nid in seen]
+
+
+def chrome_layers(guide: dict, mode: str, page: dict | None = None) -> list[dict]:
     """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
     under whatever lands on them) and text lines (a run to score), each with its EMU page
     box. Drawn chrome lies under every content element."""
@@ -582,7 +622,7 @@ def chrome_layers(guide: dict, mode: str) -> list[dict]:
     if mode == "draw" and ground and Path(ground).is_file():
         # the house's ground picture lies under everything (emit_pptx._picture_background)
         out.append({"kind": "ground", "id": "ground", "box": [0, 0, page_w, page_h], "path": ground})
-    for ch in chrome_on_page(guide, mode):
+    for ch in chrome_on_page(guide, mode, page):
         box = list(chrome_box_emu(ch))
         if not _intersects(box, [0, 0, page_w, page_h]):
             continue  # off the slide (netflix's master keeps its colour swatches there): nothing a reader sees
@@ -727,7 +767,8 @@ def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dic
             "ink_hex": ink, "backing_hex": worst}
 
 
-def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto", precedent: dict | None = None) -> dict:
+def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto", precedent: dict | None = None,
+                page_chrome_choices: dict | None = None) -> dict:
     """WCAG 2.2 contrast of every text run, every table row class, every chart text and
     every chrome text line against the fill the page draws behind it. A text run's backing: the element's own
     fill, else the chain under it. A table's: the row's own fill as the emitter writes it
@@ -767,7 +808,7 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
         elif out["nearest_pass"] is None or finding["ratio"] / finding["threshold"] < out["nearest_pass"]["ratio"] / out["nearest_pass"]["threshold"]:
             out["nearest_pass"] = finding  # the tightest pair that passed, so a near miss is visible
 
-    chrome = chrome_layers(guide, chrome_mode)
+    chrome = chrome_layers(guide, chrome_mode, page_chrome_choices)
     for ci, line in enumerate(chrome):
         # a chrome line is scored like a run: its observed ink over the surface and the
         # chrome bands painted before it (_lower_backings over the chrome alone)
@@ -816,7 +857,8 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
                 meas = measured.get("paragraphs", [{}])[pi] if pi < len(measured.get("paragraphs", [])) else {}
                 size_pt = (meas.get("sz") or round(float(spec["size_pt"]) * 100)) / 100
                 for ri, run in enumerate(para.get("runs") or [{"text": ""}]):
-                    bold = bool(meas.get("b") or run.get("emphasis") or spec.get("weight", 400) >= 700)
+                    own_bold, _ = run_style(run, f"{el['id']} paragraph {pi} run {ri}")
+                    bold = bool(meas.get("b") or spec.get("weight", 400) >= 700) if own_bold is None else own_bold
                     run_ink, run_ink_name = (eg.hex(run["ink_role"], where=f"{el['id']} run {ri}"), run["ink_role"]) if run.get("ink_role") else (ink, ink_name)
                     finding = {"element": el["id"], "paragraph": pi, "run": ri, "role": para["role"], "ink": run_ink_name,
                                "text": (run.get("text") or "")[:40], **_score(run_ink, [own] if own else lower, size_pt, bold, names)}
@@ -1244,29 +1286,25 @@ def source_line_of(elements: list[dict], guide: dict) -> dict:
                                for p in el["paragraphs"])}
 
 
-#: Unmeasured: the house carries source lines "as a rule" when at least this share of its
-#: data pages does, and "rarely" below SOURCE_LINE_RARE, read from the completed digest
-#: over at least SOURCE_LINE_MIN_PAGES data pages. The numbers are choices; no reader has
-#: been asked where a rule begins.
-SOURCE_LINE_HOUSE_SHARE = 0.8
-SOURCE_LINE_RARE = 0.5
+#: A definition, not a measured line: a data page departs from the house's source-line
+#: habit when it lacks a source line and at least this share of the house's data pages
+#: carry one (the house's majority), read from the completed digest over at least
+#: SOURCE_LINE_MIN_PAGES data pages. Citing a source is never wrong, so a page WITH one is
+#: never a departure, and nothing here refuses: the count is evidence beside the choice.
+SOURCE_LINE_MAJORITY = 0.5
 SOURCE_LINE_MIN_PAGES = 3
-
-
-#: what each habit asks of a new page, as source_line_problem enforces it
+#: what each habit means for a new page, as source_line_problem reads it
 SOURCE_LINE_ADVICE = {
-    "rule": "the house carries them as a rule: a data page without one is refused",
-    "common": "add one where the house would (a data page without one is warned)",
-    "unmeasured": "add one where the house would (a data page without one is warned)",
-    "rare": "the house's data pages mostly carry none: keep one only where the user's data needs it (a page with one is warned)",
+    "most": "a data page without one is warned with this count; answer the warning in the report",
+    "few": "a data page without one does what most of the house's do; a page with one is never wrong",
+    "unmeasured": "a data page without one is warned (the house's habit is no evidence either way); answer the warning in the report",
 }
 
 
 def source_line_habit(guide: dict) -> dict:
-    """The house's source-line habit from the digest, with its count: `rule` (refuse a data
-    page without one), `common` (warn without one), `rare` (warn WITH one: the house's
-    data pages mostly carry none), or `unmeasured` (no answers, or too few data pages to
-    say: warn without one, never read as 'the house carries none')."""
+    """The house's source-line habit from the digest, with its count: `most` (at least
+    SOURCE_LINE_MAJORITY of its data pages carry one), `few` (fewer do), or `unmeasured`
+    (no answers, or too few data pages to say; never read as 'the house carries none')."""
     lines = (guide.get("exhibit_habits") or {}).get("source_lines")
     if not isinstance(lines, dict) or lines.get("share") is None:
         return {"habit": "unmeasured", "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"}
@@ -1274,41 +1312,34 @@ def source_line_habit(guide: dict) -> dict:
     if n < SOURCE_LINE_MIN_PAGES:
         return {"habit": "unmeasured", "evidence": f"{k} of {n} data pages carry one: fewer than {SOURCE_LINE_MIN_PAGES} data pages is no evidence of a habit"}
     share = lines["share"]
-    habit = "rule" if share >= SOURCE_LINE_HOUSE_SHARE else "common" if share >= SOURCE_LINE_RARE else "rare"
-    return {"habit": habit, "share": share, "pages_with": lines.get("pages_with"),
-            "evidence": f"{k} of {n} house data pages carry one ({share:.0%}"
-                        + (f": pages {', '.join(str(x) for x in lines.get('pages_with') or [])}" if 0 < k <= 5 else "")
-                        + f"; the lines at {SOURCE_LINE_HOUSE_SHARE:.0%} and {SOURCE_LINE_RARE:.0%} are unmeasured)"}
+    return {"habit": "most" if share >= SOURCE_LINE_MAJORITY else "few", "share": share, "pages_with": lines.get("pages_with"),
+            "evidence": f"the house sources {k} of {n} data pages ({share:.0%}"
+                        + (f": pages {', '.join(str(x) for x in lines.get('pages_with') or [])}" if 0 < k <= 5 else "") + ")"}
 
 
 def source_line_problem(elements: list[dict], guide: dict) -> dict | None:
-    """The page's source line against the house's habit: a data page without one where the
-    house carries them as a rule (refusal) or commonly or unmeasured (warning); a page
-    with one where the house rarely carries one (warning, `source line the house rarely
-    carries`). A page that does what the house mostly does is no problem."""
+    """A data page without a source line where most of the house's data pages carry one,
+    or where the habit is unmeasured: a warning quoting the house's count, answered in the
+    report (keep the page as it is and say why, or add one). Never a refusal: the house's
+    count is evidence, not a measured defect."""
     page = source_line_of(elements, guide)
     habit = source_line_habit(guide)
     role = source_roles(guide)[0]
-    if page["data_page"] and not page["source_line"] and habit["habit"] != "rare":
-        refuse = habit["habit"] == "rule"
-        return {"kind": "no source line", "severity": "refusal" if refuse else "warning",
-                "detail": f"the page carries a table or a chart and no paragraph in {role}; house: " + habit["evidence"]
-                          + ("; the house carries them as a rule, so the page is refused: add one" if refuse else "; add one where the house would")}
-    if page["source_line"] and habit["habit"] == "rare":
-        return {"kind": "source line the house rarely carries", "severity": "warning",
-                "detail": f"the page carries a {role} paragraph; house: " + habit["evidence"]
-                          + ". Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"}
+    if page["data_page"] and not page["source_line"] and habit["habit"] != "few":
+        return {"kind": "no source line", "severity": "warning",
+                "detail": f"the page carries a table or a chart and no paragraph in {role}; {habit['evidence']}; this page has none: "
+                          "add one, or say in the report why this page carries none"}
     return None
 
 
 def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
-                  precedent: dict | None = None) -> list[dict]:
+                  precedent: dict | None = None, page_chrome_choices: dict | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, bridge ties, the measured checks), then
     the source-line problem (source_line_habit). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
-    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent)
+    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent, page_chrome_choices)
     entry["register"] = register_of(elements, guide)
     entry["tieouts"] = tieouts_of(elements)
     problems = [{"kind": "tieout", "severity": "warning", "detail": f"{t['table']} column {t['column']!r}: body rows' {'mean' if 'mean' in t else 'sum'} is {t.get('mean', t.get('sum'))}, the totals cell reads {t['total']}; a totals cell that is no simple aggregate takes total \"none\" on its column"} for t in entry["tieouts"] if t["status"] == "mismatch"]
@@ -1387,7 +1418,9 @@ def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: di
                     bold = rpr.get("b") == "1"
                     entry = L.TypeEntry("file", sz / 100, 0.0, 0.0, int(rpr.get("spc") or 0) / 100, 1.2, latin.get("typeface"), bold, rpr.get("i") == "1", "as_typed", 700 if bold else 400)
                     kind = L.DrawnRole(entry, ctx.face(entry).path)
-                    budget = max(1, shape.table.columns[ci].width - (cell.margin_left or 0) - (cell.margin_right or 0) - ctx.ruler.fit_epsilon_emu)
+                    ppr = cell.text_frame.paragraphs[0]._p.pPr
+                    indent = int(ppr.get("marL") or 0) if ppr is not None else 0
+                    budget = max(1, shape.table.columns[ci].width - (cell.margin_left or 0) - (cell.margin_right or 0) - indent - ctx.ruler.fit_epsilon_emu)
                     counts.append(len(L.wrapped_lines(ctx, text, budget, kind)))
                     size_h = max(size_h, sz)
                 margins = (row.cells[0].margin_top or 0) + (row.cells[0].margin_bottom or 0)
@@ -1556,6 +1589,18 @@ def page_title_id(slide: dict, spec_raw: dict) -> str | None:
     return node.get("id") if node else None
 
 
+def claim_places(guide: dict) -> str:
+    """Where the house states the claims its topic titles leave out, with counts, from the
+    completed /titles/register (claims_elsewhere: slide -> a place in words, or null)."""
+    claims = (((guide.get("titles") or {}).get("register")) or {}).get("claims_elsewhere")
+    if not isinstance(claims, dict) or not claims:
+        return "the guide's /titles/register records no claims_elsewhere: read the house's own pages for it"
+    places = Counter(" ".join(str(v).split()).lower() for v in claims.values() if isinstance(v, str) and v.strip())
+    stated = ", ".join(f"{p} ({n})" for p, n in places.most_common())
+    silent = sum(1 for v in claims.values() if v is None)
+    return (f"claims_elsewhere: {stated}" if stated else "claims_elsewhere names no place") + (f"; {silent} topic-titled page(s) state no claim" if silent else "")
+
+
 #: Asserted, unmeasured: a page whose stated register the house uses on fewer than this
 #: share of its titles is warned. No measurement says where a register becomes foreign.
 RARE_REGISTER_SHARE = 0.10
@@ -1564,16 +1609,19 @@ RARE_REGISTER_SHARE = 0.10
 def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict, guide: dict) -> tuple[dict, list[dict]]:
     """The page title against the house's titles (guide.titles): characters, words and the
     solver's lines against the house distribution (above the house max warns), and the
-    register the page spec states (`slide.title.register`) against the house's register
-    counts (a register on under RARE_REGISTER_SHARE of the house's titles warns). The
-    register is never read from the words here: the spec states it, or it is reported as
-    not stated. Absence of house evidence is reported as such, never as zero."""
+    register the page spec states (`slide.title.register`, in words, as the plan states
+    it): a coded term (plan.register_term) against the house's register counts (a term on
+    under RARE_REGISTER_SHARE of the house's titles warns), any other words reported as no
+    house count with the counts beside them. Only a register that is not words is refused.
+    The register is never read from the title here: the spec states it, or it is reported
+    as not stated. Absence of house evidence is reported as such, never as zero."""
     tid = page_title_id(slide, spec_raw)
     named = (slide.get("title") or {}).get("element")
     stated = (slide.get("title") or {}).get("register")
-    vocab = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())["title_register"]
-    if stated is not None and stated not in vocab:
-        raise SystemExit(f"{slide.get('id')}: title.register {stated!r} is not one of {sorted(vocab)}")
+    if stated is not None and plan._words(stated) < 1:
+        # the plan's own rule (plan.read_plan): any words; only a register that is not words is refused
+        raise SystemExit(f"{slide.get('id')}: title.register: the title's register in words (or a term the house's titles are coded in: "
+                         f"{'|'.join(plan.VOCABULARY['title_register'])}), not {stated!r}")
     el = next((e for e in elements if e["id"] == tid and e["kind"] == "text"), None) if tid else None
     if named and el is None:
         kinds = sorted({e["kind"] for e in elements if e["id"] == named})
@@ -1606,11 +1654,17 @@ def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict,
                 warnings.append({"kind": "title longer than the house", "severity": "warning",
                                  "detail": f"{tid}: {v} {k} against the house max of {d['max']} (median {d['median']}, {d['n']} titles)"})
     reg = (house or {}).get("register")
+    term = plan.register_term(stated) if stated is not None else None
     if stated is None:
         report["register"] = {"verdict": "not stated: the page spec names no title.register"}
     elif not reg:
         report["register"] = {"verdict": "no evidence: the guide's /titles/register is not completed"}
+    elif term is None:
+        report["register"] = {"term": None, "house_counts": reg["counts"],
+                              "verdict": "no house count: the register is in words, none of the terms the house's titles are coded in"}
     else:
+        report["register_term"] = term
+        stated = term
         share = reg["counts"].get(stated, 0) / reg["n"] if reg["n"] else None
         report["register"] = {"house_counts": reg["counts"], "share": None if share is None else round(share, 3), "threshold": RARE_REGISTER_SHARE,
                               "threshold_basis": "unmeasured", "verdict": "rare in the house" if share is not None and share < RARE_REGISTER_SHARE else "house register"}
@@ -1621,7 +1675,24 @@ def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict,
     return report, warnings
 
 
-def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None:
+#: the indent per bullet level a page gets when the reference shows no bullets and the
+#: spec names none: the spacing scale's progression, a default nobody chose
+BULLET_INDENTS_TAKEN = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
+
+
+def bullet_indents_taken(slide: dict, spec: L.Spec, guide: dict) -> list[str]:
+    """The bullet indents prepare_page put on this page, listed when a paragraph sets a
+    bullet (otherwise they draw nothing), with the question the default hides."""
+    if "bullet_indent_roles" in (slide.get("spec") or {}) or guide.get("typography", {}).get("bullets"):
+        return []
+    levels = sorted({q.bullet_level for node, _ in L.walk(spec.root) if isinstance(node, L.Element) for q in node.paragraphs if q.bullet_level is not None})
+    if not levels:
+        return []
+    return [(f"bullet_indent_roles: levels {levels} indented {', '.join(BULLET_INDENTS_TAKEN[str(lv)] for lv in levels if str(lv) in BULLET_INDENTS_TAKEN)} "
+             "(the reference shows no bullets, so nothing of the house's sets them): does this text need bullets, numbered rows or prose?")]
+
+
+def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto", page_chrome_choices: dict | None = None) -> None:
     """The page as the build enforces it: the guide's page size, the chrome zones, the
     indent progression for a bullet-less reference, and the title band. `layout.py
     capacity` calls this too, so the budget it prints is the budget the build solves."""
@@ -1629,11 +1700,12 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None
     page.setdefault("width_emu", guide["reference"]["page"]["width_emu"])
     page.setdefault("height_emu", guide["reference"]["page"]["height_emu"])
     if "reserved_zones" not in page:
-        page["reserved_zones"] = chrome_zones(guide, chrome_mode)
+        page["reserved_zones"] = chrome_zones(guide, chrome_mode, page_chrome_choices)
     if "bullet_indent_roles" not in spec_raw and not guide.get("typography", {}).get("bullets"):
         # a reference with no bullets (a PDF, a deck of prose) gets the indent progression
-        # of the spacing scale: sm, md, lg (deckgen 4b row 1: continue the indent progression)
-        spec_raw["bullet_indent_roles"] = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
+        # of the spacing scale (deckgen 4b row 1: continue the indent progression), listed
+        # under layout_defaults_taken where a page sets bullets (bullet_indents_taken)
+        spec_raw["bullet_indent_roles"] = dict(BULLET_INDENTS_TAKEN)
     band = title_band_emu(guide, spec_raw)
     root_children = spec_raw.get("root", {}).get("children", [])
     if band and banded_title(spec_raw) is not None:
@@ -1643,6 +1715,16 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None
         # as overflow, never pushed under the rule
         root_children[0]["size"] = {"width_emu": None, "height_emu": band}
         root_children[0]["scale_class"] = "fixed"
+
+
+def slide_chrome(slide: dict, guide: dict, mode: str) -> dict:
+    """The page's own chrome choices (slide.chrome), proven once (emit_pptx.page_chrome):
+    an entry left off this page or set in other words, each with its why."""
+    from emit_pptx import SpecError, page_chrome
+    try:
+        return page_chrome(guide, mode, slide.get("chrome"), f"slide {slide.get('id')!r}")
+    except SpecError as error:
+        raise SystemExit(str(error.code)) from None
 
 
 def component_root(kind: str) -> Path:
@@ -1732,6 +1814,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[di
         if node.get("type") == "region":
             st = styling.get(node["id"])
             check_presentation(node["id"], "region", st or {})
+            check_text_preset(node, st or {})
             if st and (st.get("fill_role") or st.get("line_role")):
                 box = resolved["boxes"][node["id"]]
                 out.append({"id": node["id"] + "-fill", "kind": "rect", "box": [box["left"], box["top"], box["width"], box["height"]],
@@ -1757,7 +1840,8 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[di
                 ps = para_style.get(str(i), {})
                 para = {"role": p_spec["role"], "bullet_level": p_spec.get("bullet_level"), "lines": p_meas["lines"], "indent_emu": p_meas.get("marL", 0),
                         "fit": {k: p_meas[k] for k in FIT_KEYS},
-                        "runs": ps.get("runs") or [{"text": p_spec["text"]}], "ink_role": ps.get("ink_role") or p_spec.get("ink_role"), "align": ps.get("align") or p_spec.get("align")}
+                        "runs": ps.get("runs") or [{"text": p_spec["text"], **({"emphasis": True} if p_spec.get("emphasis") else {})}],
+                        "ink_role": ps.get("ink_role") or p_spec.get("ink_role"), "align": ps.get("align") or p_spec.get("align")}
                 paragraphs.append(para)
             out.append({"id": nid, "kind": "text", "box": b, "paragraphs": paragraphs, **extra})
         elif kind == "table":
@@ -1769,7 +1853,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[di
             out.append({"id": nid, "kind": "table", "box": b, "columns": t["columns"], "rows": t["rows"], "header_rows": t.get("header_rows", 1),
                         "column_widths_emu": r["gridCol_w"], "row_heights_emu": r["tr_h"], **roles,
                         "fit_header": {k: r["header"][k] for k in FIT_KEYS} if r.get("header") else None, "fit_cell": {k: r["cell"][k] for k in FIT_KEYS},
-                        "fit_padding_emu": r["cell_margins_emu"]["marL"], **extra})
+                        "fit_padding_emu": r["cell_margins_emu"]["marL"], "cell_indents_emu": r.get("cell_indents_emu") or {}, **extra})
         elif kind == "chart":
             c = charts.get(nid)
             if not c:
@@ -1804,7 +1888,7 @@ def solve_slide(slide: dict, guide: dict, chrome: str, lg: L.Guide, ruler, index
     spec_raw = json.loads(json.dumps(slide["spec"]))
     spec_raw["root"] = normalise(spec_raw["root"], slide)
     mark_measured_weights(spec_raw["root"], slide, guide)
-    prepare_page(spec_raw, guide, chrome)
+    prepare_page(spec_raw, guide, chrome, slide_chrome(slide, guide, chrome))
     # components: probe once with placeholders to learn their boxes, then expand at those boxes
     tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
     if pending:
@@ -2024,6 +2108,37 @@ def plan_message_figures(slide: dict, elements: list[dict], plan_pages: list[dic
                        "to the computed figure, or put the claim on the page"}] if missing else []
 
 
+def type_roles_of(obj) -> set[str]:
+    """Every type role an emitted element names, wherever it names it (a paragraph, a
+    table's header and cells, a chart's text, labels and axes)."""
+    if isinstance(obj, dict):
+        return {v for k, v in obj.items() if k.endswith("role") and isinstance(v, str) and v.startswith("type.")} | {
+            r for v in obj.values() for r in type_roles_of(v)}
+    if isinstance(obj, list):
+        return {r for v in obj for r in type_roles_of(v)}
+    return set()
+
+
+def off_ladder_problems(elements: list[dict], guide: dict, judge: dict | None) -> list[dict]:
+    """A type role the completion wrote off the house's size ladder (provenance.off_ladder,
+    complete_guide.check_writable: allowed with a reason) that this page sets text in: a
+    warning naming the levels, the nearest one, the reason given and the judge's size_hist
+    distance for the deck, answered in the report. A weaker model given continuous sizes
+    drifted to 8.5, 9.5, 20 and 22pt (references/typography.md); the levels are the house's."""
+    roles = (guide.get("typography") or {}).get("roles") or {}
+    d = ((judge or {}).get("components") or {}).get("size_hist")
+    distance = (f"the judge's size_hist distance for this deck is {d} (0 is the house's own mix of sizes)" if d is not None
+                else "the judge's size_hist distance is not computed (no --reference, or the reference cannot be judged)")
+    out = []
+    for role in sorted(type_roles_of(elements)):
+        tag = ((roles.get(role) or {}).get("provenance") or {}).get("off_ladder")
+        if isinstance(tag, dict):
+            out.append({"kind": "type size off the house's ladder", "severity": "warning",
+                        "detail": f"{role} at {tag.get('size_pt')}pt is off the house's levels {tag.get('levels')} (nearest {tag.get('nearest_level')}pt), "
+                                  f"written because: {tag.get('why')}; {distance}. Say in the report why this size and not the nearest level"})
+    return out
+
+
 def passed(report: dict) -> bool:
     """The build's verdict, the one definition: every page fit and the package is valid.
     The exit code, the brief and where the outputs land all read it."""
@@ -2148,16 +2263,15 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         try:
             spec_raw, ctx, outcome = solve_slide(slide, guide, chrome, lg, ruler, index, api)
             entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
+            entry["layout_depth"] = {"deepest": len(ctx.spec.deepest) - 1, "chain": " > ".join(ctx.spec.deepest), "runaway_bound": L.MAX_TREE_DEPTH}
+            layout_taken = L.defaults_taken(spec_raw["root"]) + bullet_indents_taken(slide, ctx.spec, guide)
+            if layout_taken:
+                entry["layout_defaults_taken"] = layout_taken
             if slide.get("component_notes"):
                 entry["component_notes"] = sorted(set(slide["component_notes"]))
-            # a table choice the spec left out, as the chart's are listed: the weight of an emphasis group
-            taken = {tid: [f"emphasis[{i}].bold: true (left out, emphasised cells are bold)" for i, g in enumerate(st["emphasis"])
-                           if isinstance(g, dict) and "bold" not in g]
-                     for tid, st in (slide.get("styling") or {}).items() if isinstance(st, dict) and isinstance(st.get("emphasis"), list)}
-            for tid in spanned_tables(slide["spec"]["root"]):
-                st = (slide.get("styling") or {}).get(tid) or {}
-                if not st.get("spanner_align") and not st.get("header_align"):
-                    taken.setdefault(tid, []).append("spanner_align: each spanner takes its first column's alignment (left out)")
+            # every table choice neither the spec nor the guide states, as the chart's are listed
+            taken = {t["id"]: table_defaults_taken(table_element(t, (slide.get("styling") or {}).get(t["id"]) or {}), EmitGuide(guide))
+                     for t in table_nodes(spec_raw["root"])}
             if any(taken.values()):
                 entry["table_defaults_taken"] = {k: v for k, v in taken.items() if v}
             if outcome.resolved is None:
@@ -2172,8 +2286,11 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 # the first cause named first: the title's box is the band above the top rule
                 band = title_band_emu(guide, spec_raw) or 0
                 pitch = max(1, title_rows[0].entry.pitch_emu)
+                held = band // pitch
                 entry["reason"] = (f"title needs {sum(len(m.lines) for m in title_rows)} lines; the band above the top rule "
-                                   f"({band / EMU_PER_INCH:.2f} in) holds {band // pitch} at {title_rows[0].entry.size_pt}pt. Shorten the title before anything else.")
+                                   f"({band / EMU_PER_INCH:.2f} in) holds {held} line{'' if held == 1 else 's'} at {title_rows[0].entry.size_pt}pt, "
+                                   f"so it does not fit. Shorten the title, or move a clause of it to where the house states claims "
+                                   f"({claim_places(guide)})")
             elif outcome.status != "fit":
                 # the brief names the cause on the page's own line, not only in the JSON
                 causes = full_scale_cause(ctx, outcome)
@@ -2205,14 +2322,14 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             breaks, unread, spills = chart_label_breaks(elements, ctx)
             if breaks or unread or spills:
                 entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread, "spills": spills}
-            entry["problems"] = page_problems(entry, elements, resolved, guide, annotation_problems + [
+            entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + annotation_problems + [
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks] + [
                 {"kind": "chart label wider than its bar", "severity": "warning",
                  "detail": f"{b['chart']} {b['part']}: {b['text']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU on one line, past its "
                            f"{b['bar_emu']} EMU bar: it is drawn over the bar's ends and what lies beyond them"}
-                for b in spills], chrome, precedent)
+                for b in spills], chrome, precedent, slide_chrome(slide, guide, chrome))
             entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
             entry["problems"][:0] = title_warnings + plan_message_figures(slide, elements, plan_pages)  # warnings first, as the tie-outs are
         except L.FaceRefused as error:
@@ -2222,7 +2339,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                                      "problems": [{"kind": "font refused", "severity": "refusal", "detail": str(error)}]})
             continue
         pages.append((number, elements))
-        emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements})
+        emit_spec["slides"].append({"layout": slide.get("layout"), "notes": slide.get("notes"), "elements": elements,
+                                    **({"chrome": slide["chrome"]} if slide.get("chrome") is not None else {})})
         report["slides"].append(entry)
         if "annotations" in entry:
             annotation_pages[len(emitted)] = entry["annotations"]
@@ -2247,11 +2365,20 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         entry["problems"].extend({"kind": "emitted text overflows", "severity": "refusal", "detail": f"{f['shape']}: {f['detail']}"} for f in found)
         if entry["status"] == "fit":
             entry["status"], entry["reason"] = "unfittable", "emitted text overflows"
-    report["chrome"] = {**emit_report["chrome"], "drawn": [page["chrome_drawn"] for page in emit_report["slides"]]}
+    n_ref = (guide.get("reference") or {}).get("slides")
+    report["chrome"] = {**emit_report["chrome"], "drawn": [page["chrome_drawn"] for page in emit_report["slides"]],
+                        # the house's chrome every page starts from, with its counts; a page leaves one off or sets other words with a why (slide.chrome)
+                        "house": [{"chrome_id": ch["chrome_id"], "kind": ch["kind"], "text": chrome_text(ch), "on": f"{ch.get('slides_present')} of {n_ref} reference pages"}
+                                  for ch in chrome_on_page(guide, chrome)]}
     for entry, page in zip(emitted, emit_report["slides"]):
         if page.get("charts"):
             # every chart choice the spec left out, with the value written for it
             entry["chart_defaults_taken"] = {c["id"]: c["defaults_taken"] for c in page["charts"]}
+        if page.get("defaults_taken"):
+            # every other value the file got that neither the spec nor the guide states
+            entry["emit_defaults_taken"] = page["defaults_taken"]
+        if page.get("chrome_choices"):
+            entry["chrome_choices"] = page["chrome_choices"]
     from pptx_tools import validate
     report["validation"] = validate(out, render=False)
     # the chrome the build drew is the house's furniture, as the template's own text is: on a
@@ -2346,6 +2473,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             bool(judge["nearest_is_reference"]) and bool(judge["within_house_spread"]) and judge["layout_clean"]
             and all_fit and bool(report.get("validation", {}).get("ok")))
         report["judge"] = judge
+    for entry, page in zip(emitted, emit_spec["slides"], strict=True):
+        entry["problems"].extend(off_ladder_problems(page["elements"], guide, report.get("judge")))
     written = outputs.finish(passed(report))
     report = outputs.rewrite(report, written)
     report["out"] = written["deck"]
@@ -2453,9 +2582,11 @@ def brief_text(report: dict, outputs: Outputs) -> str:
             lines.append(f"  {p.get('severity', 'note')}: {p.get('kind')}: {str(p.get('detail', ''))[:240]}")
         if len(problems) > 4:
             lines.append(f"  ... {len(problems) - 4} more in the report (slides[].problems)")
-        taken = sum(len(v) for v in (s.get("chart_defaults_taken") or {}).values())
-        if taken:
-            lines.append(f"  chart defaults taken: {taken} (slides[].chart_defaults_taken): write each choice you mean")
+        counts = {name: sum(len(v) for v in (s.get(f"{name}_defaults_taken") or {}).values()) for name in ("chart", "table", "emit")}
+        counts["layout"] = len(s.get("layout_defaults_taken") or [])
+        if any(counts.values()):
+            lines.append("  defaults taken: " + ", ".join(f"{n} {name}" for name, n in counts.items() if n)
+                         + " (slides[].<kind>_defaults_taken): write each choice you mean, or name it in the report as intended")
     rep = report.get("repetition") or {}
     ah = rep.get("against_house") or {}
     if isinstance(ah.get("composition_V"), dict):

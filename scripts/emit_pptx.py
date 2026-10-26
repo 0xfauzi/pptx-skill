@@ -102,6 +102,7 @@ from chart_geometry import chart_family  # noqa: E402
 
 # the solver's own rules for case and header cells: it measured this text
 from layout import (  # noqa: E402
+    DEFAULT_CELL_INSET_EMU,
     apply_case,
     apply_case_runs,
     header_labels,
@@ -145,6 +146,13 @@ class Guide:
         self.tables = data.get("tables") or {}
         self.charts = data.get("charts") or {}
         self.text_container = (data.get("register_stats") or {}).get("text_container", "text_shape")
+        #: (element id, what) for every value this emit wrote that neither the spec nor the
+        #: guide states; emit() resets it per slide and reports it as `defaults_taken`
+        self.taken: list[tuple[str, str]] = []
+
+    def take(self, where: str, what: str) -> None:
+        if (where, what) not in self.taken:
+            self.taken.append((where, what))
 
     def hex(self, role: str | None, *, where: str) -> str | None:
         if role is None:
@@ -174,10 +182,15 @@ class Guide:
         return spec
 
     def face(self, spec: dict) -> str:
+        """The face a type role is written in: its family, or the guide's face for its
+        major/minor token. A role naming no face the guide can resolve is refused: a stand-in
+        written here would show one face while the solver measured another."""
         fam = spec.get("family")
-        if fam in ("major", "minor"):
-            return self.families.get(fam) or self.families.get("minor") or "Arial"
-        return fam or self.families.get("minor") or "Arial"
+        face = (self.families.get(fam) or (self.families.get("minor") if fam == "major" else None)) if fam in ("major", "minor") else fam or self.families.get("minor")
+        if not face:
+            raise SpecError(f"a type role's family {fam!r} names no face and the guide's typography.families has no "
+                            f"{'major or minor' if fam in ('major', 'minor') else 'minor'} face; complete /typography/families")
+        return face
 
     def space(self, role: str | None, default: int = 0) -> int:
         if role is None:
@@ -262,15 +275,30 @@ def _end_paragraph_like(p, run) -> None:
     p._p.append(end)
 
 
-def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | None, fit: dict | None = None) -> None:
+def run_style(run: dict, where: str) -> tuple[bool | None, bool | None]:
+    """(bold, italic) a run of a paragraph is set in: its own `bold` and `italic` (true or
+    false), `emphasis: true` meaning bold; None where it says nothing (the role's own). The
+    one reading the solver measures (build_deck.mark_measured_weights), this file writes and
+    the contrast gate scores."""
+    for key in ("emphasis", "bold", "italic"):
+        if key in run and not isinstance(run[key], bool):
+            raise SpecError(f"{where}: {key} is true or false, not {run[key]!r}")
+    if run.get("emphasis") and run.get("bold") is False:
+        raise SpecError(f"{where}: emphasis true is bold, and bold is false: say one")
+    return (True if run.get("emphasis") else run.get("bold")), run.get("italic")
+
+
+def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | None, fit: dict | None = None,
+               bold: bool | None = None, italic: bool | None = None) -> None:
     """`fit` is the solver's resolved entry for the paragraph (layout.resolved_json's
     hints): the size and tracking it measured at, which at a scale below 1.00 are not
-    the guide's. The file carries those, never the guide's scale-1 values."""
+    the guide's. The file carries those, never the guide's scale-1 values. `bold` and
+    `italic` are the run's own (run_style); None takes the role's."""
     font = run.font
     font.name = guide.face(spec)
     font.size = Pt(fit["sz"] / 100) if fit else Pt(float(spec["size_pt"]))
-    font.bold = bool(spec.get("weight", 400) >= 700 or emphasis)
-    font.italic = bool(spec.get("italic", False))
+    font.bold = bool(spec.get("weight", 400) >= 700 or emphasis) if bold is None else bold
+    font.italic = bool(spec.get("italic", False)) if italic is None else italic
     if ink_hex:
         font.color.rgb = RGBColor.from_string(ink_hex.upper())
     rpr = run._r.get_or_add_rPr()
@@ -279,7 +307,7 @@ def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | 
         rpr.set("spc", str(int(round(tracking * 100))))
 
 
-def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
+def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text") -> None:
     p_pr = p._p.get_or_add_pPr()
     for tag in ("a:lnSpc", "a:spcBef", "a:spcAft", "a:buClr", "a:buNone", "a:buChar", "a:buAutoNum", "a:buFont"):
         for el in p_pr.findall(qn(tag)):
@@ -303,12 +331,19 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
     else:
         bullets = guide.g.get("typography", {}).get("bullets", {})
         entry = bullets.get(str(level)) or bullets.get(level) or bullets.get("0") or {}
-        glyph = entry.get("glyph") or "\u2022"
+        glyph = entry.get("glyph")
+        if not glyph:
+            glyph = "\u2022"
+            guide.take(where, f"bullet level {level}: glyph \u2022 (the guide's typography.bullets name no glyph for it)")
         bufont = entry.get("font")
         # the solver measured every line at width - indent_emu (the reference's own marL for
         # the level); the file carries that marL, so the literal breaks were computed for the
         # column that is written. The hanging indent is the level's own step from the guide.
-        indent = para.get("indent_emu") or guide.space(para.get("indent_role") or ("space.sm" if "space.sm" in guide.spacing else None), 228600)
+        indent = para.get("indent_emu")
+        if not indent:
+            role = para.get("indent_role") or ("space.sm" if "space.sm" in guide.spacing else None)
+            indent = guide.space(role, 228600)
+            guide.take(where, f"bullet level {level}: indent {indent} EMU ({role or 'no spacing step: 0.25 in'}; no measured indent was given)")
         hanging_role = entry.get("hanging_indent_role") or entry.get("indent_role")
         hanging = guide.space(hanging_role, indent) if hanging_role else indent
         # the glyph needs its own width plus a word space: a 5pt step on a 12pt body would
@@ -368,7 +403,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
         _solid_fill(sp_pr, fill_hex)
     line_hex = guide.hex(el.get("line_role"), where=el.get("id", "text"))
     if el.get("line_role"):
-        _set_line(sp_pr, line_hex, el.get("line_width_emu") or 9525)
+        _set_line(sp_pr, line_hex, outline_width(el, guide))
     tf = shape.text_frame
     tf.word_wrap = True
     _body_props(tf._txBody, el.get("anchor", "t"))
@@ -378,7 +413,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
         ink_hex = guide.hex(para.get("ink_role") or spec.get("ink_role"), where=para["role"]) if (para.get("ink_role") or spec.get("ink_role")) else (spec.get("ink") if HEX_RE.match(spec.get("ink") or "") else None)
         p = tf.paragraphs[0] if first else tf.add_paragraph()
         first = False
-        _paragraph_props(p, spec, guide, para)
+        _paragraph_props(p, spec, guide, para, el.get("id", "text"))
         runs = para.get("runs") or [{"text": para.get("text", "")}]
         # the solver measured the cased text (layout.apply_case): write the same text
         runs = [{**r, "text": t} for r, t in zip(runs, apply_case_runs([r["text"] for r in runs], spec.get("case")))]
@@ -407,7 +442,8 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
                     if a < b:
                         pr = p.add_run()
                         pr.text = full[a:b]
-                        _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex), fit=fit)
+                        bold, italic = run_style(r, f"{el.get('id')} run")
+                        _style_run(pr, spec, guide, emphasis=False, ink_hex=_run_ink(r, guide, ink_hex), fit=fit, bold=bold, italic=italic)
                 if li < len(lines) - 1:
                     p._p.append(etree.Element(qn("a:br")))
                 pos = end
@@ -415,7 +451,21 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
             for r in runs:
                 pr = p.add_run()
                 pr.text = r["text"]
-                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex), fit=fit)
+                bold, italic = run_style(r, f"{el.get('id')} run")
+                _style_run(pr, spec, guide, emphasis=False, ink_hex=_run_ink(r, guide, ink_hex), fit=fit, bold=bold, italic=italic)
+
+
+#: 0.75pt: the width an outline or rule is written at when its spec and the guide state
+#: none; listed under defaults_taken wherever it is used
+DEFAULT_LINE_EMU = 9525
+
+
+def outline_width(el: dict, guide: Guide) -> int:
+    """An element's outline width: its line_width_emu, else DEFAULT_LINE_EMU, listed."""
+    if el.get("line_width_emu"):
+        return int(el["line_width_emu"])
+    guide.take(el.get("id", "shape"), "outline width 0.75pt (line_width_emu left out)")
+    return DEFAULT_LINE_EMU
 
 
 def _run_ink(run: dict, guide: Guide, paragraph_ink: str | None) -> str | None:
@@ -435,29 +485,50 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
         horizontal = w >= h
         line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h)))
     line.name = el.get("id", "rule")
-    hex_color = guide.hex(el.get("line_role") or "color.rule", where=el.get("id", "rule"))
-    width = el.get("line_width_emu") or (guide.g.get("motifs") or [{}])[0].get("line_width_pt")
-    width_emu = int(round(float(width) * EMU_PER_PT)) if isinstance(width, (int, float)) and width and not el.get("line_width_emu") else (el.get("line_width_emu") or 9525)
+    role = el.get("line_role")
+    if not role:
+        role = "color.rule"
+        guide.take(el.get("id", "rule"), "line_role: color.rule (left out)")
+    hex_color = guide.hex(role, where=el.get("id", "rule"))
+    width_emu = el.get("line_width_emu")
+    if not width_emu:
+        # the house's own rule in this role (a mined line motif), else the default listed
+        motif = next((m for m in guide.g.get("motifs") or [] if m.get("geometry_preset") == "line" and m.get("line_role") == role and m.get("line_width_pt")), None)
+        if motif is not None:
+            width_emu = int(round(float(motif["line_width_pt"]) * EMU_PER_PT))
+        else:
+            width_emu = DEFAULT_LINE_EMU
+            guide.take(el.get("id", "rule"), f"line width 0.75pt (left out, and the guide's motifs draw no {role} line)")
     _set_line(line._element.spPr, hex_color, width_emu, el.get("dash"))
     if el.get("tail_end"):
         etree.SubElement(line._element.spPr.find(qn("a:ln")), qn("a:tailEnd")).set("type", el["tail_end"])
 
 
-# Preset geometries a rect element may name. A bracket or brace is drawn opening toward
-# what it spans: `rot` 90 turns leftBracket's spine to the top (a bracket above a span)
-# and rightBracket's to the bottom (below it).
-RECT_PRESETS = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
-                "homePlate": MSO_SHAPE.PENTAGON,
-                "rightArrow": MSO_SHAPE.RIGHT_ARROW, "leftArrow": MSO_SHAPE.LEFT_ARROW, "downArrow": MSO_SHAPE.DOWN_ARROW,
-                "upArrow": MSO_SHAPE.UP_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
-                "leftBracket": MSO_SHAPE.LEFT_BRACKET, "rightBracket": MSO_SHAPE.RIGHT_BRACKET, "leftBrace": MSO_SHAPE.LEFT_BRACE, "rightBrace": MSO_SHAPE.RIGHT_BRACE}
+# A rect element names any OOXML preset geometry (prst) python-pptx writes, by its OOXML
+# name. A bracket or brace is drawn opening toward what it spans: `rot` 90 turns
+# leftBracket's spine to the top (a bracket above a span) and rightBracket's to the bottom
+# (below it). PRESETS_DRAWN_BEFORE are the ones the emitter wrote before any preset could
+# be named, drawn in the round proofs' LibreOffice renders; no preset has been measured
+# against PowerPoint, and one outside this set has not been looked at in either renderer,
+# so the build reports it as renderer-unmeasured (build_deck.unmeasured_presets).
+PRESETS_DRAWN_BEFORE = frozenset({"rect", "roundRect", "ellipse", "chevron", "homePlate", "rightArrow", "leftArrow", "downArrow", "upArrow",
+                                  "diamond", "triangle", "leftBracket", "rightBracket", "leftBrace", "rightBrace"})
+
+
+def preset_shape(prst, where: str):
+    """The python-pptx shape type of an OOXML preset name, or SpecError naming the miss."""
+    from pptx.shapes.autoshape import AutoShapeType
+    try:
+        return AutoShapeType.id_from_prst(prst) if isinstance(prst, str) else None
+    except ValueError:
+        pass
+    raise SpecError(f"{where}: prst {prst!r} is not an OOXML preset geometry python-pptx writes (named as the file names it: "
+                    "rect, roundRect, ellipse, parallelogram, wedgeRectCallout, cloud, ...)")
 
 
 def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     x, y, w, h = box
-    if el.get("prst", "rect") not in RECT_PRESETS:
-        raise SpecError(f"{el.get('id', 'rect')}: prst {el.get('prst')!r} is not one of {sorted(RECT_PRESETS)}")
-    prst = RECT_PRESETS[el.get("prst", "rect")]
+    prst = preset_shape(el.get("prst", "rect"), el.get("id", "rect"))
     rot = int(el.get("rot") or 0) % 360
     if rot not in (0, 90, 180, 270):
         raise SpecError(f"{el.get('id', 'rect')}: rot {rot} is not a quarter turn")
@@ -480,7 +551,7 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
                 sp_pr.remove(child)
         _insert_fill_first(sp_pr, etree.Element(qn("a:noFill")))
     line_hex = guide.hex(el.get("line_role"), where=el.get("id", "rect"))
-    _set_line(sp_pr, line_hex, el.get("line_width_emu") or 9525, el.get("dash"))
+    _set_line(sp_pr, line_hex, outline_width(el, guide) if line_hex else None, el.get("dash"))
     if el.get("paragraphs"):
         tf = shape.text_frame
         tf.word_wrap = True
@@ -491,12 +562,13 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
             ink_hex = guide.hex(para.get("ink_role"), where=el.get("id", "rect")) if para.get("ink_role") else None
             p = tf.paragraphs[0] if first else tf.add_paragraph()
             first = False
-            _paragraph_props(p, spec, guide, para)
+            _paragraph_props(p, spec, guide, para, el.get("id", "rect"))
             runs = para.get("runs") or [{"text": para.get("text", "")}]
             for r, text in zip(runs, apply_case_runs([r["text"] for r in runs], spec.get("case"))):
                 pr = p.add_run()
                 pr.text = text
-                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex))
+                bold, italic = run_style(r, f"{el.get('id', 'rect')} run")
+                _style_run(pr, spec, guide, emphasis=False, ink_hex=_run_ink(r, guide, ink_hex), bold=bold, italic=italic)
         tf.margin_left = tf.margin_right = Emu(guide.space(el.get("pad_role"), 0))
         tf.margin_top = tf.margin_bottom = Emu(guide.space(el.get("pad_role"), 0))
 
@@ -543,13 +615,48 @@ def write_image(slide, el: dict, box: tuple[int, int, int, int], guide: Guide | 
     pic.name = el.get("id", "image")
 
 
-def _table_edge(guide: Guide, klass: str) -> tuple[str | None, int]:
-    rules = guide.tables.get("edge_rules") or {}
+#: the edge classes a table's rules are written by (_horizontal_edge_class, _write_table_edges)
+EDGE_CLASSES = ("table_top", "header_bottom", "totals_top", "row_interior", "table_bottom", "table_left", "column_interior", "table_right")
+EDGE_RULE_KEYS = {"color_role", "width_pt", "none"}
+
+
+def table_edge_rules(el: dict, guide: Guide) -> dict:
+    """The table's edge rules: the guide's tables.edge_rules, with the table's own
+    `edge_rules` (the guide's shape, per class: {"color_role", "width_pt"} or {"none": true})
+    replacing a class it names. Roles only; a stroke under 0.5pt only at a width the guide's
+    own edge rules declare (RULE_WEIGHT_FLOOR_EMU, measured)."""
+    rules = dict(guide.tables.get("edge_rules") or {})
+    own = el.get("edge_rules")
+    if own is None:
+        return rules
+    where = f"{el.get('id', 'table')} edge_rules"
+    if not isinstance(own, dict):
+        raise SpecError(f"{where}: an object {{class: {{\"color_role\", \"width_pt\"}} or {{\"none\": true}}}}, classes {list(EDGE_CLASSES)}")
+    declared = {int(r.get("width_emu") or round(float(r.get("width_pt") or 0) * EMU_PER_PT)) for r in rules.values() if isinstance(r, dict)}
+    for klass, rule in own.items():
+        if klass not in EDGE_CLASSES:
+            raise SpecError(f"{where}: {klass!r} is not an edge class; the classes are {list(EDGE_CLASSES)}")
+        if not isinstance(rule, dict) or set(rule) - EDGE_RULE_KEYS or not (rule.get("none") is True or {"color_role", "width_pt"} <= set(rule)):
+            raise SpecError(f"{where}.{klass}: {{\"color_role\": <role>, \"width_pt\": <points>}} or {{\"none\": true}}, not {rule!r}")
+        if rule.get("none") is not True:
+            guide.hex(rule["color_role"], where=f"{where}.{klass}")
+            width = rule["width_pt"]
+            if not isinstance(width, (int, float)) or isinstance(width, bool) or width <= 0:
+                raise SpecError(f"{where}.{klass}: width_pt is a number of points above 0")
+            emu = round(float(width) * EMU_PER_PT)
+            if emu < RULE_WEIGHT_FLOOR_EMU and emu not in declared:
+                raise SpecError(f"{where}.{klass}: {width}pt is under 0.5pt, which PowerPoint and LibreOffice draw differently (measured), and the guide's "
+                                "own table rules declare no such width")
+        rules[klass] = rule
+    return rules
+
+
+def _table_edge(rules: dict, guide: Guide, klass: str, totals_rule: bool) -> tuple[str | None, int]:
     rule = rules.get(klass)
     if rule is None and klass == "totals_top":
         # a guide without its own totals class: the totals rule is the header rule when the
         # guide asks for one (tables.totals_rule), else the row interior like any other edge
-        rule = rules.get("header_bottom") if guide.tables.get("totals_rule") else rules.get("row_interior")
+        rule = rules.get("header_bottom") if totals_rule else rules.get("row_interior")
     if not rule or rule.get("none"):
         return None, 0
     hex_color = rule.get("color_hex") or (guide.hex(rule.get("color_role"), where=f"table edge {klass}") if rule.get("color_role") else None)
@@ -569,7 +676,7 @@ def _horizontal_edge_class(index: int, header_rows: int, n_rows: int, totals_ind
     return "row_interior"
 
 
-def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_rows: int, totals_index: int | None) -> None:
+def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_rows: int, totals_index: int | None, rules: dict) -> None:
     """Every shared edge written to BOTH of its declaring cells from one rule, so the two
     sides agree byte for byte (upper lnB == lower lnT, left lnR == right lnL). Measured
     (deckgen E38 class 4, 8 of 8 cases in both axes): where the sides differ, PowerPoint
@@ -580,7 +687,7 @@ def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_row
         return table.cell(ri, ci)._tc.get_or_add_tcPr()
 
     for index in range(n_rows + 1):
-        hex_color, width = _table_edge(guide, _horizontal_edge_class(index, header_rows, n_rows, totals_index))
+        hex_color, width = _table_edge(rules, guide, _horizontal_edge_class(index, header_rows, n_rows, totals_index), bool(guide.tables.get("totals_rule")))
         for ci in range(n_cols):
             if index > 0:
                 _cell_border(tc_pr(index - 1, ci), "a:lnB", hex_color, width)
@@ -588,7 +695,7 @@ def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_row
                 _cell_border(tc_pr(index, ci), "a:lnT", hex_color, width)
     for index in range(n_cols + 1):
         klass = "table_left" if index == 0 else ("table_right" if index == n_cols else "column_interior")
-        hex_color, width = _table_edge(guide, klass)
+        hex_color, width = _table_edge(rules, guide, klass, bool(guide.tables.get("totals_rule")))
         for ri in range(n_rows):
             if index > 0:
                 _cell_border(tc_pr(ri, index - 1), "a:lnR", hex_color, width)
@@ -621,21 +728,29 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
 # Table keys that set how a table is drawn, read from the table element (build_deck
 # lifts them there from the tree node, its table spec or slide.styling, refusing a key
 # given twice). Each fill or ink key, when present, replaces the guide's tables value
-# for this table only; "none" means no fill.
+# for this table only; "none" means no fill. totals_bold and banding_phase replace the
+# guide's own (table_defaults_taken lists them when neither says), edge_rules replaces
+# the guide's rule for each class it names (table_edge_rules).
 TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align", "spanner_align",
-                    "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role"}
+                    "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role",
+                    "totals_bold", "banding_phase", "edge_rules"}
 #: One emphasis group: the body rows (data-row indices) or the columns (column keys) it
-#: marks, the fill under them (a colour role; "none", no fill, the page shows; "keep", the
-#: banding or data fill the cell has without emphasis: there is no default) and
-#: optionally their ink and weight (bold: true or false; left out, bold, and the build lists
-#: it under table_defaults_taken). Emphasised cells are written and measured in that
-#: weight. Several groups mark several things (the subject row shaded, the row labels bold);
-#: where two groups meet, the later one's fill and ink are drawn.
-EMPHASIS_KEYS = {"rows", "columns", "fill_role", "ink_role", "bold"}
+#: marks, or both (the cells where they cross: a base-case region of a sensitivity grid),
+#: the fill under them (a colour role; "none", no fill, the page shows; "keep", the
+#: banding or data fill the cell has without emphasis: there is no default) and optionally
+#: their ink, `bold` and `italic` (true or false; left out, the cell's own: its role's
+#: weight, and a totals row's totals_bold; listed under table_defaults_taken),
+#: `indent_role` (a spacing step the cells' words are set in by: a sub-row) and
+#: `include_header` (with columns: the header cells above them take the group's fill, ink
+#: and setting too: a highlighted subject column). Emphasised cells are written and
+#: measured in that setting. Several groups mark several things (the subject row shaded,
+#: the row labels bold); where two groups meet, the later one's settings are drawn.
+EMPHASIS_KEYS = {"rows", "columns", "fill_role", "ink_role", "bold", "italic", "indent_role", "include_header"}
 #: the keys `emphasis` replaced, refused with the new spelling
 OLD_EMPHASIS_KEYS = {"emphasis_rows", "emphasis_fill_role", "emphasis_ink_role"}
-EMPHASIS_EXAMPLE = ('"emphasis": [{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"], "fill_role": "keep"}] '
-                    '(rows by data-row index, columns by key; fill_role a colour role, "none" or "keep"; optional ink_role and bold, true or false)')
+EMPHASIS_EXAMPLE = ('"emphasis": [{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"], "fill_role": "keep", "bold": true}, '
+                    '{"rows": [2, 3], "columns": ["y2025"], "fill_role": "color.surface_alt"}] (rows by data-row index, columns by key, both for the '
+                    'cells where they cross; fill_role a colour role, "none" or "keep"; optional ink_role, bold, italic, indent_role, include_header)')
 
 
 def table_emphasis(el: dict) -> list[dict]:
@@ -656,12 +771,19 @@ def table_emphasis(el: dict) -> list[dict]:
     for i, g in enumerate(raw):
         gw = f"{where} emphasis[{i}]"
         if not isinstance(g, dict) or set(g) - EMPHASIS_KEYS or not ("rows" in g or "columns" in g):
-            raise SpecError(f"{gw}: an object with rows, columns or both (both: the cells where they cross), a fill_role, and optionally an ink_role: {EMPHASIS_EXAMPLE}")
-        if "bold" in g and not isinstance(g["bold"], bool):
-            raise SpecError(f"{gw}: bold is true or false (left out, the cells are bold)")
+            stray = sorted(set(g) - EMPHASIS_KEYS) if isinstance(g, dict) else []
+            raise SpecError(f"{gw}: an object with rows, columns or both (both: the cells where they cross), a fill_role, and optionally "
+                            f"{sorted(EMPHASIS_KEYS - {'rows', 'columns', 'fill_role'})}" + (f"; {stray} not read" if stray else "") + f": {EMPHASIS_EXAMPLE}")
+        for key in ("bold", "italic", "include_header"):
+            if key in g and not isinstance(g[key], bool):
+                raise SpecError(f"{gw}: {key} is true or false")
         if "fill_role" not in g:
             raise SpecError(f"{gw}: needs fill_role: a colour role from the guide, \"none\" (no fill: the page shows) or \"keep\" (the banding or "
                             "data fill the cells have without emphasis); there is no default fill")
+        if g.get("include_header") and "columns" not in g:
+            raise SpecError(f"{gw}: include_header marks the header cells above the group's columns; name the columns")
+        if "indent_role" in g and not (isinstance(g["indent_role"], str) and g["indent_role"]):
+            raise SpecError(f"{gw}: indent_role is a spacing role from the guide")
         rows = cols = None
         if "rows" in g:
             rows = g["rows"]
@@ -673,16 +795,21 @@ def table_emphasis(el: dict) -> list[dict]:
             if not isinstance(cols, list) or not cols or any(c not in keys for c in cols):
                 raise SpecError(f"{gw}: columns {cols!r} must be column keys of this table ({keys})")
             cols = frozenset(keys.index(c) for c in cols)
-        groups.append({"rows": rows, "columns": cols, "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
+        groups.append({"rows": rows, "columns": cols, "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold"),
+                       "italic": g.get("italic"), "indent_role": g.get("indent_role"), "include_header": bool(g.get("include_header"))})
     return groups
 
 
-def emphasised(groups: list[dict], data_row: int, column: int) -> dict | None:
-    """The group that draws a body cell, the last one that marks it. A group naming rows
-    and columns marks the cells where they cross (a gap row's label cell)."""
+def emphasised(groups: list[dict], data_row: int | None, column: int) -> dict | None:
+    """The group that draws a cell, the last one that marks it: a body cell (data_row its
+    data-row index) by rows, columns or where they cross; a header cell (data_row None) by
+    a group with include_header over its column."""
     hit = None
     for g in groups:
-        if (g["rows"] is None or data_row in g["rows"]) and (g["columns"] is None or column in g["columns"]):
+        if data_row is None:
+            if g["include_header"] and column in g["columns"]:
+                hit = g
+        elif (g["rows"] is None or data_row in g["rows"]) and (g["columns"] is None or column in g["columns"]):
             hit = g
     return hit
 # Keys of a table's column entries; `align` overrides the guide's
@@ -756,9 +883,15 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
     cell_ink_role = cell_spec.get("ink_role")
     cell_ink = (guide.hex(cell_ink_role, where=f"{where} cell ink"), cell_ink_role) if cell_ink_role else \
         ((cell_spec["ink"], f"{el['cell_role']} observed ink") if HEX_RE.match(cell_spec.get("ink") or "") else (None, None))
+    header_spec, _ = table_roles(el, guide)
+    header_ink_default = header_ink if header_ink[0] else None
     styles = {id(g): (None if g["fill_role"] == "keep" else role_hex(g["fill_role"], None, f"emphasis[{k}] fill"),
-                      role_hex(g["ink_role"], None, f"emphasis[{k}] ink") if g["ink_role"] else cell_ink) for k, g in enumerate(groups)}
+                      role_hex(g["ink_role"], None, f"emphasis[{k}] ink") if g["ink_role"] else None) for k, g in enumerate(groups)}
+    for g in groups:
+        if g["indent_role"]:
+            guide.space(g["indent_role"])  # refused by name here when the guide has no such step
     totals = bool(el.get("totals_last_row"))
+    totals_bold, phase = table_totals_bold(el, guide), table_banding_phase(el, guide)
     header_bold = table_header_bold(el, guide)
     rows = []
     for ri in range(n_rows):
@@ -766,25 +899,83 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
         data_index = ri - header_rows
         is_totals = totals and ri == n_rows - 1
         if is_header:
-            fill, ink, klass, bold = header_fill, header_ink, "header", header_bold
+            fill, ink, klass, bold, italic = header_fill, header_ink, "header", header_bold, bool(header_spec.get("italic"))
         else:
-            fill = band if (band[0] and data_index % 2 == 0) else data
-            ink, bold = cell_ink, is_totals or cell_spec.get("weight", 400) >= 700
+            fill = band if (band[0] and data_index % 2 == phase) else data
+            ink, bold, italic = cell_ink, (totals_bold if is_totals else False) or cell_spec.get("weight", 400) >= 700, bool(cell_spec.get("italic"))
             klass = "totals" if is_totals else ("body even" if data_index % 2 == 0 else "body odd")
-        base = {"fill_hex": fill[0], "fill_name": fill[1], "ink_hex": ink[0], "ink_name": ink[1], "bold": bold, "class": klass}
+        base = {"fill_hex": fill[0], "fill_name": fill[1], "ink_hex": ink[0], "ink_name": ink[1], "bold": bold, "italic": italic, "indent_role": None, "class": klass}
         cells = []
         for ci in range(len(el["columns"])):
-            g = None if is_header else emphasised(groups, data_index, ci)
+            g = emphasised(groups, None if is_header else data_index, ci)
             if g is None:
                 cells.append(base)
             else:
-                fill_style, (ih, iname) = styles[id(g)]
+                fill_style, ink_style = styles[id(g)]
                 fh, fn = fill_style if fill_style is not None else (base["fill_hex"], base["fill_name"])
-                cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname, "bold": g["bold"] or base["bold"],
-                              "class": "emphasis " + ("cells" if g["rows"] is not None and g["columns"] is not None else "rows" if g["rows"] is not None else "columns")
+                ih, iname = ink_style if ink_style is not None else ((header_ink_default or cell_ink) if is_header else cell_ink)
+                cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname,
+                              "bold": base["bold"] if g["bold"] is None else g["bold"], "italic": base["italic"] if g["italic"] is None else g["italic"],
+                              "indent_role": g["indent_role"],
+                              "class": "emphasis " + ("header " if is_header else "") + ("cells" if g["rows"] is not None and g["columns"] is not None else "rows" if g["rows"] is not None else "columns")
                                        + f" {groups.index(g)}"})
         rows.append({"row": ri, "header": is_header, **base, "cells": cells})
     return rows
+
+
+def table_totals_bold(el: dict, guide: Guide) -> bool:
+    """Whether a totals row is written bold: the table's totals_bold, else the guide's
+    tables.totals_bold, else bold (listed under table_defaults_taken)."""
+    for source in (el, guide.tables):
+        if source.get("totals_bold") is not None:
+            if not isinstance(source["totals_bold"], bool):
+                raise SpecError(f"{el.get('id', 'table')}: totals_bold is true or false")
+            return source["totals_bold"]
+    return True
+
+
+def table_banding_phase(el: dict, guide: Guide) -> int:
+    """Which body rows the banding fill lies on: 0, the first, third, ...; 1, the second,
+    fourth, ...: the table's banding_phase, else the guide's tables.banding_phase, else 0
+    (listed under table_defaults_taken)."""
+    for source in (el, guide.tables):
+        if source.get("banding_phase") is not None:
+            if source["banding_phase"] not in (0, 1) or isinstance(source["banding_phase"], bool):
+                raise SpecError(f"{el.get('id', 'table')}: banding_phase is 0 (the first body row banded) or 1 (the second)")
+            return int(source["banding_phase"])
+    return 0
+
+
+def table_defaults_taken(el: dict, guide: Guide) -> list[str]:
+    """Every table choice neither the table nor the guide states, with the value written
+    for it: the readers above (table_row_styles, table_totals_bold, table_banding_phase)
+    and write_table's padding and alignment fall back to these."""
+    out: list[str] = []
+    groups = table_emphasis(el)
+    for i, g in enumerate(groups):
+        if g["bold"] is None:
+            out.append(f"emphasis[{i}].bold left out: the cells keep their own weight (the cell role's, and a totals row's totals_bold)")
+    if el.get("totals_last_row") and el.get("totals_bold") is None and guide.tables.get("totals_bold") is None:
+        out.append("totals_bold: the totals row is bold (neither the table nor the guide's tables says)")
+    band = el.get("banding_role") if "banding_role" in el else guide.tables.get("banding_role") or guide.tables.get("banding_hex")
+    if band and band != "none" and el.get("banding_phase") is None and guide.tables.get("banding_phase") is None:
+        out.append("banding_phase: 0, the banding fill on the first body row and every second one after (neither the table nor the guide's tables says)")
+    if "header_bold" not in el and guide.tables.get("header_bold") is None and int(el.get("header_rows", 1)):
+        out.append("header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)")
+    if guide.tables.get("cell_padding_emu") is None and guide.tables.get("cell_padding_role") is None and not el.get("cell_padding_role"):
+        out.append(f"cell padding: {DEFAULT_CELL_INSET_EMU} EMU (0.05 in), OOXML's own inset (the guide's tables state none)")
+    align_by_kind = guide.tables.get("alignment_by_column_type") or {}
+    for col in el.get("columns") or []:
+        numeric = col.get("value_kind") in ("number", "percent", "currency")
+        if not col.get("align") and not align_by_kind.get("numeric" if numeric else "text"):
+            out.append(f"column {col.get('key')!r} align: {'right' if numeric else 'left'} (a {'figure' if numeric else 'text'} column; the guide's "
+                       "alignment_by_column_type states none)")
+    n_header = int(el.get("header_rows", 1))
+    spanned = n_header > 1 and any(c1 > c0 for row in header_spans([header_labels(c, n_header, f"table {el.get('id')!r}") for c in el.get("columns") or []], n_header)
+                                   for c0, c1 in row)
+    if spanned and not el.get("spanner_align") and not el.get("header_align"):
+        out.append("spanner_align: each spanner takes its first column's alignment (left out)")
+    return out
 
 
 def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
@@ -811,7 +1002,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     if heights and not el.get("fit_cell"):
         raise SpecError(f"{el.get('id', 'table')}: fitted row heights without the solver's cell sizes ('fit_cell'); rows fitted at one size and written at another overflow")
     # the inset the fitter charged at the page's scale; the guide's scale-1 inset otherwise
-    pad = int(el["fit_padding_emu"]) if el.get("fit_padding_emu") is not None else int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), 45720))
+    pad = int(el["fit_padding_emu"]) if el.get("fit_padding_emu") is not None else int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), DEFAULT_CELL_INSET_EMU))
     header_spec, cell_spec = table_roles(el, guide)
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
     totals = bool(el.get("totals_last_row"))
@@ -849,7 +1040,8 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             cs = st["cells"][ci]
             fill_hex = cs["fill_hex"]
             # the ink is declared on the run so a dark reference does not inherit black
-            _style_run(run, spec, guide, emphasis=cs["bold"], ink_hex=cs["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"))
+            _style_run(run, spec, guide, emphasis=False, ink_hex=cs["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"),
+                       bold=cs["bold"], italic=cs["italic"])
             _end_paragraph_like(p, run)
             if not text:
                 p._p.remove(run._r)  # an empty run is no text; the end mark alone carries the size
@@ -857,6 +1049,9 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             for tag in ("a:lnSpc", "a:spcBef", "a:spcAft"):
                 for old in ln.findall(qn(tag)):
                     ln.remove(old)
+            if cs["indent_role"]:
+                # the solver measured these words at the cell's width less this indent
+                ln.set("marL", str(int((el.get("cell_indents_emu") or {}).get(cs["indent_role"]) or guide.space(cs["indent_role"]))))
             tc_pr = cell._tc.get_or_add_tcPr()
             for child in list(tc_pr):
                 if child.tag in (qn("a:solidFill"), qn("a:noFill")):
@@ -870,7 +1065,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         for c0, c1 in spans[ri]:
             if c1 > c0:
                 table.cell(ri, c0).merge(table.cell(ri, c1))  # gridSpan and hMerge: one cell across the span
-    _write_table_edges(table, guide, n_rows, len(cols), header_rows, n_rows - 1 if totals else None)
+    _write_table_edges(table, guide, n_rows, len(cols), header_rows, n_rows - 1 if totals else None, table_edge_rules(el, guide))
 
 
 # --- charts: the spec the model writes, written as given -------------------------------------------
@@ -1955,17 +2150,84 @@ def chrome_text(ch: dict) -> str | None:
     return (ch.get("text") or "").replace("<page number>", "").strip()
 
 
-def chrome_on_page(guide_data: dict, mode: str) -> list[dict]:
-    """The guide's chrome a generated page carries, in the reference's paint order: every
-    entry on at least half the reference's slides, and under --chrome none only what the
-    template inherits (an entry on a layout or master). The emitter draws from this list
-    and build_deck reserves zones and scores contrast from it, so what is checked is what
-    is drawn. An entry without `paint_order` (a hand-written guide) keeps its list place."""
+def house_chrome(guide_data: dict, mode: str) -> list[dict]:
+    """The guide's chrome a generated page starts from, in the reference's paint order:
+    every entry on at least half the reference's slides, and under --chrome none only what
+    the template inherits (an entry on a layout or master). An entry without `paint_order`
+    (a hand-written guide) keeps its list place."""
     n = max(1, guide_data.get("reference", {}).get("slides", 1))
     entries = [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
     if mode == "none":
         entries = [ch for ch in entries if _layers(ch) != ["slide"]]
     return [ch for _, ch in sorted(enumerate(entries), key=lambda ie: (ie[1].get("paint_order", ie[0]), ie[0]))]
+
+
+#: words that make a chrome line a legal or confidentiality mark: never left off a page
+LEGAL_MARK = re.compile(r"confidential|proprietary|privileged|copyright|\u00a9|\(c\)|all rights reserved|strictly|not for (?:distribution|circulation)|"
+                        r"do not (?:distribute|circulate|copy)|draft|disclaimer|for discussion purposes", re.IGNORECASE)
+PAGE_CHROME_KEYS = {"omit", "text", "why"}
+
+
+def page_chrome(guide_data: dict, mode: str, raw, where: str) -> dict[str, dict]:
+    """A page's own chrome choices, proven at the boundary: {chrome_id: {"omit": true,
+    "why": words}} leaves a house entry off this page, {chrome_id: {"text": words, "why":
+    words}} sets another line in a text entry's place. Only an entry the page would draw
+    (house_chrome) can be chosen for; never the firm's chrome (decided for the whole deck in
+    firm_chrome) or a legal or confidentiality mark; under --chrome auto, never an entry the
+    page inherits from its layout or master (a page cannot leave out what its layout draws:
+    use a layout without it)."""
+    if raw is None:
+        return {}
+    house = {ch["chrome_id"]: ch for ch in house_chrome(guide_data, mode)}
+    listing = ", ".join(f"{cid} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''}, on {ch.get('slides_present')} of "
+                        f"{(guide_data.get('reference') or {}).get('slides')} reference pages)" for cid, ch in house.items()) or "none"
+    if not isinstance(raw, dict):
+        raise SpecError(f"{where} chrome: an object {{chrome_id: {{\"omit\": true, \"why\": ...}} | {{\"text\": ..., \"why\": ...}}}}; the house's chrome here: {listing}")
+    firm = {ch["chrome_id"] for ch in firm_chrome(guide_data, mode)}
+    out = {}
+    for cid, choice in raw.items():
+        ch = house.get(cid)
+        at = f"{where} chrome {cid}"
+        if ch is None:
+            raise SpecError(f"{at}: not chrome this page draws; the house's chrome here: {listing}")
+        if not isinstance(choice, dict) or set(choice) - PAGE_CHROME_KEYS or ("omit" in choice) == ("text" in choice):
+            raise SpecError(f"{at}: {{\"omit\": true, \"why\": ...}} or {{\"text\": ..., \"why\": ...}}, not {choice!r}")
+        why = choice.get("why")
+        if not (isinstance(why, str) and len(why.split()) >= 3):
+            raise SpecError(f"{at}: why, in words: what this page does that the house's {ch.get('slides_present')} pages with it do not")
+        if cid in firm:
+            raise SpecError(f"{at}: the firm's own chrome is kept, dropped or replaced for the whole deck in firm_chrome, never page by page")
+        if LEGAL_MARK.search(chrome_text(ch) or ""):
+            raise SpecError(f"{at}: {chrome_text(ch)!r} is a legal or confidentiality mark; it stays on every page that carries the house's chrome")
+        if mode == "auto" and _layers(ch) != ["slide"]:
+            raise SpecError(f"{at}: the page inherits it from its {'/'.join(_layers(ch))}; choose a layout without it")
+        if "omit" in choice:
+            if choice["omit"] is not True:
+                raise SpecError(f"{at}: omit is true")
+            out[cid] = {"omit": True, "why": why}
+        else:
+            if chrome_text(ch) is None or not isinstance(choice["text"], str) or not choice["text"].strip():
+                raise SpecError(f"{at}: text replaces the words of a text entry (label, footer, date), in words")
+            if LEGAL_MARK.search(choice["text"]):
+                raise SpecError(f"{at}: a legal or confidentiality mark is the house's, not a page's own line")
+            out[cid] = {"text": choice["text"].strip(), "why": why}
+    return out
+
+
+def chrome_on_page(guide_data: dict, mode: str, page: dict | None = None) -> list[dict]:
+    """The chrome a generated page carries: house_chrome as the page's own choices
+    (page_chrome, already proven) leave it, an omitted entry off and a replaced one with
+    its new words. The emitter draws from this list and build_deck reserves zones and
+    scores contrast from it, so what is checked is what is drawn: an omitted footer frees
+    its zone, a replaced line is scored in its new words."""
+    out = []
+    for ch in house_chrome(guide_data, mode):
+        choice = (page or {}).get(ch["chrome_id"])
+        if choice is None:
+            out.append(ch)
+        elif "text" in choice:
+            out.append({**ch, "text": choice["text"] + (" <page number>" if "<page number>" in (ch.get("text") or "") else "")})
+    return out
 
 
 def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int, entries: list[dict] | None = None, notes: list[dict] | None = None) -> list[str]:
@@ -1989,10 +2251,18 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
         kind = ch["kind"]
         text = chrome_text(ch)
         if kind == "rule":
-            width_emu = int(round((ch.get("line_width_pt") or 0.75) * EMU_PER_PT))
+            if ch.get("line_width_pt"):
+                width_emu = int(round(float(ch["line_width_pt"]) * EMU_PER_PT))
+            else:
+                width_emu = DEFAULT_LINE_EMU
+                guide.take(ch["chrome_id"], "chrome rule width 0.75pt (the entry records no line_width_pt)")
             line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + h // 2), Emu(x + w), Emu(y + h // 2)))
             line.name = ch["chrome_id"]
-            _set_line(line._element.spPr, chrome_hex(ch, guide, "line") or chrome_hex(ch, guide, "fill") or guide.colors.get("color.rule", {}).get("hex", "000000"), width_emu)
+            ink = chrome_hex(ch, guide, "line") or chrome_hex(ch, guide, "fill")
+            if not ink:
+                ink = guide.colors.get("color.rule", {}).get("hex") or "000000"
+                guide.take(ch["chrome_id"], f"chrome rule colour {ink} ({'color.rule' if guide.colors.get('color.rule') else 'black: the guide has no color.rule'}; the entry records no line or fill)")
+            _set_line(line._element.spPr, ink, width_emu)
         elif kind == "band" and chrome_hex(ch, guide, "fill"):
             shape = _without_theme_style(slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(x), Emu(y), Emu(w), Emu(h)))
             shape.name = ch["chrome_id"]
@@ -2019,6 +2289,8 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                     _solid_fill(shape._element.spPr, fill_hex)
                 else:
                     _insert_fill_first(shape._element.spPr, etree.Element(qn("a:noFill")))
+                if line_hex and not ch.get("line_width_pt"):
+                    guide.take(ch["chrome_id"], "logo placeholder outline 0.75pt (the entry records no line_width_pt)")
                 _set_line(shape._element.spPr, line_hex, round(float(ch.get("line_width_pt") or 0.75) * EMU_PER_PT) if line_hex else None)
                 if notes is not None and not noted:
                     notes.append({"chrome_id": ch["chrome_id"], "kind": "logo", "drawn_as": "rect placeholder", "fill_hex": fill_hex, "line_hex": line_hex,
@@ -2035,14 +2307,21 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
             tf._txBody.find(qn("a:bodyPr")).set("wrap", "none")  # the entry is one line of the reference: it never wraps
             p = tf.paragraphs[0]
             style = ch.get("text_style") or {}
+            face = style.get("family") or guide.families.get("minor")
+            if not face:
+                raise SpecError(f"chrome {ch['chrome_id']}: its text_style names no family and the guide has no minor face; complete the entry's text_style")
+            size_pt = float(style.get("size_pt") or guide.roles.get("type.caption", {}).get("size_pt") or 9)
+            for key, value in (("family", f"{face} (the guide's minor face)"), ("size_pt", f"{size_pt}pt (type.caption's size, else 9pt)"), ("bold", "regular")):
+                if style.get(key) is None:
+                    guide.take(ch["chrome_id"], f"chrome text {key}: {value}; the entry's text_style records none")
             if text:
                 run = p.add_run()
                 # the space the reference sets between its words and the page number stays
                 # ("Version 39", never "Version1")
                 before = (ch.get("text") or "").split("<page number>")[0]
                 run.text = text + (" " if "<page number>" in (ch.get("text") or "") and before[-1:].isspace() else "")
-                run.font.name = style.get("family") or guide.families.get("minor") or "Arial"
-                run.font.size = Pt(float(style.get("size_pt") or guide.roles.get("type.caption", {}).get("size_pt") or 9))
+                run.font.name = face
+                run.font.size = Pt(size_pt)
                 run.font.bold = bool(style.get("bold"))
                 if style.get("ink_hex"):
                     run.font.color.rgb = RGBColor.from_string(style["ink_hex"].upper())
@@ -2051,11 +2330,11 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
                 fld.set("id", "{B6F15528-21DE-4FAA-801E-634DDDAF5B2F}")
                 fld.set("type", "slidenum")
                 rpr = etree.SubElement(fld, qn("a:rPr"))
-                rpr.set("sz", str(int(float(style.get("size_pt") or 9) * 100)))
+                rpr.set("sz", str(int(size_pt * 100)))
                 if style.get("ink_hex"):
                     sf = etree.SubElement(rpr, qn("a:solidFill"))
                     etree.SubElement(sf, qn("a:srgbClr")).set("val", style["ink_hex"].upper())
-                etree.SubElement(rpr, qn("a:latin")).set("typeface", style.get("family") or guide.families.get("minor") or "Arial")
+                etree.SubElement(rpr, qn("a:latin")).set("typeface", face)
                 etree.SubElement(fld, qn("a:t")).text = "1"
             if not rotation and (ch.get("anchor") == "slide_right" or x + box_w > 0.8 * page_w):
                 p.alignment = PP_ALIGN.RIGHT
@@ -2154,7 +2433,7 @@ def firm_chrome(guide_data: dict, mode: str) -> list[dict]:
     page = (guide_data.get("reference") or {}).get("page") or {}
     pw, ph = page.get("width_in"), page.get("height_in")
     out = []
-    for ch in chrome_on_page(guide_data, mode):
+    for ch in house_chrome(guide_data, mode):
         x, y, w, h = ch["box_in"]
         if pw is not None and ph is not None and not (x < pw and y < ph and x + w > 0 and y + h > 0):
             continue  # off the page: a note on the master's pasteboard, never seen
@@ -2283,25 +2562,31 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
     prs = Presentation(template)
     kept = len(prs.slides)  # a template made with --keep carries pages the new ones follow
     surface = guide.colors.get("color.surface", {}).get("hex")
-    wanted_chrome: set[str] = set()
-    slide_only: list[dict] = []
-    if chrome == "auto":
-        for ch in chrome_on_page(guide_data, chrome):
-            layers = _layers(ch)
-            if "slide" in layers and ch["kind"] in PLACEHOLDER_KIND:
-                wanted_chrome.add(PLACEHOLDER_KIND[ch["kind"]])
-            if layers == ["slide"]:
-                # furniture the reference pastes on every slide (a logo, a rule, a label):
-                # nothing inherits it from the layout, so it is drawn on every generated
-                # slide; an entry with a layout or master layer is inherited and never redrawn
-                slide_only.append(ch)
+    def furniture(page: dict | None) -> tuple[set[str], list[dict]]:
+        """Under --chrome auto, the placeholders a page copies from its layout and the
+        slide-layer entries it draws itself (furniture the reference pastes on every slide:
+        a logo, a rule, a label; nothing inherits it from the layout, so it is drawn; an
+        entry with a layout or master layer is inherited and never redrawn)."""
+        wanted, own = set(), []
+        if chrome == "auto":
+            for ch in chrome_on_page(guide_data, chrome, page):
+                layers = _layers(ch)
+                if "slide" in layers and ch["kind"] in PLACEHOLDER_KIND:
+                    wanted.add(PLACEHOLDER_KIND[ch["kind"]])
+                if layers == ["slide"]:
+                    own.append(ch)
+        return wanted, firm_entries(own, choices)
+
     candidates = firm_chrome(guide_data, chrome)
     choices = firm_choices(spec, candidates)
-    slide_only = firm_entries(slide_only, choices)
+    wanted_chrome, slide_only = furniture(None)
     chrome_report: dict = {"mode": chrome, "placeholders_copied": sorted(wanted_chrome), "slide_layer_entries": [ch["chrome_id"] for ch in slide_only], "notes": [],
                            "firm": apply_firm_chrome(prs, choices, candidates)}
     report = {"out": out, "slides": [], "chrome": chrome_report}
     for si, sd in enumerate(spec["slides"], 1):
+        guide.taken = []
+        page_choices = page_chrome(guide_data, chrome, sd.get("chrome"), f"slide {si}")
+        wanted_chrome, slide_only = furniture(page_choices)
         layout = _layout_named(prs, sd.get("layout"))
         slide = prs.slides.add_slide(layout)
         filled: set[int] = set()
@@ -2379,7 +2664,8 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             elif surface and surface.upper() != "FFFFFF":
                 slide.background.fill.solid()
                 slide.background.fill.fore_color.rgb = RGBColor.from_string(surface.upper())
-            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, entries=firm_entries(chrome_on_page(guide_data, "draw"), choices), notes=chrome_report["notes"])
+            drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, entries=firm_entries(chrome_on_page(guide_data, "draw", page_choices), choices),
+                                notes=chrome_report["notes"])
         elif chrome == "auto" and slide_only:
             # a slide-layer page number, footer or date whose placeholder the layout carries
             # was copied above; the rest is drawn, each entry once, named by its chrome_id
@@ -2392,8 +2678,15 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
         if sd.get("notes"):
             slide.notes_slide.notes_text_frame.text = sd["notes"]
         entry = {"slide": si, "layout": layout.name, "elements": len(sd.get("elements", [])), "chrome_drawn": drawn, "origin_tag": tag_part}
+        if page_choices:
+            entry["chrome_choices"] = page_choices
         if charts:
             entry["charts"] = charts
+        if guide.taken:
+            # every value written here that neither the spec nor the guide states
+            entry["defaults_taken"] = {}
+            for where, what in guide.taken:
+                entry["defaults_taken"].setdefault(where, []).append(what)
         report["slides"].append(entry)
     prs.save(out)
     return report

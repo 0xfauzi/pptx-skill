@@ -84,8 +84,8 @@ def _measurer():
     """The ruler and face index, built once: overflow is measured with the same ruler the
     solver uses, so a page the solver fitted never reads as overflowing here."""
     if not _MEASURE:
-        from textfit import default_index, default_ruler, measure_text
-        _MEASURE["ruler"], _MEASURE["index"], _MEASURE["measure"] = default_ruler(), default_index(), measure_text
+        from textfit import default_index, default_ruler, measure_runs
+        _MEASURE["ruler"], _MEASURE["index"], _MEASURE["measure"] = default_ruler(), default_index(), measure_runs
     return _MEASURE["ruler"], _MEASURE["index"], _MEASURE["measure"]
 
 
@@ -215,16 +215,28 @@ def wrap_shape(s: SlidePrint, sh, *, strict: bool = False, substitutes: dict | N
         family = lead.get("family") or next((r.family for r in s.runs if r.ref.startswith(sh.ref) and r.family), None)
         if not family:
             return {"why": "no face declared or inherited"}
+        # each run in its own face and size, as the solver measures it (textfit.measure_runs);
+        # a run declaring no face takes the paragraph's
+        spans, at = [], 0
         try:
-            face = resolve_measured(index, family, bold=bool(lead["bold"]), italic=bool(lead["italic"]),
-                                    substitute=(substitutes or {}).get(family), renderer_ok=not strict)
+            for r in para["runs"]:
+                fam = r.get("family") or family
+                src = lead if r.get("br") else r
+                face = resolve_measured(index, fam if not r.get("br") else family, bold=bool(src["bold"]), italic=bool(src["italic"]),
+                                        substitute=(substitutes or {}).get(fam), renderer_ok=not strict)
+                spans.append((at, at + len(r["text"]), face.path, float(src["size_pt"])))
+                at += len(r["text"])
         except LookupError as error:
             return {"why": str(error)}
+        start = 0
         for segment in text.split("\n"):
+            own = [(max(a, start) - start, min(b, start + len(segment)) - start, path, size) for a, b, path, size in spans
+                   if min(b, start + len(segment)) > max(a, start)]
+            start += len(segment) + 1
             if not segment.strip():
                 needed += pitch
                 continue
-            got = measure(ruler, segment, max(1, width - int(para.get("mar_l_emu") or 0)), face.path, lead["size_pt"])
+            got = measure(ruler, segment, own, max(1, width - int(para.get("mar_l_emu") or 0)))
             if strict and len(got) > 1:
                 rewrapped.append(segment)
             lines.extend(ln.text for ln in got)
