@@ -96,7 +96,10 @@ house marks emphasis in its ink or rule colour, or not at all.
 
 Many open `line_spacing` addresses (one per role) usually share one answer:
 `"/typography/roles/*/line_spacing": 1.2` answers every open one the patch does not name,
-and a named one keeps its own answer. It closes only open addresses.
+and a named one keeps its own answer. It closes only open addresses. The number is a
+multiple of the size, and 1.0 is NOT single spacing: single spacing draws at 1.2 x the
+size, so a house set single-spaced is answered `null` (or 1.2), and 1.0 sets every role
+tighter than the house (round 6, jazz: answered 1.0, every role drew tighter).
 
 The table lists the value each address takes when it is open; `--check` lists which are
 open. A `/tables` or `/charts` the draft observed is not open, and a patch for it is
@@ -121,10 +124,25 @@ When the body floor equals the body size there is no headroom: density comes fro
 arrangement and content. An observed floor also binds the table roles: when the house's
 own tables are pictures set below its body floor (keybank's are about 10pt over a 12pt
 body floor), native tables will be set at the floor and read larger than the house's; say
-so in the report rather than asking for a smaller size. You may lower a floor in the completion when the reference's
+so in the report rather than asking for a smaller size, or measure them (below). You may lower a floor in the completion when the reference's
 captions show a smaller size in use, never below `absolute_floor_pt` (7.0pt, measured on
 two screen media by one rater for Arial and Calibri; print was not measured, so for a deck
 that will be printed keep the reference's own floor).
+
+`/tables/picture_text` measures the size a house sets its own tables at where they are
+not native tables: `{"pictures": [{"id": "image42.png", "slide": 13, "face": "Calibri"}],
+"why": "..."}` for pictures in a .pptx (ids from `images.py list`), or `[{"page": N,
+"bbox": [x0, y0, x1, y1], "face": "..."}]` in PDF points from the top-left for a PDF. You
+name which pictures or regions are tables and the face you read; the size is measured
+(`images.py textsize`: a PDF region's text layer when it has one, which is exact, else its
+pixels). The table floor (`layout.table_floor_pt`, the build and `validate --emit` alike)
+drops to the smallest, never below the absolute floor. Measured on jazz: 7.8 and 8.3pt
+pictures took the table floor from 12pt to 8.0pt and the dense comps pages fit.
+
+A role you add (`/typography/roles/<new>`) clears a floor family: name it with
+`"floor_family": "body|annotation|display|chart"` in the role's answer; left out, it is
+the body family and the completion lists that under `completion.defaults_taken`. A core
+role's family is fixed.
 
 ## Titles: /titles/register
 

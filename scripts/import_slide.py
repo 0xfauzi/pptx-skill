@@ -175,6 +175,10 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
     if fill:
         # a fill may take any role a fill can name: the surfaces, accents, rule and the extra roles
         name, d = nearest_colour(fill, colours, ("color.surface", "color.accent", "color.rule", *extra_fills))
+        if not (name and d < 12):
+            # the build takes any colour role as a fill (a house's black number cells are
+            # color.ink); the surface roles are only preferred where both match
+            name, d = nearest_colour(fill, colours)
         if name and d < 12:
             st["fill_role"] = name
             # the box's own inset is not carried: a text element is measured at its full
@@ -404,8 +408,10 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
     # reference's rows do (keybank slide 3: seven rows at one pitch down to the footer rule)
     title_el = children[0] if children and children[0].get("id") == "title" else None
     body_children = children[1:] if title_el else children
+    # only rows: a weighted text box in a column takes its share of the height, which
+    # would move the reference's packed text off its position
     for row in body_children:
-        if row.get("type") == "region" or row.get("kind") == "text":
+        if row.get("type") == "region":
             row["weight"] = 1.0
     body = {"type": "region", "id": "body", "weight": 1.0, "layout": {"kind": "flex", "direction": "column", "gap_role": "space.sm",
                                                                      "pad_role": None, "align": "stretch", "justify": "start"},

@@ -102,7 +102,15 @@ def main(argv: list[str]) -> int:
     for p in sorted(out.rglob("*")):
         if p.is_symlink() or not p.is_file() or p.suffix not in TEXT_SUFFIXES:
             continue
-        for i, line in enumerate(p.read_text(errors="replace").splitlines(), 1):
+        text = p.read_text(errors="replace")
+        # a pointer to a held-out file says so in the copy, so the agent under test is not
+        # sent looking for the worked answer to its own deck (round 6, mckinsey)
+        marked = text
+        for f in sorted(left_out):
+            marked = marked.replace(f"`{f}`", f"`{f}` (held out of this copy: it is made from the deck under test)")
+        if marked != text:
+            p.write_text(marked)
+        for i, line in enumerate(marked.splitlines(), 1):
             low = line.lower()
             hit = [a for a in aliases if a and a in low]
             if hit:

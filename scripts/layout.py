@@ -454,8 +454,7 @@ class Table:
     cell_role: str
     cell_padding_role: str | None
     totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
-    emphasis_rows: frozenset = frozenset()  # data-row indices the emitter bolds (the subject deal on a comps page)
-    emphasis_columns: frozenset = frozenset()  # column indices whose body cells the emitter bolds (row labels)
+    emphasis_cells: frozenset = frozenset()  # (data row, column) body cells the emitter bolds (emit_pptx.emphasised)
     header_bold: bool = False  # the emitter bolds the header row (the guide's or the table's header_bold), so it is measured bold
 
 @dataclass(frozen=True)
@@ -559,7 +558,8 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     if kind == "text":
         paragraphs = tuple(Paragraph(p["role"], p["text"], p.get("bullet_level"), bool(p.get("emphasis"))) for p in raw.get("paragraphs", []))
         if not paragraphs or any(not p.text.strip(" ") for p in paragraphs):
-            raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs")
+            raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs; an empty cell that keeps a row or grid in step is a region with no children "
+                                      "(in a row or column a weight gives it its share), not blank text")
     elif kind == "table":
         t = raw.get("table") or {}
         n_header = int(t.get("header_rows", 1))
@@ -581,8 +581,8 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
         if not 0 <= header_rows <= 4 or (not rows and not header_rows):
             raise LayoutContractError(f"table {node_id!r}: header_rows outside 0..4 or no rows at all")
         table = Table(columns, rows, header_rows, t.get("header_role", "type.table_header"), t.get("cell_role", "type.table_cell"), t.get("cell_padding_role"),
-                      bool(t.get("totals_last_row")), frozenset(int(i) for i in (t.get("emphasis_rows") or [])),
-                      emphasis_columns=frozenset(int(i) for i in (t.get("emphasis_columns") or [])), header_bold=bool(t.get("header_bold")))
+                      bool(t.get("totals_last_row")), frozenset((int(r), int(c)) for r, c in (t.get("emphasis_cells") or [])),
+                      header_bold=bool(t.get("header_bold")))
     elif kind not in ("image", "chart", "rule"):
         raise LayoutContractError(f"element {node_id!r}: kind must be text, table, image, chart or rule")
     size = raw.get("size") or {}
@@ -1299,7 +1299,7 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     natural, minimum = {}, {}
     last = len(table.rows) - 1
     for ci, column in enumerate(table.columns):
-        texts = ([(label, header, False) for label in own[ci]] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows or ci in table.emphasis_columns) else cell, True) for ri, row in enumerate(grid[table.header_rows:])]
+        texts = ([(label, header, False) for label in own[ci]] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or (ri, ci) in table.emphasis_cells) else cell, True) for ri, row in enumerate(grid[table.header_rows:])]
         widest = widest_segment = widest_value = 0
         for text, kind, is_value in texts:
             if not text.strip():
@@ -1346,12 +1346,12 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     row_heights: list[int] = []
     for ri, texts in enumerate(grid):
         data_ri = ri - table.header_rows
-        row_kind = header if (ri < table.header_rows and header) else (cell_bold if ((table.totals_last_row and ri == len(grid) - 1) or data_ri in table.emphasis_rows) else cell)
+        row_kind = header if (ri < table.header_rows and header) else (cell_bold if (table.totals_last_row and ri == len(grid) - 1) else cell)
         counts = []
         cells = spans[ri] if ri < table.header_rows else [(ci, ci) for ci in range(len(keys))]
         for c0, c1 in cells:
             key, text = keys[c0], texts[c0]
-            kind = cell_bold if (row_kind is cell and c0 in table.emphasis_columns) else row_kind
+            kind = cell_bold if (row_kind is cell and (data_ri, c0) in table.emphasis_cells) else row_kind
             # a spanner wraps across the columns it spans (their widths, less one inset pair)
             width = sum(widths[keys[c]] for c in range(c0, c1 + 1))
             lines = wrapped_lines(ctx, text, max(1, width - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
@@ -1386,6 +1386,13 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
     cuts measured text or a table short. A row's align is cross-axis placement only."""
     if isinstance(node, Element):
         height = heights.get(node.id)
+        if in_column and node.weight is not None and node.kind == "text" and height is not None and node.height_emu is None:
+            # a weighted text element in a column takes its share of the spare height, as a
+            # weighted region does, never less than its lines (its weight was read by
+            # nothing: rows of text beside each other's labels came out misaligned)
+            del heights[node.id]
+            floors[node.id] = height
+            return None, height
         return height, height or 0
     is_column = isinstance(node.layout, Flex) and node.layout.direction == "column"
     child = [_region_heights(c, guide, scale, heights, floors, False, is_column) for c in node.children]

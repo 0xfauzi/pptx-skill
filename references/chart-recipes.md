@@ -102,6 +102,18 @@ keybank (the pages named under "Proven on") and read from the render.
 - `legend`: `"none"` (no legend; `{"position": "none"}` is read the same, the guide's
   spelling) or `{"position": "b" | "t" | "r" | "l" | "tr", "role", "ink_role",
   "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
+  `hide_entries` is refused on BAR_* charts: LibreOffice counts a horizontal bar chart's
+  legend entries from the other end, so `[0]` hid the last series ("Wave 3") instead of
+  the first (measured, round 6, nycha); give that series no legend by leaving its name
+  empty, or draw the key as text.
+- An axis with no title is `"title": "none"` on that axis (`axes.category.title:
+  "none"`), which clears its `chart_defaults_taken` line; an object draws a title.
+- `labels.number_format` is not asked for when every point of the series carries its own
+  label text or is hidden: nothing is drawn in that format, and it is not listed as a
+  default taken.
+- Each series' `labels` takes its own `role`: two series labelled in different roles
+  draw at different sizes (a bold data label beside an axis-label-sized one), so name the
+  same role on every series unless the difference is the point.
 - A line, box, band, arrow, bracket, callout or badge at a data position is an
   annotation on the slide, not a chart key (section "Annotations" below). It needs
   `plot_area` and the axis's `min`, `max` and `cross_between`.
@@ -162,8 +174,16 @@ than its column's segment (one line of its role, 1.2 x its size, against the seg
 chart_geometry computes; needs `plot_area` and the value axis range) spills onto the
 plot, and is scored against the plot too: white values on thin bridge steps over a white
 page read 1.0:1 and refuse the page, with `overflows_bar_at_points` naming the steps.
-Horizontal bars are not measured. Move those values above the bar (a carrier label, as
-in the bridge recipe) or give them an ink that reads on both.
+Move those values above the bar (a carrier label, as in the bridge recipe) or give them
+an ink that reads on both.
+
+A horizontal bar's centred label is not wrapped to the bar's thickness: LibreOffice 24.2
+drew "Wave 1", "Remaining" in a 0.46 in segment and a five-word label each on one line
+over twelve stacked bars 0.2 in thick (measured 2026-10-26), so no word-break is
+refused there. A label wider than its bar's length runs past the bar's ends; with a
+`plot_area` the build measures it and warns "chart label wider than its bar" with both
+widths (the report's `chart_label_breaks.spills`): shorten it, move it outside, or
+accept the overlap you see on the render.
 
 Category labels are checked against their slot; with `plot_area` the slot is the plot's
 width over the categories, not the frame's (the frame's let "Transportation" break as
@@ -497,7 +517,7 @@ Anchors, in the host's own data:
 | chart | `{"category": c}` | a line at the category's centre (an event marker) |
 | chart | `{"value": v}`, `{"value": v, "axis": "category"}` (XY x) | a line across the plot |
 | chart | `{"values": [a, b]}` | a band across the plot |
-| chart | `{"region": {"categories": [i, j], "values": [a, b]}}` (XY: `{"x": [..], "y": [..]}`) | a rectangle |
+| chart | `{"region": {"categories": [i, j], "values": [a, b]}}` (XY: `{"x": [..], "y": [..]}`) | a rectangle over the whole category bands i..j (their gaps included, every series' bars in them); to ring one bar use `point`, which takes that bar's own box |
 | table | `{"cell": [r, c]}`, `{"cells": [[r0, c0], [r1, c1]]}` | cells; body rows count from 0 as `rows` lists them |
 | table | `{"row": r}`, `{"rows": [r0, r1]}`, `{"column": c}`, `{"columns": [c0, c1]}` | whole rows (all columns) or columns (header included); a column may be named by key |
 | table | `{"header_group": {"row": 0, "columns": [c0, c1]}}` | header cells (a spanner group) |
@@ -696,6 +716,17 @@ a horizontal bar chart).
 - `label`: the row's name, `{"text", "role", "ink_role", "max_width_share", "align"}`,
   set between the chart frame's left edge and the plot, ending at the plot's edge (leave
   room with `plot_area.x`); above the column on a horizontal bar chart.
+
+A category row's text cells may each carry their own style: `cells` entries are
+`{"text", "role", "ink_role", "emphasis"}` objects as well as strings (a bold total cell,
+a red gap figure), and the row takes `align` (left, center, right; centred when left out,
+listed as a default taken) for its cells.
+
+Placement inside the frame: a callout, a row or a label below a chart band lands in the
+next element unless the chart frame leaves room for it. Give the room inside the frame
+with `plot_area` (a smaller `h`, so the plot ends above the frame's bottom and the
+annotation sits between them), never by hoping the gap below the chart is free: a callout
+below a jazz chart collided with the bullets under it and cost a build (round 6).
 
 The cells must lie inside the chart frame or clear every other element (the collision
 check), may cover no mark of the host, and after the render may cover none of the

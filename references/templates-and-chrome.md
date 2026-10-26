@@ -24,7 +24,24 @@ slide's layout).
 
 For a PDF reference the template is blank at the reference's page size, and
 `build_deck.py --chrome draw` paints the guide's chrome (rules, bands, footer labels, a
-page-number field) and the surface colour on every slide.
+page-number field) and the surface colour on every slide. Its layouts are the default
+eleven and say nothing about the house: use one layout throughout (Title Only), since the
+page's arrangement is the spec's, not the layout's.
+
+What a PDF's chrome is drawn from, so it matches the reference:
+- Geometry: a band's or rule's box is refined against a 300 dpi render of the first page
+  that carries it (`box_basis` in the guide says so): the rows where the ink spans at
+  least half the width, so a title band is as inset as the house's and a rule as thick
+  and as high as it is drawn (bain's band inset 8 px each side, BCG's title rule 2 px
+  higher; both match the reference's rows).
+- Logos and wordmarks: a recurring picture is cut out of the render into `<draft
+  dir>/chrome/` and its entry takes that `image_path`; a wordmark drawn as vector curves
+  (BCG's) is a chrome candidate from the PDF's path clusters and cut the same way. A
+  footer line of any length is chrome text (a file name in 7pt included).
+- Ground: a picture under every page (McKinsey's navy-to-blue gradient) becomes the
+  guide's `ground`, its pixels saved beside the draft; `--chrome draw` paints it under
+  everything, and the contrast gate scores text on it against its darkest and lightest
+  pixels under the text, so a bright accent on the blue ground is refused as it reads.
 
 ## The reference firm's own chrome
 

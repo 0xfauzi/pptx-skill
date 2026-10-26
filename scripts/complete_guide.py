@@ -131,7 +131,9 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/imagery/register_kind", 'a string, e.g. "photographs, wide crops" or "none"', None),
     (r"/tables", ('{"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules": {"table_top", "header_bottom", '
      '"row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, '
-     '"cell_padding_role", "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "merged_cell_convention", "why"}'), None),
+     '"cell_padding_role" (a spacing step) or, when no step is near the house\'s inset, "cell_padding_role": null with '
+     '"cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", '
+     '"merged_cell_convention", "why"}'), None),
     (r"/charts", ('{"series_color_roles": [roles in order], "per_kind": {"<bar|column|line|...>": {"gridlines_major": 0..1, '
      '"data_labels": 0..1, "legend_position": "' + "|".join(GUIDE_LEGEND_POSITIONS) + '"}}, "why"}'), None),
     (r"/continuation", '{"header_repeat": "full|none", "contd_mark": "<text>", "takeaway_policy": "repeat|first_only|none"}', None),
@@ -185,6 +187,9 @@ def shape_error(path: str, value) -> str | None:
         if stray:
             return (f"{path}: {stray} {'is' if len(stray) == 1 else 'are'} read by nothing; {path} takes {sorted(keys - {'provenance'})}. "
                     "A source-line habit is not a chart setting: it is measured from the digest (each page's source_line)")
+        pad = value.get("cell_padding_emu") if path == "/tables" else None
+        if pad is not None and (not isinstance(pad, int) or isinstance(pad, bool) or pad < 0):
+            return f"/tables: cell_padding_emu {pad!r} is a whole number of EMU, 0 or more (45,720 is 0.05 in, 3.6 pt)"
         if path == "/charts":
             per_kind = value.get("per_kind") or {}
             bad = {k: v.get("legend_position") for k, v in per_kind.items() if isinstance(v, dict) and "legend_position" in v
@@ -207,8 +212,17 @@ def model_prov(note: str = "", value=None) -> dict:
             "master_membership": False, "confidence": confidence}
 
 
-def floor_for(guide: dict, role: str) -> float:
-    fam = FLOOR_FAMILY.get(role, "body")
+def floor_family(guide: dict, role: str) -> str:
+    """The floor family a role clears: the guide's floors list it (an added role is listed
+    where its completion said, floor_family), else the core table, else body."""
+    for fam, f in (guide.get("floors") or {}).items():
+        if isinstance(f, dict) and role in (f.get("roles") or []):
+            return fam
+    return FLOOR_FAMILY.get(role, "body")
+
+
+def floor_for(guide: dict, role: str, fam: str | None = None) -> float:
+    fam = fam or floor_family(guide, role)
     f = (guide.get("floors") or {}).get(fam) or {}
     observed = f.get("floor_pt")
     absolute = f.get("absolute_floor_pt") or 0.0
@@ -458,7 +472,8 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
                             errors.append(f"{where} annotation_moves[{j}]: {m['move']} is a mark: answer labelled, true when words on the exhibit "
                                           "say what it marks (a label beside it, or the figure it rings), false when it stands alone")
                         elif "labelled" in m and m.get("move") not in MARK_MOVE_SET:
-                            errors.append(f"{where} annotation_moves[{j}]: labelled is answered only on a mark move ({sorted(MARK_MOVE_SET)})")
+                            errors.append(f"{where} annotation_moves[{j}]: {m.get('move')!r} is not a mark move, so it has no labelled answer: "
+                                          f"remove labelled from this move (it is answered only on the mark moves, {sorted(MARK_MOVE_SET)})")
                         e = _vocab_error("annotation_move", m["move"], f"{where} annotation_moves[{j}]")
                         if e:
                             errors.append(e)
@@ -808,8 +823,14 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             if not isinstance(value, dict) or "size_pt" not in value:
                 raise PatchError(f"{path}: a role needs at least size_pt")
             spec = {k: value.get(k) for k in TYPE_MEMBERS}
-            if float(spec["size_pt"]) < floor_for(guide, role):
-                fam = FLOOR_FAMILY.get(role, "body")
+            # an added role says which floor family it belongs to (a 7pt furniture line is
+            # annotation, not body): the completion and the solver then read one floor
+            fam_asked = value.get("floor_family")
+            if fam_asked is not None and (role in FLOOR_FAMILY or fam_asked not in (guide.get("floors") or {})):
+                raise PatchError(f"{path}: floor_family {fam_asked!r}: an added role names one of the guide's floor families "
+                                 f"{sorted(guide.get('floors') or {})}; a core role's family is fixed ({FLOOR_FAMILY.get(role)})")
+            if float(spec["size_pt"]) < floor_for(guide, role, fam_asked):
+                fam = fam_asked or floor_family(guide, role)
                 observed = ((guide.get("floors") or {}).get(fam) or {}).get("floor_pt") is not None and "/floors/" + fam + "/floor_pt" not in open_paths
                 raise PatchError(f"{path}: {spec['size_pt']}pt is below the {fam} floor {floor_for(guide, role)}pt"
                                  + (f"; that floor is the smallest {fam} text the reference sets as text, observed, so it cannot be lowered. "
@@ -819,6 +840,17 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             spec["provenance"] = model_prov(value.get("why", ""), value)
             spec.update(seen_in(path, value))
             roles[role] = spec
+            if role not in FLOOR_FAMILY:
+                fam = fam_asked or "body"
+                floors = guide.get("floors") or {}
+                if isinstance(floors.get(fam), dict):
+                    for f in floors.values():
+                        if isinstance(f, dict) and role in (f.get("roles") or []):
+                            f["roles"].remove(role)
+                    floors[fam].setdefault("roles", []).append(role)
+                if fam_asked is None:
+                    guide.setdefault("completion", {}).setdefault("defaults_taken", []).append(
+                        f"{path}: floor_family body (left out: an added role clears the body floor)")
         elif parts[3] == "members":
             if role not in roles:
                 raise PatchError(f"{path}: {role} has no derived size to complete")

@@ -992,6 +992,9 @@ def render_check(elements: list[dict], png: str, page_w_emu: int, guide: dict) -
 #: a PDF region is rendered between these densities: below 72 a logo is coarser than the
 #: page itself; 1200 is past any print use, and the region's pixels are capped as well
 DPI_RANGE = (72, 1200)
+#: characters a PDF box must hold for its text layer to state the size: fewer is a label,
+#: not a table (asserted; a 3 x 3 grid of two-digit figures already holds 18)
+TEXT_LAYER_MIN_CHARS = 20
 PDFTOPPM_TIMEOUT_S = 120
 
 
@@ -1269,6 +1272,20 @@ def text_size(ref: str, face_path: str, face: str, pic_id: str | None = None, sl
         pt_per_px = cy / 12_700 / max(1, shown.height)
         source = f"{ref}#ppt/media/{pic_id} on slide {slide}, drawn {cx / EMU_PER_INCH:.2f} x {cy / EMU_PER_INCH:.2f} in"
     else:
+        if page is not None and bbox and len(bbox) == 4 and not pic_id:
+            # a table the PDF draws as text (bain's vector tables) carries its sizes: they
+            # are read off the text layer, exactly, and the pixels are read only without it
+            with _pdf(ref) as pdf:
+                if 1 <= page <= len(pdf.pages):
+                    x0, y0, x1, y1 = bbox
+                    sizes = [round(float(c["size"]), 1) for c in pdf.pages[page - 1].chars
+                             if c.get("text", "").strip() and x0 <= float(c["x0"]) and float(c["x1"]) <= x1 and y0 <= float(c["top"]) and float(c["bottom"]) <= y1]
+                    if len(sizes) >= TEXT_LAYER_MIN_CHARS:
+                        counts = {s: sizes.count(s) for s in set(sizes)}
+                        return {"source": f"{ref} page {page} bbox {bbox}: the PDF's text layer", "face": face, "chars": len(sizes),
+                                "sizes_pt": dict(sorted(counts.items(), key=lambda kv: -kv[1])[:5]), "size_pt": min(counts, key=lambda s: (-counts[s], s)),
+                                "band_pt": [min(sizes), max(sizes)],
+                                "basis": "the commonest size of the characters the PDF's text layer sets inside the box (exact: the file states it)"}
         dpi = 600
         with tempfile.TemporaryDirectory(prefix="images-") as tmp:
             png = Path(tmp) / "region.png"

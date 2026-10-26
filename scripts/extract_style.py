@@ -104,6 +104,37 @@ def drawn_extent_emu(pdf: Path, page_index: int, box: tuple[int, int, int, int],
     left, right = min(r[1] for r in rows), max(r[2] for r in rows) + 1
     return (round(left / k), round(top / k), round((right - left) / k), round((bottom - top) / k))
 
+def ground_picture(guide: dict, reference: str, folder: Path) -> None:
+    """The ground picture's own bytes (pdfimages, the file's image as stored, no content
+    over it) for guide.ground.image_path: --chrome draw paints it as every page's
+    background, so the build's pages stand on the house's ground and not on its flat
+    surface colour. A picture, not a gradient fill: both renderers draw a bitmap alike,
+    where an authored gradFill's midpoint lands 20 points apart (validate --emit, E38)."""
+    import subprocess
+    import tempfile
+    ground = guide.get("ground")
+    if not ground:
+        return
+    with tempfile.TemporaryDirectory(prefix="ground-") as tmp:
+        try:
+            subprocess.run(["pdfimages", "-png", "-f", str(ground["sample_page"]), "-l", str(ground["sample_page"]), reference, str(Path(tmp) / "im")],
+                           capture_output=True, timeout=300, check=True)
+        except (OSError, subprocess.SubprocessError) as error:
+            ground["image_basis"] = f"not cut: pdfimages failed ({error})"
+            return
+        from PIL import Image
+        for path in sorted(Path(tmp).glob("im-*.png")):
+            with Image.open(path) as im:
+                if list(im.size) == ground["picture_px"] and im.mode != "L":
+                    folder.mkdir(parents=True, exist_ok=True)
+                    dest = folder / "ground.png"
+                    im.convert("RGB").save(dest)
+                    ground["image_path"] = str(dest.resolve())
+                    ground["image_basis"] = f"the picture page {ground['sample_page']} paints under its content, as the file stores it (pdfimages)"
+                    return
+    ground["image_basis"] = "not cut: pdfimages found no picture of that size on the sample page"
+
+
 def chrome_pictures(guide: dict, reference: str, folder: Path) -> None:
     """Every logo the PDF chrome miner found (a pasted picture, or a vector wordmark drawn
     as paths) gets the pixels the reference draws it with, cut from its sample page at 600
@@ -132,6 +163,9 @@ def chrome_pictures(guide: dict, reference: str, folder: Path) -> None:
 SIZE_LEVEL_RATIO = 1.10  # deckgen tokens.py:199; asserted: the smallest classic type step is 1.125
 GAP_LEVEL_RATIO = 1.25  # deckgen tokens.py:200; asserted
 MIN_LEVEL_OBSERVATIONS = 2  # deckgen tokens.py:202; one observation is an exception, not a level
+#: two boxes this close touch: ooxml._pdf_box truncates a PDF box's origin and extent to whole
+#: EMU separately, so abutting boxes read up to 2 EMU apart (nycha's space.xs came out 1 EMU)
+ABUTTING_EMU = 2
 CASE_CONVENTION_SHARE = 0.8  # deckgen tokens.py:204; asserted
 RULE_LINE_MAX_WIDTH_EMU = 38100  # 3pt; deckgen tokens.py:210; PowerPoint's line-weight gallery steps
 INK_CONTRAST_MIN = 4.5  # WCAG 2.x AA
@@ -1063,7 +1097,7 @@ class Extractor:
             by_y = sorted(boxes, key=lambda b: (b[1][1], b[0]))
             for (ra, a), (_, b) in zip(by_y, by_y[1:]):
                 gap = b[1] - (a[1] + a[3])
-                if 0 < gap < 2 * EMU_PER_INCH:
+                if ABUTTING_EMU < gap < 2 * EMU_PER_INCH:
                     pool.setdefault(float(gap), Votes()).add(f"{sid}#{ra}", False)
             by_x = sorted(boxes, key=lambda b: (b[1][0], b[0]))
             for i, (ra, a) in enumerate(by_x):
@@ -1072,7 +1106,7 @@ class Extractor:
                     if overlap < max(1, min(a[3], b[3])) / 2:
                         continue
                     gap = b[0] - (a[0] + a[2])
-                    if 0 < gap < 2 * EMU_PER_INCH:
+                    if ABUTTING_EMU < gap < 2 * EMU_PER_INCH:
                         pool.setdefault(float(gap), Votes()).add(f"{sid}#{ra}", False)
                         horizontal.setdefault(float(gap), Votes()).add(f"{sid}#{ra}", False)
                     break
@@ -1520,6 +1554,17 @@ class Extractor:
         for entry in chrome:
             del entry["paint_rank"]
         self.guide["chrome"] = chrome
+        # the picture a PDF paints under every page's content (mckinsey's navy-to-blue
+        # ground is a 1920 x 1080 image over its flat surface): measured here, cut in main()
+        grounds = Counter(s.pdf_ground for s in self.slides if self.is_pdf and s.pdf_ground)
+        if grounds:
+            size, n = grounds.most_common(1)[0]
+            if n >= MOTIF_RECURRENCE_FLOOR * len(self.slides):
+                self.guide["ground"] = {"picture_px": list(size), "pages": n, "of_pages": len(self.slides),
+                                        "sample_page": next(s.index + 1 for s in self.slides if s.pdf_ground == size),
+                                        "image_path": None,
+                                        "provenance": observed([f"page{s.index + 1}#ground" for s in self.slides if s.pdf_ground == size][:EVIDENCE_CAP], n, False,
+                                                               n / len(self.slides), "inferred")}
         motifs = []
         for c in chrome:
             if c["kind"] in ("rule", "band") and c["slides_present"] >= MOTIF_RECURRENCE_FLOOR * len(self.slides):
@@ -2011,6 +2056,7 @@ def main(argv: list[str]) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     if ex.is_pdf:
         chrome_pictures(guide, args.reference, out.parent / "chrome")
+        ground_picture(guide, args.reference, out.parent / "chrome")
     out.write_text(json.dumps(guide, indent=1, default=str))
     rep = Path(args.report) if args.report else out.with_suffix(".md")
     rep.parent.mkdir(parents=True, exist_ok=True)

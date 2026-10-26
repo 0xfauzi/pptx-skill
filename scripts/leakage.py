@@ -55,6 +55,22 @@ PHRASE_WORDS = 5  # unmeasured
 CHROME_SHARE = 0.5  # unmeasured: repeated on half the pages or more is the house's furniture
 _TOKEN = re.compile(r"[$€£]?\d[\d,.]*%?x?|[A-Za-z][A-Za-z&'\-]*")
 _FIGURE = re.compile(r"^[$€£]\d|\d\d%$|^\d{3,}|\d[.,]\d")
+#: a number: thousands groups only as three digits after a comma, so a JSON list [36,24]
+#: reads as two numbers, never as 3624
+_NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
+
+
+def _number_key(n: str) -> str:
+    """One spelling per value: no thousands commas, no trailing decimal zeros (24.0 is 24)."""
+    n = n.replace(",", "")
+    return n.rstrip("0").rstrip(".") if "." in n else n
+
+
+def _figure_number(text: str) -> str | None:
+    """The number a figure writes, without its currency, unit or thousands commas
+    ("$1,250m" is 1250, "36%" is 36); None when it holds more than one."""
+    found = _NUMBER.findall(text)
+    return _number_key(found[0]) if len(found) == 1 else None
 _STOP_CAPS = {"The", "A", "An", "In", "On", "Of", "And", "For", "To", "At", "By", "With", "From", "As", "Is", "Our", "We", "This", "That"}
 
 
@@ -201,7 +217,12 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
             computed: list[str] | None = None, furniture: list[str] | None = None) -> dict:
     briefs = briefs or []
     computed = computed or []
-    declared = features([Path(c).read_text(errors="replace") for c in computed])["figure"]
+    computed_text = [Path(c).read_text(errors="replace") for c in computed]
+    declared = features(computed_text)["figure"]
+    # the numbers a --computed file holds however it spells them: a figures script's JSON
+    # writes 36 where the slide writes 36% (round 6, mckinsey), and the slide's spelling
+    # was the only one matched
+    declared_numbers = {_number_key(n) for t in computed_text for n in _NUMBER.findall(t)}
     coincident: dict[str, dict] = {}
     allowed = features([Path(b).read_text(errors="replace") for b in briefs])
     excluded: dict[str, set] = {k: set(v) for k, v in allowed.items()}
@@ -233,8 +254,10 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
                 if not where:
                     continue
                 text = " ".join(f)
-                if kind == "figure" and f in declared:
-                    entry = coincident.setdefault(text, {"text": text, "past": where[:3], "pages": []})
+                core = _figure_number(text) if kind == "figure" else None
+                if kind == "figure" and (f in declared or core in declared_numbers):
+                    entry = coincident.setdefault(text, {"text": text, "past": where[:3], "pages": [],
+                                                         **({} if f in declared else {"computed_as": core})})
                     entry["pages"].append(i + 1)
                     continue
                 rank = rarity(kind, f, text, decks, vocabulary)

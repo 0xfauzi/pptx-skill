@@ -449,6 +449,7 @@ class SlidePrint:
     generated: bool = False  # carries emit_pptx's origin tag: this skill made it, so it is not reference evidence
     unread_glyphs: int = 0  # pdf: glyphs set at an angle no type size can be read along, left out of the runs
     pdf_vectors: list[tuple[int, int, int, int]] = field(default_factory=list)  # pdf: drawn-path clusters (a vector wordmark), box EMU; chrome candidates only
+    pdf_ground: tuple[int, int] | None = None  # pdf: the pixel size of a picture painted under the whole page (its ground), if any
 
 
 TYPE_EVIDENCE_CLASSES = ("vector", "vector_with_image")
@@ -2418,6 +2419,8 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
             for im in page.images:
                 x0, x1 = max(0.0, float(im["x0"])), min(w, float(im["x1"]))
                 t, b = max(0.0, float(im["top"])), min(h, float(im["bottom"]))
+                if (x1 - x0) * (b - t) >= 0.98 * page_area and im.get("srcsize"):
+                    sp.pdf_ground = (int(im["srcsize"][0]), int(im["srcsize"][1]))
                 # an image under the whole page is its ground, as a page-sized rect is
                 if x1 > x0 and b > t and (x1 - x0) * (b - t) < 0.98 * page_area:
                     boxes.append((x0, t, x1, b))

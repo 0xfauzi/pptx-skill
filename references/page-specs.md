@@ -155,16 +155,29 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
 
 ## Conventions the build enforces
 
-- The page title is held to the band above the reference's top rule when it has one. A
+- The page title is held to the band above the reference's top rule when it has one: the
+  build gives the title element the band's height (from the root's top padding down to
+  the rule), so the content below starts under the rule's zone with no gap to tune. A
   two-line title the house never wrote is refused; shorten it or move the second clause
-  where the house states claims.
+  where the house states claims. A house that sets a subtitle above its rule (jazz) is
+  written as a second paragraph of the title element in the subtitle's role, with the
+  root's `pad_roles` top set to the step that starts the band where the house's title
+  starts (jazz: `space.md`, 0.11 in, as its title sits 0.10 in down); the title's length
+  is judged on its `type.title` paragraphs only. A tag beside the title (a lever tag) is
+  a row holding the title and the tag; the tag's width comes out of the title's.
+- `size` on a text element is refused: its height is its measured lines, or its share of
+  a column by weight. Space above or below is a `gap_role` or a region's `pad_roles`.
+- An empty cell that keeps a row or grid in step (a spacer) is a region with no
+  children, with a weight in its row or column; blank text is refused.
 - Chrome zones are reserved automatically; content never runs under the footer rule.
   `page.reserved_zones` overrides. Under `--chrome none` only chrome the template inherits
   is reserved. A band carrying content on at least half the pages it appears on is a
   surface (a title band, a body band) and reserves nothing; text on it is scored against
   its fill, so text straddling a band edge is refused there.
 - A region may carry `fill_role` (and `prst`, a preset drawn under its children: `rect`,
-  `roundRect`, `ellipse`, `homePlate`, `chevron`, `rightArrow`, `diamond`, `triangle`)
+  `roundRect`, `ellipse`, `homePlate`, `chevron`, `rightArrow`, `leftArrow`, `downArrow`,
+  `upArrow`, `diamond`, `triangle`, and the brackets and braces, which carry no text) and
+  an outline (`line_role`, `line_width_emu`, `dash`)
   and padding in its layout: `pad_role` on every side, or `pad_roles` naming each of
   `left`, `top`, `right`, `bottom` (a spacing role or null; a side left out is refused,
   not read as zero). Text inside takes `ink_role` on its paragraph. A house's arrow or
@@ -179,10 +192,21 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   full width; put the words in a region that carries them.
 - A paragraph is `{"role", "text"}` plus `bullet_level`, `ink_role`, `align`. Bold or
   coloured words go under `styling.<id>.paragraphs.<n>.runs`, the paragraph keeping the
-  whole text; `runs` on the paragraph itself is refused by name.
+  whole text; `runs` on the paragraph itself is refused by name. A run is `{"text"}` plus
+  `emphasis` (bold) and `ink_role` (its own colour, scored by the contrast gate against
+  the run's backing); any other key on a run is refused by name.
+- A region outline (`line_role` on a region) that marks something on the page is a mark
+  like any annotation: say what it marks in words on the page, as "A mark says what it
+  means" in chart-recipes.md asks.
+- Spacing between paragraphs is the role's (`space_before_pt`, `space_after_pt`); a
+  paragraph carries none of its own. A house that spaces its list items has that spacing
+  in a role (answer it at completion, or add a list role there); otherwise put each item
+  in its own element in a column with a `gap_role`.
 - Height: a region is as tall as its content unless it is flexible (it holds a chart, image
   or rule with no height, or carries a `weight` inside a column); flexible regions share
-  the spare height by weight. A row's `align` does not make it flexible: to fill the page,
+  the spare height by weight. A text element with a `weight` inside a column is flexible
+  too: it takes its share (never less than its lines) and its words sit at its `anchor`,
+  so a filled sidebar or a row of label cells runs to the foot of its column. A row's `align` does not make it flexible: to fill the page,
   give the region a weight in its column.
 - Every measured element is checked against its own box: `overflow` (text or table rows
   outgrow it) and `word_split` (a word wider than its line, named) are violations a

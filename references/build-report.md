@@ -55,6 +55,16 @@ reported as the same house. The panel is not yours to choose.
 
 `status: fit` with `scale` and `violations: []` fits at that type scale. Below 1.0 the
 solver stepped the whole ladder down toward the floor; say so in the report below 0.9.
+When no scale clears the floors, the message names each role and the floor it would
+cross. Each page's `tables` carries the same keys whether or not it fit: `rows`,
+`height_emu`, `column_widths_emu`, `fitting_row_prefix` (every body row on a page that fit
+clean), `width_deficit_emu` and `column_deficits_emu`.
+
+The brief's `ruler:` line names what measured the text: `harfbuzz` or `pillow`, pinned by
+the guide (`measurement.ruler`, written by the extractor) or, for a guide that predates
+the pin, this machine's default, which changes when `uharfbuzz` is installed or removed
+and moves every fit budget with it. A pinned ruler that is not installed is refused, never
+replaced. Report the ruler with any fit result you compare across builds.
 
 ## Unfittable pages: your moves, in order
 
@@ -149,7 +159,10 @@ parallel, with its reason, and V over the other pairs. With `--plan`, `plan.chec
 the plan check, `realised_by_page` sets each page's planned composition beside its
 realised one (realised names, b1, b2, ..., are this build's own clusters: two pages share
 one when they share an arrangement), and `pages_differing_from_plan` flags each page where
-plan and build disagree. A plan the check
+plan and build disagree on whether neighbours repeat. Whether a page realises the
+archetype it names is not measured (`pages_against_their_archetype` says so): an empty
+`pages_differing_from_plan` does not mean each page is the archetype the plan named, so
+compare the render with that archetype's slides and correct `plan.json`. A plan the check
 refuses is not built. A pair whose similarity lies within 0.1 of the 0.5 line (unmeasured)
 is marked `borderline` under `pairs`, and a flag or a composition V warning that rests on
 one says so: one lead-in wrapping to a second line once moved a keybank pair from 0.434 to
@@ -202,15 +215,19 @@ the guide says is refused by name.
 
 - `position_drift`: one element (same id and kind, left edge and width within a spacing
   step) on several pages whose top moves by more than that step.
-- `tieouts`: for each table with `totals_last_row`, each numeric column's body sum against
-  its totals cell at the cell's decimals; median, average and mean rows are skipped.
+- `tieouts`: for each table with `totals_last_row`, each numeric column's body against
+  its totals cell at the cell's decimals, by the column's `total` (`sum`, the default and
+  reported as such, or `mean`; `none` is skipped and says so); a totals row headed median,
+  average or mean is skipped.
 - `table_defaults_taken`: every table choice the spec left out (an emphasis group's
   `bold`), with the value written.
 - `chart_defaults_taken`: every chart choice the spec left out, with the value the file
   got. None of these is the house's style: write each into the spec until the list holds
   only what you meant.
 - `chart_label_breaks`: words a renderer must break between characters at the chart
-  text's size (category labels against their slot, centred data labels against the bar).
+  text's size (category labels against their slot, centred data labels against a column's
+  width), and under `spills` each horizontal bar's label wider than its bar, warned as
+  "chart label wider than its bar".
 - `component_notes`: a component admitted against another guide; re-run its check.
 - `pictures`: per picture on the page (a `slide.images` entry or a `category_row` cell),
   the box it was drawn in on the render (`box_px`), `differ_share` (the share of that

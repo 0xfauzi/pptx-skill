@@ -403,7 +403,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
                     if a < b:
                         pr = p.add_run()
                         pr.text = full[a:b]
-                        _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex, fit=fit)
+                        _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex), fit=fit)
                 if li < len(lines) - 1:
                     p._p.append(etree.Element(qn("a:br")))
                 pos = end
@@ -411,7 +411,12 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
             for r in runs:
                 pr = p.add_run()
                 pr.text = r["text"]
-                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex, fit=fit)
+                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex), fit=fit)
+
+
+def _run_ink(run: dict, guide: Guide, paragraph_ink: str | None) -> str | None:
+    """A run's own ink_role over its paragraph's ink (build_deck.contrast_of scores the same)."""
+    return guide.hex(run["ink_role"], where="run") if run.get("ink_role") else paragraph_ink
 
 
 def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
@@ -439,7 +444,8 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
 # and rightBracket's to the bottom (below it).
 RECT_PRESETS = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
                 "homePlate": MSO_SHAPE.PENTAGON,
-                "rightArrow": MSO_SHAPE.RIGHT_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
+                "rightArrow": MSO_SHAPE.RIGHT_ARROW, "leftArrow": MSO_SHAPE.LEFT_ARROW, "downArrow": MSO_SHAPE.DOWN_ARROW,
+                "upArrow": MSO_SHAPE.UP_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
                 "leftBracket": MSO_SHAPE.LEFT_BRACKET, "rightBracket": MSO_SHAPE.RIGHT_BRACKET, "leftBrace": MSO_SHAPE.LEFT_BRACE, "rightBrace": MSO_SHAPE.RIGHT_BRACE}
 
 
@@ -486,7 +492,7 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
             for r, text in zip(runs, apply_case_runs([r["text"] for r in runs], spec.get("case"))):
                 pr = p.add_run()
                 pr.text = text
-                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex)
+                _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=_run_ink(r, guide, ink_hex))
         tf.margin_left = tf.margin_right = Emu(guide.space(el.get("pad_role"), 0))
         tf.margin_top = tf.margin_bottom = Emu(guide.space(el.get("pad_role"), 0))
 
@@ -645,37 +651,43 @@ def table_emphasis(el: dict) -> list[dict]:
     groups = []
     for i, g in enumerate(raw):
         gw = f"{where} emphasis[{i}]"
-        if not isinstance(g, dict) or set(g) - EMPHASIS_KEYS or ("rows" in g) == ("columns" in g):
-            raise SpecError(f"{gw}: an object with exactly one of rows or columns, a fill_role, and optionally an ink_role: {EMPHASIS_EXAMPLE}")
+        if not isinstance(g, dict) or set(g) - EMPHASIS_KEYS or not ("rows" in g or "columns" in g):
+            raise SpecError(f"{gw}: an object with rows, columns or both (both: the cells where they cross), a fill_role, and optionally an ink_role: {EMPHASIS_EXAMPLE}")
         if "bold" in g and not isinstance(g["bold"], bool):
             raise SpecError(f"{gw}: bold is true or false (left out, the cells are bold)")
         if "fill_role" not in g:
             raise SpecError(f"{gw}: needs fill_role: a colour role from the guide, \"none\" (no fill: the page shows) or \"keep\" (the banding or "
                             "data fill the cells have without emphasis); there is no default fill")
+        rows = cols = None
         if "rows" in g:
             rows = g["rows"]
             if not isinstance(rows, list) or not rows or any(not isinstance(r, int) or isinstance(r, bool) or not 0 <= r < n_rows for r in rows):
                 raise SpecError(f"{gw}: rows {rows!r} must be data-row indices 0..{n_rows - 1}")
-            groups.append({"rows": frozenset(rows), "columns": None, "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
-        else:
+            rows = frozenset(rows)
+        if "columns" in g:
             cols = g["columns"]
             if not isinstance(cols, list) or not cols or any(c not in keys for c in cols):
                 raise SpecError(f"{gw}: columns {cols!r} must be column keys of this table ({keys})")
-            groups.append({"rows": None, "columns": frozenset(keys.index(c) for c in cols), "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
+            cols = frozenset(keys.index(c) for c in cols)
+        groups.append({"rows": rows, "columns": cols, "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
     return groups
 
 
 def emphasised(groups: list[dict], data_row: int, column: int) -> dict | None:
-    """The group that draws a body cell, the last one that marks it."""
+    """The group that draws a body cell, the last one that marks it. A group naming rows
+    and columns marks the cells where they cross (a gap row's label cell)."""
     hit = None
     for g in groups:
-        if (g["rows"] is not None and data_row in g["rows"]) or (g["columns"] is not None and column in g["columns"]):
+        if (g["rows"] is None or data_row in g["rows"]) and (g["columns"] is None or column in g["columns"]):
             hit = g
     return hit
 # Keys of a table's column entries; `align` overrides the guide's
 # alignment_by_column_type for that column (header_align still sets the header row).
-TABLE_COLUMN_KEYS = {"key", "label", "value_kind", "width_share", "min_width_role", "align"}
+TABLE_COLUMN_KEYS = {"key", "label", "value_kind", "width_share", "min_width_role", "align", "total"}
 TABLE_ALIGNS = ("left", "center", "right")
+#: what a column's totals cell is over its body (build_deck.tieouts_of checks sum and mean;
+#: "none" is a figure that is no simple aggregate: a weighted average, a ratio of totals)
+TABLE_TOTALS = ("sum", "mean", "none")
 
 
 def table_header_bold(el: dict, guide: Guide) -> bool:
@@ -713,6 +725,8 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
             raise SpecError(f"{where} column {col.get('key')!r}: unknown keys {extra}; allowed {sorted(TABLE_COLUMN_KEYS)}")
         if col.get("align") is not None and col["align"] not in TABLE_ALIGNS:
             raise SpecError(f"{where} column {col.get('key')!r}: align {col['align']!r} not in {list(TABLE_ALIGNS)}")
+        if col.get("total") is not None and col["total"] not in TABLE_TOTALS:
+            raise SpecError(f"{where} column {col.get('key')!r}: total {col['total']!r} not in {list(TABLE_TOTALS)}")
     for key in ("header_align", "spanner_align"):
         if el.get(key) is not None and el[key] not in TABLE_ALIGNS:
             raise SpecError(f"{where}: {key} {el[key]!r} not in {list(TABLE_ALIGNS)}")
@@ -763,7 +777,8 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
                 fill_style, (ih, iname) = styles[id(g)]
                 fh, fn = fill_style if fill_style is not None else (base["fill_hex"], base["fill_name"])
                 cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname, "bold": g["bold"] or base["bold"],
-                              "class": "emphasis " + ("rows" if g["rows"] is not None else "columns") + f" {groups.index(g)}"})
+                              "class": "emphasis " + ("cells" if g["rows"] is not None and g["columns"] is not None else "rows" if g["rows"] is not None else "columns")
+                                       + f" {groups.index(g)}"})
         rows.append({"row": ri, "header": is_header, **base, "cells": cells})
     return rows
 
@@ -1119,8 +1134,13 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             _text_style(guide, labels, f"{sw} labels")
             if labels.get("show", True):
                 _check_position(s_family, labels.get("position"), f"{sw} labels")
+                # a label whose point writes its own text, or hides it, shows no formatted
+                # value: when every point does, the series' number format formats nothing
+                own = {p.get("index") for p in s.get("points") or [] if isinstance(p, dict) and isinstance(p.get("label"), dict)
+                       and ("text" in p["label"] or p["label"].get("show") is False)}
+                every_own = bool(values) and all(i in own for i in range(len(values)))
                 for k, d in (("position", "labels.position"), ("number_format", "labels.number_format"), ("role", "labels.role"), ("ink_role", "labels.ink_role")):
-                    if k not in labels and not (k == "position" and not FAMILY_POSITIONS.get(s_family)):
+                    if k not in labels and not (k == "position" and not FAMILY_POSITIONS.get(s_family)) and not (k == "number_format" and every_own):
                         took(f"series[{si}].labels.{k}", d)
         for pi, p in enumerate(s.get("points") or []):
             pw = f"{sw} points[{pi}]"
@@ -1150,7 +1170,12 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 took(f"axes.{name}", "axis.visible")
                 ax = {}
             _keys(aw, ax, AXIS_KEYS)
-            if "title" in ax:
+            if ax.get("title") == "none":
+                pass  # "none" chosen: no axis title, written as such and listed as nothing taken
+            elif "title" in ax:
+                if isinstance(ax["title"], str):
+                    raise SpecError(f"{aw} title: {ax['title']!r}; an axis title is \"none\" (no title, chosen) or "
+                                    "{\"text\": ..., \"role\": ..., \"ink_role\": ..., \"orientation\": ...}")
                 t = _keys(f"{aw} title", ax["title"], AXIS_TITLE_KEYS)
                 if not isinstance(t.get("text"), str) or not t["text"].strip():
                     raise SpecError(f"{aw} title: text is required")
@@ -1241,6 +1266,14 @@ def chart_parse(el: dict, guide: Guide) -> dict:
         _keys(f"{where} legend", legend, LEGEND_KEYS)
         _enum(f"{where} legend", "position", legend.get("position"), LEGEND_POSITIONS)
         _text_style(guide, legend, f"{where} legend")
+        if legend.get("hide_entries") and str(type_name).startswith("BAR_"):
+            # c:legendEntry/c:idx names an entry by position, and on a horizontal bar chart
+            # LibreOffice 24.2 counts from the other end of the series (measured: [0] on
+            # three stacked bars hid the last series, not the first): the render the agent
+            # reviews would not show what the spec names
+            raise SpecError(f"{where} legend: hide_entries on a horizontal bar chart ({type_name}): LibreOffice counts the entries from the other end "
+                            "(measured: [0] on three stacked bars hid the last series), so the render you review hides another series than the spec names; "
+                            "write \"legend\": \"none\" and name the series where they are drawn (data labels, a category_row, or text beside the chart)")
     if "text" in el:
         _keys(f"{where} text", el["text"], TEXT_KEYS)
         _text_style(guide, el["text"], f"{where} text")
@@ -1661,7 +1694,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             if ax.get("number_format"):
                 axis.tick_labels.number_format = ax["number_format"]
                 axis.tick_labels.number_format_is_linked = False
-            if ax.get("title"):
+            if isinstance(ax.get("title"), dict):
                 _write_axis_title(axis, ax["title"], guide, name, chart, f"{aw} title")
             if (ax.get("labels") or {}).get("rotation_deg") is not None:
                 body = axis._element.get_or_add_txPr().find(qn("a:bodyPr"))
@@ -2033,6 +2066,22 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
     return drawn
 
 
+def _picture_background(slide, path: str) -> None:
+    """The slide's background as the house's ground picture, stretched over the page
+    (p:bg/p:bgPr/a:blipFill): the ground the reference paints under every page."""
+    _, rid = slide.part.get_or_add_image_part(path)
+    c_sld = slide._element.find(qn("p:cSld"))
+    for old in c_sld.findall(qn("p:bg")):
+        c_sld.remove(old)
+    bg = etree.Element(qn("p:bg"))
+    bg_pr = etree.SubElement(bg, qn("p:bgPr"))
+    blip_fill = etree.SubElement(bg_pr, qn("a:blipFill"), rotWithShape="1")
+    etree.SubElement(blip_fill, qn("a:blip")).set(qn("r:embed"), rid)
+    etree.SubElement(etree.SubElement(blip_fill, qn("a:stretch")), qn("a:fillRect"))
+    etree.SubElement(bg_pr, qn("a:effectLst"))
+    c_sld.insert(0, bg)
+
+
 def _send_to_back(slide, names: list[str]) -> None:
     """Drawn chrome goes behind the content and keeps its own order among itself (`names`
     is paint order): the spTree's first two children are its properties, so the first
@@ -2290,6 +2339,19 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             kind = el["kind"]
             if kind == "text":
                 write_text(slide, el, guide, box, shape=title_ph if el is title_el else None)
+                if el is title_el and title_ph is not None:
+                    # the layout put the title placeholder first in the tree; it paints where
+                    # the title stands in the page's order, over a panel filled before it
+                    # (mckinsey p5: a white panel holding the title hid it; the contrast gate
+                    # had read the title over the panel, as now drawn)
+                    sp = title_ph._element
+                    tree = sp.getparent()
+                    tree.remove(sp)
+                    ext = tree.find(qn("p:extLst"))
+                    if ext is not None:
+                        ext.addprevious(sp)
+                    else:
+                        tree.append(sp)
             elif kind == "rule":
                 write_rule(slide, el, guide, box)
             elif kind == "rect":
@@ -2307,7 +2369,10 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
         drawn: list[str] = []
         page_w, page_h = int(prs.slide_width), int(prs.slide_height)
         if chrome == "draw":
-            if surface and surface.upper() != "FFFFFF":
+            ground = (guide_data.get("ground") or {}).get("image_path")
+            if ground and Path(ground).is_file():
+                _picture_background(slide, ground)
+            elif surface and surface.upper() != "FFFFFF":
                 slide.background.fill.solid()
                 slide.background.fill.fore_color.rgb = RGBColor.from_string(surface.upper())
             drawn = draw_chrome(slide, guide, guide_data, page_w, page_h, entries=firm_entries(chrome_on_page(guide_data, "draw"), choices), notes=chrome_report["notes"])

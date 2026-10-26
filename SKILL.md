@@ -39,7 +39,12 @@ Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan l
 
 Before the first deck on a machine, run `python3 scripts/preflight.py --reference "$REF"`:
 it checks the Python packages, LibreOffice, poppler, fontconfig, HarfBuzz and the faces the
-reference names, and prints the install commands for anything missing.
+reference names, and prints the install commands for anything missing. Each face is
+reported as measurable here or not (a PDF that embeds Verdana draws it in the reference,
+but the solver needs the face installed or its fc-match stand-in named). Install nothing
+yourself: fonts and packages are machine-wide and move every other session's fits, and
+Microsoft's faces come under a licence the user accepts (references/intake.md, What you
+may install). Ask, and report every face substituted or installed, and by whom.
 
 ## Workflow
 
@@ -82,7 +87,7 @@ triage, scans and missing fonts: [references/intake.md](references/intake.md).
 
 ```bash
 python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" --check     # each open address with its value shape
-python3 scripts/gallery.py digest "$REF" --out "$DECK_WORK/ref/digest" --guide "$DECK_WORK/ref/draft.json"
+python3 scripts/gallery.py digest "$REF" --out "$DECK_WORK/ref/digest" --guide "$DECK_WORK/ref/draft.json"   # --pages 30-70 on a long deck
 # copy digest/digest.stub.json to digest/digest.json; fill every page's exhibits and source_line after looking
 python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/completion.json" \
         -o "$DECK_WORK/ref/guide.json" --digest "$DECK_WORK/ref/digest"
@@ -147,8 +152,12 @@ each holds, what it would lose (a chart becomes a placeholder line, a PDF table 
 turned text is left out, merged cells are unmerged) and whether it fits at full scale:
 
 ```bash
-python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"   # --pages 30-45 on a long deck
 ```
+
+The survey reads the reference once; on a long PDF give it `--pages` (bain's pages 34 to
+45: under a minute). A page that does not fit at full scale says why
+(`why_not_full_scale`: the element, the violation, the shortfall).
 
 Take a CANDIDATE (a content page on the house's most used layout, with a title, text and
 an exhibit, nothing lost, fitting); a pasted picture travels with its own bytes and a

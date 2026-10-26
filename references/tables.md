@@ -98,6 +98,30 @@ habits recorded on 35 pages; the house's own appear in `exhibit_habits.number_fo
   off.
 - `header_role` and `cell_role` are the roles the solver measures and the file is written
   in, with nothing substituted; a bold header is measured bold.
-- With `totals_last_row`, the build ties each numeric column's body sum to its totals cell
+- With `totals_last_row`, the build ties each numeric column's body to its totals cell
   and warns on a mismatch (a subtotal inside the body reads as one: compute the figure or
-  take the flag off).
+  take the flag off). A column says what its totals cell is with `total`: `"sum"` (the
+  default, reported as taken), `"mean"` (the plain mean of the body rows), or `"none"` (no
+  simple aggregate: a weighted average span, a ratio of two totals), which skips it and
+  says so under `tieouts`.
+- An emphasis group may name `rows` and `columns` together: it marks only the cells where
+  they cross (the label cell of each gap row bold and red is `{"rows": [1, 3], "columns":
+  ["skill"], "fill_role": "keep", "ink_role": "color.negative"}`). The solver measures
+  exactly the cells the emitter bolds (one definition, `emit_pptx.emphasised`).
+- Grouped headers are native. With `header_rows` N above 1, every column's `label` is a
+  list of N strings, top row first; in each row above the last, adjacent columns with the
+  same text are one merged cell (a spanner), and `""` leaves a cell empty:
+  `{"key": "ev_rev", "label": ["Valuation multiples", "EV / Revenue"]}` beside
+  `{"key": "ev_ebitda", "label": ["Valuation multiples", "EV / EBITDA"]}`. A spanner is
+  measured across the columns it spans; `spanner_align` (left, center, right) sets the
+  spanner cells, else they are centred and the page lists that under
+  `table_defaults_taken`. A group label over columns is a spanner, not a bracket
+  annotation above the table.
+- Table text has one floor, the same in the build and in `pptx_tools validate --emit`:
+  the lowest floor of the table roles' families. Where the house's own tables are pasted
+  pictures or vector text in a PDF, answer `/tables/picture_text` at completion
+  (guide-completion.md): the size is measured there and the table floor drops to it,
+  never below the absolute floor.
+- Cell padding comes from the guide: `tables.cell_padding_role`, or, when no spacing step
+  is near the house's inset, `cell_padding_role: null` with `cell_padding_emu` (a role wins
+  when both are set). A table spec may override with its own `cell_padding_role`.
