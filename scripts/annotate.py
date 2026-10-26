@@ -188,13 +188,15 @@ DEFAULT_LINE_PT = 2.25
 
 
 def line_strokes(geo: ChartGeometry) -> list[tuple[str, tuple, float]]:
-    """(name, segment, width EMU) of every stroked segment of a line chart's series, between
-    consecutive points that both carry a number."""
-    if geo.family != "line":
+    """(name, segment, width EMU) of every stroked segment of a line series, between
+    consecutive points that both carry a number: a line chart's series and a combo chart's
+    line series alike (round 8 verifier: a target line through a column chart's labels was
+    not checked)."""
+    if geo.family == "xy":
         return []
     out = []
     for j, s in enumerate(geo.series):
-        if s.get("line_role") == "none":
+        if geo.series_family(j) != "line" or s.get("line_role") == "none":
             continue
         width = float(s.get("line_width_pt") or DEFAULT_LINE_PT) * EMU_PER_PT
         vals = s.get("values") or []
