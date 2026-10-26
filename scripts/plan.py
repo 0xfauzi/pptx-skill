@@ -1,88 +1,91 @@
 #!/usr/bin/env python3
-"""The section plan and the house's variety.
+"""The section plan and the reference's variety.
 
-    plan.py check plan.json --guide guide.json [--house-deck other.guide.json ...] [-o check.json]
-    plan.py house --guide guide.json [--house-deck other.guide.json ...]
+    plan.py check plan.json --guide guide.json [-o check.json]
+    plan.py reference --guide guide.json
 
-One definition of variety serves three readers: the guide (the house's own content pages,
-extract_style.py and complete_guide.py), the plan (this script's `check`) and the build
-(build_deck.py, the solved pages). Over the adjacent pairs of a sequence of pages:
+One definition of variety serves three readers: the guide (the reference's own content
+pages, extract_style.py and complete_guide.py), the plan (this script's `check`) and the
+build (build_deck.py, the solved pages). Over the adjacent pairs of a sequence of pages:
 
 - V (composition) = pairs whose composition differs / pairs;
 - V (structures) = pairs whose exhibit structure differs / pairs. A page's exhibit
   structure is read from the file (ooxml.exhibit_facts: its native charts by the plot
   types and series counts the chart XML states, its tables, its pictures, drawn shapes,
-  and how many panels): the house's off the reference's own pages, the build's off the
-  file it wrote. Nobody names it, so renaming an exhibit cannot move it; a pair with a page
-  whose structure was not read is left out (and counted as unread, never as a change or a
+  and how many panels): the reference's off its own pages, the build's off the file it
+  wrote. Nobody names it, so renaming an exhibit cannot move it; a pair with a page whose
+  structure was not read is left out (and counted as unread, never as a change or a
   repeat). A plan declares no structure: it describes each exhibit in a brief;
 - V (kinds) = the same over each page's exhibit kinds (exhibit_facts' `kinds`: the
   structure with every chart read as "chart"), where a section that sets a table beside a
   chart on page after page reads as the repeat it is whatever the charts plot;
-- distinct compositions per page = distinct compositions / pages, held against the house's
-  10th percentile window of the same number of pages (distinct_windows);
+- distinct compositions per page = distinct compositions / pages, held against the
+  reference's 10th percentile window of the same number of pages (distinct_windows);
 - the longest run of one composition, and every run of two or more with its pages.
 
 Pairs are counted only between pages the reader sees next to each other: a sequence breaks
 at a page that is not content (a cover, a divider, a disclaimer) and at a page that was not
 read, so with one unbroken sequence pairs = n - 1. A deck with no stretch of
 VARIETY_MIN_PAGES content pages in a row is no evidence, and every figure says so rather
-than reading 0 or 1. Every guide given as house evidence is proven at the boundary
-(read_house_guide) and each reference counts once (a repeated sha256 is refused).
+than reading 0 or 1. The guide is proven at the boundary (read_reference_guide). The skill
+takes one reference deck: a user who gives several names the one to follow, or is asked.
+
+A guide made with no reference (extract_style.py --blank) has no variety to hold a plan
+to: every comparison reports "no reference" (has_reference is the one test), never a
+warning, a score or a value taken from the corpus in its place.
 
 plan.json (every key required; `deliberate_parallel` is null on a page that does not
 repeat the previous page's composition, and the reason in words on one that does):
 
 {
  "schema": "pptx-skill section plan v2",
- "reference_sha256": "<the guide's reference.sha256: archetype ids belong to one reference>",
+ "reference_sha256": "<the guide's reference.sha256: archetype ids belong to one reference; null with no reference>",
  "pages": [
   {"id": "<the deck slide id it becomes>", "intent": "...",
    "message": "the page's message, or what the reader looks up on a reference page",
    "composition": "arch-3 | new:<name>",
-   "title_register": "the title's register in words, or a term the house's titles are coded in",
+   "title_register": "the title's register in words, or a term the reference's titles are coded in",
    "deliberate_parallel": null,
    "exhibits": [<one brief per exhibit; [] on a page that holds none>]}
  ]
 }
 
-An exhibit brief, every field in the model's own words (nothing is chosen from a list):
+An exhibit brief, every field in the model's own words (nothing is chosen from a list).
+Design starts from the reader and the data; a reference governs the look only:
 
 {"reader_must_see": "what the reader must see on it",
  "comparison": "what is compared against what",
  "data": "the data's shape, in words",
  "forms_considered": [{"form": "...", "reason": "why not, or why"}, ...],   (two or more distinct forms)
  "chosen_form": "...", "why": "why this form shows what the reader must see",
- "nearest_house_exhibit": {"page": N, "what": "what that page does that this takes or departs from"}
-                          | {"none": "why no page of the reference is near, because ..."},
- "marks": "what will be marked, where the claim lives, and why"}
+ "marks": "what will be marked, where the claim lives, and why",
+ "in_reference_look": "optional: how the reference's look (faces, colours, spacing, how its marks are drawn) applies to the chosen form"}
 
-`check` reads a brief for completeness only, never for what it says: every field present,
-each text field a phrase of at least BRIEF_MIN_WORDS distinct words (a form's name at least
-one; placeholders such as TBD or n/a and a lone letter do not count), at least two
+`check` reads a brief for completeness only, never for what it says: every required field
+present, each text field a phrase of at least BRIEF_MIN_WORDS distinct words (a form's name
+at least one; placeholders such as TBD or n/a and a lone letter do not count), at least two
 distinct forms considered (_form_key: case, punctuation, fullwidth letters, a leading
-article and a plural s folded; a form spelt in two scripts refused), a chosen form that
-is one of them, a nearest page that is a content page of the reference (1 to
-reference.slides, and not a cover, divider or disclaimer where the guide says which pages
-are content) or a reason why none is near, and no brief given twice across the plan.
+article and a plural s folded; a form spelt in two scripts refused), a chosen form that is
+one of them, `in_reference_look` a phrase when given (and not given on a guide with no
+reference), and no brief given twice across the plan. The key it replaced,
+`nearest_house_exhibit`, is refused by name.
 
-A title register is the model's words. When it names a term the house's titles are coded
-in (references/page_craft_vocabulary.json, by slug or label: register_term), it is held to
-the house's count of that term; otherwise it is reported as no house count, with the
-house's counts beside it. Only a register that is not words is refused.
+A title register is the model's words. When it names a term the reference's titles are
+coded in (references/page_craft_vocabulary.json, by slug or label: register_term), the
+reference's count of that term is shown beside it; otherwise it is reported as no count,
+with the reference's counts beside it. Only a register that is not words is refused.
 
 `check` refuses (exit 1), by name: a guide made before the current readings
 (old_guide_error), a plan that is not this shape, a brief that is not complete, a title
-register that is not words, an archetype the guide does not hold, a reason on a page that
-repeats nothing, and an UNDECLARED repeat that makes a run longer than the house's longest.
-With no house evidence for its longest run, the corpus's measure stands in
-(CORPUS_LONGEST_RUN): an undeclared run of that length warns, a longer one is refused, and
-a reason in deliberate_parallel clears it. It warns when the plan's V falls below the
-house's 10th percentile deck, when its distinct compositions per page fall below the
-house's 10th percentile window, when a DECLARED run is longer than the house's longest (or
-the corpus's, where the house has none: the reason is the model's; the length is the
-measure), and when a coded register is one the house never writes. Those thresholds are
-choices, not measurements: nothing has measured what V a reader calls samey.
+register that is not words, an archetype the guide does not hold, and a reason on a page
+that repeats nothing. The reference's habits are evidence shown beside each choice, never a
+refusal: it warns when an undeclared repeat makes a run longer than the reference's
+longest, when the plan's V falls below the reference's (its 10th percentile is the deck's
+own value), when its distinct compositions per page fall below the reference's 10th
+percentile window, and when a coded register is one the reference never writes; each
+warning is a departure answered in one line in the report. With no run evidence in the
+reference, no run is judged and the report says so. Those thresholds are choices, not
+measurements: nothing has measured what V a reader calls samey.
 """
 
 from __future__ import annotations
@@ -114,15 +117,17 @@ def nearest(value, vocab) -> str:
     near += [w for w in words if w.split("_")[0] == head and w not in near][:3]
     return f" (nearest: {', '.join(near[:4])})" if near else ""
 VARIETY_MIN_PAGES = 3  # definition: two pages make one pair, which is one observation, not a rate
-#: The longest run of one composition the corpus shows without a declared reason, and where
-#: it was measured: the evidence a plan is held to when its house has no run evidence of its own
-CORPUS_LONGEST_RUN = 2
-CORPUS_RUN_BASIS = ("references/planning-and-variety.md, measured tendencies: three native-pptx bank pitch books never ran one composition longer than 2 pages, and every longer run in the "
-                    "23 coded decks was a deliberate sibling template; no coder found an accidental one")
-WARN_PERCENTILE = 0.1  # unmeasured: the house's 10th percentile deck, a choice and not a reader's threshold
+WARN_PERCENTILE = 0.1  # unmeasured: the reference's 10th percentile window, a choice and not a reader's threshold
 PLAN_SCHEMA = "pptx-skill section plan v2"
 PAGE_KEYS = ("id", "intent", "message", "composition", "title_register", "deliberate_parallel", "exhibits")
-BRIEF_KEYS = ("reader_must_see", "comparison", "data", "forms_considered", "chosen_form", "why", "nearest_house_exhibit", "marks")
+BRIEF_KEYS = ("reader_must_see", "comparison", "data", "forms_considered", "chosen_form", "why", "marks")
+#: optional: how the reference's look applies to the chosen form (never on a guide with no reference)
+LOOK_KEY = "in_reference_look"
+#: keys a plan once took, each refused by name with what replaced it
+RENAMED_BRIEF_KEYS = {"nearest_house_exhibit": (
+    "nearest_house_exhibit was removed: an exhibit's design starts from reader_must_see, comparison and data, and a reference "
+    "governs its look only; say how the reference's look applies to the chosen form under in_reference_look (optional, a phrase), "
+    "or leave it out")}
 BRIEF_TEXT = ("reader_must_see", "comparison", "data", "chosen_form", "why", "marks")
 BRIEF_MIN_WORDS = 3  # definition, unmeasured: a reason is a phrase ("n/a", "see above", "TBD" are not reasons)
 NAME_FIELDS = frozenset({"chosen_form"})  # a form's name may be one word
@@ -144,14 +149,14 @@ WEAKNESSES = (
     ("Leader clustering is order-dependent and not transitive: a page joins the first archetype whose anchor it matches, so two pages "
      "that match each other but not an earlier anchor can land in different archetypes."),
     ("The title is content to the extractor, so pages that differ only below the title look more alike than the build's frame-free "
-     "measure sees them: the house is held to the more lenient count."),
+     "measure sees them: the reference is held to the more lenient count."),
     ("On a PDF the reader's text blocks stand in for shapes, and a page set as many small blocks rarely matches another at 0.5, so a "
-     "PDF house can read every page as its own archetype."),
+     "PDF reference can read every page as its own archetype."),
     ("V counts adjacent pairs only: an arrangement used on every other page (A B A C A) reads 1.0; distinct compositions per page "
      "is the figure that shows it."),
-    ("A picture carries no structure: a house that pastes its charts and tables as pictures reads every such page as 'picture', so its "
+    ("A picture carries no structure: a reference that pastes its charts and tables as pictures reads every such page as 'picture', so its "
      "structure V is low and the build is held to a lenient line; what the picture shows is the digest's reading, never measured."),
-    ("A PDF states rectangles, paths and text, never a chart or a table, so a PDF house's structure reads only pictures, drawn shapes "
+    ("A PDF states rectangles, paths and text, never a chart or a table, so a PDF reference's structure reads only pictures, drawn shapes "
      "and text, coarser than a native build's: the two are held to each other as change rates, each over its own pages."),
     ("Structure is kind and count, not form: two column charts of three series are one structure whatever they compare, and a "
      "waterfall drawn as stacked columns is a stacked column chart."),
@@ -200,7 +205,7 @@ def _structure_measure(pages: list[dict], pairs: list[tuple[dict, dict]], unread
 
 def distinct_windows(sequences: list[list[str]], n: int) -> list[float]:
     """Distinct compositions per page over every window of n pages in a row (within one
-    sequence): the house's distinct-per-page at the length of the sequence it is held against,
+    sequence): the reference's distinct-per-page at the length of the sequence it is held against,
     since a short sequence reads more distinct than a long one by arithmetic alone."""
     return [round(len(set(seq[i:i + n])) / n, 3) for seq in sequences for i in range(len(seq) - n + 1)]
 
@@ -232,53 +237,24 @@ def measure_deck(name: str, segments: list[list[dict]], unread_why: str = STRUCT
             "sequences": [[p["composition"] for p in seg] for seg in segments]}
 
 
-def _pool_sets(measured: list[dict], field: str) -> dict:
-    ex = [d for d in measured if "V" in d[field]]
-    if not ex:
-        return {"status": "no evidence", "why": f"no deck's {field} were read: " + "; ".join(f"{d['deck']}: {d[field].get('why')}" for d in measured)}
-    pairs = sum(d[field]["pairs"] for d in ex)
-    changed = sum(d[field]["changed"] for d in ex)
-    return {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
-            "p10_deck_V": round(percentile([d[field]["V"] for d in ex], WARN_PERCENTILE), 3),
-            "deck_V": [d[field]["V"] for d in ex], "decks_unread": [d["deck"] for d in measured if d not in ex]}
-
-
-def pool(decks: list[dict]) -> dict:
-    """Pairs pooled over the decks that carry evidence (a pair never crosses two decks), the
-    longest run over them, and the 10th percentile deck. Distinct compositions are not pooled:
-    archetype ids belong to one reference each."""
-    measured = [d for d in decks if d["status"] == "measured"]
-    if not measured:
-        return {"status": "no evidence", "decks": len(decks),
-                "why": f"no deck of {len(decks)} has evidence: " + "; ".join(f"{d['deck']}: {d['why']}" for d in decks)}
-    pairs = sum(d["composition"]["pairs"] for d in measured)
-    changed = sum(d["composition"]["changed"] for d in measured)
-    vs = [d["composition"]["V"] for d in measured]
-    one = " (one deck: the 10th percentile is that deck)" if len(measured) == 1 else ""
-    return {"status": "measured", "decks": len(measured), "decks_without_evidence": [{"deck": d["deck"], "why": d["why"]} for d in decks if d["status"] != "measured"],
-            "composition": {"V": round(changed / pairs, 3), "changed": changed, "pairs": pairs,
-                            "p10_deck_V": round(percentile(vs, WARN_PERCENTILE), 3), "deck_V": vs, "p10_note": "unmeasured threshold" + one},
-            **{name: _pool_sets(measured, name) for name, _ in FACT_MEASURES},
-            "distinct_per_page": {d["deck"]: d["distinct"]["per_page"] for d in measured},
-            "longest_run": max(d["longest_run"] for d in measured),
-            "sequences": [s for d in measured for s in d["sequences"]]}
-
-
-def distinct_against(value: float, n: int, house: dict) -> dict:
-    """A sequence's distinct compositions per page against the house's 10th percentile window
-    of the same length (distinct_windows): how an A B A B A sequence is held to the house."""
-    if house.get("status") != "measured":
-        return {"value": value, "verdict": "no evidence in the house: " + house["why"]}
-    windows = distinct_windows(house["sequences"], n)
+def distinct_against(value: float, n: int, ref: dict) -> dict:
+    """A sequence's distinct compositions per page against the reference's 10th percentile
+    window of the same length (distinct_windows): how an A B A B A sequence is held to the
+    reference."""
+    if ref.get("status") == NO_REFERENCE:
+        return {"value": value, "verdict": NO_REFERENCE}
+    if ref.get("status") != "measured":
+        return {"value": value, "verdict": "no evidence in the reference: " + ref["why"]}
+    windows = distinct_windows(ref["sequences"], n)
     if not windows:
-        return {"value": value, "verdict": f"no evidence in the house: no stretch of {n} content pages in a row"}
+        return {"value": value, "verdict": f"no evidence in the reference: no stretch of {n} content pages in a row"}
     p10 = round(percentile(windows, WARN_PERCENTILE), 3)
-    return {"value": value, "house_p10_window": p10, "windows": len(windows), "window_pages": n,
-            "verdict": "below the house's 10th percentile window" if value < p10 else "at or above the house's 10th percentile window",
+    return {"value": value, "reference_p10_window": p10, "windows": len(windows), "window_pages": n,
+            "verdict": "below the reference's 10th percentile window" if value < p10 else "at or above the reference's 10th percentile window",
             "threshold": "unmeasured: the 10th percentile window is a choice"}
 
 
-# --- the house, from a guide -------------------------------------------------------------------
+# --- the reference, from a guide ---------------------------------------------------------------
 
 def content_segments(variety: dict) -> list[list[dict]]:
     """The guide's page sequence cut into the runs of content pages a reader sees in a row.
@@ -312,15 +288,43 @@ def _is_int(v) -> bool:
     return isinstance(v, int) and not isinstance(v, bool)
 
 
-def read_house_guide(guide, where: str) -> dict:
-    """A guide given as the house's evidence, proven at the boundary: a style guide (a
-    reference with its sha256), whose variety, when it carries pages, lists each page once
-    with its number, composition and triage, names its content pages among them, and gives
-    each page's exhibit facts a structure string. Anything else is refused by name: a plan,
-    a list, a guide from before the variety measure, and a guide made before the current
-    readings (old_guide_error) are not evidence about the house's pages."""
-    if not isinstance(guide, dict) or not isinstance(guide.get("reference"), dict) or not (isinstance(guide["reference"].get("sha256"), str) and guide["reference"]["sha256"]):
-        raise Refused(f"{where}: not a style guide (no reference.sha256): a house deck is a guide or draft from extract_style.py")
+#: the verdict every comparison with a reference gives on a guide made with no reference
+NO_REFERENCE = "no reference"
+#: reference.format of a guide made with no reference deck (extract_style.py --blank)
+NO_REFERENCE_FORMAT = "none"
+#: the provenance of every value on a guide made with no reference: chosen by the model, not
+#: inferred from evidence, so nothing in it reads as a reference's habit
+MODEL_CHOICE = "model_choice"
+
+
+def has_reference(guide, where: str = "guide") -> bool:
+    """Whether the guide was made from a reference deck, proven at the boundary: a draft from
+    extract_style.py names its reference's sha256; a blank draft (extract_style.py --blank)
+    says reference.format "none" and names no sha256. Anything else is refused by name,
+    since a guide that cannot say which it is would be read as one or the other in silence."""
+    ref = guide.get("reference") if isinstance(guide, dict) else None
+    if not isinstance(ref, dict):
+        raise Refused(f"{where}: not a style guide (no reference object): a guide is a draft from extract_style.py, made from a "
+                      "reference deck or with --blank")
+    sha = ref.get("sha256")
+    if ref.get("format") == NO_REFERENCE_FORMAT:
+        if sha is not None:
+            raise Refused(f"{where}: reference.format is {NO_REFERENCE_FORMAT!r} (no reference) yet names sha256 {sha!r}; re-make the draft")
+        return False
+    if isinstance(sha, str) and sha:
+        return True
+    raise Refused(f"{where}: not a style guide (no reference.sha256, and not a blank draft): a guide is a draft from extract_style.py, "
+                  "made from a reference deck or with --blank")
+
+
+def read_reference_guide(guide, where: str) -> dict:
+    """The guide proven at the boundary: a style guide (has_reference), whose variety, when
+    it carries pages, lists each page once with its number, composition and triage, names its
+    content pages among them, and gives each page's exhibit facts a structure string.
+    Anything else is refused by name: a plan, a list, a guide from before the variety
+    measure, and a guide made before the current readings (old_guide_error) are not evidence
+    about the reference's pages."""
+    has_reference(guide, where)
     stale = old_guide_error(guide, where)
     if stale:
         raise Refused(stale)
@@ -361,7 +365,7 @@ def old_guide_error(guide: dict, where: str) -> str | None:
     structure and its marks are not this build's reading of a page; or its digest
     (exhibit_habits) carries keys the digest in words no longer writes (the closed lists:
     types, classes, annotation moves ...). Either is refused wherever a guide is read (plan
-    check, build, house decks), not only where a house precedent is looked up."""
+    check, build), not only where a reference precedent is looked up."""
     from ooxml import EXHIBIT_FACTS_READER
     pages = (guide.get("variety") or {}).get("pages") if isinstance(guide.get("variety"), dict) else None
     if isinstance(pages, list) and pages:
@@ -381,8 +385,12 @@ def old_guide_error(guide: dict, where: str) -> str | None:
     return None
 
 
-def house_deck(guide: dict) -> dict:
-    """One guide's deck measured, or no evidence with the reason the guide gives."""
+def deck_variety(guide: dict) -> dict:
+    """The reference deck's variety measured, or no evidence with the reason the guide gives,
+    or "no reference" on a guide made with none."""
+    if not has_reference(guide):
+        return {"deck": None, "content_pages": 0, "pairs": 0, "status": NO_REFERENCE,
+                "why": "the guide was made with no reference deck: no variety to hold a plan or a build to"}
     name = Path(guide["reference"].get("file") or "reference").name
     variety = guide.get("variety")
     if not isinstance(variety, dict) or not variety.get("pages"):
@@ -392,20 +400,10 @@ def house_deck(guide: dict) -> dict:
     return measure_deck(name, content_segments(variety))
 
 
-def house_of(guides: list[dict], names: list[str] | None = None) -> dict:
-    """The house's variety over the guide and its other decks, each proven at the boundary
-    and each reference counted once: a deck given twice would weigh its pairs twice and move
-    the 10th percentile toward itself."""
-    names = names or [f"guide {i}" for i in range(len(guides))]
-    seen: dict[str, str] = {}
-    for guide, where in zip(guides, names, strict=True):
-        read_house_guide(guide, where)
-        sha = guide["reference"]["sha256"]
-        if sha in seen:
-            raise Refused(f"{where}: the same reference as {seen[sha]} (sha256 {sha[:12]}): a deck counts once in the house")
-        seen[sha] = where
-    decks = [house_deck(g) for g in guides]
-    return {"decks": decks, "pooled": pool(decks)}
+def reference_variety(guide: dict, where: str = "--guide") -> dict:
+    """The reference's variety, the guide proven at the boundary first."""
+    read_reference_guide(guide, where)
+    return deck_variety(guide)
 
 
 # --- the plan --------------------------------------------------------------------------------
@@ -417,9 +415,12 @@ def read_plan(plan, guide: dict) -> list[dict]:
     errors: list[str] = []
     if not isinstance(plan, dict) or plan.get("schema") != PLAN_SCHEMA or not isinstance(plan.get("pages"), list):
         raise Refused(f"plan: expected {{\"schema\": \"{PLAN_SCHEMA}\", \"reference_sha256\", \"pages\": [...]}}")
-    sha = (guide.get("reference") or {}).get("sha256")
-    if plan.get("reference_sha256") != sha:
-        raise Refused(f"plan: reference_sha256 {plan.get('reference_sha256')!r} is not this guide's reference ({sha}); archetype ids belong to one reference")
+    sha = guide["reference"]["sha256"] if has_reference(guide) else None
+    if "reference_sha256" not in plan:
+        raise Refused(f"plan: reference_sha256 not answered: the guide's reference.sha256 ({sha}), or null on a guide made with no reference")
+    if plan["reference_sha256"] != sha:
+        raise Refused(f"plan: reference_sha256 {plan['reference_sha256']!r} is not this guide's reference ({sha}); archetype ids belong to one reference"
+                      + ("; with no reference it is null" if sha is None else ""))
     if len(plan["pages"]) < 1:
         raise Refused("plan: no pages")
     raw_archetypes = (guide.get("composition") or {}).get("archetypes") or []
@@ -461,7 +462,7 @@ def read_plan(plan, guide: dict) -> list[dict]:
                     if isinstance(brief, dict):
                         briefed.setdefault(_brief_key(brief), []).append(f"{where} exhibits[{j}]")
         if "title_register" in page and not (isinstance(page["title_register"], str) and _words(page["title_register"]) >= 1):
-            errors.append(f"{where} title_register: the title's register in words (or a term the house's titles are coded in: "
+            errors.append(f"{where} title_register: the title's register in words (or a term the reference's titles are coded in: "
                           f"{'|'.join(VOCABULARY['title_register'])}), not {page['title_register']!r}")
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
@@ -550,16 +551,16 @@ def reference_pages(guide: dict) -> int | None:
 
 
 def brief_errors(brief, where: str, guide: dict) -> list[str]:
-    """An exhibit brief checked for completeness, never for what it says: every key (BRIEF_KEYS)
-    and no other; each text field a phrase of BRIEF_MIN_WORDS words or more (a form's name one
-    word or more); forms_considered a list of {"form", "reason"} naming at least two distinct
-    forms; nearest_house_exhibit {"page": N, "what": ...} with N a page of the reference, or
-    {"none": ...} saying why no page is near."""
+    """An exhibit brief checked for completeness, never for what it says: every key (BRIEF_KEYS),
+    the optional LOOK_KEY and no other (a removed key refused by name, RENAMED_BRIEF_KEYS);
+    each text field a phrase of BRIEF_MIN_WORDS words or more (a form's name one word or more);
+    forms_considered a list of {"form", "reason"} naming at least two distinct forms."""
     if not isinstance(brief, dict):
-        return [f"{where}: an exhibit brief ({', '.join(BRIEF_KEYS)}), not {type(brief).__name__}"]
+        return [f"{where}: an exhibit brief ({', '.join(BRIEF_KEYS)}, optional {LOOK_KEY}), not {type(brief).__name__}"]
     out: list[str] = []
     missing = [k for k in BRIEF_KEYS if k not in brief]
-    stray = sorted(set(brief) - set(BRIEF_KEYS))
+    out += [f"{where}: {RENAMED_BRIEF_KEYS[k]}" for k in sorted(set(brief) & set(RENAMED_BRIEF_KEYS))]
+    stray = sorted(set(brief) - set(BRIEF_KEYS) - {LOOK_KEY} - set(RENAMED_BRIEF_KEYS))
     if missing:
         out.append(f"{where}: {missing} not answered")
     if stray:
@@ -595,30 +596,13 @@ def brief_errors(brief, where: str, guide: dict) -> list[str]:
                 weighed = [f["form"] for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str)]
                 out.append(f"{where} chosen_form: {chosen!r} is none of the forms considered ({weighed}); the chosen form is one of those "
                            "weighed, named the same way (case, punctuation and plurals aside)")
-    near = brief.get("nearest_house_exhibit")
-    if "nearest_house_exhibit" in brief:
-        n = reference_pages(guide)
-        if isinstance(near, dict) and set(near) == {"page", "what"}:
-            if not _is_int(near["page"]) or n is None or not 1 <= near["page"] <= n:
-                out.append(f"{where} nearest_house_exhibit: page {near['page']!r} is not a page of the reference "
-                           f"({'1 to ' + str(n) if n else 'the guide states no page count (reference.slides)'})")
-            else:
-                variety = guide.get("variety") if isinstance(guide.get("variety"), dict) else {}
-                listed = {p.get("slide"): p for p in variety.get("pages") or [] if isinstance(p, dict)}
-                content = (variety.get("content_pages") or {}).get("pages") if isinstance(variety.get("content_pages"), dict) else None
-                if near["page"] in listed and isinstance(content, list) and near["page"] not in content:
-                    out.append(f"{where} nearest_house_exhibit: page {near['page']} is not a content page of the reference "
-                               f"(variety reads it as {listed[near['page']].get('triage')!r}); cite a content page, or say why none is near")
-            e = _phrase_error(near["what"], f"{where} nearest_house_exhibit what", BRIEF_MIN_WORDS)
-            if e:
-                out.append(e)
-        elif isinstance(near, dict) and set(near) == {"none"}:
-            e = _phrase_error(near["none"], f"{where} nearest_house_exhibit none", BRIEF_MIN_WORDS)
-            if e:
-                out.append(e + " (say why no page of the reference is near)")
+    if LOOK_KEY in brief:
+        if not has_reference(guide):
+            out.append(f"{where} {LOOK_KEY}: the guide was made with no reference, so there is no reference look to apply; leave it out")
         else:
-            out.append(f"{where} nearest_house_exhibit: {{\"page\": N, \"what\": ...}} for a page of the reference, "
-                       f"or {{\"none\": \"why none is near\"}}; not {near!r}")
+            e = _phrase_error(brief[LOOK_KEY], f"{where} {LOOK_KEY}", BRIEF_MIN_WORDS)
+            if e:
+                out.append(e + " (how the reference's look applies to the chosen form)")
     return out
 
 
@@ -634,16 +618,18 @@ def plan_segments(pages: list[dict]) -> list[list[dict]]:
 PLAN_UNREAD = "a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes"
 
 
-def against(value: float | None, house: dict, key: str) -> dict:
-    """A plan or build figure against the pooled house and its 10th percentile deck."""
-    h = house.get(key) if house.get("status") == "measured" else None
+def against(value: float | None, ref: dict, key: str) -> dict:
+    """A plan or build figure against the reference deck's own (reference_variety)."""
+    if ref.get("status") == NO_REFERENCE:
+        return {"value": value, "verdict": NO_REFERENCE}
+    h = ref.get(key) if ref.get("status") == "measured" else None
     if value is None:
         return {"value": None, "verdict": "no evidence on this side"}
     if not h or "V" not in h:
-        return {"value": value, "verdict": "no evidence in the house: " + ((h or house).get("why") or "not measured")}
-    verdict = "below the house's 10th percentile deck" if value < h["p10_deck_V"] else "at or above the house's 10th percentile deck"
-    return {"value": value, "house_pooled": h["V"], "house_p10_deck": h["p10_deck_V"], "verdict": verdict,
-            "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"}
+        return {"value": value, "verdict": "no evidence in the reference: " + ((h or ref).get("why") or "not measured")}
+    verdict = "below the reference's" if value < h["V"] else "at or above the reference's"
+    return {"value": value, "reference_V": h["V"], "verdict": verdict,
+            "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"}
 
 
 def parallels_note(repeats: list[dict], measured: dict) -> str:
@@ -660,19 +646,18 @@ def parallels_note(repeats: list[dict], measured: dict) -> str:
     return f"; {len(declared)} of its unchanged pairs {'is a' if len(declared) == 1 else 'are'} declared parallel{'s' if len(declared) > 1 else ''}: {cited}{without}"
 
 
-def check(plan, guide: dict, others: list[dict], names: list[str] | None = None) -> dict:
+def check(plan, guide: dict) -> dict:
     pages = read_plan(plan, guide)
-    house = house_of([guide, *others], names)
-    pooled = house["pooled"]
+    ref = reference_variety(guide)
     mine = measure_deck("plan", plan_segments(pages), PLAN_UNREAD)
     refusals: list[str] = []
     warnings: list[str] = []
-    house_longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
-    # the measure a run is held to: the house's own longest run, or the corpus's where the
-    # house has no run evidence (never nothing: no evidence is not a licence and not a ban)
-    longest, whose = (house_longest, "the house's") if house_longest is not None else (CORPUS_LONGEST_RUN, "the corpus's")
-    basis = ("the house's own content pages" if house_longest is not None
-             else f"the corpus, since the house has no run evidence ({pooled.get('why')}): {CORPUS_RUN_BASIS}")
+    referenced = ref["status"] != NO_REFERENCE
+    longest = ref.get("longest_run") if ref["status"] == "measured" else None
+    # the reference's longest run is evidence beside a repeat, never a ban; with no run
+    # evidence (or no reference) no run is judged, and nothing stands in for it
+    held = (longest if longest is not None else NO_REFERENCE if not referenced
+            else f"not judged: the reference's longest run is no evidence ({ref.get('why')})")
     repeats = []
     run = 1
     for prev, page in pairwise(pages):
@@ -681,64 +666,66 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
             continue
         declared = page["deliberate_parallel"]
         rec = {"pages": [prev["id"], page["id"]], "composition": page["composition"], "run_length": run, "deliberate_parallel": declared,
-               "house_longest_run": house_longest if house_longest is not None else "no evidence",
-               "held_to": {"longest_run": longest, "basis": basis}}
+               "reference_longest_run": held}
+        over = longest is not None and run > longest
         if declared:
-            rec["verdict"] = "declared" + (f"; the run of {run} is longer than {whose} {longest}" if run > longest else "")
-            if run > longest:
-                warnings.append(f"page {page['id']!r} makes a declared run of {run} of {page['composition']}, longer than {whose} longest "
-                                f"({longest}): the reason is the model's, the length is the measure ({basis})")
-        elif run > longest:
-            rec["verdict"] = f"refused: undeclared, and the run of {run} is longer than {whose} longest {longest}"
-            refusals.append(f"page {page['id']!r} repeats {page['composition']} undeclared, making a run of {run} where {whose} longest is "
-                            f"{longest} ({basis}): declare the parallel in deliberate_parallel or vary the composition")
+            rec["verdict"] = "declared" + (f"; the run of {run} is longer than the reference's {longest}" if over else "")
         else:
-            rec["verdict"] = f"undeclared repeat within {whose} longest run ({longest})"
-            warnings.append(f"page {page['id']!r} repeats {page['composition']} without a deliberate_parallel reason"
-                            + ("" if house_longest is not None else f"; held to {basis}"))
+            rec["verdict"] = "undeclared" + (f"; the run of {run} is longer than the reference's {longest}" if over else "")
+        if over:
+            warnings.append(f"page {page['id']!r} makes a{' declared' if declared else 'n undeclared'} run of {run} of {page['composition']}, "
+                            f"longer than the reference's longest ({longest}): a departure; answer it in one line in the report"
+                            + ("" if declared else ", or declare the parallel in deliberate_parallel"))
+        elif not declared:
+            warnings.append(f"page {page['id']!r} repeats {page['composition']} without a deliberate_parallel reason: was the repeat meant?")
         repeats.append(rec)
-    comparison = {}
+    comparison: dict = {}
     if mine["status"] == "measured":
-        comparison = {"composition_V": against(mine["composition"]["V"], pooled, "composition"),
+        comparison = {"composition_V": against(mine["composition"]["V"], ref, "composition"),
                       **{f"{name}_V": {"value": None, "verdict": PLAN_UNREAD,
-                                        "house": (pooled.get(name) or {}).get("V", (pooled.get(name) or {}).get("why"))
-                                        if pooled["status"] == "measured" else "no evidence"} for name, _ in FACT_MEASURES},
-                      "distinct_per_page": {**distinct_against(mine["distinct"]["per_page"], mine["content_pages"], pooled),
-                                            "house_decks": pooled.get("distinct_per_page") if pooled["status"] == "measured" else "no evidence"},
-                      "longest_run": {"plan": mine["longest_run"], "house": house_longest if house_longest is not None else "no evidence",
-                                      "held_to": longest, "basis": basis}}
+                                        "reference": (ref.get(name) or {}).get("V", (ref.get(name) or {}).get("why"))
+                                        if ref["status"] == "measured" else ref["status"]} for name, _ in FACT_MEASURES},
+                      "distinct_per_page": {**distinct_against(mine["distinct"]["per_page"], mine["content_pages"], ref),
+                                            "reference": (ref.get("distinct") or {}).get("per_page") if ref["status"] == "measured" else ref["status"]},
+                      "longest_run": {"plan": mine["longest_run"], "reference": held}}
         c = comparison["composition_V"]
         if c["verdict"].startswith("below"):
-            warnings.append(f"composition_V {c['value']} is below the house's 10th percentile deck {c['house_p10_deck']} (pooled {c['house_pooled']}); "
-                            "the threshold is unmeasured" + parallels_note(repeats, mine["composition"]))
+            warnings.append(f"composition_V {c['value']} is below the reference's {c['reference_V']}: a departure (the line is unmeasured); "
+                            "answer it in one line in the report" + parallels_note(repeats, mine["composition"]))
         d = comparison["distinct_per_page"]
         if d["verdict"].startswith("below"):
-            warnings.append(f"distinct compositions per page {d['value']} is below the house's 10th percentile window of {d['window_pages']} pages "
-                            f"({d['house_p10_window']}, {d['windows']} windows): the plan reuses compositions more than the house does; the threshold is unmeasured")
+            warnings.append(f"distinct compositions per page {d['value']} is below the reference's 10th percentile window of {d['window_pages']} pages "
+                            f"({d['reference_p10_window']}, {d['windows']} windows): the plan reuses compositions more than the reference does (the "
+                            "line is unmeasured); answer it in one line in the report")
     else:
         comparison = {"plan": mine["why"]}
     archetypes = {a["archetype_id"]: a for a in (guide.get("composition") or {}).get("archetypes") or []}
     new = sorted({p["composition"] for p in pages if p["composition"] not in archetypes})
-    house_registers = (((guide.get("titles") or {}).get("register")) or {}).get("counts")
+    ref_registers = (((guide.get("titles") or {}).get("register")) or {}).get("counts") if referenced else None
     per_page = {}
     for p in pages:
         term = register_term(p["title_register"])
-        if house_registers is None:
+        if not referenced:
+            per_page[p["id"]] = {"stated": p["title_register"], "term": term, "verdict": NO_REFERENCE}
+        elif ref_registers is None:
             per_page[p["id"]] = {"stated": p["title_register"], "term": term, "verdict": "no evidence: /titles/register not completed"}
         elif term is None:
-            per_page[p["id"]] = {"stated": p["title_register"], "term": None, "house_counts": house_registers,
-                                 "verdict": "no house count: the register is in words, none of the terms the house's titles are coded in"}
+            per_page[p["id"]] = {"stated": p["title_register"], "term": None, "reference_counts": ref_registers,
+                                 "verdict": "no count: the register is in words, none of the terms the reference's titles are coded in"}
         else:
-            per_page[p["id"]] = {"stated": p["title_register"], "term": term, "house_count": house_registers.get(term, 0), "house_counts": house_registers,
-                                 "verdict": "the house writes none" if not house_registers.get(term) else "a register the house writes"}
-            if not house_registers.get(term):
-                warnings.append(f"page {p['id']!r} title_register {p['title_register']!r}: the house writes none ({house_registers})")
+            per_page[p["id"]] = {"stated": p["title_register"], "term": term, "reference_count": ref_registers.get(term, 0),
+                                 "reference_counts": ref_registers,
+                                 "verdict": "the reference writes none" if not ref_registers.get(term) else "a register the reference writes"}
+            if not ref_registers.get(term):
+                warnings.append(f"page {p['id']!r} title_register {p['title_register']!r}: the reference writes none ({ref_registers}): a departure; "
+                                "answer it in one line in the report")
     coded = [register_term(p["title_register"]) for p in pages]
     return {"status": "refused" if refusals else "pass", "refusals": refusals, "warnings": warnings,
-            "plan": mine, "house": house, "comparison": comparison, "repeats": repeats,
+            "plan": mine, "reference": ref, "comparison": comparison, "repeats": repeats,
             "exhibit_briefs": {p["id"]: len(p["exhibits"]) for p in pages},
-            "compositions": {"house_archetypes_used": sorted({p["composition"] for p in pages} - set(new), key=_arch_order), "new": new},
-            "title_registers": {"house": house_registers if house_registers is not None else "no evidence: /titles/register not completed",
+            "compositions": {"reference_archetypes_used": sorted({p["composition"] for p in pages} - set(new), key=_arch_order), "new": new},
+            "title_registers": {"reference": (ref_registers if ref_registers is not None else "no evidence: /titles/register not completed")
+                                if referenced else NO_REFERENCE,
                                 "plan": {**{r: coded.count(r) for r in VOCABULARY["title_register"]},
                                          "in_words": {p["id"]: p["title_register"] for p, t in zip(pages, coded, strict=True) if t is None}},
                                 "pages": per_page}}
@@ -747,7 +734,7 @@ def check(plan, guide: dict, others: list[dict], names: list[str] | None = None)
 def register_term(stated: str) -> str | None:
     """The term of the title vocabulary a stated register names, by its slug or its label
     (folded as forms are: case, punctuation, a leading article, a plural s), or None when it
-    names none: then it is the model's own words, with no house count to hold it to."""
+    names none: then it is the model's own words, with no count of the reference's beside it."""
     key = _form_key(stated)
     for slug, label in VOCABULARY["title_register"].items():
         if key in (_form_key(slug), _form_key(label)):
@@ -762,29 +749,31 @@ def load(path: str):
         raise Refused(f"{path}: {error}") from None
 
 
+#: subcommands a script once took, each refused by name with its new spelling
+RENAMED_COMMANDS = {"house": "plan.py house is now plan.py reference (the reference's variety); the skill takes one reference deck, so nothing is pooled"}
+
+
 def main(argv: list[str]) -> int:
+    if argv and argv[0] in RENAMED_COMMANDS:
+        raise Refused(f"refused: {RENAMED_COMMANDS[argv[0]]}")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    c = sub.add_parser("check", help="validate a plan against the guide and report its variety against the house's")
+    c = sub.add_parser("check", help="validate a plan against the guide and report its variety beside the reference's")
     c.add_argument("plan")
     c.add_argument("--guide", required=True, help="the guide the section is built with (its archetype ids are the plan's)")
-    c.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
     c.add_argument("-o", "--out", default=None, help="write the full report as JSON")
     c.add_argument("--json", action="store_true", help="print the full report instead of the verdict")
-    h = sub.add_parser("house", help="the house's variety, per deck and pooled")
+    h = sub.add_parser("reference", help="the reference's variety")
     h.add_argument("--guide", required=True)
-    h.add_argument("--house-deck", action="append", default=[])
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out")
     guide = load(args.guide)
-    others = [load(p) for p in args.house_deck]
-    names = [f"--guide {args.guide}", *(f"--house-deck {p}" for p in args.house_deck)]
-    if args.cmd == "house":
-        print(json.dumps(house_of([guide, *others], names), indent=1))
+    if args.cmd == "reference":
+        print(json.dumps(reference_variety(guide), indent=1))
         return 0
     try:
-        report = check(load(args.plan), guide, others, names)
+        report = check(load(args.plan), guide)
     except Refused as error:
         report = {"status": "refused", "refusals": [str(error)]}
     text = json.dumps(report, indent=1)
@@ -800,26 +789,23 @@ def main(argv: list[str]) -> int:
 
 def verdict(report: dict, out: str | None) -> str:
     """The check in a few lines: status, every refusal and warning, each variety measure
-    against the house; the whole report is the JSON (-o, or --json)."""
+    beside the reference's; the whole report is the JSON (-o, or --json)."""
     lines = [f"plan check: {report['status']}"]
     lines += [f"  refused: {r}" for r in report.get("refusals") or []]
     lines += [f"  warning: {w}" for w in report.get("warnings") or []]
     for key, v in (report.get("comparison") or {}).items():
         if key in {f"{name}_V" for name, _ in FACT_MEASURES} and isinstance(v, dict) and v.get("value") is None:
-            lines.append(f"  {key}: house {v.get('house')}; {v.get('verdict')}")
+            lines.append(f"  {key}: reference {v.get('reference')}; {v.get('verdict')}")
         elif isinstance(v, dict) and "verdict" in v:
-            house = v.get("house_p10_deck", v.get("house_p10_window"))
-            lines.append(f"  {key}: {v.get('value')}, house 10th percentile {house} ({v['verdict']})")
+            line = v.get("reference_V", v.get("reference_p10_window"))
+            lines.append(f"  {key}: {v.get('value')}" + (f", reference {line}" if line is not None else "") + f" ({v['verdict']})")
         elif isinstance(v, dict):
             lines.append(f"  {key}: " + ", ".join(f"{k} {x}" for k, x in v.items()))
         else:
             lines.append(f"  {key}: {v}")
-    decks = (report.get("house") or {}).get("decks") or []
-    if len(decks) == 1:
-        lines.append("  note: the house is one deck, so each 10th percentile is that deck's own value (pool sister decks with --house-deck)")
     regs = report.get("title_registers") or {}
     if regs:
-        lines.append(f"  title registers: plan {regs.get('plan')}, house {regs.get('house')}")
+        lines.append(f"  title registers: plan {regs.get('plan')}, reference {regs.get('reference')}")
     lines.append(f"  full report: {out}" if out else "  full report: pass -o FILE or --json")
     return "\n".join(lines)
 

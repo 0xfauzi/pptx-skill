@@ -1,4 +1,4 @@
-"""Build decks a human would call obviously wrong for the keybank house.
+"""Build decks a human would call obviously wrong for the keybank reference.
 
 G1 scramble : keybank.pptx, every slide-level shape moved to a random position (sizes kept)
 G2 stack    : keybank.pptx, every slide-level shape moved to (0,0): everything overlaps

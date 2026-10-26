@@ -9,13 +9,13 @@
      "comparison": "the target against the buyer and against the peer median, metric by metric",
      "data": "six metrics by three entities, mixed units (multiples, percents, one range)",
      "forms_considered": [
-      {"form": "big numbers in a row, as the house's slide 11", "reason": "the house sets survey shares as big figures, but six metrics for three entities would be eighteen figures with no grid to compare them in"},
+      {"form": "big numbers in a row, as the reference's slide 11", "reason": "the reference sets survey shares as big figures, but six metrics for three entities would be eighteen figures with no grid to compare them in"},
       {"form": "three-column comparison table", "reason": "chosen: the reader reads each metric across the three entities, and mixed units sit in one grid"},
       {"form": "grouped bars per metric", "reason": "four units would need four scales; the reader reads values, not lengths"}],
      "chosen_form": "three-column comparison table",
      "why": "a board reads the figures behind a recommendation; a table lets each metric be read across at once",
-     "nearest_house_exhibit": {"page": 14, "what": "a matrix with rows of requirements and columns of directors on the dark ground; this keeps the light rules on navy and holds figures instead of ticks"},
-     "marks": "nothing on the table: the recommendation band under it in the house's bright blue carries the claim"}]},
+     "in_reference_look": "the reference's dark navy ground with light rules and its bright blue for the recommendation band",
+     "marks": "nothing on the table: the recommendation band under it in the reference's bright blue carries the claim"}]},
   {"id": "s3-football", "intent": "standalone value against the offer", "message": "Every standalone midpoint sits below the offer",
    "composition": "new:field-beside-commentary", "title_register": "claim", "deliberate_parallel": null,
    "exhibits": [
@@ -25,10 +25,10 @@
      "forms_considered": [
       {"form": "floating range bars on one dollar axis with the offer as a vertical line", "reason": "chosen: ranges and the offer share one scale, so above or below reads directly"},
       {"form": "table of lows, highs and midpoints", "reason": "the reader would subtract to see where the offer falls"},
-      {"form": "big numbers for each midpoint, as the house's slide 6", "reason": "a big number states one value and loses the width of each range"}],
+      {"form": "big numbers for each midpoint, as the reference's slide 6", "reason": "a big number states one value and loses the width of each range"}],
      "chosen_form": "floating range bars on one dollar axis with the offer as a vertical line",
      "why": "the claim is a position against a line; ranges on one axis with the line drawn show it without arithmetic",
-     "nearest_house_exhibit": {"none": "the reference shows no chart of values on an axis: its exhibits are big figures, frameworks and matrices, so the bars take its light blue on the navy ground"},
+     "in_reference_look": "the reference's light blue on the navy ground and its white axis text",
      "marks": "the offer as a labelled vertical line through every bar, where the claim lives"}]}
  ]
 }

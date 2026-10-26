@@ -10,7 +10,7 @@ vector icon the model writes as a small SVG. The one definition of an image sour
 A slide names its pictures under `slide.images[<element id>]`, one source each:
   {"path": "/abs/logo.png"}     a PNG, JPEG or GIF file (the user's, or one `extract` wrote)
   {"svg": "/abs/icon.svg"}      an icon the model wrote in the SVG subset below
-plus, optionally, how big the box is in the house's own measures (never in EMU):
+plus, optionally, how big the box is in the reference's own measures (never in EMU):
   "height_role": "type.body" (the role's line pitch x "lines", default 1) or "space.lg";
   or "width_role": the same roles, for a logo sized by its width; or both, a box of both
   sizes the picture is fitted inside (a column of icons of differing aspect lines up);
@@ -1145,7 +1145,7 @@ TALL_GLYPHS = "0123456789ABDEFHKLNTbdhklt"
 
 def _picture_box(ref: str, pic_id: str, slide: int) -> tuple[int, int, tuple[float, float, float, float]]:
     """(width EMU, height EMU, srcRect l, t, r, b as fractions) of picture `pic_id` drawn on
-    `slide` of a .pptx: the box the house displays it in, so its pixels map to points."""
+    `slide` of a .pptx: the box the reference displays it in, so its pixels map to points."""
     pkg = _package(ref)
     part = f"ppt/slides/slide{slide}.xml"
     if part not in pkg.names:
@@ -1251,7 +1251,7 @@ def _glyphs(im: Image.Image) -> list[tuple[int, int]]:
 def text_size(ref: str, face_path: str, face: str, pic_id: str | None = None, slide: int | None = None,
               page: int | None = None, bbox: list[float] | None = None) -> dict:
     """The type size a pasted picture sets its text at, read off its pixels: the commonest
-    glyph height (a table's digits) over the face's own digit height, at the scale the house
+    glyph height (a table's digits) over the face's own digit height, at the scale the reference
     displays the picture. A .pptx picture is read from its own bytes in the box the slide
     draws it in; a PDF region is rendered at 600 dpi. The face is the model's reading of the
     picture; the measurement is this function's. Calibrated on native Arial tables of known

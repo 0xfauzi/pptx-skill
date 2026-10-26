@@ -459,7 +459,7 @@ class SlidePrint:
 TYPE_EVIDENCE_CLASSES = ("vector", "vector_with_image")
 """PDF page classes whose text layer is type evidence. A raster page's text layer is a
 browser wrapper or an OCR layer (Times at 1pt in a grey no one drew): nothing read from
-it describes the house."""
+it describes the reference."""
 
 
 def is_type_evidence(s: SlidePrint) -> bool:
@@ -609,7 +609,7 @@ def visual_extent(bounds: tuple[int, int, int, int], rotation: int) -> tuple[int
 
 # --- what a page's exhibits are made of, as the file states it ------------------------------
 # One definition, read the same way off a reference page and off a page the build wrote:
-# the variety of exhibit structure (plan.py) and a house precedent for a mark (annotate.py)
+# the variety of exhibit structure (plan.py) and a reference precedent for a mark (annotate.py)
 # both read it. Nothing here names what an exhibit means; only what the file holds.
 
 #: the preset geometries that draw a brace or a bracket (ECMA-376 ST_ShapeType)
@@ -1638,7 +1638,7 @@ def confirm_on_render(pdf: str, samples: list[tuple[int, tuple[int, int, int, in
     backing is inferred (the smallest filled area under the run) and a shading or a picture
     under the words is missed: on bcg-nycha p54 white words on a green gradient read as
     white on the white page, and black words on white on p39 read as black on black. Text
-    drawn in the colour of everything under it is invisible, never a house choice."""
+    drawn in the colour of everything under it is invisible, never a reference choice."""
     import tempfile
 
     import render
@@ -1683,7 +1683,7 @@ def ink_backings(slides: list[SlidePrint], pdf: str | None = None) -> dict[tuple
     PRECEDENT_BELOW is confirmed on the page's render (confirm_on_render) and counted only
     when it is. A pptx run whose ink is its backing's colour (within RENDER_ROUNDING) is
     invisible and never counted. A pair none of whose runs is counted is kept with
-    `confirmed` False and the reasons, so a deck that draws it is told why the house's
+    `confirmed` False and the reasons, so a deck that draws it is told why the reference's
     pages are no precedent."""
     from extract_style import contrast
     out: dict[tuple[str, str], dict] = {}
@@ -1732,7 +1732,7 @@ def ink_backings(slides: list[SlidePrint], pdf: str | None = None) -> dict[tuple
     verdicts = confirm_on_render(pdf, [(s.index + 1, r.box, r.color, b) for r, s, b in check]) if check and pdf is not None else []  # type: ignore[misc]
     why = {id(r): v for (r, _, _), v in zip(check, verdicts)}
     # a file's run in its backing's own colour is invisible on a pptx page too (hidden
-    # notes, white words on white): read off the file, it is never the house's choice
+    # notes, white words on white): read off the file, it is never the reference's choice
     for r, s, backing in pending:
         if s.source != "pdf" and _same_colour(_rgb(r.color), _rgb(backing)):
             why[id(r)] = f"page {s.index + 1}: the ink {r.color} is its backing's colour ({backing}): the words are invisible"
@@ -2015,7 +2015,7 @@ def pdf_triage(path: str, max_pages: int | None = None, pdf=None) -> dict:
     vector = sum(1 for p in pages if p["class"] == "vector")
     wrappers = [p for p in pages if p["class"] == "raster_wrapper"]
     if vector > len(wrappers):
-        for p in wrappers:  # a letter-size vector deck with one pasted image page: still the house
+        for p in wrappers:  # a letter-size vector deck with one pasted image page: still the reference
             p["class"] = "vector_with_image"
     counts = Counter(p["class"] for p in pages)
     evidence = [p["page"] for p in pages if p["class"] in ("vector", "vector_with_image")]
@@ -2082,7 +2082,7 @@ PDF_INDENT_EM = 4.0
 line of paragraph spacing, a size step past the 1.10 level ratio, a four-em hanging
 indent), then checked on the one reference this repo holds as both pptx and PDF (jazz,
 20 slides, 2026-10-20): 192 blocks against the pptx's 149 text shapes (median 1.29 per
-slide: the house name the pptx keeps on its layout is one more block on every PDF page,
+slide: the reference name the pptx keeps on its layout is one more block on every PDF page,
 and a table's cells are blocks, slide 19 reads 17 against 3), 1,326 words against 1,263
 (pdfplumber's own word split reads 1,369), 191 paragraphs against 198. Not tuned to that
 deck."""

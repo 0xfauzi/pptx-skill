@@ -9,7 +9,7 @@
  },
  "/color/roles/color.accent3": {
   "hex": "5E7C9E",
-  "why": "the master carries the house palette as swatch rectangles: 17-61-99, 204-209-215 (observed as accent1), 94-124-158, 72-80-89"
+  "why": "the master carries the reference's palette as swatch rectangles: 17-61-99, 204-209-215 (observed as accent1), 94-124-158, 72-80-89"
  },
  "/extra_roles/color.slate": "485059",
  "/typography/roles/type.h1/members": {
@@ -34,7 +34,7 @@
   "alignment": "left",
   "case": "upper",
   "ink_role": "color.accent2",
-  "why": "section labels above exhibits; caption size, bold, caps, in the house blue"
+  "why": "section labels above exhibits; caption size, bold, caps, in the reference's blue"
  },
  "/typography/roles/type.footnote": {
   "size_pt": 10,
@@ -163,7 +163,7 @@
  },
  "/continuation": {
   "contd_mark": null,
-  "why": "none seen: no page of the reference's 12 continues onto the next, so the house shows no continuation mark; a page that splits says how it marks the continuation in the report"
+  "why": "none seen: no page of the reference's 12 continues onto the next, so the reference shows no continuation mark; a page that splits says how it marks the continuation in the report"
  },
  "/shape_language/icon_style": "none",
  "/imagery/register_kind": "screenshots and logos, wide crops, no frames",
@@ -193,7 +193,7 @@
  ],
  "/color/roles/color.accent2": {
   "hex": "113D63",
-  "why": "the deep-blue house swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
+  "why": "the reference's deep-blue swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
  },
  "/typography/scale_ratio": 1.25,
  "/typography/roles/type.title/line_spacing": 1.2,
@@ -204,7 +204,7 @@
  "/typography/roles/type.h1/line_spacing": 1.2,
  "/color/roles/color.positive": {
   "hex": "113D63",
-  "why": "the house marks the favourable case in its own deep blue (slide 12 recommendation chevrons); no green is ever used, so positive takes the structural blue"
+  "why": "the reference marks the favourable case in its own deep blue (slide 12 recommendation chevrons); no green is ever used, so positive takes the structural blue"
  },
  "/color/roles/color.negative": {
   "hex": "FF0000",
@@ -275,6 +275,6 @@
  },
  "/color/roles/color.emphasis": {
   "hex": "FF0000",
-  "why": "the red outline boxes round the figures the claim rests on (slides 5, 7, 8, 9, 10); the house's look-here mark, read off the renders"
+  "why": "the red outline boxes round the figures the claim rests on (slides 5, 7, 8, 9, 10); the reference's look-here mark, read off the renders"
  }
 }

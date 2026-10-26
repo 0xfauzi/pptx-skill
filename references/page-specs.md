@@ -8,7 +8,6 @@
 - Conventions the build enforces
 - Looking before writing: the reference's gallery
 - Looking before writing: the page library
-- House specimen pages
 - Motifs
 
 ## The tree
@@ -88,7 +87,7 @@ one of:
   guide's colours when the file is written. `python3 scripts/images.py check ICON.svg
   --guide guide.json --png preview.png` refuses or previews it.
 
-and, optionally, its box in the house's measures: `height_role` (a spacing role, or a
+and, optionally, its box in the reference's measures: `height_role` (a spacing role, or a
 type role's line pitch times `lines`), `width_role`, or both (a box the picture is
 fitted inside, so a column of icons of different shapes lines up), plus `align`
 (left, center, right) and `valign` (top, middle, bottom). Without a role the node is a
@@ -116,9 +115,9 @@ python3 -I scripts/images.py extract "$REF" --page 15 --bbox 40,230,100,275 -o "
 
 A company's logo is the user's or the reference's, never one you draw. An icon (a
 person, a flag, a factory, a check) is yours to draw in the subset. Icons are on 32 of 578
-coded pages (2 of 231 bank, 0 in the native-pptx bank decks): does this house draw them,
-and what would one add that the house's own devices cannot? Say why in the report where
-the house draws none.
+coded pages (2 of 231 bank, 0 in the native-pptx bank decks): does this reference draw them,
+and what would one add that the reference's own devices cannot? Say why in the report where
+the reference draws none.
 
 Proven on: BCG New York page 15 rebuilt on its guide, an icon-led row page (a star of
 life drawn in the subset, a flag and the state's outline taken from the PDF), each
@@ -161,10 +160,10 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   the rule), so the content below starts under the rule's zone with no gap to tune. A
   title that needs more lines than the band holds does not fit, and the page reads
   `unfittable` with the line count and both fixes (shorten it, or move a clause to where
-  the house states claims). Its register and length are reported against the house's,
-  as warnings to answer, not refusals. A house that sets a subtitle above its rule (jazz) is
+  the reference states claims). Its register and length are reported against the reference's,
+  as warnings to answer, not refusals. A reference that sets a subtitle above its rule (jazz) is
   written as a second paragraph of the title element in the subtitle's role, with the
-  root's `pad_roles` top set to the step that starts the band where the house's title
+  root's `pad_roles` top set to the step that starts the band where the reference's title
   starts (jazz: `space.md`, 0.11 in, as its title sits 0.10 in down); the title's length
   is judged on its `type.title` paragraphs only. A tag beside the title (a lever tag) is
   a row holding the title and the tag; the tag's width comes out of the title's.
@@ -181,7 +180,7 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   children) and an outline (`line_role`, `line_width_emu`, `dash`)
   and padding in its layout: `pad_role` on every side, or `pad_roles` naming each of
   `left`, `top`, `right`, `bottom` (a spacing role or null; a side left out is refused,
-  not read as zero). Text inside takes `ink_role` on its paragraph. A house's arrow or
+  not read as zero). Text inside takes `ink_role` on its paragraph. A reference's arrow or
   chevron label is such a region: the contrast gate reads the text against the shape's
   solid body (a homePlate's body ends half the shape's height before its point; a
   chevron's runs between its notch and its point; an arrow's is its shaft), so give the
@@ -205,7 +204,7 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   like any annotation: say what it marks in words on the page, as "A mark says what it
   means" in chart-recipes.md asks.
 - Spacing between paragraphs is the role's (`space_before_pt`, `space_after_pt`); a
-  paragraph carries none of its own. A house that spaces its list items has that spacing
+  paragraph carries none of its own. A reference that spaces its list items has that spacing
   in a role (answer it at completion, or add a list role there); otherwise put each item
   in its own element in a column with a `gap_role`.
 - Height: a region is as tall as its content unless it is flexible (it holds a chart, image
@@ -231,7 +230,7 @@ python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "two column co
 ```
 
 Prints the two exemplars and three crops whose words overlap the intent most, with their
-skeletons. Overlap 0 everywhere means the gallery has nothing for that intent (a house that
+skeletons. Overlap 0 everywhere means the gallery has nothing for that intent (a reference that
 pastes its tables as pictures has no table crop): design from the guide and the digest, not
 from a near miss. Word overlap is a weak ranking (measured); the digest's records are the
 stronger evidence.
@@ -252,18 +251,6 @@ in. Describe the page by what it must show, not by a chart type.
 Use each entry's `why` and `ask` lines as questions for your page; an entry is another
 page's answer, not a layout to copy. An aspect mismatch is flagged: examples do not carry across page sizes. `no evidence`
 means nothing fits. Building a company library is in the page-library reference.
-
-## House specimen pages
-
-`examples/house/` holds 14 pages of one other house (a predecessor system's default
-specimen) as deck specs: one house's answers to 14 intents (comps, football field,
-waterfall, Mekko, KPI band, timeline, credentials, league table, agenda, profile, framework
-matrix, arithmetic chain, section divider, text plus chart). They are things to look at
-and depart from, not seeds. Look at your house's own nearest page first, name what the
-specimen does differently, then build from your house. `COVERAGE.md` records the
-specimen house's own habits with counts (a kicker over the title on 13 of 14 pages, a
-filled takeaway band on 4) and how each page fares on keybank: they were composed for
-16:9, and on a 4:3 bank page at 12pt only 1 of 14 fits as written.
 
 ## Motifs
 

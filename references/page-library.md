@@ -41,17 +41,17 @@ deck not in this build, or a page named by both is refused.
 
 ## Tagging
 
-Each kept page gets a stub whose tag fields are null (`house_type`, `composition_family`,
+Each kept page gets a stub whose tag fields are null (`deck_type`, `composition_family`,
 `composition_as_recorded`, `title`, `title_register`, `exhibits` with `type`,
 `data_shape`, `message`, `annotations_as_recorded`, then `emphasis_devices`, `craft`,
 `why_instructive`, `designer_questions`). Fill them after looking at `look_at`. `[]` means
 you looked and found none. A designer question opens with a sentence ending in `?`. An
 exhibit is tagged in your own words (what it is, its data, its message, each annotation as
-you would describe it); nothing about an exhibit is chosen from a list. `house_type` and
+you would describe it); nothing about an exhibit is chosen from a list. `deck_type` and
 `composition_family` are the families the development corpus was coded in, kept so pages
 can be searched together; each ends in `other`, and a page none of them names (a
 placemat, a map page, a left-third title panel) is `other` with its words in
-`house_type_as_recorded` or `composition_as_recorded`. The title register is the title
+`deck_type_as_recorded` or `composition_as_recorded`. The title register is the title
 vocabulary's slug, `other` among them. A library built before exhibits were tagged in words
 (manifest schema 3) is refused: build or import it again. `check` exits 1 while
 any kept page is untagged and names each; `pick` ranks only tagged entries and says how many

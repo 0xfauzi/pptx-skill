@@ -20,7 +20,7 @@
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
   -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
-  [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...] \
+  [--chrome draw] [--brief "$DECK_WORK/brief.txt" ...] \
   [--computed "$DECK_WORK/figures.txt" ...]
 ```
 
@@ -49,7 +49,14 @@ refusal before solving (a malformed spec) writes a report holding only `outputs.
 files. Leave `--others` alone: the
 judge's panel is every deck under `refs/files` (fetch once with `refs/fetch.sh`), the
 reference's twin removed by hash, scans skipped, decks inside the reference's own spread
-reported as the same house. The panel is not yours to choose.
+reported as the same style (`same_style_on_panel`). The panel is not yours to choose.
+
+With no reference (a guide from `extract_style.py --blank`, built without `--reference`),
+every hard limit below runs as written, and every comparison with a reference reads
+"no reference": `title.length` and `title.register`, `repetition.against_reference` and
+`runs_over_reference`, `source_lines.reference`, `contrast.precedent_source`,
+`chrome.reference`, `leakage` (no past deck) and `judge`. Nothing is warned or scored in
+their place, and no corpus figure stands in for a reference.
 
 ## Fit and scale
 
@@ -73,11 +80,11 @@ table `rows_to_fit_slide`, the body-row count at which to split (`layout.py capa
 prints the same count as `rows_to_fit`, and the causes in words, before you build). A
 title that needs more lines than the band above the top rule holds does not fit, and is
 named first, with the lines the band holds, because every other violation on that page
-follows from it: shorten it, or move a clause to where the house states claims (the reason
+follows from it: shorten it, or move a clause to where the reference states claims (the reason
 names the places, from the guide's `claims_elsewhere`). Nothing is dropped. Moves, for
 instance, in no order: re-arrange (two columns instead of one, a table beside the chart
 instead of below, a compact component variant), cut words, split at a declared boundary
-(the fitting rows become page one, the rest page two under the house's continuation, as
+(the fitting rows become page one, the rest page two under the reference's continuation, as
 its pages show it). Then build again.
 
 ## Refusals and warnings (`problems`)
@@ -93,32 +100,32 @@ chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `font refused`; `exhibit without a brief` (with `--plan`: the written page holds a chart, a table, a
 picture or a structure built from shapes, and its plan page briefs none; `slides[].briefs`
 gives both counts). Warnings never refuse: `annotation unexplained` (a ring, box, band,
-line, bracket or mark with no label and no `explained_by`, with the house's own count of
+line, bracket or mark with no label and no `explained_by`, with the reference's own count of
 such marks with and without words: answer it in the report); `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
 which exhibit), `tieout` (a totals cell that does not equal its column), `no
 source line` (below), `renderer-unmeasured preset` (a shape in a preset no render here has
 shown: look at it, and open the deck in PowerPoint before release), `type size off the
-house's ladder` (a role the completion wrote off the house's levels, with the levels, the
+reference's ladder` (a role the completion wrote off the reference's levels, with the levels, the
 reason given and the judge's `size_hist` distance), and `plan figure not on the page` (a
 figure the plan's message for the page states that the page does not carry: the plan was
 written before the numbers moved, or the page lost its claim). Answer every warning in the
 report: what you kept and why, or what you changed.
 
-The house's source-line habit is the digest's count of data pages that carry a source
+The reference's source-line habit is the digest's count of data pages that carry a source
 or note line (`exhibit_habits.source_lines`), over three or more data pages: `most` where
-at least half do, `few` below (the half is a definition of the house's majority, not a
+at least half do, `few` below (the half is a definition of the reference's majority, not a
 measured line). `no source line` is a data page (a table or chart) with no
-`type.source_line` or `type.footnote` paragraph, warned with the house's count ("the house
+`type.source_line` or `type.footnote` paragraph, warned with the reference's count ("the reference
 sources 41 of 44 data pages; this page has none") where the habit is `most`; where it is
-`few`, a page without one does what most of the house's pages do and nothing is said. A
+`few`, a page without one does what most of the reference's pages do and nothing is said. A
 page WITH one is never a problem: citing a source is never wrong. A guide whose digest
 answered no `source_line`, or fewer than three data pages, is `unmeasured`: a data page
-without one warns, never read as "the house carries none". Nothing about source lines
+without one warns, never read as "the reference carries none". Nothing about source lines
 refuses: the count is evidence beside the choice, answered in the report. The deck-level
-`source_lines` sets the house's count beside the deck's pages with one, and the brief
+`source_lines` sets the reference's count beside the deck's pages with one, and the brief
 prints both. In round 2 the old rule (warn on every data page without one, whatever the
-house did) told agents on keybank and netflix, houses with 1 of 5 and 1 of 8, to add
+reference did) told agents on keybank and netflix, references with 1 of 5 and 1 of 8, to add
 source lines to every page.
 
 ## What the file is written at
@@ -133,9 +140,9 @@ solver measured them, so PowerPoint cannot re-break the text.
 
 Every text run, table row class, chart text and chrome text line is scored (WCAG 2.2)
 against the fill drawn behind it. Below 3.0:1 refuses; below AA (4.5:1, or 3.0:1 at 18pt
-or 14pt bold) warns. House precedent first: a pair the reference itself draws (same ink
+or 14pt bold) warns. Reference precedent first: a pair the reference itself draws (same ink
 over same backing, read from `--reference`) at that size or smaller is filed under
-`house_precedent`, neither refused nor warned (a consulting house sets its titles in a
+`reference_precedent`, neither refused nor warned (a consulting reference sets its titles in a
 green at 2.51:1 on white on 23 pages; its decks keep the green). On a PDF reference a
 pair counts only where the page's render draws it so: a PDF keeps no draw order, so the
 backing is inferred, and a gradient or a picture under the words is missed (bcg-nycha's
@@ -143,27 +150,27 @@ white words on a green gradient read as white on white). A pair the render does 
 confirm, and words drawn in their backing's own colour, are no precedent; the finding
 names why under `no_precedent`. A run is scored where its measured lines draw (their
 height, width and alignment), not across its whole box. With no `--reference` nothing
-claims precedent. `undecidable` lists text over images; `unbound` lists runs with
+claims precedent; with no reference, `precedent_source` reads "no reference". `undecidable` lists text over images; `unbound` lists runs with
 no ink role. A column's label taller than its segment is scored against the plot too and
 carries `overflows_bar_at_points` (chart-recipes.md). The fix is a role change; nothing in
 the emitter corrects an ink.
 
 ## Titles, register and density
 
-- `title`: characters, words and solved lines against the house's median, p90 and max
-  (above the max warns), and the register the slide states (`title.register`, in words,
-  as the plan states it). A register naming a term the house's titles are coded in (by
-  slug or label: "Claim sentences" reads as claim) is set against the house's counts (one
-  on under 10% of the house's titles warns; that line is unmeasured); any other words are
-  reported as "no house count", with the counts beside them. Only a register that is not
+- `title`: characters, words and solved lines against the reference's median, p90 and max
+  (above the max warns: a departure to answer in one line), and the register the slide states (`title.register`, in words,
+  as the plan states it). A register naming a term the reference's titles are coded in (by
+  slug or label: "Claim sentences" reads as claim) is set against the reference's counts (one
+  on under 10% of the reference's titles warns; that line is unmeasured); any other words are
+  reported as "no count", with the counts beside them. Only a register that is not
   words (a number, empty, "TBD") is refused.
 - `register`: element kind counts, decoration count and container ratio against the
   reference's bands; a native table or chart against a band of 0 to 0 reads `no evidence`
-  (a house that pastes exhibits as pictures).
+  (a reference that pastes exhibits as pictures).
 - `density`: words, elements and covered area against the reference's bands (`below`,
   `in band`, `above`, or `no evidence`). Covered area is ink: each measured text line at
   its width and pitch, each table at its fitted rows, charts, pictures and fills at their
-  boxes, unioned. A text box stretched past its last line does not count. The house's band
+  boxes, unioned. A text box stretched past its last line does not count. The reference's band
   unions its shape boxes, so it is the more generous of the two. `text_boxes_mostly_empty`
   lists every text element whose lines fill under 60% of its box, with where the text ends
   and where the box ends (a reading aid, unmeasured; never a gate). A keybank page whose
@@ -174,15 +181,16 @@ the emitter corrects an ink.
 
 Each solved page's content (the page frame left out: `frame_left_out`) gets a realised
 composition by the extractor's own clustering and an exhibit structure read back from the
-written file by the reader that read the house's pages (`ooxml.exhibit_facts`: native
+written file by the reader that read the reference's pages (`ooxml.exhibit_facts`: native
 charts by plot type, bar direction, grouping and series count, tables, pictures, drawn
 shapes, panels 1, 2 or 3+; the drawn chrome left out; under `realised[].structure`), and
 `measure` is plan.py's: composition V, structure V, kinds V (the structure with any chart
 a chart, under `realised[].kinds`), distinct per page, runs. Nobody names a structure, so
-renaming an exhibit cannot move it. `against_house`
-sets each against the house (pooled with `--house-deck`), `runs_over_reference` lists runs
-longer than the house's longest, and `warnings` lists every figure below the house's 10th
-percentile; a composition V warning names each repeat the plan declared a deliberate
+renaming an exhibit cannot move it. `against_reference`
+sets each beside the reference's own figure (`reference_V`; the distinct-per-page window at
+its 10th percentile), `runs_over_reference` lists runs longer than the reference's longest,
+and `warnings` lists every figure below the reference's, each a departure to answer in one
+line; a composition V warning names each repeat the plan declared a deliberate
 parallel, with its reason, and V over the other pairs. With `--plan`, `plan.check` repeats
 the plan check, `realised_by_page` sets each page's planned composition beside its
 realised one (realised names, b1, b2, ..., are this build's own clusters: two pages share
@@ -200,9 +208,8 @@ one says so: one lead-in wrapping to a second line once moved a keybank pair fro
 
 `leakage` lists, per page, every name (two or more capitalised words), figure (a currency
 figure, a percent of two or more digits, a decimal, or three or more digits) and five-word phrase of the new deck that a past deck also
-carries, with the past page it is on. The past decks are `--reference` and each
-`--house-deck`'s own file (found by its recorded sha256; one not found is named under
-`unread`, never taken as clean). Left out: the house's chrome (text a past deck repeats on
+carries, with the past page it is on. The past deck is `--reference`; with no reference
+there is none, and `leakage.verdict` says so. Left out: the reference's chrome (text a past deck repeats on
 half its pages or more, and the template's own text), and every word of a `--brief` file
 (the user's brief and data, as text), and the text of the chrome the build drew (on a
 raster reference the past deck's copy of a footer is OCR text that never reads as chrome
@@ -218,7 +225,7 @@ also prints is a coincidence you can name. A figure matches on its value and its
 Only figures: a name or a phrase in that file is still reported. Never put a figure you did
 not compute in it.
 
-Each finding is ranked by rarity against the public decks of other houses in
+Each finding is ranked by rarity against the public decks of other firms in
 `refs/files` (`rarity_basis`; the past decks and their twins left out). Low: a name or
 phrase whose words run in that order in such a deck, a name every word of which they use
 (senior notes, debt / EBITDA: products and ratios), a round figure (two significant
@@ -262,7 +269,7 @@ the guide says is refused by name.
 - `emit_defaults_taken`: every other value the file got that neither the spec nor the
   guide states, per element: a bullet glyph or indent the guide names none for, an outline
   or rule width (0.75pt), a rule's colour, a chrome entry's face or size.
-- None of the defaults-taken lists is the house's style: write each choice into the spec
+- None of the defaults-taken lists is the reference's style: write each choice into the spec
   until the lists hold only what you meant, or name what is left in the report as
   intended. The brief prints each page's counts.
 - `layout_depth`: the page tree's deepest chain of ids and its depth (the runaway bound,
@@ -275,7 +282,7 @@ the guide says is refused by name.
   constant it left at its default, each role it computed from the guide (a lead's or a
   marker's ink by contrast), and a component admitted against another guide (re-run its
   check). The defaults are choices like any other: set them through the component's
-  `data["roles"]` or `data["params"]` where the house does otherwise.
+  `data["roles"]` or `data["params"]` where the reference does otherwise.
 - `pictures`: per picture on the page (a `slide.images` entry or a `category_row` cell),
   the box it was drawn in on the render (`box_px`), `differ_share` (the share of that
   box's pixels with no pixel of the picture as written within one pixel and 64 levels of
@@ -288,7 +295,7 @@ the guide says is refused by name.
 ## The judge
 
 `judge.filed_under_reference` is four gates: nearest the reference among the panel's
-houses, inside the reference's own spread (`house_spread.p90`), layout clean (`overlap`
+firms, inside the reference's own spread (`reference_spread.p90`), layout clean (`overlap`
 and `overflow` each below 0.2 of their span; `overflow_where` names each shape), and every
 page fit with a valid package. `judge.components` names what is off (`size_hist`,
 `fills`, `text_colors`, `margins`, `kinds`). `judge.cannot_judge` replaces the distances
@@ -299,7 +306,7 @@ times. A filed deck is necessary, not sufficient.
 
 ## Density is a loop
 
-Add content, build, read the report. `density` says where the page sits in the house's
+Add content, build, read the report. `density` says where the page sits in the reference's
 own band (words, elements, covered area: its 10th to 90th percentile), as evidence, not a
 target. A page below the band with room left is one to ask about: is something the
 reader needs missing? Measured on hand-built specimen pages against 96 corpus pages (median

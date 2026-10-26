@@ -13,7 +13,7 @@
  },
  "/color/roles/color.positive": {
   "hex": "00A9F4",
-  "why": "the house uses its accent for emphasis, never green; positive reads as the accent"
+  "why": "the reference uses its accent for emphasis, never green; positive reads as the accent"
  },
  "/color/roles/color.negative": {
   "hex": "95DEFF",
@@ -141,7 +141,7 @@
  },
  "/continuation": {
   "contd_mark": null,
-  "why": "none seen: no page of the reference's 17 continues onto the next, so the house shows no continuation mark; a page that splits says how it marks the continuation in the report"
+  "why": "none seen: no page of the reference's 17 continues onto the next, so the reference shows no continuation mark; a page that splits says how it marks the continuation in the report"
  },
  "/shape_language/icon_style": "white line icons in accent-blue circles",
  "/imagery/register_kind": "photographs in circles and wide crops, blue tinted",

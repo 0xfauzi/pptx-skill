@@ -2,7 +2,7 @@
 
 These recipes show how to express an idea in the spec; they are not a set of options to
 choose from. Decide the exhibit first, from what the reader must see, the data and the
-house's nearest exhibit (the plan's exhibit brief, charts.md); then find here the
+reference's nearest exhibit (the plan's exhibit brief, charts.md); then find here the
 technique that draws it. Each technique is named for what it does, and each worked example
 is one exhibit it has drawn, not the only one it can.
 
@@ -257,7 +257,7 @@ wrong by one cent is caught by name:
 Declare it on every bridge you draw.
 
 Choices to make from the guide, not from this example: which role marks a total (the
-house's anchor colour: keybank's first series colour is `color.accent2`), which marks an
+reference's anchor colour: keybank's first series colour is `color.accent2`), which marks an
 increase and a decrease (a guide with `color.positive` and `color.negative` has them;
 keybank has neither, so the steps are told apart by tone and by the sign in the label),
 and whether labels sit above the bars (this recipe) or inside them (`labels` on the Step
@@ -388,10 +388,9 @@ gap 0 so each column fills its box, both axes hidden, and the segment's name and
 as text above it. The colour key is text you set once on the page, since three legends
 would repeat it.
 
-Proven on: `examples/house/06-revenue-mix.deck.json` (three segments at weights 4.8,
-3.2 and 2.0, their shares of revenue; on keybank the render reads as a mekko with Flow
-Control more than twice as wide as Aftermarket, though that page is refused for its
-two-line title).
+Measured on keybank (three segments at weights 4.8, 3.2 and 2.0, their shares of
+revenue): the render read as a mekko with the first segment more than twice as wide as the
+last.
 
 ```json
 {"type": "region", "id": "band-mekko", "layout": {"kind": "flex", "direction": "row", "gap_role": "space.sm", "pad_role": null, "align": "stretch", "justify": "start"},
@@ -417,7 +416,7 @@ two-line title).
 ```
 
 The surface-coloured stroke between segments is a choice (a white hairline separates
-the stacks on a white page); drop it if the house draws flush blocks.
+the stacks on a white page); drop it if the reference draws flush blocks.
 
 ## Labels without axes
 
@@ -512,7 +511,7 @@ the page's picture; PORT_AUDIT.md, exhibit fidelity). Measured by
 
 The label first sat at `start_below` and the build refused it for covering the 4/24
 volume spike, then at `middle_below` in `type.body` for covering the 7/21 spike: a label
-may not cover a mark, and the fix was the smaller role the house uses for chart text.
+may not cover a mark, and the fix was the smaller role the reference uses for chart text.
 Choose which series is primary by which scale the reader reads first; a line over
 columns reads as the subject.
 
@@ -532,8 +531,8 @@ under the slide, beside `charts` and `styling`:
 
 `host` is any element of the solved page: a chart, a table, a text, a picture, a rect (a
 region's drawn fill is the element `<region>-fill`). Nothing annotates by itself: you decide
-whether and what, from where the claim lives on the exhibit and how the house marks such a
-place (the `marks` you wrote in the exhibit brief; the house's digest records say in words
+whether and what, from where the claim lives on the exhibit and how the reference marks such a
+place (the `marks` you wrote in the exhibit brief; the reference's digest records say in words
 what each of its exhibits marks, and `variety.pages[].exhibit_facts.marks` lists the marks
 its files draw).
 
@@ -567,15 +566,15 @@ the shape, a bracket's style, where a label sits and how it aligns. Every label 
 
 | kind | required | optional | draws |
 |---|---|---|---|
-| `outline_box` | `line_role`, `line_width_pt`, `shape` (`rect`, `ellipse`, `rounded`, or any OOXML preset by its own name) or `house_mark` | `pad_role` (outward), `dash`, `label` (with a `position` beside the box), `gap_role`, `explained_by` | an unfilled shape on the anchor |
+| `outline_box` | `line_role`, `line_width_pt`, `shape` (`rect`, `ellipse`, `rounded`, or any OOXML preset by its own name) or `reference_mark` | `pad_role` (outward), `dash`, `label` (with a `position` beside the box), `gap_role`, `explained_by` | an unfilled shape on the anchor |
 | `band` | `fill_role` | `pad_role`, `label` (with a `position`: `inside_top_left` ...), `explained_by` | a fill UNDER the host (zone shading); a table row with its own fill hides it and is refused |
 | `reference_line` | `line_role`, `line_width_pt` | `dash`, `label` (with a `position`: `end_outside`, `end_above`, `end_below`, `start_above`, `start_below`; vertical: `end_outside`, `end_right`, `end_left`, `start_right`, `start_left`), `gap_role`, `explained_by` | a line across the plot at a value or category |
 | `arrow` | `line_role`, `line_width_pt`, `label`, `position`, `gap_role` | `dash` | the label beside the anchor at `gap_role`, an arrow from it to the anchor |
 | `callout` | `line_role`, `line_width_pt`, `fill_role`, `label`, `position`, `gap_role` | `pad_role` (inside the box), `head` (`none`, `arrow`) | a filled box with a leader to the anchor |
-| `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role`, `style` (`square`, `brace`) or `house_mark` | `label`, `explained_by` | a bracket opening toward the span, beyond its marks, label beyond it |
+| `bracket` | `line_role`, `line_width_pt`, `side`, `gap_role`, `depth_role`, `style` (`square`, `brace`) or `reference_mark` | `label`, `explained_by` | a bracket opening toward the span, beyond its marks, label beyond it |
 | `badge` | `fill_role`, `label`, `position` | `gap_role`, `pad_role` | a filled circle holding its label's measured block, however many lines (a number keyed to text) |
 | `category_row` | `cells`, `position`, `gap_role`, `cell_width`, `align` (for text cells) | `role`, `ink_role` (both required for text cells), `gap_lines`, `after`, `shape`, `label` | one cell per category of `anchor.categories`, centred on each category beyond the plot (section "Rows aligned to categories") |
-| `mark` | `prst` (any OOXML preset the emitter writes, or `"line"`) or `house_mark`; a `fill_role` or a `line_role` with `line_width_pt`; a line also `points` | `pad_role`, `dash`, `head_end`, `tail_end` (a line's ends: `none`, `triangle`, `stealth`, `diamond`, `oval`, `arrow`), `label` (a `position` beside it, or `inside` its body), `gap_role`, `explained_by` | the primitive under the shorthands: any shape or line at the anchor, sized to it |
+| `mark` | `prst` (any OOXML preset the emitter writes, or `"line"`) or `reference_mark`; a `fill_role` or a `line_role` with `line_width_pt`; a line also `points` | `pad_role`, `dash`, `head_end`, `tail_end` (a line's ends: `none`, `triangle`, `stealth`, `diamond`, `oval`, `arrow`), `label` (a `position` beside it, or `inside` its body), `gap_role`, `explained_by` | the primitive under the shorthands: any shape or line at the anchor, sized to it |
 
 A `mark`'s `points` are `[[x0, y0], [x1, y1]]`, its line's ends as fractions of the anchor's
 box. Words `inside` a mark stand on its body, measured to fit it: only on the presets whose
@@ -583,10 +582,10 @@ body the contrast gate bounds (rect, roundRect, ellipse, homePlate, chevron and 
 block arrows); any other preset (a cloud, a star) is refused with words inside, and drawn
 with words beside it. A preset no proof has drawn warns `renderer-unmeasured preset`.
 
-`house_mark: {"slide": N}` (or `{"slide": N, "ref": "<a mark's ref>"}` where the page draws
+`reference_mark: {"slide": N}` (or `{"slide": N, "ref": "<a mark's ref>"}` where the page draws
 more than one) takes the shape from a mark the reference's file draws on slide N
 (`variety.pages[].exhibit_facts.marks`, listed in `draft.md`): its preset for an outline
-box or a mark, its bracket or brace for a bracket. The report names it under `house_mark`.
+box or a mark, its bracket or brace for a bracket. The report names it under `reference_mark`.
 
 A reference line's label also takes `middle_above` and `middle_below` (horizontal) or
 `middle_right` and `middle_left` (vertical): centred along the line, where a long line's
@@ -610,7 +609,7 @@ covers the neighbouring rows; `"pad_role": "none"` is the box on the cell edges.
 A ring, box, band, line or bracket with no words reads as decoration or as a model's
 attempt to annotate (a blind rater on an unlabelled red circle). Each one carries a
 `label`, or names under `explained_by` exactly one thing that explains it, or neither:
-then it is drawn and warned `annotation unexplained`, with the house's own count beside
+then it is drawn and warned `annotation unexplained`, with the reference's own count beside
 it (the outline, fill, line or bracket marks its files draw on that kind of host, with
 and without words of their own, and on which slides), and the warning is answered in the
 report. What `explained_by` names is checked, and a named explanation that is not there
@@ -622,16 +621,16 @@ refuses the page (`annotation explanation not found`):
 | `{"annotation": "selected-note"}` | another annotation of the page, on the same host and the same anchor, that carries a label (a callout saying what a band marks) |
 | `{"legend": "Selected range"}` | the host chart draws a legend showing that series, and the series is drawn in the mark's own ink |
 | `{"footnote": {"marker": "1", "note": "source"}}` | the marker is one to three characters with no space (`*`, `1`, `a`, `(1)`, `†`); a text the mark encloses (a cell, a category, the host's own words or one of its runs) ends with it as its own token, never inside a figure or a word (`FY2021` does not end with the marker `1`; `Harbor Point 1` does), and a paragraph of `note` opens with it, followed by the note (`1 Pro forma`, never `12 months`) |
-| `{"house_precedent": {"slide": 10}}` | the reference's file draws, on slide 10, a mark of the same geometry (an outline box an outline, a band a fill, a reference line a line, a bracket a bracket) carrying no text of its own, on the same kind of host: on a native chart for a mark on a chart; on a native table, or on a structure the house built from shapes (keybank's slide 10 rows of filled text shapes), for a mark on a table; on a text, a picture or a shape for a mark on the same: the guide's `variety.pages[].exhibit_facts.marks`, read by the extractor. A mark on a pasted picture stands for neither, since the file cannot say what the picture shows. A ring drawn inside a pasted picture is pixels the file cannot show, so it is no precedent: explain such a mark another way |
+| `{"reference_precedent": {"slide": 10}}` | the reference's file draws, on slide 10, a mark of the same geometry (an outline box an outline, a band a fill, a reference line a line, a bracket a bracket) carrying no text of its own, on the same kind of host: on a native chart for a mark on a chart; on a native table, or on a structure the reference built from shapes (keybank's slide 10 rows of filled text shapes), for a mark on a table; on a text, a picture or a shape for a mark on the same: the guide's `variety.pages[].exhibit_facts.marks`, read by the extractor. A mark on a pasted picture stands for neither, since the file cannot say what the picture shows. A ring drawn inside a pasted picture is pixels the file cannot show, so it is no precedent: explain such a mark another way |
 
 Each placed annotation's report entry says how it is explained (`explained_by`: `its own
-label`, or what was checked). The marks the house's files draw, with whether each carries
+label`, or what was checked). The marks the reference's files draw, with whether each carries
 text, are listed per page in the draft report (`draft.md`, variety) and summed in
-complete_guide's `house_habits`.
+complete_guide's `reference_habits`.
 
 What the build refuses, by name, under `problems`:
 
-- `annotation refused`: a key, anchor or role it cannot honour, or a choice with no neutral value left out (`an outline_box needs shape (or house_mark ...)`, `label: needs ['align']`, `axes.value needs
+- `annotation refused`: a key, anchor or role it cannot honour, or a choice with no neutral value left out (`an outline_box needs shape (or reference_mark ...)`, `label: needs ['align']`, `axes.value needs
   numeric min < max`, `cross_between ... is required`, `value 45 is outside axes.value
   20..44`, `value '36.5' on axes.value is not a number`, `'Committee' ... breaks between
   characters`, a band label wider than its band, `body row 10 (emphasis) is filled with
@@ -675,9 +674,9 @@ exhibits on keybank (all four fit, the judge files the deck under keybank).
 
 keybank p5 (red boxes around the median multiples and the subject row; in the coded
 corpus, comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15). The median
-row is shaded with an `emphasis` group; the boxes are annotations in the house's
-look-here colour, `color.emphasis`. The house draws its boxes with no words of their own and
-lets the lead-in say why: one box names the lead's words, the other cites the house's
+row is shaded with an `emphasis` group; the boxes are annotations in the reference's
+look-here colour, `color.emphasis`. The reference draws its boxes with no words of their own and
+lets the lead-in say why: one box names the lead's words, the other cites the reference's
 precedent. Page 5's boxes are inside a pasted picture, which the file cannot show; slide
 10's file draws a red outline with no text over its rows, and that is the precedent cited.
 
@@ -688,7 +687,7 @@ precedent. Page 5's boxes are inside a pasted picture, which the file cannot sho
   "shape": "rect", "line_role": "color.emphasis", "line_width_pt": 1.5,
   "explained_by": {"text": "lead", "quote": "Above the median on P / TBV and P / E"}},
  {"id": "subject-box", "host": "comps", "kind": "outline_box", "anchor": {"row": 13},
-  "house_mark": {"slide": 10}, "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"house_precedent": {"slide": 10}}}]
+  "reference_mark": {"slide": 10}, "line_role": "color.emphasis", "line_width_pt": 1.5, "explained_by": {"reference_precedent": {"slide": 10}}}]
 ```
 
 ### Worked: a region boxed, a header group bracketed, a row keyed (on a sensitivity grid)
@@ -797,7 +796,7 @@ their lines, fixed it).
 
 Proven on: BCG New York page 24 (a bridge with two rows of figures in ovals) and the
 Jazz pitchbook's page 9 (eleven company logos as category labels), each rebuilt on its
-house's guide (PORT_AUDIT.md, exhibit fidelity).
+reference's guide (PORT_AUDIT.md, exhibit fidelity).
 
 ```json
 "annotations": [
@@ -838,4 +837,4 @@ builds, and its page lists 26 lines under `chart_defaults_taken`, among them:
     legend: none (OOXML absence)
     text: chart text inherits the theme's face, size and colour
 
-None of those is the house's style; each is a choice to write.
+None of those is the reference's style; each is a choice to write.

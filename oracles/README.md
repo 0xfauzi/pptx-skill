@@ -56,7 +56,7 @@ keybank / netflix accent1 differed.
 
     uv run python -I oracles/oracle_compare.py
 
-Converts each default-house specimen SlideModel
+Converts each specimen SlideModel of the predecessor's default style
 (`$DECKGEN/fixtures/default_house_style/specimen/slides/*.json`) to the port's spec, solves
 it with deckgen's `layout.solver.solve` and the port's `layout.solve_tree` at scales 1.0,
 0.85 and 0.73, and compares every box; then compares the shared validation codes at 1.0.

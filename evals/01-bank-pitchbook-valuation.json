@@ -1,7 +1,7 @@
 {
  "id": "01-bank-pitchbook-valuation",
  "skills": [
-  "building-house-style-decks"
+  "building-pptx-decks"
  ],
  "target_spec_scenario": 1,
  "reference": {
@@ -9,11 +9,11 @@
   "files": [
    "refs/files/mi_keybank_first_niagara_fig_ma.pptx"
   ],
-  "house_decks": [
+  "also_given": [
    "refs/files/mi_netflix_financing_pitchbook.pptx",
    "refs/files/mi_jazz_pharma_sellside_pitchbook.pptx"
   ],
-  "notes": "Topic titles (8 topic, 3 question, 0 claim on the first deck); claims in lead-in bullets and numbered rows; house longest run 2."
+  "notes": "Topic titles (8 topic, 3 question, 0 claim on the reference); claims in lead-in bullets and numbered rows; the reference's longest run 2. The user also attaches two sister decks and names keybank as the one to follow."
  },
  "brief": "Five-page valuation section for the board of Harbor Lake Bancorp on a proposed sale to Meridian Financial at $24.00 per share: comparable companies, football field against the offer, precedent transactions, pro forma EPS bridge, process timeline.",
  "data": {
@@ -172,15 +172,15 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
-   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
+   "statement": "Every title fits the band above the top rule; a title longer than the reference's longest, and a register the reference writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the reference' and 'title register rare in the reference' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the reference's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the reference's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the reference's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
-   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "statement": "The section's realised variety is at or above the reference's 10th percentile deck, or each warning is explained as a deliberate parallel.",
    "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
   },
   {
@@ -196,8 +196,8 @@
    "check": "Read the final report."
   },
   {
-   "statement": "Where a page's claim sits is reported against the house's habit (topic titles, claims in lead-ins and numbered rows), and a departure is answered.",
-   "check": "Diagnostic, not pass or fail: slides[].title.register beside the house's counts; any 'title register rare in the house' warning answered in the report. The blind round caught claim titles in topic houses on every page (evals/README.md), so read the titles beside the renders."
+   "statement": "Where a page's claim sits is reported against the reference's habit (topic titles, claims in lead-ins and numbered rows), and a departure is answered.",
+   "check": "Diagnostic, not pass or fail: slides[].title.register beside the reference's counts; any 'title register rare in the reference' warning answered in the report. The blind round caught claim titles on every page of decks whose reference titles by topic (evals/README.md), so read the titles beside the renders."
   },
   {
    "statement": "The football field's midpoints claim is computed (the offer is above four of five midpoints), and the offer can be found on the exhibit.",
@@ -205,15 +205,15 @@
   },
   {
    "statement": "On the comps table the subject and the median row can be found, by a device the report names.",
-   "check": "The subject and the median rows are each marked (an emphasis group, an annotation, a row of their own) or the report says why not (pass or fail); how the marking compares with the house's digest is a diagnostic."
+   "check": "The subject and the median rows are each marked (an emphasis group, an annotation, a row of their own) or the report says why not (pass or fail); how the marking compares with the reference's digest is a diagnostic."
   },
   {
    "statement": "The bridge declares `bridge` and ties.",
    "check": "No 'bridge does not tie' refusal; 2.10 + 0.38 - 0.21 - 0.09 - 0.12 = 2.06."
   },
   {
-   "statement": "House variety pooled over the three decks of the house.",
-   "check": "Build and plan run with --house-deck for the two sister decks."
+   "statement": "One reference deck: the agent follows the deck the user names (keybank) and pools nothing from the two sister decks attached beside it.",
+   "check": "Pass or fail: plan.py and build_deck.py run with the keybank guide and --reference keybank only; no other deck's guide is passed (a --house-deck flag is refused by name)."
   }
  ]
 }

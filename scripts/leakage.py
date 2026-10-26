@@ -5,8 +5,8 @@
                [--computed figures.txt ...] [--template tpl.pptx] [-o leakage.json]
 
 The build runs this on every deck it writes (its `leakage` field), against the reference
-and the house decks it was given; this command runs it on any deck. A new deck may carry
-only what the user supplied for it and the house's own furniture. Every page of the new
+and the reference decks it was given; this command runs it on any deck. A new deck may carry
+only what the user supplied for it and the reference's own furniture. Every page of the new
 deck is compared with every page of the past decks, and each match is listed on the page
 where it appears:
 
@@ -17,9 +17,9 @@ where it appears:
   past page also carries.
 
 Each finding is ranked by rarity. A name or phrase whose words run in that order in a
-public deck of another house (the judge's panel in refs/files, past decks and their twins
+public deck of another firm (the judge's panel in refs/files, past decks and their twins
 left out), or a name every word of which those decks use, is a term of the trade, not
-this house's content; a round figure (at most two significant
+this reference's content; a round figure (at most two significant
 digits, the second 0 or 5: 10%, 15%, $1,000, 4.0x) and a year carry no information about
 where they came from. Those are listed once under `low`, with what to do; everything else
 is `distinctive`, listed per page, rarest first (most words no public deck uses).
@@ -55,7 +55,7 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 PHRASE_WORDS = 5  # unmeasured
-CHROME_SHARE = 0.5  # unmeasured: repeated on half the pages or more is the house's furniture
+CHROME_SHARE = 0.5  # unmeasured: repeated on half the pages or more is the reference's furniture
 _TOKEN = re.compile(r"[$€£]?\d[\d,.]*%?x?|[A-Za-z][A-Za-z&'\-]*")
 _FIGURE = re.compile(r"^[$€£]\d|\d\d%$|^\d{3,}|\d[.,]\d")
 #: a figure: its currency, its number (thousands groups only as three digits after a comma,
@@ -146,7 +146,7 @@ def _twin_key(path: str | Path) -> str:
 
 
 def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
-    """The public decks of other houses (refs/files, fetched by refs/fetch.sh), each as
+    """The public decks of other firms (refs/files, fetched by refs/fetch.sh), each as
     its words normalised and joined (" w1 w2 ... ", one line break between strings),
     with the past decks and their twins (the same stem: a pptx and its PDF rendition)
     left out; and a note naming the basis. A finding is a term of the trade when its words
@@ -165,8 +165,8 @@ def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
                 continue
             words = "\n".join(" " + " ".join(norm(w) for w in tokens(line)) + " " for x in strings for line in x.split("\n"))
             decks.append((f.name, words))
-    note = (f"{len(decks)} public decks of other houses in {BACKGROUND_DIR}" + (f"; not read: {', '.join(unread)}" if unread else "") if decks
-            else f"not measured: no public decks in {BACKGROUND_DIR} (run refs/fetch.sh); terms of the trade cannot be told from this house's own words")
+    note = (f"{len(decks)} public decks of other firms in {BACKGROUND_DIR}" + (f"; not read: {', '.join(unread)}" if unread else "") if decks
+            else f"not measured: no public decks in {BACKGROUND_DIR} (run refs/fetch.sh); terms of the trade cannot be told from this reference's own words")
     return decks, note
 
 
@@ -193,7 +193,7 @@ def round_or_year(text: str) -> str | None:
 
 def rarity(kind: str, key: tuple, text: str, decks: list[tuple[str, str]], vocabulary: set[str]) -> dict:
     """low or distinctive, with the reason. A figure: low when round or a year. A name or
-    phrase: low when its words run in that order in a public deck of another house; a name
+    phrase: low when its words run in that order in a public deck of another firm; a name
     is low too when every one of its words is in those decks' vocabulary (senior notes,
     debt ebitda: products and ratios), and distinctive when any word is not (a company, a
     place, a person). `rare_words` ranks the distinctive ones."""
@@ -203,10 +203,10 @@ def rarity(kind: str, key: tuple, text: str, decks: list[tuple[str, str]], vocab
     needle = " " + " ".join(key) + " "
     found = [name for name, words in decks if needle in words]
     if found:
-        return {"tier": "low", "why": f"a term of the trade: also in {len(found)} public deck(s) of other houses ({', '.join(found[:2])})"}
+        return {"tier": "low", "why": f"a term of the trade: also in {len(found)} public deck(s) of other firms ({', '.join(found[:2])})"}
     rare = [w for w in key if w not in vocabulary]
     if kind == "name" and decks and not rare:
-        return {"tier": "low", "why": "a term of the trade: every word of it is in the public decks of other houses"}
+        return {"tier": "low", "why": "a term of the trade: every word of it is in the public decks of other firms"}
     return {"tier": "distinctive", "rare_words": len(rare)}
 
 
@@ -285,7 +285,7 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
             "declared_computed": sorted(coincident.values(), key=lambda x: x["text"]),
             "findings": distinctive, "distinctive": distinctive, "low": len(low), "pages": report_pages, "images": images,
             "low_findings": sorted(low.values(), key=lambda x: x["text"]),
-            "what_to_do": {"distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, "
+            "what_to_do": {"distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, "
                                           "or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
                            "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from "
                                   "your data; keep each one your data or brief produces, and check any figure you did not compute"},

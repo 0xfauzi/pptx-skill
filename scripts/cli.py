@@ -73,8 +73,19 @@ def out_path(path: str | Path, what: str = "output") -> Path:
     return Path(path)
 
 
+#: flags that were removed or renamed: refused by name, with the new spelling, by every command
+RENAMED_FLAGS = {
+    "--house-deck": ("--house-deck was removed: the skill takes one reference deck (the guide made from it, and --reference). When the "
+                     "user gives several, use the one they name, or ask which to follow; nothing is pooled"),
+    "--houses-file": "--houses-file is now --firms-file (oracles/calibration-firms.txt)",
+}
+
+
 def run(main: Callable[[list[str]], int | None]) -> None:
     argv = sys.argv[1:]
+    renamed = [RENAMED_FLAGS[a.split("=", 1)[0]] for a in argv if a.split("=", 1)[0] in RENAMED_FLAGS]
+    if renamed:
+        raise SystemExit("refused: " + "; ".join(dict.fromkeys(renamed)))
     empty = [i for i, a in enumerate(argv) if not a.strip()]
     if empty:
         # an empty argument is a path or value that came from an unset variable

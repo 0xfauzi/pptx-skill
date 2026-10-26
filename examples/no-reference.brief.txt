@@ -1,0 +1,4 @@
+Brief from the user: a three-page operating review of Northwind Ferries (a fictional operator), illustrative figures.
+Revenue by year, $m: 2021 142.0; 2022 158.5; 2023 171.2; 2024 186.9; 2025 203.4.
+Revenue by route in 2025, $m, and passengers in thousands: North Sound 61.2 and 412; Harbour Loop 54.8 and 366; Island Link 47.9 and 318; Coastal Run 39.5 and 262.
+Fleet: 14 vessels; on-time departures 96.1% in 2025 against 93.4% in 2024.

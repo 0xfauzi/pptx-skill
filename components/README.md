@@ -15,7 +15,7 @@ consulting deck and on a white banking deck.
       expand.py      def expand(data: dict, box: dict, guide: dict) -> dict
 
 `box` is `{"width_emu", "height_emu"}`, the box the slide offers (the solver's probe
-box). A component is a worked example to read and fork per house, not the one way to
+box). A component is a worked example to read and fork per reference (or per look you chose), not the one way to
 draw its exhibit. It returns a region tree in the layout spec grammar (see
 `scripts/layout.py`): regions with `flex`/`grid` layouts, elements of kind `text`,
 `rule`, `rect` (a filled box: `{"kind": "rect", "fill_role": ..., "line_role": ...}`),

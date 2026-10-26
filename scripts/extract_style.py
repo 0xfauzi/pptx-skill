@@ -2,6 +2,7 @@
 """Extract a style guide draft from a reference deck (.pptx, or .pdf with less).
 
     extract_style.py reference.pptx -o guide.json [--report guide.md]
+    extract_style.py --blank -o draft.json [--report draft.md]     # no reference deck
 
 What comes out is a reference-mode cascade: observe every
 inheritance-resolved run, fill, line, table and chart on the slide layer; cluster
@@ -14,7 +15,8 @@ carries provenance (observed | deterministic_inference, assigned | inferred,
 evidence, frequency, master_membership, confidence). Whatever one reproducible
 rule cannot decide is listed under `unresolved` with its constraints: the model
 completes those while looking at the renders, and never overwrites an observed
-value. No house value enters a reference guide.
+value. No value from outside the reference enters a reference guide. With --blank and no
+reference, the draft opens every address (page size included) for the model to choose.
 
 The report (--report) is the evidence digest the model reads before completing.
 
@@ -108,7 +110,7 @@ def drawn_extent_emu(pdf: Path, page_index: int, box: tuple[int, int, int, int],
 def ground_picture(guide: dict, reference: str, folder: Path) -> None:
     """The ground picture's own bytes (pdfimages, the file's image as stored, no content
     over it) for guide.ground.image_path: --chrome draw paints it as every page's
-    background, so the build's pages stand on the house's ground and not on its flat
+    background, so the build's pages stand on the reference's ground and not on its flat
     surface colour. A picture, not a gradient fill: both renderers draw a bitmap alike,
     where an authored gradFill's midpoint lands 20 points apart (validate --emit, E38)."""
     import subprocess
@@ -919,7 +921,7 @@ class Extractor:
                 if sh.line and sh.line_w_emu and 0 < sh.line_w_emu <= RULE_LINE_MAX_WIDTH_EMU:
                     votes_rule.setdefault(sh.line, Votes()).add(f"{sid}#{sh.ref}", False)
             for sh in s.chrome:
-                # the rules the layout draws on every page are the house's rules; without this
+                # the rules the layout draws on every page are the reference's rules; without this
                 # vote five red highlight outlines on the slide layer won colour.rule on netflix
                 if sh.line and sh.line_w_emu and 0 < sh.line_w_emu <= RULE_LINE_MAX_WIDTH_EMU and (sh.kind == "line" or (sh.box and min(sh.box[2], sh.box[3]) <= RULE_LINE_MAX_WIDTH_EMU)):
                     votes_rule.setdefault(sh.line, Votes()).add(f"{sid}#{sh.ref}", True)
@@ -1020,11 +1022,11 @@ class Extractor:
                 put(role, h, inferred([f"hue {sat[h][0]:.0f} sat {sat[h][1]:.2f}"], pool[h], False, pool[h] / max(1, sum(pool.values()))))
             else:
                 self.open(f"/color/roles/{role}", "no saturated colour in the hue band was used", {"hue_band": POSITIVE_HUE if role.endswith("positive") else NEGATIVE_HUE})
-        # the house's "look here" colour (the red box round a figure, the circle, the
-        # highlight bar) is a reading of what the house marks and how, which no hue band
+        # the reference's "look here" colour (the red box round a figure, the circle, the
+        # highlight bar) is a reading of what the reference marks and how, which no hue band
         # decides: it is always the model's to answer from the renders and the digest, and
         # it is not color.negative, which colours a bad value
-        self.open("/color/roles/color.emphasis", "the colour the house marks emphasis with (outline boxes, circles, a highlighted bar, an "
+        self.open("/color/roles/color.emphasis", "the colour the reference marks emphasis with (outline boxes, circles, a highlighted bar, an "
                   "emphasis rule) is read off the renders, never inferred from a hue band; it is not color.negative, which colours a bad value",
                   {"saturated_inks_and_accents": sorted((h for h in pool if sat[h][1] >= SEMANTIC_MIN_SATURATION), key=lambda h: -pool[h])[:5]})
         usage = {
@@ -1250,11 +1252,11 @@ class Extractor:
                              "why": "..."}})
 
     def variety(self, archetype_of: dict[int, str]) -> None:
-        """The house's variety over its content pages (plan.py holds the measure): each page's
+        """The reference's variety over its content pages (plan.py holds the measure): each page's
         archetype in page order with library.py's triage proposal, which pages are content
         (the proposal, until /variety/content_pages answers it), each page's exhibits as the
         file states them (ooxml.exhibit_facts: the structure plan.py measures, and the marks a
-        house precedent is read from), and the measure."""
+        reference precedent is read from), and the measure."""
         from library import facts_of, propose  # library imports gallery, which imports this module
         from ooxml import Package, exhibit_facts
         facts = facts_of(self.slides, None if self.is_pdf else Package(self.path))
@@ -1270,7 +1272,7 @@ class Extractor:
             "measure": plan.measure_deck(Path(self.path).name, plan.content_segments({"pages": pages, "content_pages": {"pages": content}})),
         }
         self.open("/variety/content_pages", "which pages are content is a reading: look at the renders and list the content pages (the triage "
-                  "proposal is in the candidates); the house's variety is measured over them, and stays on the proposal until answered",
+                  "proposal is in the candidates); the reference's variety is measured over them, and stays on the proposal until answered",
                   {"shape": "[<slide>, ...]: the content pages, in any order, each a page listed here", "pages": [p["slide"] for p in pages if p["triage"] != "hidden"]},
                   [{"slide": p["slide"], "proposal": p["triage"], "why": p["why"]} for p in pages])
 
@@ -1390,8 +1392,8 @@ class Extractor:
             return {"metric": name, "low": round(percentile(values, 0.1), 4), "high": round(percentile(values, 0.9), 4),
                     "median": round(percentile(values, 0.5), 4), "n": len(values)} if values else {"metric": name, "low": None, "high": None, "n": 0}
 
-        # the text container the house draws by hand: a text box (txBox="1") or a plain shape.
-        # The judge counts the two apart, and a deck of text boxes on a house of shapes is a tell.
+        # the text container the reference draws by hand: a text box (txBox="1") or a plain shape.
+        # The judge counts the two apart, and a deck of text boxes on a reference of shapes is a tell.
         containers: Counter = Counter()
         for s in self.slides:
             for sh in s.shapes:
@@ -1719,7 +1721,7 @@ class Extractor:
         samples: dict[str, list[float]] = defaultdict(list)
         pages_at: dict[str, dict[float, set[int]]] = defaultdict(lambda: defaultdict(set))  # family -> size -> pages that set it
         # text turned off the horizontal (a copyright up the page edge, overprinted glyph by
-        # glyph on bcg) is furniture in the margin, not a size the house sets content in
+        # glyph on bcg) is furniture in the margin, not a size the reference sets content in
         turned_refs = {(s.index, sh.ref) for s in self.slides for sh in s.shapes if sh.rotation and sh.text_chars}
         page_of = {id(r): s.index for s in self.slides for r in s.runs}
         turned = 0
@@ -1753,7 +1755,7 @@ class Extractor:
             q1, q3 = percentile(vals, 0.25), percentile(vals, 0.75)
             fence = q1 - 1.5 * (q3 - q1)
             # the fence trims a stray size, never one the reference sets again and again: a
-            # size on MIN_LEVEL_OBSERVATIONS pages or more is the house's own (mckinsey's 8pt
+            # size on MIN_LEVEL_OBSERVATIONS pages or more is the reference's own (mckinsey's 8pt
             # source lines are 10 of 44 annotation runs on 9 pages, under a 9pt fence)
             kept = [v for v in vals if v >= fence or len(pages_at[fam][v]) >= MIN_LEVEL_OBSERVATIONS]
             floors[fam] = {"roles": list(roles), "floor_pt": min(kept), "trimmed_outlier_count": len(vals) - len(kept), "sample_size": len(vals),
@@ -1801,13 +1803,13 @@ class Extractor:
             spec["ink_role"] = self.role_of(spec.get("ink"), "ink") if spec.get("ink") else None
         for b in self._bullets.values():
             b["ink_role"] = self.role_of(b.get("ink_hex")) if b.get("ink_hex") else None
-        for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the house was not seen doing: evidence, never a rule), tone"),
+        for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the reference was not seen doing: evidence, never a rule), tone"),
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
-                             ("/continuation", "what the house does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
+                             ("/continuation", "what the reference does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
             self.open(path, reason)
-        self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at them: run the digest, look at every crop, copy the "
+        self.open("/exhibit_habits", "how the reference builds its exhibits is read by looking at them: run the digest, look at every crop, copy the "
                   "stub to digest.json beside it, describe every exhibit of every page of the copy in your own words (what it is, what the "
-                  "reader sees, how the house draws and marks it), and answer with complete_guide.py --digest <dir>",
+                  "reader sees, how the reference draws and marks it), and answer with complete_guide.py --digest <dir>",
                   {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json"})
         self.notes.append("gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide")
         text_layer = {"status": "typographic"}
@@ -1853,14 +1855,14 @@ RASTER_OPEN = (
     ("/color/roles/color.accent4", "fourth accent"),
     ("/color/roles/color.surface_alt", "panel and band fill"),
     ("/color/roles/color.ink_inverse", "text on dark fills"),
-    ("/color/roles/color.emphasis", "the look-here colour of outline boxes, rings and highlights, read off the pages (null when the house marks nothing)"),
+    ("/color/roles/color.emphasis", "the look-here colour of outline boxes, rings and highlights, read off the pages (null when the reference marks nothing)"),
     ("/spacing/steps", "the spacing scale"),
     ("/spacing/margins", "page margins per side"),
     ("/chrome", "recurring furniture: rules, bands, logo block, page number"),
-    ("/composition", "the arrangements the house uses"),
+    ("/composition", "the arrangements the reference uses"),
     ("/tables", "rule classes and header treatment"),
     ("/charts", "series colours, label and axis treatment"),
-    ("/floors", "smallest sizes the house uses, per family"),
+    ("/floors", "smallest sizes the reference uses, per family"),
 )
 
 
@@ -1870,11 +1872,11 @@ def _raster_run(self: "Extractor") -> dict:
     tri = self.triage or {}
     for path, reason in RASTER_OPEN:
         self.open(path, f"raster reference: {reason}", {"provenance": "raster_inference", "max_confidence": 0.5})
-    for path, reason in (("/description", "written by the model from the page images: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the house was not seen doing: evidence, never a rule), tone"),
+    for path, reason in (("/description", "written by the model from the page images: summary, typography, color, layout, tables, imagery, motifs, not_seen (what the reference was not seen doing: evidence, never a rule), tone"),
                          ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
-                         ("/continuation", "what the house does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
+                         ("/continuation", "what the reference does when a page continues onto the next, read off its pages in words: its continuation mark, or none seen")):
         self.open(path, reason)
-    self.open("/exhibit_habits", "how the house builds its exhibits is read by looking at its pages: the digest of a raster reference "
+    self.open("/exhibit_habits", "how the reference builds its exhibits is read by looking at its pages: the digest of a raster reference "
               "cuts whole pages (no shapes to crop); copy the stub to digest.json beside it, complete every page, and answer with "
               "complete_guide.py --digest <dir>",
               {"command": "python3 scripts/gallery.py digest <reference> --out work/ref/digest --guide work/ref/draft.json"})
@@ -1913,6 +1915,80 @@ def _raster_run(self: "Extractor") -> dict:
 
 
 Extractor.run_raster = _raster_run
+
+
+#: The open set of a blank draft (no reference deck): every address of the look, the page
+#: size included, each the model's to choose. Floors are limits, not look: each family
+#: carries the product safety floor and no floor_pt, since nothing was measured.
+BLANK_OPEN = (
+    ("/reference/page", ('the page size, {"width_emu": int, "height_emu": int, "why": "..."}: 16:9 at 13.333 x 7.5 in is 12192000 x 6858000 EMU, '
+                         "4:3 at 10 x 7.5 in is 9144000 x 6858000; choose for where the deck will be shown")),
+    ("/typography/families", 'the faces, {"major": "<face>", "minor": "<face>"}: installed faces only (preflight.py lists them), so every fit is measured'),
+    *((f"/typography/roles/{role}", ("a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; "
+                                     f"no size below the {_layout.PRODUCT_SAFETY_FLOOR_PT}pt absolute floor")) for role in CORE_TYPE_ROLES),
+    ("/typography/bullets", ('the bullet per level, {"0": {"glyph": "<glyph>", "font": "<face>", "indent_role": "space.<step>", '
+                             '"hanging_indent_role": "space.<step>"}}, or {} for text set without bullets')),
+    *((f"/color/roles/{role}", "a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)")
+      for role in CORE_COLOR_ROLES),
+    ("/spacing/steps", "the spacing scale you choose"),
+    ("/spacing/margins", 'the page margins, {"left": {"emu": int}, "right": ..., "top": ..., "bottom": ...}'),
+    ("/chrome", "the page furniture drawn on every page (a rule, a page number, a label), or [] for none"),
+    ("/tables", "how tables are drawn: header, banding, rules, padding, alignment"),
+    ("/charts", "series colours, gridlines, labels and legends"),
+    ("/description", "the look you chose, in words: summary, typography, color, layout, tables, imagery, motifs, not_seen ([]), tone"),
+    ("/continuation", "what the deck does when a page continues onto the next, in words or {contd_mark, why}"),
+)
+
+
+def blank_draft() -> dict:
+    """A draft guide made with no reference deck: every look address open with provenance
+    model_choice, the page size included, and nothing filled in from the corpus or from a
+    default style. The floors carry only the product safety floor (a limit, not a look).
+    plan.has_reference reads it as having none (reference.format "none", no sha256), and
+    every later comparison with a reference reports "no reference"."""
+    open_set = [{"path": path, "reason": f"no reference: {reason}", "constraints": {"provenance": plan.MODEL_CHOICE}, "candidates": []}
+                for path, reason in BLANK_OPEN]
+    return {
+        "schema": "pptx-skill style guide draft v1",
+        "measurement": textfit.ruler_pin(),
+        "reference": {"file": None, "sha256": None, "slides": None, "format": plan.NO_REFERENCE_FORMAT,
+                      "text_layer": {"status": plan.NO_REFERENCE_FORMAT}, "triage": None, "page": None, "layouts_used": None,
+                      "none": "no reference deck: the model chooses the whole look; nothing here is a habit to compare with"},
+        "typography": {"families": {"major": None, "minor": None, "fallbacks": []}, "levels": [], "roles": {}, "scale_ratio": None, "bullets": {}},
+        "color": {"theme": {}, "roles": {}, "usage": {}},
+        "spacing": {"steps": {}, "margins": {}, "baseline_emu": None, "gap_levels": []},
+        "composition": {"archetypes": [], "bands": [], "column_grids": [], "alignment_edges": []},
+        "variety": {"pages": [], "why": "no reference: no pages to measure variety over"},
+        "register_stats": {},
+        "density_bands": {},
+        "chrome": [],
+        "motifs": [],
+        "titles": None,
+        "tables": None,
+        "charts": None,
+        "shape_language": {},
+        "imagery": {},
+        "floors": {fam: {"roles": list(roles), "floor_pt": None, "absolute_floor_pt": PRODUCT_SAFETY_FLOOR_PT[fam], "sample_size": 0}
+                   for fam, roles in FLOOR_FAMILIES.items()},
+        "floors_note": (f"absolute_floor_pt: product safety floor ({_layout.PRODUCT_SAFETY_FLOOR_PT}pt, measured on two screen media); never generate "
+                        "below it. floor_pt is null: with no reference nothing was measured, so the absolute floor is every family's floor"),
+        "unresolved": open_set,
+        "notes": [("no reference deck: every address is open for the model's own choice (provenance model_choice). The corpus "
+                   "evidence in references/ is there as questions to ask of a design, never as a default to fill an address with")],
+    }
+
+
+def blank_report(guide: dict) -> str:
+    """The blank draft's report: what is open, and where the questions are."""
+    out = ["# No reference: the look is yours to choose", "",
+           ("No reference deck was given, so nothing below is evidence of a habit. Every address is open; answer each one as a design "
+            "choice, in one completion (complete_guide.py), with a why. Hard limits still hold: text fit is measured in the faces you "
+            f"name, contrast is scored on every run, nothing is set below {_layout.PRODUCT_SAFETY_FLOOR_PT}pt, and specs name roles, never literals."),
+           "", ("Questions to ask of the look, with the corpus's counts as evidence (never as a default): references/typography.md, "
+                "references/composition.md, references/charts.md, references/tables.md, references/emphasis-and-decoration.md, "
+                "references/titles-and-text.md."), "", "## Open", ""]
+    out += [f"- `{u['path']}`: {u['reason']}" for u in guide["unresolved"]]
+    return "\n".join(out) + "\n"
 
 
 def winner_hex(pool: dict[str, Votes]) -> str | None:
@@ -2042,7 +2118,8 @@ def report(guide: dict) -> str:
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("reference")
+    ap.add_argument("reference", nargs="?", help="the reference deck (.pptx or .pdf); leave it out with --blank")
+    ap.add_argument("--blank", action="store_true", help="no reference deck: a draft with every address open for the model to choose")
     ap.add_argument("-o", "--out", default=None, help="guide JSON (default: <stem>.style.json next to the reference)")
     ap.add_argument("--report", default=None, help="evidence digest markdown (default: alongside the JSON)")
     ap.add_argument("--max-pages", type=int, default=None)
@@ -2051,7 +2128,23 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out", "report")
-    import cli
+    if args.blank:
+        if args.reference or args.pages or args.max_pages or args.include_generated:
+            raise SystemExit("refused: --blank makes a draft with no reference deck; it takes -o and --report only (a reference deck is "
+                             "extracted without --blank)")
+        if not args.out:
+            raise SystemExit("refused: --blank needs -o, the draft's path in your work directory")
+        out = cli.out_path(Path(args.out), "guide draft")
+        rep = cli.out_path(Path(args.report) if args.report else out.with_suffix(".md"), "report")
+        guide = blank_draft()
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(guide, indent=1))
+        rep.parent.mkdir(parents=True, exist_ok=True)
+        rep.write_text(blank_report(guide))
+        print(json.dumps({"guide": str(out), "report": str(rep), "reference": plan.NO_REFERENCE, "unresolved": len(guide["unresolved"])}, indent=1))
+        return 0
+    if not args.reference:
+        raise SystemExit("refused: give the reference deck, or --blank for a draft with no reference")
     pages = cli.page_range(args.pages) if args.pages else None
     ex = Extractor(args.reference, args.max_pages, pages, args.include_generated)
     guide = ex.run()

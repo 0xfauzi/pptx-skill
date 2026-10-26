@@ -828,7 +828,7 @@ _overlaps = ooxml.shares_area
 
 def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, include_generated: bool = False,
            pages: tuple[int, int] | None = None) -> dict[str, object]:
-    """The house exhibit digest stub: for every evidence page, its full
+    """The reference exhibit digest stub: for every evidence page, its full
     render, a content crop (the rectangle around every leaf that is neither chrome nor the
     title; a crop is a rectangle, so a title or chrome leaf that falls inside it is still
     drawn, and is named under `also_draws`) and one crop per exhibit
@@ -907,8 +907,8 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "record_template": {"candidate": "<a candidate id on this page, or null>",
                             "what": "<what the exhibit is, in your words: its form and what it is made of>",
                             "message": "<the one thing a reader takes from it>",
-                            "how_drawn": "<how the house draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
-                            "marks": "<what the house marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim "
+                            "how_drawn": "<how the reference draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
+                            "marks": "<what the reference marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim "
                                      "lives, and whether words beside the mark say what it marks; or that it marks nothing and how the claim still reads>",
                             "chart_or_table": "<true when it is a chart or a table, drawn natively or pasted as a picture: the pages the source-line habit is counted over>",
                             "axis_labels": "<true when it sets axis or category labels>", "value_labels": "<true when it sets values on its marks>",
@@ -924,7 +924,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "leaf inside that rectangle is still drawn, and the stub names it under `also_draws`: it is not an exhibit.",
         "Copy `digest.stub.json` to `digest.json` in this directory and leave the stub as cut; in the copy, replace each",
         "page's `exhibits: null` with a list of records in the record_template's shape, each written in your own words",
-        "after looking at the crop: what the exhibit is, what the reader takes from it, how the house draws it and what it",
+        "after looking at the crop: what the exhibit is, what the reader takes from it, how the reference draws it and what it",
         "marks (an empty list states the page has no exhibit). Nothing is chosen from a list; the words are checked for",
         "being there, never for what they say. `file_facts` is what the file itself states of the page (its exhibit",
         "structure and every mark drawn on its content, with whether the mark carries text), read by the extractor: it",
@@ -1164,7 +1164,7 @@ def page_words(guide: dict | None) -> dict[int, frozenset[str]]:
     at their underscores and function words left out. A gallery's
     shapes carry no such words (an exemplar's vocabulary was its family id and shape kinds),
     so every intent overlapped every exemplar at 0; the digest the model completed in step 2
-    is the house's own tagging of its pages."""
+    is the reference's own tagging of its pages."""
     from annotate import STOP_WORDS
     out: dict[int, set[str]] = {}
 

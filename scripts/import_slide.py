@@ -5,12 +5,12 @@
     python3 scripts/import_slide.py ref.pptx --slide 3 --guide guide.json -o page.deck.json
     python3 scripts/build_deck.py page.deck.json --guide guide.json --template tpl.pptx -o rt.pptx --reference ref.pptx
 
-The round trip is the one acceptance test the extractor cannot game: a slide the house
+The round trip is the one acceptance test the extractor cannot game: a slide the reference
 made, read into roles and weights (never its coordinates), solved with measured fit,
-emitted on the reference's own master, must land near the house when the judge compares
+emitted on the reference's own master, must land near the reference when the judge compares
 it with the reference. It proves the extractor, the solver and the emitter agree. It is
 also the seed for new pages: a spec imported from the exemplar of a composition family
-starts inside the house's own bands and columns.
+starts inside the reference's own bands and columns.
 
 What survives the import: the title, every text shape's paragraphs with their bullet
 levels, bold runs, fills and inverse ink, the row and column arrangement (shapes that
@@ -176,7 +176,7 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
         # a fill may take any role a fill can name: the surfaces, accents, rule and the extra roles
         name, d = nearest_colour(fill, colours, ("color.surface", "color.accent", "color.rule", *extra_fills))
         if not (name and d < 12):
-            # the build takes any colour role as a fill (a house's black number cells are
+            # the build takes any colour role as a fill (a reference's black number cells are
             # color.ink); the surface roles are only preferred where both match
             name, d = nearest_colour(fill, colours)
         if name and d < 12:
@@ -276,7 +276,7 @@ def _pptx_shape(path: str, index: int, ref: str):
 
 
 def pptx_picture(path: str, index: int, ref: str, out_dir: Path, ident: str) -> str | None:
-    """The picture's own bytes, written beside the imported spec: the house pastes its
+    """The picture's own bytes, written beside the imported spec: the reference pastes its
     exhibits as pictures, and a round trip without them draws empty frames."""
     sh = _pptx_shape(path, index, ref)
     if sh is None or not hasattr(sh, "image"):
@@ -404,7 +404,7 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
             children.append({"type": "region", "id": f"row{len(children)}", "layout": {"kind": "flex", "direction": "row", "gap_role": "space.gutter",
                                                                                           "pad_role": None, "align": "stretch", "justify": "start"},
                              "children": elems})
-    # the house fills its page: the body rows share the content height (weights), as the
+    # the reference fills its page: the body rows share the content height (weights), as the
     # reference's rows do (keybank slide 3: seven rows at one pitch down to the footer rule)
     title_el = children[0] if children and children[0].get("id") == "title" else None
     body_children = children[1:] if title_el else children
@@ -512,7 +512,7 @@ def main(argv: list[str]) -> int:
                   f"exhibits={p['exhibits']} fits={p['fits_full_scale']}" + (f" ({'; '.join(p['why_not_full_scale'])})" if p["why_not_full_scale"] else "")
                   + (f"  loses: {'; '.join(p['lost'])}" if p["lost"] else ""))
         best = [p["slide"] for p in pages if p["candidate"] and p["layout"] == common] or [p["slide"] for p in pages if p["candidate"]]
-        print(f"round-trip candidates (content, title, text and an exhibit, nothing lost, fits; on the house's most used layout {common!r} first): "
+        print(f"round-trip candidates (content, title, text and an exhibit, nothing lost, fits; on the reference's most used layout {common!r} first): "
               f"{best or 'none: pick the content page that loses least and name every loss in the report'}")
         if args.out:
             Path(args.out).write_text(json.dumps(pages, indent=1))

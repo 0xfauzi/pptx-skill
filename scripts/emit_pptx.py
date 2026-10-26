@@ -161,8 +161,8 @@ class Guide:
             raise SpecError(f"{where}: literal colour {role!r}; use a colour role from the guide")
         entry = self.colors.get(role)
         if entry is None and role in (self.g.get("absent_roles") or {}):
-            raise SpecError(f"{where}: colour role {role!r}: the completed guide records that the house has none "
-                            f"({self.g['absent_roles'][role].get('why')}); use a role the house shows")
+            raise SpecError(f"{where}: colour role {role!r}: the completed guide records that the reference has none "
+                            f"({self.g['absent_roles'][role].get('why')}); use a role the reference shows")
         if entry is None:
             raise SpecError(f"{where}: unknown colour role {role!r}; guide roles: {sorted(self.colors)}")
         return entry["hex"]
@@ -170,8 +170,8 @@ class Guide:
     def type_spec(self, role: str, *, where: str) -> dict:
         spec = self.roles.get(role)
         if spec is None and role in (self.g.get("absent_roles") or {}):
-            raise SpecError(f"{where}: type role {role!r}: the completed guide records that the house has none "
-                            f"({self.g['absent_roles'][role].get('why')}); use a role the house sets")
+            raise SpecError(f"{where}: type role {role!r}: the completed guide records that the reference has none "
+                            f"({self.g['absent_roles'][role].get('why')}); use a role the reference sets")
         if spec is None:
             raise SpecError(f"{where}: unknown type role {role!r}; guide roles: {sorted(self.roles)}")
         if spec.get("partial"):
@@ -352,7 +352,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
         p_pr.set("lvl", str(int(level)))
         p_pr.set("marL", str(int(indent)))
         p_pr.set("indent", str(-int(min(indent, hanging))))
-        # the house's bullet ink, where its glyphs carry their own (extract_style: bullets[level].ink)
+        # the reference's bullet ink, where its glyphs carry their own (extract_style: bullets[level].ink)
         bu_hex = guide.hex(entry["ink_role"], where="bullet") if entry.get("ink_role") else entry.get("ink_hex")
         if bu_hex:
             clr = etree.SubElement(p_pr, qn("a:buClr"))
@@ -387,12 +387,12 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
         shape = slide.shapes.add_textbox(Emu(x), Emu(y), Emu(w), Emu(h))
     else:
         # the layout's own title placeholder, moved to the solved box: the file keeps the
-        # placeholder semantics (outline view, the judge's title size) and the house's type
+        # placeholder semantics (outline view, the judge's title size) and the reference's type
         shape.left, shape.top, shape.width, shape.height = Emu(x), Emu(y), Emu(w), Emu(h)
         shape.text_frame.text = ""
     shape.name = el.get("id", "text")
     if guide.text_container != "text_box" and shape.is_placeholder is False:
-        # the house draws text in plain shapes (keybank: 16 of 16 on its label page); a text box
+        # the reference draws text in plain shapes (keybank: 16 of 16 on its label page); a text box
         # is what python-pptx writes by default and what the judge counts as a different kind
         cnv = shape._element.find(f"{qn('p:nvSpPr')}/{qn('p:cNvSpPr')}")
         if cnv is not None and cnv.get("txBox") is not None:
@@ -497,7 +497,7 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
     hex_color = guide.hex(role, where=el.get("id", "rule"))
     width_emu = el.get("line_width_emu")
     if not width_emu:
-        # the house's own rule in this role (a mined line motif), else the default listed
+        # the reference's own rule in this role (a mined line motif), else the default listed
         motif = next((m for m in guide.g.get("motifs") or [] if m.get("geometry_preset") == "line" and m.get("line_role") == role and m.get("line_width_pt")), None)
         if motif is not None:
             width_emu = int(round(float(motif["line_width_pt"]) * EMU_PER_PT))
@@ -2158,13 +2158,23 @@ def chrome_text(ch: dict) -> str | None:
     return (ch.get("text") or "").replace("<page number>", "").strip()
 
 
-def house_chrome(guide_data: dict, mode: str) -> list[dict]:
-    """The guide's chrome a generated page starts from, in the reference's paint order:
-    every entry on at least half the reference's slides, and under --chrome none only what
-    the template inherits (an entry on a layout or master). An entry without `paint_order`
-    (a hand-written guide) keeps its list place."""
+def recurring_chrome(guide_data: dict) -> list[dict]:
+    """The guide's chrome entries a generated page can carry, the one definition: every entry
+    on at least half the reference's slides; on a guide made with no reference, every entry
+    (each the model's choice for every page)."""
+    import plan
+    if not plan.has_reference(guide_data):
+        return list(guide_data.get("chrome") or [])
     n = max(1, guide_data.get("reference", {}).get("slides", 1))
-    entries = [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
+    return [ch for ch in guide_data.get("chrome", []) if ch.get("slides_present", 0) >= 0.5 * n]
+
+
+def guide_chrome(guide_data: dict, mode: str) -> list[dict]:
+    """The guide's chrome a generated page starts from, in the reference's paint order:
+    recurring_chrome, and under --chrome none only what the template inherits (an entry on a
+    layout or master). An entry without `paint_order` (a hand-written guide) keeps its list
+    place."""
+    entries = recurring_chrome(guide_data)
     if mode == "none":
         entries = [ch for ch in entries if _layers(ch) != ["slide"]]
     return [ch for _, ch in sorted(enumerate(entries), key=lambda ie: (ie[1].get("paint_order", ie[0]), ie[0]))]
@@ -2178,35 +2188,36 @@ PAGE_CHROME_KEYS = {"omit", "text", "why"}
 
 def page_chrome(guide_data: dict, mode: str, raw, where: str) -> dict[str, dict]:
     """A page's own chrome choices, proven at the boundary: {chrome_id: {"omit": true,
-    "why": words}} leaves a house entry off this page, {chrome_id: {"text": words, "why":
+    "why": words}} leaves a reference entry off this page, {chrome_id: {"text": words, "why":
     words}} sets another line in a text entry's place. Only an entry the page would draw
-    (house_chrome) can be chosen for; never the firm's chrome (decided for the whole deck in
+    (guide_chrome) can be chosen for; never the firm's chrome (decided for the whole deck in
     firm_chrome) or a legal or confidentiality mark; under --chrome auto, never an entry the
     page inherits from its layout or master (a page cannot leave out what its layout draws:
     use a layout without it)."""
     if raw is None:
         return {}
-    house = {ch["chrome_id"]: ch for ch in house_chrome(guide_data, mode)}
-    listing = ", ".join(f"{cid} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''}, on {ch.get('slides_present')} of "
-                        f"{(guide_data.get('reference') or {}).get('slides')} reference pages)" for cid, ch in house.items()) or "none"
+    given = {ch["chrome_id"]: ch for ch in guide_chrome(guide_data, mode)}
+    listing = ", ".join(f"{cid} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''}, "
+                        + (f"on {ch.get('slides_present')} of {(guide_data.get('reference') or {}).get('slides')} reference pages)"
+                           if ch.get("slides_present") is not None else "chosen for every page)") for cid, ch in given.items()) or "none"
     if not isinstance(raw, dict):
-        raise SpecError(f"{where} chrome: an object {{chrome_id: {{\"omit\": true, \"why\": ...}} | {{\"text\": ..., \"why\": ...}}}}; the house's chrome here: {listing}")
+        raise SpecError(f"{where} chrome: an object {{chrome_id: {{\"omit\": true, \"why\": ...}} | {{\"text\": ..., \"why\": ...}}}}; the reference's chrome here: {listing}")
     firm = {ch["chrome_id"] for ch in firm_chrome(guide_data, mode)}
     out = {}
     for cid, choice in raw.items():
-        ch = house.get(cid)
+        ch = given.get(cid)
         at = f"{where} chrome {cid}"
         if ch is None:
-            raise SpecError(f"{at}: not chrome this page draws; the house's chrome here: {listing}")
+            raise SpecError(f"{at}: not chrome this page draws; the reference's chrome here: {listing}")
         if not isinstance(choice, dict) or set(choice) - PAGE_CHROME_KEYS or ("omit" in choice) == ("text" in choice):
             raise SpecError(f"{at}: {{\"omit\": true, \"why\": ...}} or {{\"text\": ..., \"why\": ...}}, not {choice!r}")
         why = choice.get("why")
         if not (isinstance(why, str) and len(why.split()) >= 3):
-            raise SpecError(f"{at}: why, in words: what this page does that the house's {ch.get('slides_present')} pages with it do not")
+            raise SpecError(f"{at}: why, in words: what this page does that the reference's {ch.get('slides_present')} pages with it do not")
         if cid in firm:
             raise SpecError(f"{at}: the firm's own chrome is kept, dropped or replaced for the whole deck in firm_chrome, never page by page")
         if LEGAL_MARK.search(chrome_text(ch) or ""):
-            raise SpecError(f"{at}: {chrome_text(ch)!r} is a legal or confidentiality mark; it stays on every page that carries the house's chrome")
+            raise SpecError(f"{at}: {chrome_text(ch)!r} is a legal or confidentiality mark; it stays on every page that carries the reference's chrome")
         if mode == "auto" and _layers(ch) != ["slide"]:
             raise SpecError(f"{at}: the page inherits it from its {'/'.join(_layers(ch))}; choose a layout without it")
         if "omit" in choice:
@@ -2217,19 +2228,19 @@ def page_chrome(guide_data: dict, mode: str, raw, where: str) -> dict[str, dict]
             if chrome_text(ch) is None or not isinstance(choice["text"], str) or not choice["text"].strip():
                 raise SpecError(f"{at}: text replaces the words of a text entry (label, footer, date), in words")
             if LEGAL_MARK.search(choice["text"]):
-                raise SpecError(f"{at}: a legal or confidentiality mark is the house's, not a page's own line")
+                raise SpecError(f"{at}: a legal or confidentiality mark is the reference's, not a page's own line")
             out[cid] = {"text": choice["text"].strip(), "why": why}
     return out
 
 
 def chrome_on_page(guide_data: dict, mode: str, page: dict | None = None) -> list[dict]:
-    """The chrome a generated page carries: house_chrome as the page's own choices
+    """The chrome a generated page carries: guide_chrome as the page's own choices
     (page_chrome, already proven) leave it, an omitted entry off and a replaced one with
     its new words. The emitter draws from this list and build_deck reserves zones and
     scores contrast from it, so what is checked is what is drawn: an omitted footer frees
     its zone, a replaced line is scored in its new words."""
     out = []
-    for ch in house_chrome(guide_data, mode):
+    for ch in guide_chrome(guide_data, mode):
         choice = (page or {}).get(ch["chrome_id"])
         if choice is None:
             out.append(ch)
@@ -2358,7 +2369,7 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
 
 
 def _picture_background(slide, path: str) -> None:
-    """The slide's background as the house's ground picture, stretched over the page
+    """The slide's background as the reference's ground picture, stretched over the page
     (p:bg/p:bgPr/a:blipFill): the ground the reference paints under every page."""
     _, rid = slide.part.get_or_add_image_part(path)
     c_sld = slide._element.find(qn("p:cSld"))
@@ -2437,11 +2448,15 @@ def firm_chrome(guide_data: dict, mode: str) -> list[dict]:
     chrome_on_page draws on the page that holds words (a label, or a footer the page
     actually draws, with two letters in a row; page numbers excluded) or a picture (kind
     logo). A deck for another firm, or for a made-up one, must not wear the reference's
-    name: these are the entries the deck chooses for, by chrome_id, in `firm_chrome`."""
+    name: these are the entries the deck chooses for, by chrome_id, in `firm_chrome`. With
+    no reference there is no reference firm: the chrome is the model's own."""
+    import plan
+    if not plan.has_reference(guide_data):
+        return []
     page = (guide_data.get("reference") or {}).get("page") or {}
     pw, ph = page.get("width_in"), page.get("height_in")
     out = []
-    for ch in house_chrome(guide_data, mode):
+    for ch in guide_chrome(guide_data, mode):
         x, y, w, h = ch["box_in"]
         if pw is not None and ph is not None and not (x < pw and y < ph and x + w > 0 and y + h > 0):
             continue  # off the page: a note on the master's pasteboard, never seen

@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -51,7 +51,7 @@
     "elements": 6,
     "covered_area_fraction": 0.345,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 206,
      "band": [
@@ -81,7 +81,7 @@
     "checked": 16,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -96,7 +96,7 @@
      "bold": true,
      "ratio": 5.66,
      "threshold": 4.5,
-     "backing": "the house's ground picture",
+     "backing": "the reference's ground picture",
      "ink_hex": "FFFFFF",
      "backing_hex": "2354F9"
     },
@@ -185,33 +185,33 @@
     "length": {
      "chars": {
       "value": 24,
-      "house": {
+      "reference": {
        "median": 52.0,
        "p90": 86.0,
        "max": 110,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "words": {
       "value": 4,
-      "house": {
+      "reference": {
        "median": 7.0,
        "p90": 14.0,
        "max": 16,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 2.0,
        "max": 3,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -333,7 +333,7 @@
     "elements": 43,
     "covered_area_fraction": 0.22,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 160,
      "band": [
@@ -363,7 +363,7 @@
     "checked": 29,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -377,7 +377,7 @@
      "threshold": 4.5,
      "size_pt": 12.0,
      "bold": false,
-     "backing": "the house's ground picture",
+     "backing": "the reference's ground picture",
      "ink_hex": "FFFFFF",
      "backing_hex": "2354F9"
     },
@@ -466,33 +466,33 @@
     "length": {
      "chars": {
       "value": 46,
-      "house": {
+      "reference": {
        "median": 52.0,
        "p90": 86.0,
        "max": 110,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "words": {
       "value": 7,
-      "house": {
+      "reference": {
        "median": 7.0,
        "p90": 14.0,
        "max": 16,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 2.0,
        "max": 3,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -513,14 +513,14 @@
   }
  ],
  "source_lines": {
-  "house": {
+  "reference": {
    "habit": "most",
    "share": 0.667,
    "pages_with": [
     14,
     17
    ],
-   "evidence": "the house sources 2 of 3 data pages (67%: pages 14, 17)"
+   "evidence": "the reference sources 2 of 3 data pages (67%: pages 14, 17)"
   },
   "deck": {
    "data_pages": 1,
@@ -585,84 +585,38 @@
    "status": "no evidence",
    "why": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house": {
-   "decks": [
-    {
-     "deck": "mckinsey-calstrs-future-of-boards-2024.pdf",
-     "status": "measured",
-     "content_pages": 14,
-     "composition": {
-      "V": 1.0,
-      "changed": 12,
-      "pairs": 12
-     },
-     "longest_run": 1
-    }
-   ],
-   "pooled": {
-    "status": "measured",
-    "decks": 1,
-    "decks_without_evidence": [],
-    "composition": {
-     "V": 1.0,
-     "changed": 12,
-     "pairs": 12,
-     "p10_deck_V": 1.0,
-     "deck_V": [
-      1.0
-     ],
-     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
-    },
-    "structures": {
-     "V": 0.75,
-     "changed": 9,
-     "pairs": 12,
-     "p10_deck_V": 0.75,
-     "deck_V": [
-      0.75
-     ],
-     "decks_unread": []
-    },
-    "kinds": {
-     "V": 0.75,
-     "changed": 9,
-     "pairs": 12,
-     "p10_deck_V": 0.75,
-     "deck_V": [
-      0.75
-     ],
-     "decks_unread": []
-    },
-    "distinct_per_page": {
-     "mckinsey-calstrs-future-of-boards-2024.pdf": 1.0
-    },
-    "longest_run": 1,
-    "sequences": [
-     [
-      "arch-3",
-      "arch-4",
-      "arch-5",
-      "arch-6",
-      "arch-7",
-      "arch-8",
-      "arch-9",
-      "arch-10",
-      "arch-11",
-      "arch-12",
-      "arch-13",
-      "arch-14",
-      "arch-15"
-     ],
-     [
-      "arch-16"
-     ]
-    ]
-   }
+  "reference": {
+   "deck": "mckinsey-calstrs-future-of-boards-2024.pdf",
+   "status": "measured",
+   "content_pages": 14,
+   "composition": {
+    "V": 1.0,
+    "changed": 12,
+    "pairs": 12
+   },
+   "structures": {
+    "V": 0.75,
+    "changed": 9,
+    "pairs": 12,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 0.75,
+    "changed": 9,
+    "pairs": 12,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 14,
+    "pages": 14,
+    "per_page": 1.0
+   },
+   "longest_run": 1
   },
-  "against_house": {
+  "against_reference": {
    "built": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house_longest_run": 1,
+  "reference_longest_run": 1,
   "runs_over_reference": [],
   "warnings": [],
   "plan": {
@@ -744,7 +698,7 @@
     "chrome-2"
    ]
   ],
-  "house": [
+  "reference": [
    {
     "chrome_id": "chrome-1",
     "kind": "label",
@@ -760,7 +714,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -795,10 +749,10 @@
   "images": [],
   "low_findings": [],
   "what_to_do": {
-   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/freedom/refs/files",
+  "rarity_basis": "13 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/nohouse/refs/files",
   "chrome_excluded": {
    "mckinsey-calstrs-future-of-boards-2024.pdf": {
     "phrase": 0,
@@ -811,7 +765,7 @@
   "verdict": "possible carry-over: 1 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -843,8 +797,8 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/renders/slide-02.png"
   ]
  },
  "judge": {
@@ -907,7 +861,7 @@
    }
   ],
   "overflow_where": [],
-  "house_spread": {
+  "reference_spread": {
    "n": 17,
    "min": 0.082,
    "median": 0.143,
@@ -915,38 +869,38 @@
    "max": 0.355
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/45541_Header.pptx": 0.543,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.275,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_netflix_financing_pitchbook.pptx": 0.279,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.484
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/45541_Header.pptx": 0.543,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.275,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_netflix_financing_pitchbook.pptx": 0.279,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/themes.pptx": 0.484
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
-  "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.79,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.254,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.25
+  "same_style_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.79,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.254,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.25
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": false,
   "reference_rank": 3,
-  "within_house_spread": false,
+  "within_reference_spread": false,
   "layout_clean": true,
   "filed_under_reference": false
  },
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/mk/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/mk/deck/renders"
  }
 }

@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -40,7 +40,7 @@
       "empty_share": 0.65
      }
     ],
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 46,
      "band": [
@@ -70,7 +70,7 @@
     "checked": 17,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -164,9 +164,9 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 10 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 10 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -176,33 +176,33 @@
     "length": {
      "chars": {
       "value": 57,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house p90"
+      "verdict": "above reference p90"
      },
      "words": {
       "value": 10,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -253,7 +253,7 @@
       "empty_share": 0.75
      }
     ],
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 43,
      "band": [
@@ -283,7 +283,7 @@
     "checked": 15,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -380,9 +380,9 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 8 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 8 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -392,33 +392,33 @@
     "length": {
      "chars": {
       "value": 57,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house p90"
+      "verdict": "above reference p90"
      },
      "words": {
       "value": 8,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -434,13 +434,13 @@
   }
  ],
  "source_lines": {
-  "house": {
+  "reference": {
    "habit": "few",
    "share": 0.2,
    "pages_with": [
     9
    ],
-   "evidence": "the house sources 1 of 5 data pages (20%: pages 9)"
+   "evidence": "the reference sources 1 of 5 data pages (20%: pages 9)"
   },
   "deck": {
    "data_pages": 2,
@@ -523,79 +523,38 @@
    "status": "no evidence",
    "why": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house": {
-   "decks": [
-    {
-     "deck": "mi_keybank_first_niagara_fig_ma.pptx",
-     "status": "measured",
-     "content_pages": 11,
-     "composition": {
-      "V": 0.9,
-      "changed": 9,
-      "pairs": 10
-     },
-     "longest_run": 2
-    }
-   ],
-   "pooled": {
-    "status": "measured",
-    "decks": 1,
-    "decks_without_evidence": [],
-    "composition": {
-     "V": 0.9,
-     "changed": 9,
-     "pairs": 10,
-     "p10_deck_V": 0.9,
-     "deck_V": [
-      0.9
-     ],
-     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
-    },
-    "structures": {
-     "V": 1.0,
-     "changed": 10,
-     "pairs": 10,
-     "p10_deck_V": 1.0,
-     "deck_V": [
-      1.0
-     ],
-     "decks_unread": []
-    },
-    "kinds": {
-     "V": 1.0,
-     "changed": 10,
-     "pairs": 10,
-     "p10_deck_V": 1.0,
-     "deck_V": [
-      1.0
-     ],
-     "decks_unread": []
-    },
-    "distinct_per_page": {
-     "mi_keybank_first_niagara_fig_ma.pptx": 0.636
-    },
-    "longest_run": 2,
-    "sequences": [
-     [
-      "arch-2",
-      "arch-3",
-      "arch-4",
-      "arch-4",
-      "arch-3",
-      "arch-4",
-      "arch-5",
-      "arch-6",
-      "arch-7",
-      "arch-2",
-      "arch-8"
-     ]
-    ]
-   }
+  "reference": {
+   "deck": "mi_keybank_first_niagara_fig_ma.pptx",
+   "status": "measured",
+   "content_pages": 11,
+   "composition": {
+    "V": 0.9,
+    "changed": 9,
+    "pairs": 10
+   },
+   "structures": {
+    "V": 1.0,
+    "changed": 10,
+    "pairs": 10,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 1.0,
+    "changed": 10,
+    "pairs": 10,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 7,
+    "pages": 11,
+    "per_page": 0.636
+   },
+   "longest_run": 2
   },
-  "against_house": {
+  "against_reference": {
    "built": "no evidence: 2 content pages, the longest stretch read in a row 2 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house_longest_run": 2,
+  "reference_longest_run": 2,
   "runs_over_reference": [],
   "warnings": [],
   "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
@@ -624,7 +583,7 @@
    [],
    []
   ],
-  "house": [
+  "reference": [
    {
     "chrome_id": "chrome-6",
     "kind": "label",
@@ -664,7 +623,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -692,10 +651,10 @@
    }
   ],
   "what_to_do": {
-   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/freedom/refs/files",
+  "rarity_basis": "12 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/nohouse/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -708,7 +667,7 @@
   "verdict": "no distinctive carry-over; 1 low finding(s): keep each that your own data or brief produces"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -740,12 +699,12 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/renders/slide-02.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.086,
   "components": {
    "families": 0.0,
@@ -804,7 +763,7 @@
    }
   ],
   "overflow_where": [],
-  "house_spread": {
+  "reference_spread": {
    "n": 12,
    "min": 0.055,
    "median": 0.091,
@@ -812,37 +771,37 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/45541_Header.pptx": 0.391,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.509,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.405
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/45541_Header.pptx": 0.391,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.509,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/themes.pptx": 0.405
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
-  "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.093,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.128,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_netflix_financing_pitchbook.pptx": 0.082
+  "same_style_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.093,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.128,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_netflix_financing_pitchbook.pptx": 0.082
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
   "reference_rank": 1,
-  "within_house_spread": true,
+  "within_reference_spread": true,
   "layout_clean": true,
   "filed_under_reference": true
  },
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/bridge/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/bridge/renders"
  }
 }

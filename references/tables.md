@@ -1,7 +1,7 @@
 # Tables: questions, measured habits, and the table spec
 
 Questions to ask about a table, with what professional decks measurably do; never rules.
-The house's measured habits (the guide's `tables` section, its `exhibit_habits`, its
+The reference's measured habits (the guide's `tables` section, its `exhibit_habits`, its
 digest pages) are the strongest evidence you have. Start there; where a table departs,
 say why in the report. Only measurable defects refuse. Counts are per exhibit over 192
 coded tables, one coder per page, good to about plus or minus 2 to 3.
@@ -20,19 +20,19 @@ coded tables, one coder per page, good to about plus or minus 2 to 3.
 - Can two numbers in a column be compared at a glance (numerals on one right edge, one
   decimal convention, the unit declared once)?
 - Which rows does the claim rest on: the subject, the median, the totals, a scenario
-  region? How does this house mark each, and does it mark several at once?
-- Is this a page of argument or reference? Reference tables carry housekeeping (spanners,
+  region? How does this reference mark each, and does it mark several at once?
+- Is this a page of argument or reference? Reference tables carry furniture (spanners,
   totals, footnotes) and little emphasis: in one bank coder group 54 of 224 exhibits had
-  only housekeeping.
+  only furniture.
 - Where does the column scan end, and does the table resolve there?
-- If it will not fit: which rows split to the next page under the house's continuation
+- If it will not fit: which rows split to the next page under the reference's continuation
   convention? Never drop rows.
 
 ## What the corpus counted
 
-Totals that answer a question, with the house's own pages ahead of them: read the house's
+Totals that answer a question, with the reference's own pages ahead of them: read the reference's
 digest records (`gallery.py digest`: each table page's marks and how they are drawn) for
-what THIS house does, and these only for how common a move is elsewhere.
+what THIS reference does, and these only for how common a move is elsewhere.
 
 - Table or chart: in the bank decks tables outnumber charts, 117 to 109.
 - Several emphases on one table are normal: comps tables mark the median or a statistic
@@ -49,7 +49,7 @@ what THIS house does, and these only for how common a move is elsewhere.
 Recurring bank habits (both coder groups): $ only on the first and total rows; x on
 multiples; italic ratio rows under their $ row; a units column separate from the labels; NM
 and NA written out, never left blank. Negatives in parentheses on 13 pages. Number-format
-habits recorded on 35 pages; the house's own are in its digest records (`how_drawn`).
+habits recorded on 35 pages; the reference's own are in its digest records (`how_drawn`).
 
 ## The table spec: what you write and what the build measures
 
@@ -115,10 +115,10 @@ habits recorded on 35 pages; the house's own are in its digest records (`how_dra
   `table_defaults_taken`. A group label over columns is a spanner, not a bracket
   annotation above the table.
 - Table text has one floor, the same in the build and in `pptx_tools validate --emit`:
-  the lowest floor of the table roles' families. Where the house's own tables are pasted
+  the lowest floor of the table roles' families. Where the reference's own tables are pasted
   pictures or vector text in a PDF, answer `/tables/picture_text` at completion
   (guide-completion.md): the size is measured there and the table floor drops to it,
   never below the absolute floor.
 - Cell padding comes from the guide: `tables.cell_padding_role`, or, when no spacing step
-  is near the house's inset, `cell_padding_role: null` with `cell_padding_emu` (a role wins
+  is near the reference's inset, `cell_padding_role: null` with `cell_padding_emu` (a role wins
   when both are set). A table spec may override with its own `cell_padding_role`.

@@ -19,7 +19,7 @@ python3 scripts/gallery.py "$REF" --out "$DECK_WORK/ref/gallery" --guide "$DECK_
 - `draft.json`, the guide draft with provenance on every value and the `unresolved` list
   (the open addresses you answer); `draft.md`, the evidence digest: size levels with
   votes, the role table, colour pools by use, spacing steps and margins, composition
-  archetypes, chrome, motifs, register and density bands, floors, titles, the house's
+  archetypes, chrome, motifs, register and density bands, floors, titles, the reference's
   variety, and what is still open.
 - `gallery/MANIFEST.md`: crops of every component, one exemplar per composition family
   with its skeleton.
@@ -39,14 +39,14 @@ count; `--pages 30-70` reads a range.
 ## What the digest cannot see
 
 - `type.body` is the most frequent size level. When two or three levels are close in
-  votes, the house writes at several sizes: the judge's `size_hist` reports how far your
-  pages' sizes sit from the house's histogram (a section held at one body size in a
-  house with its mass at 11, 16 and 18pt was not filed under its reference).
-- Density bands are the house's own range (10th to 90th percentile of words, elements and
-  covered area per page). Below the band is sparse for this house; above it is denser
-  than the house ever goes.
+  votes, the reference writes at several sizes: the judge's `size_hist` reports how far your
+  pages' sizes sit from the reference's histogram (a section held at one body size in a
+  reference with its mass at 11, 16 and 18pt was not filed under its reference).
+- Density bands are the reference's own range (10th to 90th percentile of words, elements and
+  covered area per page). Below the band is sparse for this reference; above it is denser
+  than the reference ever goes.
 - Composition archetypes list which pages share an arrangement of content boxes; the
-  draft's Variety section measures how often the house repeats one.
+  draft's Variety section measures how often the reference repeats one.
 - Hidden slides are walked as evidence. The digest's notes list them; when one is an
   off-style leftover, delete it from a copy (`pptx_tools.py delete`) and extract again.
 
@@ -63,7 +63,7 @@ address open and you read it off the renders
 
 Of 19 reference PDFs measured, 8 are page images inside a letter-size print (an EDGAR
 exhibit printed from a browser, a filing with the deck bound in, a scan with an OCR
-layer). Their text layer is browser chrome or OCR output; mining it gives a house of 1pt
+layer). Their text layer is browser chrome or OCR output; mining it gives a reference of 1pt
 Times. So triage first:
 
 ```bash

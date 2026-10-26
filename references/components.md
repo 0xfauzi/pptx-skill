@@ -17,7 +17,7 @@ for by `data["variant"]`; with none asked, the component picks one by what the b
 and says which and why. Every role and constant it would write is open through
 `data["roles"]` (and `data["params"]`), and each default it leaves in place is listed under
 the page's `component_notes` (the component's `report`). A shipped component is a worked
-example to read and fork for this house, not the one way to draw its exhibit. `spec.json` declares the data schema, the size domain and four test boxes: three
+example to read and fork for this reference, not the one way to draw its exhibit. `spec.json` declares the data schema, the size domain and four test boxes: three
 shown and one held out with different data. `spec.json` may name `single_line_ids`, id
 fragments of figures, ticks and marker labels that must never wrap. A component's ids
 carry `data["_id"]` as prefix; paragraph `ink_role` and `align` reach the file. A component

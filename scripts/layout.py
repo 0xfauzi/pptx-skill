@@ -273,7 +273,7 @@ def table_floor_pt(raw: Mapping[str, Any]) -> float:
     table run carries no role, so `pptx_tools validate --emit` can only read where it sits,
     and the build applies the same rule. It is the lowest floor of the table roles'
     families (each max(floor_pt, absolute_floor_pt)), or with no table role the lowest
-    family floor; lowered to the house's own table text where its tables are pasted
+    family floor; lowered to the reference's own table text where its tables are pasted
     pictures and the guide holds that size as measured (tables.picture_text, read off the
     pictures by images.py textsize at completion), never below the absolute floor: the
     largest absolute_floor_pt the guide names, and never below PRODUCT_SAFETY_FLOOR_PT
@@ -731,8 +731,8 @@ def type_role(guide: Guide, role: str) -> TypeRole:
     spec = guide.roles.get(role)
     if spec is None:
         if role in guide.absent_roles:
-            raise UnknownTokenRoleError(f"type role {role!r}: the completed guide records that the house has none ({guide.absent_roles[role]}); "
-                                        "use a role the house sets")
+            raise UnknownTokenRoleError(f"type role {role!r}: the completed guide records that the reference has none ({guide.absent_roles[role]}); "
+                                        "use a role the reference sets")
         raise UnknownTokenRoleError(f"type role {role!r} is not in the guide's typography roles")
     return spec
 
@@ -814,19 +814,28 @@ def admit_scale_candidates(guide: Guide, candidates: Sequence[Fraction]) -> tupl
         (excluded if collision else admitted).append(collision or scale)
     return tuple(admitted), tuple(excluded)
 
-def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction, table_roles: frozenset[str] = frozenset()) -> bool:
-    """Every role a text element sets (`roles`) clears its own family's floor at `scale`;
-    every role a table sets (`table_roles`) clears the table floor (table_floor_pt), the
-    one rule the package validator reads off a table run."""
-    for role in roles:
+def floor_breaches(guide: Guide, roles: frozenset[str], scale: Fraction, table_roles: frozenset[str] = frozenset()) -> list[str]:
+    """Each role in use that sits below its floor at `scale`, in words: a role a text element
+    sets (`roles`) against its own family's floor; a role a table sets (`table_roles`)
+    against the table floor (table_floor_pt), the one rule the package validator reads off
+    a table run."""
+    out = []
+    for role in sorted(roles):
         floor = guide.floor_by_role.get(role)
-        if floor is not None and snap_sz(type_role(guide, role).size_pt, scale) / 100 < floor:
-            return False
-    for role in table_roles:
+        size = snap_sz(type_role(guide, role).size_pt, scale) / 100
+        if floor is not None and size < floor:
+            out.append(f"{role} at {size:g}pt is below its floor {floor:g}pt")
+    for role in sorted(table_roles):
         floor = guide.table_floor_pt if guide.table_floor_pt is not None else guide.floor_by_role.get(role)
-        if floor is not None and snap_sz(type_role(guide, role).size_pt, scale) / 100 < floor:
-            return False
-    return True
+        size = snap_sz(type_role(guide, role).size_pt, scale) / 100
+        if floor is not None and size < floor:
+            out.append(f"{role} in a table at {size:g}pt is below the table floor {floor:g}pt")
+    return out
+
+
+def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction, table_roles: frozenset[str] = frozenset()) -> bool:
+    """Every role in use clears its floor at `scale` (floor_breaches finds none)."""
+    return not floor_breaches(guide, roles, scale, table_roles)
 
 def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
     """1.00 then the admitted ladder, truncated at the first scale that undercuts
@@ -1615,8 +1624,10 @@ def descend(ctx: Context) -> Outcome:
     candidates = floor_admitted_candidates(ctx.guide, ctx.spec)
     if not candidates:
         breaches = table_floor_breaches(ctx.guide, ctx.spec)
+        roles = floor_breaches(ctx.guide, roles_in_use(ctx.spec, tables=False), Fraction(1))
         return Outcome("unfittable", None, [], "no scale clears the legibility floor for the roles in use"
-                       + (f": {'; '.join(breaches)} (validate --emit refuses the same runs). A house that sets its tables smaller "
+                       + (f": {'; '.join(roles)}" if roles else "")
+                       + (f"{'; ' if roles else ': '}{'; '.join(breaches)} (validate --emit refuses the same runs). A reference that sets its tables smaller "
                           "inside pasted pictures states that size measured: /tables/picture_text in the completion" if breaches else ""))
     first = _attempt(ctx, candidates[0])
     attempts = [first]

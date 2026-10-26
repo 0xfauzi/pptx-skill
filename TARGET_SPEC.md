@@ -18,7 +18,7 @@ section 3 (design principles); they decide every trade-off below.
 3. Design principles
 4. Packaging the skill (Anthropic skill-authoring practice)
 5. System overview: the pipeline in one page
-6. The company's reference material: templates, past decks, brand guidelines
+6. Reference material: templates, past decks, brand guidelines, or none
 7. Confidentiality and data handling
 8. Intake: reading any file
 9. The style guide: schema, provenance, extraction, completion
@@ -59,13 +59,15 @@ Appendix D. The development corpus
   type, logo use, tone). Evidence with provenance, not code.
 - **Reference**: any file whose style the output must match: a template, a past deck, a
   brand guideline, or any other pptx or PDF the user supplies. Untrusted input.
-- **House**: one visual identity: one template plus the habits of the decks built on it.
-  A company with several templates has several houses; several decks share a house.
-- **Style guide** (or **guide**): a JSON document describing one house's style as named
+- **Look**: one visual identity: what one reference deck shows (faces, colours, spacing,
+  chrome, how marks are drawn, title and text habits), or, with no reference, what the
+  model chose. The skill follows one reference deck at a time; given several, the user
+  names the one to follow, or is asked. Nothing pools decks.
+- **Style guide** (or **guide**): a JSON document describing one reference's style as named
   roles with values and provenance (section 9).
 - **Role**: a named slot in the guide, such as `type.title`, `color.accent1`, `space.md`.
   Page specs refer only to roles, never to literal values.
-- **Habit**: a measured tendency of the house's pages that is not a value: title register
+- **Habit**: a measured tendency of the reference's pages that is not a value: title register
   and length, exhibit types and annotation moves, composition variety, density, number
   craft.
 - **Provenance**: for every guide value, where it came from: observed in a file, stated in
@@ -94,7 +96,7 @@ Appendix D. The development corpus
   (a football field, a KPI row), checked against held-out cases before use (section 15.5).
 - **Page library**: a curated, tagged set of excellent real pages, drawn first from the
   company's own best pages and optionally from external public decks (section 10.4).
-- **Judge**: a style fingerprint distance that says which house a deck most resembles
+- **Judge**: a style fingerprint distance that says which deck of a panel a new deck most resembles
   (section 19). It is an instrument, not the definition of quality.
 - **Blind round**: the human evaluation in which a rater sees real and generated pages
   mixed, guesses which is which, and rates quality (section 21.2). This is the primary
@@ -126,10 +128,10 @@ State this to yourself before every design decision; the rest of the document se
    generated page better than chance and rate it at least as high.
 2. **Dense, expert, analytically sharp.** Pages carry the density and judgement of a
    senior associate's work reviewed by a managing director: an exhibit reasoned out from
-   what the reader must see, the data and the house's own exhibits; figures that are
+   what the reader must see, the data and the reference's own exhibits; figures that are
    correct and computed; text that adds what the exhibit cannot; marks where the claim
    lives.
-3. **Beyond the template, still in house style.** The skill produces exhibits and
+3. **Beyond the template, still in the reference's look.** The skill produces exhibits and
    components the template never contained (a football field, a maturity profile, a
    sensitivity grid with the answer boxed) that are still unmistakably the company's.
 4. **The model reasons like a senior designer and analyst.** The skill gives the model
@@ -139,7 +141,7 @@ State this to yourself before every design decision; the rest of the document se
    are computed from real fonts and real data. A threshold without a measurement is
    labelled unmeasured until it has one.
 6. **Correct figures, intelligent annotation, deliberate variety.** Every stated figure is
-   computed from the data. The claim can be found on every exhibit; how the house treats
+   computed from the data. The claim can be found on every exhibit; how the reference treats
    such places is the evidence beside each mark (7 of 291 corpus charts are bare). Every
    repeated composition is a deliberate parallel.
 7. **Native, editable output.** Real text in real placeholders, real tables, real charts,
@@ -187,7 +189,7 @@ past deck). They never pick a colour, never choose a chart or a layout, never sw
 to fix contrast, never default a design choice silently.
 
 The skill's job is therefore to give the model three things:
-- **Context**: the house's style as data (from the template, the past decks and the
+- **Context**: the reference's style as data (from the template, the past decks and the
   guidelines), the company's own pages and exhibits as images, a library of excellent
   pages (the company's best, optionally plus external ones), and measured statistics about
   how human decks are designed.
@@ -210,12 +212,12 @@ company's templates themselves.
 
 ### 2.4 Success criteria (in priority order)
 
-1. **Blind round** (section 21.2): over the company's houses, raters from the company (or
+1. **Blind round** (section 21.2): over the company's firms, raters from the company (or
    informed outsiders when none are available) cannot tell generated pages from the
    company's real ones better than chance, and rate generated pages at least as high as
-   real ones. Target: accuracy within the binomial chance band at p = 0.05 per house, and
+   real ones. Target: accuracy within the binomial chance band at p = 0.05 per reference, and
    generated quality mean at or above real. A baseline measured on an earlier build over
-   six public houses: rater accuracy 45 of 60 (chance 30; probability of 45 or more by luck
+   six public firms: rater accuracy 45 of 60 (chance 30; probability of 45 or more by luck
    0.00007); mean quality 2.93 generated vs 3.53 real (table in section 21.2).
 2. **Expert review**: located findings from a reviewer (human, or a model acting as an MD)
    on figures, exhibit choice, annotation, wording; zero factual errors in titles and
@@ -225,7 +227,7 @@ company's templates themselves.
    PowerPoint and LibreOffice.
 4. **Confidentiality**: zero network calls by the skill's scripts; zero leakage findings
    (section 17.10).
-5. **Style judge** (section 19): the deck is filed under its house. Necessary, not
+5. **Style judge** (section 19): the deck is filed under its reference. Necessary, not
    sufficient. Measured: a judge filed decks a human caught every time, and failed to file
    a deck that fooled the human 4 of 5 times (section 19.4).
 
@@ -238,7 +240,7 @@ Each principle is followed by the evidence for it.
 ### 3.1 The model designs; code measures and refuses
 
 Any design choice made in code is a choice the model cannot see or override, and it
-produces the same page for every house. Known failure mode: chart code that picks series
+produces the same page for every reference. Known failure mode: chart code that picks series
 colours by cycling a palette, hides value axes when labels show, swaps label inks below
 3:1 contrast, and draws waterfalls through a dedicated path. Measured: removing 21 such
 decisions from code and handing them to the model (with every choice written in the spec
@@ -250,13 +252,13 @@ bar, a scatter with a regression line).
 Corollary: when the model leaves a choice out, the system writes a named neutral value and
 reports it (`chart_defaults_taken` and the other `*_defaults_taken` lists), so the model
 sees every choice it did not make. A neutral value is nothing written (the renderer's own
-value), reported; or the house's observed value, with its provenance; never a styled
+value), reported; or the reference's observed value, with its provenance; never a styled
 constant. Where no value is neutral (a mark's shape, a label's placement), the choice is
 required and refused by name when missing.
 
 ### 3.2 Context plus reasoning, not rules
 
-Rules that fix a design override the house. Known failure mode: telling the model to write
+Rules that fix a design override the reference. Known failure mode: telling the model to write
 assertion (claim) titles with computed figures. In 51 sampled content pages of three
 native-pptx bank pitch books, 48 titles are topic phrases (median 4 to 5 words), 3 are
 questions, 0 are claim sentences; the claim lives in a lead-in bullet ending in a colon
@@ -267,15 +269,20 @@ a reference's 11 titles had a median of 35 characters (longest 57); a planner to
 claim titles wrote 19 with a median of 80 (longest 103); only 4 of 19 fit within the
 reference's longest; told a 56-character budget, the designer shortened only 5 of 19, and
 17 of 22 held pages were held because the title overran its one-line band. In a blind round on an earlier
-build, the rater caught every generated page in exactly the two houses where claim titles
+build, the rater caught every generated page in exactly the two firms where claim titles
 met a topic-title reference.
 
-So: the house's habits (title register and length, annotation moves, emphasis devices,
-composition variety) are measured from the company's past decks and given as context.
-Generic doctrine is offered as questions the model asks itself. The house's measured habits
-are the strongest evidence the model has: it starts there, and where a page departs, the
-report says why. Only measurable defects refuse (section 24); a house habit is reported
-beside the choice, with its counts, as a warning to answer.
+So: a reference governs the LOOK only (faces, colours, spacing, chrome, how marks are
+drawn, title and text habits). Design comes from the data and the reader: each exhibit's
+brief starts from what the reader must see, the comparison and the data. The reference's
+habits (title register and length, annotation moves, emphasis devices, composition
+variety, source lines, unlabelled marks) are measured from the one reference deck and
+shown beside each choice as evidence; where a page departs, the report answers it in one
+line. Generic doctrine is offered as questions the model asks itself. With no reference
+the model chooses the whole look (section 6.10), and corpus evidence stays questions,
+never a default style or a fallback value. Only measurable defects refuse (section 24): fit,
+overlap, contrast, tie-outs, roles not literals, a valid package, renderer divergence,
+confidentiality, no invented numbers, measured floors with the 7pt absolute floor.
 
 ### 3.3 A prompt sentence does not fix a visual defect
 
@@ -318,10 +325,10 @@ measurement; an unmeasured threshold is labelled as such.
 
 `set`, `dict`, `.get()` with a default, `continue` and `return {}` over untrusted
 structure turn "I cannot tell" into a confident answer. Known failure modes: a judge that
-fingerprinted a scanned reference from its OCR layer and confidently called the house "88%
+fingerprinted a scanned reference from its OCR layer and confidently called the reference "88%
 Times New Roman at 1pt" (so nothing could ever be filed under it); density bands of [0, 0]
 words for PDF references, so every page read "above"; register bands of 0 tables and 0
-charts for houses that paste exhibits as pictures, so every native table read "above".
+charts for firms that paste exhibits as pictures, so every native table read "above".
 Each such instrument must report "no evidence" distinctly from "zero". Likewise duplicate
 is not one: several versions of the same past deck must not count as several decks
 (section 6.6).
@@ -382,7 +389,7 @@ Apply all of the following.
   `building-company-style-decks`.
 - `description`: at most 1024 characters, third person, says what the skill does and when
   to use it, with the key terms a user would say (pitch book, board deck, CIM, consulting
-  deck, company template, house style, brand guidelines, past decks, reference deck,
+  deck, company template, reference style, no reference, brand guidelines, past decks, reference deck,
   .pptx, PDF reference).
 
 ### 4.3 Content
@@ -408,7 +415,7 @@ Apply all of the following.
 - Develop with two instances: one that writes the skill (A) and fresh instances that use
   it on real tasks with no other context (B). Observe B's behaviour (files read, order,
   what it ignored, where it struggled) and bring that back to A. Measured on an earlier
-  build: fresh agents over six houses reported 71 friction items, most of them real
+  build: fresh agents over six firms reported 71 friction items, most of them real
   (section 21.3).
 - Test with every model tier the skill will run on (the guidance names a fast, a
   balanced and a strongest model). Known failure mode: testing on one tier only.
@@ -424,7 +431,7 @@ company template library   past decks   brand guidelines   (any other reference)
         |                                                                                 |
    [8] intake: triage, render (local only, section 7)                                     |
         |                                                                                 |
-   [9] extract -> guide draft per house (template values + past-deck habits + stated values,
+   [9] extract -> guide draft per reference (template values + past-deck habits + stated values,
         |          provenance, open addresses)                                            |
    [10] visual context: renders, gallery crops, exemplars, exhibit digest, page library   |
         |                                                                                 |
@@ -452,7 +459,7 @@ value, limit), never a bare score.
 
 ---
 
-## 6. The company's reference material
+## 6. Reference material: templates, past decks, brand guidelines, or none
 
 The primary reference is the company's own template library and past decks, not a single
 deck. A template shows values; past decks show habits; brand guidelines state intent. All
@@ -469,7 +476,7 @@ three are needed, and each is evidence with provenance.
 - **Exemplars** (optional): decks or pages the company marks as its best work.
 - **Any other reference**: a client's deck, a public deck, a competitor's public deck the
   user wants matched. The skill supports any pptx or PDF as a general capability; such a
-  reference is treated as a house of its own.
+  reference is treated as a reference of its own.
 
 ### 6.2 What each source can and cannot show
 
@@ -480,10 +487,10 @@ three are needed, and each is evidence with provenance.
 | Brand guidelines | Stated colours, fonts, logo clear space and minimum sizes, tone | How pages are actually built; anything not written down |
 
 Measured evidence that a template alone does not show habits: title register varies by
-house type and even by deck within one house (Appendix A.3: topic titles on 223 of 231
+deck type and even by deck within one firm (Appendix A.3: topic titles on 223 of 231
 investment-bank pages; claim titles on 197 of 317 strategy-consulting pages, with one deck
 at 23 of 30 claims and a memo at 0 of 12); annotation moves and composition conventions
-differ by house type and by deck (section 22.3 items 3 and 4; Appendix A.2). None of this
+differ by deck type and by deck (section 22.3 items 3 and 4; Appendix A.2). None of this
 is recorded in a master or layout.
 
 ### 6.3 Template library inventory
@@ -499,7 +506,7 @@ deck types, with which compositions; layouts never used; layouts that past decks
 heavily (placeholders deleted, moved or covered); slides that use a blank layout and draw
 everything by hand. Match a past deck to its template by its masters, layouts and theme,
 not by file name. A past deck on an older version of a template (master or theme differs)
-is recorded as such: its habits are evidence for the house, its values are not evidence for
+is recorded as such: its habits are evidence for the reference, its values are not evidence for
 the current template.
 
 ### 6.4 Template selection
@@ -510,7 +517,7 @@ the layout inventory, and which deck types past decks built on each template. Wh
 templates fit equally, the model asks the user rather than guessing (unmeasured as a
 policy; it costs one question). The choice and its reason are reported.
 
-Each template is a separate house with its own guide. Habits may be shared across templates
+Each template is a separate reference with its own guide. Habits may be shared across templates
 of one company when the past decks show they are (for example the same number craft on
 pitch books and board decks), recorded with the evidence; never assumed.
 
@@ -519,7 +526,7 @@ pitch books and board decks), recorded with the evidence; never assumed.
 For each page the model picks the layout that holds the planned composition, using the
 inventory and usage statistics: prefer a layout the company's past decks use for that kind
 of page; write title, body and other content into the layout's placeholders where past
-decks do, so the master's styles and later template changes propagate; use the house's
+decks do, so the master's styles and later template changes propagate; use the reference's
 title-only or blank layout and build in the content area where past decks do that. A page
 spec names its layout; the solver reads that layout's placeholder geometry as fixed boxes
 and its chrome as reserved zones. A layout name the template does not contain is refused
@@ -568,8 +575,8 @@ offered to the model as context, like any habit.
 ### 6.8 When no past decks exist
 
 A template alone gives values but no habits. Then:
-- Complete habits from the template plus the page library and the measured house-type
-  tendencies (Appendix A), at low confidence, with provenance `model_inference` and a
+- Complete habits from the template plus the page library, with the measured deck-type
+  tendencies as questions (Appendix A), at low confidence, with provenance `model_inference` and a
   `why` naming the library pages or tendencies used.
 - Flag every such habit in the guide and in the report to the user: "habit not observed in
   company decks".
@@ -581,7 +588,25 @@ A template alone gives values but no habits. Then:
 
 Any pptx or PDF reference is supported: a client's deck to match, a public deck, a single
 exemplar. The same intake, extraction, completion and gates apply; the reference is its own
-house. When the reference is a pptx, its masters serve as the template (section 11.2).
+look. When the reference is a pptx, its masters serve as the template (section 11.2). The
+skill takes one reference deck: when the user gives several, the model uses the one they
+name, or asks which to follow; decks are never pooled.
+
+### 6.10 When no reference exists
+
+No reference is a first-class path, not a fallback. `extract_style.py --blank` writes a
+draft in which every address of the look is open, the page size included, with the open
+set as data (`BLANK_OPEN`); every answer carries provenance `model_choice`, and an address
+left open refuses the guide (on this path nothing has a default). The model chooses the
+page size, the faces (installed ones, so fit is measured), a type ladder with nothing
+under the 7pt absolute floor, the palette, the spacing scale and margins, the chrome or
+none, how tables and charts are drawn, and the look in words. The template is a blank
+package at the chosen page size, built with `--chrome draw`. The build runs every hard
+limit and skips every comparison with a reference (titles, variety, source-line and mark
+habits, contrast precedent, the judge, leakage, the reference's chrome), each reporting
+"no reference" rather than warning or scoring. Corpus evidence stays available as questions
+in the references, never as a default style or a fallback value. `plan.has_reference` is
+the one test of which path a guide is on, proven at the boundary.
 
 ---
 
@@ -647,7 +672,7 @@ directory.
   - `vector`, `vector_with_image`: real type; mine it (a slide-shaped page with a pasted
     chart picture is still a vector page).
   - `raster_wrapper`, `raster_ocr`, `raster_only`: images; nothing on them is type
-    evidence; the OCR or browser text layer gives a "house" of 1pt Times.
+    evidence; the OCR or browser text layer gives a "reference" of 1pt Times.
   - `other_size`: memo or filing text bound in front of the deck; exclude.
   The deck class is the majority class. Page size for raster decks comes from the image
   box (letter-ratio image = deck printed to letter 11 x 8.5 in; 4:3 = 10 x 7.5 in).
@@ -700,7 +725,7 @@ The judge must not fingerprint a raster reference from its text layer (section 1
 
 ### 9.1 Purpose
 
-The guide is the single source of style truth for one house. Page specs refer to its
+The guide is the single source of style truth for one reference (or for the look the model chose with none). Page specs refer to its
 roles and layouts; the solver measures with its values; the emitter writes its values; the
 gates check against it. One definition per concept (section 3.10).
 
@@ -711,7 +736,7 @@ deterministic | model_inference | raster_inference), `evidence` (file hash, slid
 shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
 `confidence`, and a `why` for anything the model wrote.
 
-- `reference`: the house's sources: template file and hash; past decks used (file, hash,
+- `reference`: the reference's sources: template file and hash; past decks used (file, hash,
   slide count, format, template match, version group, exemplar flag); guideline documents
   (file, hash); for PDFs, text-layer triage (status, deck class, per-class counts, raster
   pages, slide box, size basis, print scale, effective dpi); page width and height in EMU
@@ -728,7 +753,7 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
   - `roles`: `type.title`, `type.h1`, `type.h2`, `type.body`, `type.body_small`,
     `type.caption`, `type.footnote`, `type.source_line`, `type.table_header`,
     `type.table_cell`, `type.data_label`, `type.axis_label`, `type.emphasis`,
-    `type.kicker`, plus any the house shows; each with size, family, weight, italic,
+    `type.kicker`, plus any the reference shows; each with size, family, weight, italic,
     caps, tracking, colour role, line spacing, space before and after, alignment, and
     bullet definition by level (glyph, font, indent, hanging).
   - `scale_ratio` (if the ladder is geometric; null when it is not, which is legal).
@@ -750,7 +775,7 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
 - `composition`: archetypes (clusters of pages by arrangement, with member pages and the
   layout each uses), bands (title band, body band, footer band with EMU extents), column
   grids, alignment edges, and `consecutive_max` (the longest run of one archetype in the
-  house's decks).
+  reference's decks).
 - `titles`: register per title (topic phrase, question, claim sentence) with counts;
   length distribution in characters and words (median, max); line count distribution;
   where claims live when titles are topics (lead-in bullet ending in a colon, numbered
@@ -759,10 +784,10 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
 - `register_stats`: per page counts by element kind (text, image, shape, table, chart,
   line), decoration count, container ratio, as 10th to 90th percentile bands, AND how
   exhibits are realised (native chart, native table, pasted picture, drawn shapes) so a
-  house that pastes pictures does not make native exhibits read as "above".
+  reference that pastes pictures does not make native exhibits read as "above".
 - `density_bands`: words, elements, covered area per page as 10th to 90th percentiles,
   each with an evidence flag (no evidence is not zero).
-- `exhibit_habits`: measured from the house's own exhibits, by looking at them (section
+- `exhibit_habits`: measured from the reference's own exhibits, by looking at them (section
   10.3): exhibit types used, annotation moves and their frequency by data shape, emphasis
   devices (outline box colour and weight, shaded rows, subject colour), number formats
   (units line, $ placement, x suffix, parentheses, NM), legend and label habits, colour
@@ -783,7 +808,7 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
 - `imagery`: the company's logo assets and their placement rules (stated and observed),
   photography, icons.
 - `floors`: per family of roles (body, annotation, display, chart) the smallest size the
-  house uses (`floor_pt`) and the absolute floor (section 14.5); a guideline-stated minimum
+  reference uses (`floor_pt`; null with no reference) and the absolute floor (section 14.5); a guideline-stated minimum
   is recorded beside it.
 - `continuation`: how a page that splits continues (header repeat, "(cont'd)" mark,
   takeaway policy).
@@ -843,7 +868,7 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
   `/typography/families/substitutes`, `/notes/*`, new `/extra_roles/<name>`, and new type
   roles at sizes the levels table shows. For raster references, whose levels table is
   empty, the model must be able to add levels it measured from images (known failure mode,
-  measured: without this, table and label roles were blocked on a scanned house).
+  measured: without this, table and label roles were blocked on a scanned reference).
 - Observed and stated values cannot be overwritten. If the model believes one is wrong, it
   reports it; the fix belongs in the extractor or with the user.
 - The core must close: `type.title`, `type.body`, `color.surface`, `color.ink`,
@@ -858,7 +883,7 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
   that names a role runs after the group that defines it. Measured: a single completion call
   handled 52 and 70 open addresses with 0 to 1 retries, so groups are for ordering
   dependencies, not because focused calls reason better (unmeasured).
-- Every value comes from this house's evidence. Low confidence beats convention: a house
+- Every value comes from this reference's evidence. Low confidence beats convention: a reference
   whose decks have no charts gets a chart language derived from its palette and register,
   not a stock one.
 - Renders are evidence for colour, proportion and position; not for fit, line spacing,
@@ -895,11 +920,11 @@ legibility ceiling. For a large past-deck library, render on demand and cache by
   that refused PDFs while the instructions told every user to run it).
 - A `pick --intent "<text>"` command returns the nearest exemplars and crops from the
   company's decks for a page intent. Measured: ranking by word overlap is weak; "overlap 0
-  everywhere" means the house has nothing for that intent, and the model must design from
+  everywhere" means the reference has nothing for that intent, and the model must design from
   the guide and the library. Rank instead by structured tags (composition, exhibit type,
   data shape, layout) produced when the model reads the decks (section 10.3). Unmeasured.
 
-### 10.3 House exhibit digest
+### 10.3 Exhibit digest
 
 During intake the model looks at every exhibit page of the company's past decks (crops at
 readable size) and records, per exhibit: type, data shape, the one message, annotation
@@ -919,7 +944,7 @@ fields so that one retrieval serves both:
 - **Source**: the page image; the source deck and page as an internal reference (kept in
   the library's manifest, never written into generated pages); the coder who tagged it;
   the source type (company deck or external public deck).
-- **House type and page size** (examples do not transfer across aspect ratios; see the
+- **Deck type and page size** (examples do not transfer across aspect ratios; see the
   rules below).
 - **Composition**: the family from the measured taxonomy (Appendix A.2) plus the coder's
   own description of the arrangement. The coder's description is the better one where
@@ -941,7 +966,7 @@ Built from, in order:
 2. Optionally, external public pages. The development corpus provides a starter set of
    about 40 pages: 15 from investment-bank decks, 21 from strategy-consulting decks and 4
    from a dense market chart book, drawn from each coder group's most instructive pages
-   and balanced across house type and composition rather than chart pages first. 15 of the
+   and balanced across deck type and composition rather than chart pages first. 15 of the
    40 have a table, matrix, diagram or structured text, not a chart, as their main exhibit.
    What such entries teach, for example: ranking panels re-sorted each period with the
    subject marked in every panel; a football field judged against the offer line; numbered
@@ -961,8 +986,8 @@ Rules for the library:
   no data chart (Appendix A.1), so a library of chart pages would teach the wrong
   proportion (inferred).
 - Page examples composed for one aspect ratio do not transfer to another (measured: of 14
-  specimen families composed for 16:9, 2 fit as written on a 4:3 house on 2026-10-20 and 1
-  on 2026-10-26, examples/house/COVERAGE.md). Tag each entry
+  specimen families composed for 16:9, 2 fit as written on a 4:3 reference on 2026-10-20 and 1
+  on 2026-10-26; those 14 specimen pages have since been removed). Tag each entry
   with its page size.
 
 ---
@@ -981,7 +1006,7 @@ For a .potx, the main part's content type differs from a .pptx's and must be swi
 writing a presentation (external: OOXML specification; verify on the company's files). For
 a past deck or any pptx used as a template, remove every slide and keep masters, layouts,
 theme and chrome. Measured: PowerPoint opens and re-saves such packages without repair and
-draws chrome once per slide. Page numbers and footers the house carries on its slides are
+draws chrome once per slide. Page numbers and footers the reference carries on its slides are
 copied from the layout to each new slide.
 
 When the template carries masters or layouts that no past deck uses, keep them in the
@@ -1012,14 +1037,14 @@ from a known failure mode:
 - Reserve only the zones chrome actually occupies (measured once, a blocker: bands
   anchored to the full page reserved the whole page, leaving no content area).
 - Chrome text carries the reference's observed ink and is scored by the contrast gate
-  (measured on two houses: the house name and the page number drawn in default black on
+  (measured on two firms: the reference name and the page number drawn in default black on
   navy pages, invisible and unscored).
 - Rotated chrome keeps its rotation, or is refused.
 - A logo the reference shows is carried (the firm's own chrome, decided for the deck): extract the logo image from the reference
   (crop from the PDF or the pptx media; for a company, prefer the company's own logo file)
   and place it. Measured once: an empty outlined placeholder in place of the logo; the
   blind rater named missing logos as a tell.
-- No inherited theme effects (measured on two houses: rules drawn on a blank template
+- No inherited theme effects (measured on two firms: rules drawn on a blank template
   picked up a grey drop shadow from the theme's effect style in LibreOffice). Write
   effect-free shapes explicitly.
 
@@ -1028,7 +1053,7 @@ for references that arrive only as PDF.
 
 ### 11.5 Slide-layer chrome
 
-Logos, rules, labels or confidentiality markings the house pastes on every slide (not on
+Logos, rules, labels or confidentiality markings the reference pastes on every slide (not on
 the layout) are where each generated page starts: drawn by default, shown with their
 counts ("on 31 of 33 reference pages"). A page may omit or replace a non-firm entry with a
 `why`, reported; the firm's own chrome, legal and confidentiality marks are never omitted
@@ -1039,7 +1064,7 @@ layout carries is inherited, never redrawn.
 
 The company's logo comes from the company's asset files or the template media, placed by
 the stated and observed rules. Client and counterparty logos come only from the user for
-this deck (section 7.4); where the house uses logos as category labels or in logo walls,
+this deck (section 7.4); where the reference uses logos as category labels or in logo walls,
 the page names the logos it needs and the user supplies them.
 
 ### 11.7 Round trip (prove the chain)
@@ -1047,10 +1072,10 @@ the page names the logos it needs and the user supplies them.
 Before designing, import one past-deck page into a page spec (layout, roles and weights;
 no coordinates survive), build it on the template, judge it and look at it beside the
 original. Measured: on a native-pptx bank deck the round trip scored 0.057 to 0.056, inside
-the house's own spread. The look matters more than the number: measured once, the judge
+the reference's own spread. The look matters more than the number: measured once, the judge
 said 0.083 while labels were black and left-aligned because the reader had missed a
 shape-style text colour on both sides. The import must work for PDFs (known failure mode,
-measured on three houses: import produced empty paragraphs for PDF pages).
+measured on three firms: import produced empty paragraphs for PDF pages).
 
 ---
 
@@ -1063,7 +1088,7 @@ page, what the reader looks up: 263 of 372 topic-title corpus pages state no cla
 evidence that proves it, the exhibit, supporting text, data needed, the composition intent
 (which element dominates, or how co-equal blocks divide the page), the layout, split
 boundaries if it will not fit, and the title, whose register and length are reported
-against the house's (`guide.titles`).
+against the reference's (`guide.titles`).
 
 ### 12.2 Figures
 
@@ -1077,7 +1102,7 @@ script that computed and asserted every stated figure, and it worked well; encou
 ### 12.3 Variety plan
 
 Before building, the model lists the planned composition, layout and exhibit type per page
-and compares against the house's measured variety. Measured over 23 corpus decks (Appendix
+and compares against the reference's measured variety. Measured over 23 corpus decks (Appendix
 A.10): the median composition change between consecutive pages is 0.69 on a coarse
 10-family taxonomy (investment-bank 0.645, strategy-consulting 0.765), and exhibit types
 change more often than compositions (median exhibit-set change 0.77 and 0.85). On a finer
@@ -1141,7 +1166,7 @@ the available list.
 ### 13.2 Limits
 
 Any structural limit (tree depth, node count) is documented and each violation has its own
-message (known failure mode, measured on two houses: "duplicate id", "over 400 nodes" and
+message (known failure mode, measured on two firms: "duplicate id", "over 400 nodes" and
 "depth over 5" merged into one message, costing builds). The bounds are runaway guards,
 not design limits: depth 5 measured shape nesting, not layout trees, and refused a
 component placed three regions down, so the depth bound is 12 and each page's deepest
@@ -1149,14 +1174,14 @@ chain is reported.
 
 ### 13.3 Conventions enforced
 
-- A title is given the house's title band or title placeholder; a title needing more
+- A title is given the reference's title band or title placeholder; a title needing more
   lines than the band holds does not fit, and that is reported first, before other
   violations (they follow from it), with both fixes (shorten it, or move a clause to where
-  the house states claims). Its register and length are reported against the house's, as
+  the reference states claims). Its register and length are reported against the reference's, as
   warnings to answer.
 - Chrome zones are reserved automatically; content never runs under footer furniture.
 - A page with a table or chart and no source or footnote paragraph is checked against the
-  house's observed source-line rate (section 17.9).
+  reference's observed source-line rate (section 17.9).
 - Ids are unique per page; elements that are the same thing across pages (title, source
   line) share ids so position drift can be checked; different things never share ids
   (known failure mode, measured once: drift reported between unrelated elements that
@@ -1232,11 +1257,11 @@ and placeholder holds per role, from the measured ruler, and writes to that budg
 
 ### 14.3 Density as a search
 
-Density is a loop the model runs: build, read where the page sits in the house's density
+Density is a loop the model runs: build, read where the page sits in the reference's density
 band (reported as evidence), and decide what the page needs. Moves, in no order and for
 instance: add an exhibit the argument is missing, re-arrange (two columns, table beside
 chart, a compact component variant, another layout), cut words, split at a declared
-boundary with the house's continuation convention. Measured: hand-built specimen pages had
+boundary with the reference's continuation convention. Measured: hand-built specimen pages had
 median ink coverage 0.21 to 0.25 against 0.576 for 96 corpus pages; what closed the gap was
 adding missing exhibits, not enlarging existing ones.
 
@@ -1250,12 +1275,12 @@ refuse six shapes.
 
 ### 14.5 Legibility floors
 
-- `floor_pt` per role family is the smallest size the house uses; never generate below
+- `floor_pt` per role family is the smallest size the reference uses; never generate below
   `max(floor_pt, absolute_floor_pt)`. A guideline-stated minimum above that is honoured.
 - `absolute_floor_pt` = 7.0pt. Measured on two screen media with one rater: legible down to
   6.0pt Arial; 6.5pt Calibri regular, 7.0pt bold. Print was not measured; for a printed
-  deck, never go below the house's own floor. The model may lower a floor in completion
-  only when the house's own captions show the smaller size.
+  deck, never go below the reference's own floor. The model may lower a floor in completion
+  only when the reference's own captions show the smaller size.
 
 ---
 
@@ -1282,13 +1307,13 @@ Native charts written from a complete spec the model writes:
 - `c:varyColors val=0` is always written (file safety: the renderers read its absence
   oppositely; measured: PowerPoint paints one series in five theme colours).
 - Every choice left out is written as a named neutral value (section 3.1: nothing
-  written, or the house's observed value with provenance; never a styled constant) and
+  written, or the reference's observed value with provenance; never a styled constant) and
   reported per page.
 - No special chart kinds (no "waterfall" or "football field" type): they are recipes over
   the general spec (invisible base series with fill none; a zero-height carrier for
   labels; an invisible low series for ranges). Recipes are documentation named by
-  mechanism (invisible series, zero-height carriers, error bars), each pointing at house
-  pages to depart from; the model adapts them.
+  mechanism (invisible series, zero-height carriers, error bars), each pointing at the
+  reference's pages for how its look draws them; the model adapts them.
   An optional `bridge` declaration on a chart (deltas and totals) is tied out by the build:
   each total against the running sum and each drawn span against its step.
 - Known renderer and writer hazards (measured): an XY scatter series that does not set
@@ -1320,7 +1345,7 @@ Native charts written from a complete spec the model writes:
   1.27 px in LibreOffice).
 - Row classes: totals (tie-out checked), subtotal, statistic (median, mean: skipped by
   tie-out), subject (set apart), emphasis (requires an explicit fill role or `none`).
-- Number craft: what does this house write (its observed habits first, Appendix A.9 as
+- Number craft: what does this reference write (its observed habits first, Appendix A.9 as
   corpus evidence)? The corpus recorded units lines or units columns, $ only on first and
   total rows, x suffixes on multiples, parentheses for negatives, NM and n.a. written out,
   footnote markers resolving in the footer zone, sorted order where the message is a
@@ -1363,7 +1388,7 @@ coordinates; 99 of 192 tables (52%) carry at least one cell-level move the table
 not express (merged spanners, italic rows, input cells, semantic cell colour, a cell box or
 callout, two emphasis styles); 227 of 578 pages (39%) carry at least one such move. Known
 failure mode: a system that draws native charts but cannot place a shape at a data
-coordinate leaves the model unable to annotate; generated exhibits then lack the house's
+coordinate leaves the model unable to annotate; generated exhibits then lack the reference's
 moves, and a blind rater notices (section 23.1).
 
 Known failure mode (found in the code of that earlier build; three independent causes, any
@@ -1393,8 +1418,8 @@ Requirements:
   table or stats box; logo or image at a category position; connector or zoom lines),
   beside one primitive `mark`: any OOXML preset by name, or a line with any OOXML line
   ends, with optional words beside it (inside it only on presets whose body the contrast
-  gate can bound). A mark's shape may be taken from a mark the house's own file draws
-  (`house_mark`). The shorthands are conveniences, not the set of marks allowed. Roles
+  gate can bound). A mark's shape may be taken from a mark the reference's own file draws
+  (`reference_mark`). The shorthands are conveniences, not the set of marks allowed. Roles
   only, like everything else.
 - **Hosts.** Any element of the page can host a mark: data positions on charts and tables
   as below, or fractions of the element's solved box (`{"box": [x0, y0, x1, y1]}`) on any
@@ -1452,9 +1477,9 @@ Requirements:
   data labels, axis labels, other annotations or text outside the exhibit.
 - Annotations are scored by the contrast gate like any text.
 - The model decides whether and what to annotate. The skill supplies the corpus evidence
-  (Appendix A, counts of what coders saw, not a set to choose from), the house's own habits
+  (Appendix A, counts of what coders saw, not a set to choose from), the reference's own habits
   (`exhibit_habits`) and the reasoning questions (Appendix B). A mark with no label and no
-  explanation is drawn and warned, with the house's own count of such marks beside it, and
+  explanation is drawn and warned, with the reference's own count of such marks beside it, and
   the report answers it; an explanation that names something not on the page is refused. Nothing annotates automatically, and no field is offered to the
   model before its placement is implemented and verified (section 3.4).
 
@@ -1479,10 +1504,10 @@ an API, never estimated (`text_width`, `line_pitch`, `paragraph_spacing`, `fit_e
 exposed to components from the solver's own ruler), and a component's roles and constants
 are open through its data, each choice and default reported.
 
-Components are worked examples of drawing exhibits the template never contained, in house
-style: a component reads only the guide's roles, so the same football field takes each
-house's roles. They are one way to draw an exhibit, not the way: read one, fork it per
-house, or draw the exhibit from the page grammar.
+Components are worked examples of drawing exhibits the template never contained, in the
+reference's look: a component reads only the guide's roles, so the same football field takes each
+reference's roles. They are one way to draw an exhibit, not the way: read one, fork it per
+reference, or draw the exhibit from the page grammar.
 
 Contract and admission:
 - A schema for its data, a size domain, and four test boxes: three shown and one held out
@@ -1494,7 +1519,7 @@ Contract and admission:
   own shapes (known failure mode, measured: a check passed while the master's top rule
   struck through a football-field bar).
 - Admission is bound to the guide it was checked with (hash). Measured once: a component
-  admitted on one house overflowed on another whose 12pt floor left no headroom.
+  admitted on one reference overflowed on another whose 12pt floor left no headroom.
 - The model writes new components when nothing draws what a page needs; the build reports
   a component admitted against a different guide.
 - Feasibility shown (measured): football field, title block, bullet stack and KPI row were
@@ -1572,9 +1597,9 @@ role's floor; a typed page number where the layout has the field (all measured h
   enclosing filled region, else `color.surface`; for a chart label inside a mark, the mark's
   fill; outside it, the plot fill or the page; both when the position is open.
 - Below 3.0:1 refuses; below AA (4.5:1, or 3.0:1 at 18pt or 14pt bold) warns.
-- House precedent: a colour pair the house itself uses at that size or smaller is allowed
-  and reported as precedent. Without it, a house can never use its own signature colour:
-  measured once, one consulting house's title green on white reads 2.51:1.
+- Reference precedent: a colour pair the reference itself uses at that size or smaller is allowed
+  and reported as precedent. Without it, a reference can never use its own signature colour:
+  measured once, one consulting reference's title green on white reads 2.51:1.
 - Undecidable cases (text over images; fills left to the renderer) are listed, not passed.
 - The fix is always a role change by the model, never an automatic ink swap.
 
@@ -1586,16 +1611,16 @@ the column and are named. Chart bridges: as in 15.1.
 
 ### 17.6 Register and density
 
-Per page counts by kind, decoration count and container ratio against the house's bands;
+Per page counts by kind, decoration count and container ratio against the reference's bands;
 words, elements and covered area against density bands. Each verdict is below, in band,
 above, or NO EVIDENCE (section 3.8). A diagram counts as one exhibit.
 
 ### 17.7 Repetition
 
 Arrangement similarity of consecutive pages over CONTENT regions only (exclude chrome and
-elements identical on every page). Known failure mode (measured on two houses): a metric
+elements identical on every page). Known failure mode (measured on two firms): a metric
 dominated by the frame scored any two pages about 0.5 before their content was compared.
-Flag runs longer than the house's `consecutive_max`.
+Flag runs longer than the reference's `consecutive_max`.
 
 ### 17.8 Position drift
 
@@ -1605,19 +1630,19 @@ spacing step is reported.
 ### 17.9 Source line
 
 A page with a table or chart and no source or footnote paragraph is reported, located,
-with the house's count beside it (for instance "the house sources 41 of 44 data pages;
+with the reference's count beside it (for instance "the reference sources 41 of 44 data pages;
 this page has none"), as a warning answered in the report. It never refuses: citing a source is never
 wrong, and the line between "as a rule" and "sometimes" was never measured. Measured: source lines are common but not universal on real data pages (two
 strategy-consulting coder groups recorded them on 23 of 111 and 27 of 121 pages; the
 native-pptx bank decks on 2 of 33 data exhibits; a market chart book on 30 of 30), so a
-universal refusal is stricter than many houses (section 23.5). Any source line written
+universal refusal is stricter than many firms (section 23.5). Any source line written
 names the sources actually used (section 24).
 
 ### 17.10 Leakage
 
 Every text run of the generated deck is compared against the text of the past decks used
 as evidence. A name, figure or phrase that appears in a past deck and not in the user's
-brief, data or the house's chrome and standard wording is reported, located, as possible
+brief, data or the reference's chrome and standard wording is reported, located, as possible
 carry-over of client content (section 7.4); the model removes it or the user confirms it.
 Image assets are checked the same way by hash. The matching rule and its thresholds are
 unmeasured; build them against the evaluation scenarios and record their false positives.
@@ -1626,7 +1651,7 @@ unmeasured; build them against the evaluation scenarios and record their false p
 
 Each slide uses the layout its spec named; no placeholder shows prompt text; no
 placeholder geometry differs from its layout unless the spec declared the override, which
-is reported beside the house's past use of that layout.
+is reported beside the reference's past use of that layout.
 
 ---
 
@@ -1647,11 +1672,11 @@ inconsistent chart text styling across charts; a figure split from its unit; pla
 text; and then design: Is the message findable in two seconds? Is the exhibit annotated
 where the claim lives? Would a managing director mark this up, and what would they write?
 Does it look like the company's best pages, side by side? What did a blind rater notice on
-generated pages (low chart and layout variety, missing logos, claim titles in a topic
-house, an unlabelled red circle)? The other usual suspicions are questions put against the
-house's own pages and counts, not a checklist: a card grid for content that is not a
+generated pages (low chart and layout variety, missing logos, claim titles where the
+reference titles by topic, an unlabelled red circle)? The other usual suspicions are questions put against the
+reference's own pages and counts, not a checklist: a card grid for content that is not a
 comparison, big numbers with no base or population (8 of 578 corpus pages carry big
-numbers or a KPI panel), corners (the house's measured `shape_language` radii), centred
+numbers or a KPI panel), corners (the reference's measured `shape_language` radii), centred
 text, three of everything, uniform spacing, one composition repeated where the pages are
 not siblings.
 
@@ -1692,29 +1717,29 @@ fitted from each component's 1-nearest-neighbour accuracy above chance on held-o
 
 ### 19.2 Verdict
 
-Filed under the house when: nearest to the house among a panel of other houses; inside the
-house's own spread (90th percentile of leave-one-out distances of the house's own pages);
+Filed under the reference when: nearest to the reference among a panel of other firms; inside the
+reference's own spread (90th percentile of leave-one-out distances of the reference's own pages);
 layout clean (overlap and overflow below 0.2 of their span); every page fit and the
-package valid. Decks inside the house's own spread are reported as the same house, not as
+package valid. Decks inside the reference's own spread are reported as the same style, not as
 rivals. The panel is fixed (not chosen by the model). For a company, the panel includes the
-company's other templates as separate houses, so a pitch book is not filed under the board
+company's other templates as separate firms, so a pitch book is not filed under the board
 template.
 
 ### 19.3 Calibration (measured)
 
-157 of 171 held-out slides over 8 houses filed correctly with fitted weights, 132 with
+157 of 171 held-out slides over 8 firms filed correctly with fitted weights, 132 with
 equal weights (binomial chance bound 30). Copying a master verbatim is flagged off-style.
-Five deliberately wrecked decks in a house's clothes once filed at 0.013 to 0.192; adding
+Five deliberately wrecked decks in a reference's clothes once filed at 0.013 to 0.192; adding
 the overlap and overflow gates made all five fail. On an earlier build, the best generated
-sections scored 0.059 to 0.175 and were filed in five of six houses.
+sections scored 0.059 to 0.175 and were filed in five of six firms.
 
 ### 19.4 Limits (measured)
 
 - The judge does not track human perception of real versus generated. In a blind round on
-  an earlier build, House A (0.085) and House B (0.068) were filed close to their
-  references, yet the rater caught every generated page in both; House F (0.584, not filed,
-  because the judge read a scan's OCR layer) fooled the rater 4 of 5 times; House E (0.059)
-  fooled 3 of 5. Six houses and one rater are too few for a correlation, but "filed"
+  an earlier build, Reference A (0.085) and Reference B (0.068) were filed close to their
+  references, yet the rater caught every generated page in both; Reference F (0.584, not filed,
+  because the judge read a scan's OCR layer) fooled the rater 4 of 5 times; Reference E (0.059)
+  fooled 3 of 5. Six firms and one rater are too few for a correlation, but "filed"
   clearly does not mean "passes as real". Do not present judge scores as quality.
 - It cannot see content craft: title register, annotation, exhibit choice, variety,
   figures. These need the critique loop and the blind round.
@@ -1771,35 +1796,37 @@ plus data plus expected behaviours:
 10. Extend an existing company deck with three pages in its own style.
 11. Confidentiality: any scenario above run with network access monitored; and a past-deck
     library seeded with distinctive client names and figures absent from the brief.
+12. No reference at all: the model chooses the whole look; every hard limit holds and every
+    comparison with a reference reads "no reference".
 
 Expected behaviours are checkable statements, and pass or fail only on the measurable
 half: zero gate failures; every warning answered in the report; every stated claim
 computes from the data; figures tie; the subject can be found; template and layouts
-stated with reasons; logos present where the house shows them; conflicts and
+stated with reasons; logos present where the reference shows them; conflicts and
 low-confidence habits reported; zero network calls by scripts; zero seeded client strings
-in the output. Title register and length against the house's distribution, where the
-house annotates, and composition variety against the house's are diagnostics reported
+in the output. Title register and length against the reference's distribution, where the
+reference annotates, and composition variety against the reference's are diagnostics reported
 beside the result; the blind round (section 21.2) is the judge of taste.
 
 ### 21.2 The blind round (primary success metric)
 
-- Per house, 5 real pages from the company's best decks (or the reference) and 5
+- Per reference, 5 real pages from the reference deck (or the company's best decks) and 5
   generated pages, normalised to the same pixel size, format and encoding (re-encode all to
   one format; measured: real scanned pages were otherwise twice the file size of generated
-  ones), file names and ids hashed, order mixed within house.
+  ones), file names and ids hashed, order mixed within each reference.
 - Remove visible non-design tells where possible and record those that remain (measured:
-  real pages of one consulting house carried a gradient at the edges; real pages of a
+  real pages of one consulting deck carried a gradient at the edges; real pages of a
   scanned bank deck carried scan texture).
 - Raters are, by preference, the company's own senior bankers or consultants. Real pages
   shown to raters are the company's own and stay inside the company (section 7).
 - The rater guesses real or generated and rates quality 1 to 5 (1 would not send, 3 usable
   with edits, 5 client-ready), with an optional note.
-- Score: accuracy per house and overall with the binomial tail probability; quality means
+- Score: accuracy per reference and overall with the binomial tail probability; quality means
   real vs generated; which generated pages fooled the rater; notes.
-- Baseline measured on an earlier build (one rater familiar with the work; 6 public houses;
+- Baseline measured on an earlier build (one rater familiar with the work; 6 public firms;
   60 pages):
 
-| House | Type | Correct of 10 | Generated called real | Real quality | Generated quality |
+| Reference | Type | Correct of 10 | Generated called real | Real quality | Generated quality |
 |---|---|---|---|---|---|
 | A | native-pptx bank pitch book | 8 | 0 of 5 | 3.6 | 2.4 |
 | B | native-pptx bank pitch book (same master as A) | 9 | 0 of 5 | 3.8 | 2.2 |
@@ -1812,7 +1839,7 @@ beside the result; the blind round (section 21.2) is the judge of taste.
   pages guessed real were rated 3.77, guessed generated 2.66. Rater notes: "Chart variety
   and layout variety in generated slides are low. Generally the same patterns with
   different colours"; "The choice of charts here actually match the data being represented
-  and is well laid out" (on a real House D page rated 5); "Logos. Generated slides have
+  and is well laid out" (on a real Reference D page rated 5); "Logos. Generated slides have
   none". Judge scores of the same generated sections: A 0.085 filed; B 0.068 filed
   (repetition flagged); C 0.131 filed; D 0.175 filed; E 0.059 filed; F 0.584 not filed
   (judge read the scan's OCR layer).
@@ -1855,7 +1882,7 @@ Collected in sections 8, 10, 14 to 19 and Appendix C, each with its measurement.
 
 - With chart and table design handed to the model, fresh agents composed exhibits code
   never anticipated: a horizontal bridge, a Gantt from a stacked bar with an invisible
-  offset series, a regression scatter, a football field as a stacked bar; all six houses
+  offset series, a regression scatter, a football field as a stacked bar; all six firms
   produced 5-page sections; five of six were filed by the judge (measured).
 - Fresh agents spent 4 to 7 builds per section of 5 pages; each read every render after
   every build (measured).
@@ -1865,7 +1892,7 @@ Collected in sections 8, 10, 14 to 19 and Appendix C, each with its measurement.
   because chrome buried it; measuring sizes from a 220 dpi render because the raster tool
   reported the wrong dpi) and reported them (measured). Work-arounds are friction items.
 - Measured: single-attempt acceptance of a design model's page specs rose from 0.021 to
-  0.274 on one house and from 0.253 to 0.432 on another, against a 0.80 target, as schema
+  0.274 on one reference and from 0.253 to 0.432 on another, against a 0.80 target, as schema
   and guide gaps were fixed; most refusals were schema and guide gaps, not model craft. Fix
   the pipeline before blaming the model.
 - A "reasoning" field in the structured output had no measured win on correctness across
@@ -1876,7 +1903,7 @@ Collected in sections 8, 10, 14 to 19 and Appendix C, each with its measurement.
 
 Six coder groups looked at sampled content pages across the development corpus (Appendix
 D) and coded all of them: investment-bank decks (11 decks, 231 pages), strategy-consulting
-decks from three houses (12 decks, 317 pages) and a dense market chart book (30 pages); 578
+decks from three firms (12 decks, 317 pages) and a dense market chart book (30 pages); 578
 pages and 601 exhibits in all. Each page record holds composition, title register and
 length, text hierarchy, exhibits with type, data shape, message, every annotation move and
 its anchor, emphasis devices, craft details, density, and the page-order sequences. The
@@ -1891,15 +1918,15 @@ A. The same coding applied to a company's past decks produces that company's hab
    decks tables outnumber charts 117 to 109. Page design is mainly composition, text and
    tables. The skill's craft (exhibit choice, annotation, emphasis, density, variety) must
    cover tables, diagrams and structured text as fully as charts.
-2. **Titles are house-specific, and banks use topics.** Topic phrases on 223 of 231 bank
+2. **Titles are deck-specific, and banks use topics.** Topic phrases on 223 of 231 bank
    pages (2 claims) and 30 of 30 chart-book pages, with a median of 4 words; claim
    sentences on 197 of 317 consulting pages (62%, median 15 words, 8 to 22, usually two
-   lines), with topic titles on that house type's executive summaries, appendices,
+   lines), with topic titles on that deck type's executive summaries, appendices,
    trackers and reference pages. When the title is a topic, the claim lives elsewhere on
    109 of 372 pages: a takeaway band, a lead-in bullet ending in a colon, a kicker, a
    sidebar, the labels of numbered rows, a units line, or memo prose; on the rest no claim
    is stated, because the page is reference.
-3. **Annotation is near-universal on data exhibits, and its moves are house-specific.**
+3. **Annotation is near-universal on data exhibits, and its moves are deck-specific.**
    7 of 291 charts carry no annotation (bank 0 of 109, consulting 4 of 135, chart book 3 of
    47). Bank decks annotate at least as much as consulting decks and annotate tables more:
    61 against 41 exhibits carry a circled or boxed mark, and 50 of the 105 boxes overall sit
@@ -1913,7 +1940,7 @@ A. The same coding applied to a company's past decks produces that company's hab
    projection tables shaded total rows on 27 of 42; sensitivity grids boxed a cell or
    region on 17 of 29; football fields drew a reference line at the decision value on 8
    of 14 (A.7). These are evidence for the question "what must the reader see here?", and
-   the house's own pages come first.
+   the reference's own pages come first.
 5. **The annotation sits where the claim lives.** Examples: a box around only the scenario
    region of a sensitivity grid that the argument depends on; boxes on shortfall years,
    with no box on the one scenario that is the exception the claim names; the subject in one
@@ -1976,15 +2003,15 @@ causes, each consistent with the measurements; not individually tested):
 
 | Cause | Requirement |
 |---|---|
-| Title register: computed claim titles in houses whose titles are short topic phrases (section 22.3 item 1), because a doctrine required claims | Titles reported against the house's measured register and length, as warnings to answer; a title that needs more lines than its band holds does not fit (sections 3.2, 9.2 `titles`, 12.1, 13.3) |
+| Title register: computed claim titles in firms whose titles are short topic phrases (section 22.3 item 1), because a doctrine required claims | Titles reported against the reference's measured register and length, as warnings to answer; a title that needs more lines than its band holds does not fit (sections 3.2, 9.2 `titles`, 12.1, 13.3) |
 | Low variety: "same patterns with different colours"; no section variety plan; a repetition metric dominated by page furniture | Variety plan whose repeats are declared or varied, and a content-only repetition report (sections 12.3, 17.7) |
-| Thin annotation: the house's moves (outline boxes on the claim region, subject highlight, reference lines, median rows) rarely present, because shapes could not be placed on charts and the house's habits were never given | Data-anchored annotation layer and `exhibit_habits` from past decks (sections 15.3, 10.3) |
+| Thin annotation: the reference's moves (outline boxes on the claim region, subject highlight, reference lines, median rows) rarely present, because shapes could not be placed on charts and the reference's habits were never given | Data-anchored annotation layer and `exhibit_habits` from past decks (sections 15.3, 10.3) |
 | Exhibit-to-data fit: nothing asked the model to justify the chart by the data's shape and message; the rater praised real pages whose chart matched the data | Reasoning questions per exhibit (Appendix B) and the page plan (section 12.1) |
 | Missing furniture: no logos; placeholder logo boxes | Logos carried and placed (sections 11.4, 11.6) |
 | Renderer and font tells: all generated pages were LibreOffice renders; some used stand-in fonts | Company fonts installed; PowerPoint render where available; normalised blind-round images (sections 8.2, 18.5, 21.2) |
 
-Houses that fooled the rater (E and F) had dense, table-heavy, conservative pages where the
-generated content matched the house's restrained annotation.
+Firms that fooled the rater (E and F) had dense, table-heavy, conservative pages where the
+generated content matched the reference's restrained annotation.
 
 ### 23.2 Mechanical failure modes
 
@@ -2002,7 +2029,7 @@ row never checked against its height (14.2); measurement font differing from ren
 (9.2, 14.1); chrome drawn in the wrong z-order (11.4); chrome text black on navy and
 unscored (11.4, 17.4); rotated text misread (8.1); title role bound to large numerals by
 vote (9.4); PDF density bands of zero (3.8); PDF import producing empty paragraphs (11.7);
-a gallery refusing PDFs (10.2); contrast refusing the house's own colours (17.4); emphasis
+a gallery refusing PDFs (10.2); contrast refusing the reference's own colours (17.4); emphasis
 keys dropped silently (13.1); header and cell roles ignored by the emitter (3.10); XY
 scatter crash and first scatter series not drawn (15.1); undocumented depth limit (13.2);
 raster completion unable to add roles (9.6); no reference line possible on bar charts and
@@ -2030,10 +2057,10 @@ What has been shown feasible, and the failure modes each part must be designed a
 | Build orchestrator and gates | Solve, emit, validate, render, judge; contrast, register, repetition, tie-outs, source line, density, drift, chart defaults, leakage, layout conformance | End to end shown (measured). Failure modes: blind spots for chrome text, frame-dominated repetition, zero bands |
 | Component system | Contract, determinism check, held-out admission, measurement API | Four components admitted (15.5). Failure mode: check blind to master shapes |
 | Page importer | Past-deck page to layout, roles and weights for the round trip | 0.057 on a native-pptx deck (11.7). Failure mode: empty paragraphs on PDFs |
-| Style judge | Fingerprint components, fitted weights, house spread, panel, layout gates | Calibrated 157 of 171 (19.3). Failure modes: does not track human perception; reads OCR on scans |
+| Style judge | Fingerprint components, fitted weights, reference spread, panel, layout gates | Calibrated 157 of 171 (19.3). Failure modes: does not track human perception; reads OCR on scans |
 | Package tools | text, layouts, template, blank, duplicate, delete, clean, validate (with render and renderer-divergence modes) | Failure mode: text dump joining cell text without spaces (20) |
-| Design doctrine | Questions plus measured tendencies, with the house's measured habits shown as the strongest evidence and departures answered in the report; chart recipes | Failure mode: doctrine (claim titles) contradicting the houses (3.2). Chart recipes were useful (measured) |
-| Examples | Real pages from the company and the library, tagged with page size | Failure mode: specimens composed for 16:9; on a 4:3 house only 1 of 14 fits as written (examples/house/COVERAGE.md) |
+| Design doctrine | Questions plus measured tendencies, with the reference's measured habits shown as the strongest evidence and departures answered in the report; chart recipes | Failure mode: doctrine (claim titles) contradicting the firms (3.2). Chart recipes were useful (measured) |
+| Examples | Real pages from the company and the library, tagged with page size | Failure mode: specimens composed for 16:9; on a 4:3 reference only 1 of 14 fit as written (the specimens, since removed) |
 | Re-measurement scripts | Re-run every documented number before release (21.5) | Caught four wrong documented claims (measured) |
 
 ### 23.4 Capabilities that close the observed gap
@@ -2042,7 +2069,7 @@ What has been shown feasible, and the failure modes each part must be designed a
    exhibit digest, title statistics and page library, all as data the model reads (sections
    6, 9.2, 10.3, 10.4).
 2. **Reasoning instructions** (Appendix B) instead of doctrine rules; doctrine written as
-   questions plus measured tendencies, with the house's measured statistics shown beside
+   questions plus measured tendencies, with the reference's measured statistics shown beside
    every choice and departures answered in the report.
 3. **Annotation layer** with data-anchored placement on native charts and tables: a fixed
    inner plot rectangle, coordinates computed from the axis scale, an overlay layer exempt
@@ -2069,7 +2096,7 @@ What has been shown feasible, and the failure modes each part must be designed a
 13. **Evaluation program** with scenario files, fresh-agent friction loop, blind rounds as
     the success metric (section 21).
 14. **Logo and image handling**: extract, place, and treat logos as category labels where
-    the house does.
+    the reference does.
 15. **Optional**: PowerPoint-side verification of renders when a Windows or macOS runner is
     available.
 
@@ -2077,28 +2104,28 @@ What has been shown feasible, and the failure modes each part must be designed a
 
 Each line below is a generic design instruction that was written into a working system of
 this kind as a general rule. Each contradicts the corpus counts (Appendix A) in at least
-one house type. "The reference wins" was stated beside every one of them, but a model
+one deck type. "The reference wins" was stated beside every one of them, but a model
 applies a general rule wherever the reference is silent or thin, so the rule itself is the
 failure mode. Requirement in every case: replace the rule with the question in Appendix B
-plus the house's measured habit, and keep hard gates only for what is measurable.
+plus the reference's measured habit, and keep hard gates only for what is measurable.
 
 | Instruction (known failure mode) | Evidence | Requirement |
 |---|---|---|
-| Every title is a claim (assertion); topic titles fail | Topic titles on 223 of 231 bank pages and 30 of 30 chart-book pages; claims on 197 of 317 consulting pages, with topics on their reference and appendix pages; the claim sits in another slot on 109 topic-title pages | Title register and length reported against the house's (sections 3.2, 12.1; already in 23.1) |
-| Labelling every mark is an anti-pattern; label only the marks that matter | Labels on all marks are the most frequent chart move in every house type: 120 of 291 charts (bank 65 of 109, consulting 43 of 135, chart book 12 of 47), usually beside one highlighted item | Label density from the house's `exhibit_habits` |
+| Every title is a claim (assertion); topic titles fail | Topic titles on 223 of 231 bank pages and 30 of 30 chart-book pages; claims on 197 of 317 consulting pages, with topics on their reference and appendix pages; the claim sits in another slot on 109 topic-title pages | Title register and length reported against the reference's (sections 3.2, 12.1; already in 23.1) |
+| Labelling every mark is an anti-pattern; label only the marks that matter | Labels on all marks are the most frequent chart move in every deck type: 120 of 291 charts (bank 65 of 109, consulting 43 of 135, chart book 12 of 47), usually beside one highlighted item | Label density from the reference's `exhibit_habits` |
 | Same-sized panels are a dashboard, not a page | 77 of 578 pages carry two or more exhibits; 6 of 30 chart-book pages are two equal panels; several of the most instructive pages are equal small multiples on a shared scale | Ask whether the blocks are a comparison (section 12.4) |
 | Exactly one emphasised row or cell per table; several emphasised rows is emphasis on none | Comps tables emphasise the median row on 12 of 15 and the subject on 8 of 15, often both; projection tables shade several total rows on 27 of 42; sensitivity grids box a region | Several emphasis styles per table, as roles (section 15.2) |
-| Fills are a last resort; one fill on a page says "this is the answer" | Fills are role-coded and multiple: shaded key rows on 52 pages, dark label cells and banners on 37, takeaway bands on 46, grey sidebars on 11 of 29 pages of one deck. *Inferred*: the evidence supports one emphasis colour on one item (88 pages), not one fill | Fill roles from the house; the emphasis colour, not every fill, is the scarce device |
-| Banking pages let the numerals speak while consulting pages argue beside the exhibit | Bank charts are never bare (0 of 109); bank decks box or circle more marks than consulting (61 against 41 exhibits) and annotate tables more (50 of 105 boxes sit on tables, mostly in bank decks) | Annotation from the house's `exhibit_habits`, not from house type folklore |
-| Harvey balls offered as a standard framework exhibit | 0 in bank decks, 0 in the chart book, 2 Harvey-style tables in 317 consulting pages; check, status and red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph moves) | Offer no exhibit types: ask what the reader must see, with the house's own use and the corpus counts as evidence |
-| Legends are always replaced by direct labels | Legends present on 49 of 81 bank, 55 of 85 consulting and 29 of 47 chart-book charts where recorded; direct labels replace the legend mostly on lines and indexed series (34 of 85 lines) | Ask how the reader will tell the series apart, with the house's own charts and these counts as evidence |
-| Remove every gridline that can be removed | Matches bank (58 of 80 without) and consulting (78 of 89 without); contradicts the chart book, which draws light horizontal gridlines on 47 of 47 | Gridlines from the house's `charts` habits |
-| A page with a table or chart and no source line is refused | Source lines recorded on only 23 of 111 and 27 of 121 pages in two consulting groups, and on 2 of 33 data exhibits in the native-pptx bank decks | Warn with the house's count, answered in the report; never refuse (section 17.9) |
-| A kicker is fixed anatomy of a bank page | Kickers or subtitles on 64 of 231 bank pages against 265 of 317 consulting pages; the bank anatomy is title, exhibit, footnotes, source and furniture | Kicker use from the house's titles habits |
+| Fills are a last resort; one fill on a page says "this is the answer" | Fills are role-coded and multiple: shaded key rows on 52 pages, dark label cells and banners on 37, takeaway bands on 46, grey sidebars on 11 of 29 pages of one deck. *Inferred*: the evidence supports one emphasis colour on one item (88 pages), not one fill | Fill roles from the reference; the emphasis colour, not every fill, is the scarce device |
+| Banking pages let the numerals speak while consulting pages argue beside the exhibit | Bank charts are never bare (0 of 109); bank decks box or circle more marks than consulting (61 against 41 exhibits) and annotate tables more (50 of 105 boxes sit on tables, mostly in bank decks) | Annotation from the reference's `exhibit_habits`, not from deck type folklore |
+| Harvey balls offered as a standard framework exhibit | 0 in bank decks, 0 in the chart book, 2 Harvey-style tables in 317 consulting pages; check, status and red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph moves) | Offer no exhibit types: ask what the reader must see, with the reference's own use and the corpus counts as evidence |
+| Legends are always replaced by direct labels | Legends present on 49 of 81 bank, 55 of 85 consulting and 29 of 47 chart-book charts where recorded; direct labels replace the legend mostly on lines and indexed series (34 of 85 lines) | Ask how the reader will tell the series apart, with the reference's own charts and these counts as evidence |
+| Remove every gridline that can be removed | Matches bank (58 of 80 without) and consulting (78 of 89 without); contradicts the chart book, which draws light horizontal gridlines on 47 of 47 | Gridlines from the reference's `charts` habits |
+| A page with a table or chart and no source line is refused | Source lines recorded on only 23 of 111 and 27 of 121 pages in two consulting groups, and on 2 of 33 data exhibits in the native-pptx bank decks | Warn with the reference's count, answered in the report; never refuse (section 17.9) |
+| A kicker is fixed anatomy of a bank page | Kickers or subtitles on 64 of 231 bank pages against 265 of 317 consulting pages; the bank anatomy is title, exhibit, footnotes, source and furniture | Kicker use from the reference's titles habits |
 | Big-number tiles are a tell of generated pages and are never used | Mostly right: no bank or chart-book big numbers and only 7 consulting pages; but consulting pages do pair big numbers with icons or rings, and the craft is pairing each number with its base and population | Ask "of what, and for whom?" (Appendix B) rather than banning the form |
 
 Instructions consistent with the evidence, worth keeping: the declare-or-vary check
-measured against the house's own longest run (sections 12.3, 17.7); vary composition unless
+measured against the reference's own longest run (sections 12.3, 17.7); vary composition unless
 the content demands repetition; comparable charts share one scale; bars start at zero (the
 two non-zero baselines in the chart book were recorded as lapses); ask what the data
 relationship and the reader's task ask of the form; source and footnote craft in general;
@@ -2120,7 +2147,10 @@ nothing is dropped; the contrast and tie-out gates.
   template, past decks and guidelines are reported to the user, never resolved silently.
 - Numbers come from the user; never invented; every stated figure computed from data.
 - Source lines from the sources used.
-- Habits not observed in the company's decks are flagged as low confidence.
+- Habits not observed in the reference are flagged as low confidence; with no reference,
+  every value is the model's choice (`model_choice`), and no corpus value stands in.
+- One reference deck at a time; decks are never pooled. A reference's habits are evidence
+  beside a choice, never a refusal; a departure is answered in one line in the report.
 - Reference files are untrusted: XML entity resolution disabled; zip-bomb caps enforced;
   run readers in isolated interpreters (`python3 -I`) in their own directories.
 - Confidentiality: no network calls from any script; derived artefacts stay in the
@@ -2151,11 +2181,11 @@ Each milestone ends with an end-to-end proof recorded beside the claim.
    count on every past deck of the stand-in library; versions of one deck are grouped.
 4. **Ruler and solver.** HarfBuzz ruler with measured epsilon; aliases; solver with the
    height rules of 14.2 and placeholders as fixed boxes; table fitter; scale descent;
-   capacity. Exit: wrap agreement on a recorded case set; solver round trip on the house's
+   capacity. Exit: wrap agreement on a recorded case set; solver round trip on the reference's
    own pages inside its spread.
 5. **Guide, extraction, completion.** Full schema including `layouts`, `titles`,
    `exhibit_habits` and `conflicts`; provenance including `stated`; open list; completion
-   with groups and null; no-past-decks mode. Exit: guides for all scenario houses with zero
+   with groups and null; no-past-decks mode. Exit: guides for all scenario firms with zero
    open core; title statistics match a hand count on 3 decks; a seeded guideline conflict
    is reported.
 6. **Emitter and gates.** One resolved entry per element; placeholder writing; read-back;
@@ -2169,16 +2199,16 @@ Each milestone ends with an end-to-end proof recorded beside the claim.
    identical in position and colour to the reference in a side-by-side render; chrome text
    scored; generated pages on a company template open and re-save in PowerPoint without
    repair.
-8. **Visual context.** Renders, gallery for pptx and PDF (set cover, area floor), house
+8. **Visual context.** Renders, gallery for pptx and PDF (set cover, area floor), the
    exhibit digest from past decks, page library from the company's best pages plus the
-   external starter set. Exit: the model can retrieve the house's nearest pages for any of
+   external starter set. Exit: the model can retrieve the reference's nearest pages for any of
    10 intents; the external starter set has 40+ tagged pages.
 9. **Charts and annotation.** Full chart spec with manual plot layout; annotation anchors
    and kinds; placement verified in LibreOffice (and PowerPoint where available) by marker
    renders; collision contract. Exit: on 10 chart types, computed anchor positions match
    rendered marks within a measured tolerance (state it).
 10. **Components.** Contract, API, determinism, held-out admission, master-shape collision.
-    Exit: four components admitted on two houses each.
+    Exit: four components admitted on two firms each.
 11. **Confidentiality.** Network monitoring in the scenario harness; artefact manifest and
     deletion; page library permission handling. Exit: every scenario runs with zero
     network calls from scripts; deleting the artefact set leaves nothing derived from
@@ -2198,11 +2228,11 @@ Each milestone ends with an end-to-end proof recorded beside the claim.
 ## Appendix A. Measured page-craft evidence
 
 These counts describe how professional decks design whole content pages. They are
-tendencies by house type: context for a company with no past decks (section 6.8), a check
+tendencies by deck type: context for a company with no past decks (section 6.8), a check
 on habits mined from a company's own decks (section 6.6), and the evidence behind the
 reasoning questions of Appendix B. They are evidence, not rules and not a vocabulary to
 choose from: the row labels are the coders' keyword categories for what they saw, and a
-page may do something no row names. The house's own measured practice is the strongest
+page may do something no row names. The reference's own measured practice is the strongest
 evidence; where a page departs from it, the report says why.
 
 ### A.0 Corpus, coding and caveats
@@ -2212,10 +2242,10 @@ length, text hierarchy, exhibits (type, data shape, message, every annotation mo
 anchor), emphasis devices, craft details, density and page order. All totals below were
 recomputed from those records with one taxonomy across all groups.
 
-| House type | Coder groups | Decks | Pages | Exhibits | Charts | Tables |
+| Deck type | Coder groups | Decks | Pages | Exhibits | Charts | Tables |
 |---|---|---|---|---|---|---|
 | Investment-bank decks (native pptx pitch books and a talk; PDF pitch books, board decks, a restructuring update) | 2 | 11 | 231 | 264 | 109 | 117 |
-| Strategy-consulting decks (three houses) | 3 | 12 | 317 | 285 | 135 | 70 |
+| Strategy-consulting decks (three firms) | 3 | 12 | 317 | 285 | 135 | 70 |
 | A dense market chart book | 1 | 1 | 30 | 52 | 47 | 5 |
 | Total | 6 | 24 | 578 | 601 | 291 | 192 |
 
@@ -2281,7 +2311,7 @@ Exhibits per page:
 Sidebar or takeaway box (recorded flag): bank 18 of 231, consulting 55 of 317, chart book
 0 of 30.
 
-House-specific conventions. Each comes from one deck or one house; they are examples of
+Deck-specific conventions. Each comes from one deck or one firm's decks; they are examples of
 what mining a company's past decks finds, not tendencies to copy:
 - one bank deck used a bottom takeaway band on 20 of 30 pages (coder count);
 - one consulting deck paired a chart of 62 to 70% of the page width with a grey
@@ -2306,13 +2336,13 @@ Median title length in words: bank topic titles 4; chart book topic titles 4; co
 topic titles 7; consulting claim titles 15. Consulting claim titles run 8 to 22 words and
 usually take two lines (coder count).
 
-Register is a house choice:
+Register is a reference choice:
 - Bank decks almost never use claim titles (2 of 231); the chart book never does (0 of
   30); consulting mostly does, but not always (197 of 317, 62%).
 - Consulting topic titles cluster on executive summaries, appendices, trackers and
   reference pages, often prefixed "For reference:" or "Illustrative:", or carrying a
   counter such as "(8/11)".
-- Register varies by deck within one house (coder counts: one consulting deck 23 of 30
+- Register varies by deck within one firm (coder counts: one consulting deck 23 of 30
   claim titles; a memo 0 of 12).
 - The same exhibit can take both registers in one deck: one consulting fact pack titled
   the same lever tree as a topic on one page and as a claim on two later pages.
@@ -2349,7 +2379,7 @@ Hierarchy levels of body text (pages):
 | 4 | 0 | 1 | 0 |
 
 - Bold or coloured lead-ins: bank 26 of 231, consulting 179 of 317, chart book 0 of 30.
-- Words per page: two consulting houses averaged 114 to 191 words per deck (coder count);
+- Words per page: two consulting firms averaged 114 to 191 words per deck (coder count);
   the native-pptx bank decks had a median of 72 words counted from slide XML (range 2 to
   221); the chart book has no body text.
 - How text and exhibit divide the work: when both are present, the text usually adds what
@@ -2371,7 +2401,7 @@ By class (n = 601):
 | Shape-built text structure | 23 | 14 | 9 | 0 |
 | Big numbers | 10 | 0 | 10 | 0 |
 
-By family (rows alphabetical: the coders' keyword categories, evidence of what houses drew,
+By family (rows alphabetical: the coders' keyword categories, evidence of what firms drew,
 not a set of forms to choose from):
 
 | Family | Total | Bank | Consulting | Chart book |
@@ -2402,7 +2432,7 @@ not a set of forms to choose from):
 | Text or data table | 53 | 29 | 21 | 3 |
 | Waterfall or bridge | 12 | 3 | 8 | 1 |
 
-Families specific to a house type: bank decks use sensitivity grids, comps tables, football
+Families specific to a reference type: bank decks use sensitivity grids, comps tables, football
 fields, projection tables with italic ratio rows, and tombstone and logo walls; consulting
 decks use check and status (red, amber, green) matrices, tables with in-cell bars, lever
 trees, maps and big numbers; the chart book uses scatters with a regression line and an
@@ -2467,7 +2497,7 @@ Zero-annotation rates:
 | Charts with no annotation | 0 of 109 | 4 of 135 | 3 of 47 |
 | All exhibits with no annotation | 13 of 264 | 8 of 285 | 4 of 52 |
 
-Over all houses, 7 of 291 charts carry no annotation. The bare consulting charts are line
+Over all firms, 7 of 291 charts carry no annotation. The bare consulting charts are line
 charts whose sidebar explains the method; the bare exhibits that are not charts are mostly
 tables, logo grids and icon rows.
 
@@ -2479,7 +2509,7 @@ Chart scaffolding (where recorded):
 - Legend absent: bank 32 of 81, consulting 30 of 85, chart book 18 of 47 (the chart book's
   legends, about 22, are swatches with text in the series colour).
 - Gridlines absent: bank 58 of 80, consulting 78 of 89, chart book 0 of 47 (light
-  horizontal gridlines on every chart are that house's style).
+  horizontal gridlines on every chart are that reference's style).
 - Colour: one emphasis colour or a single hue was the most common; categorical colour was
   kept for genuinely categorical series (one bank coder group: 24 of 72 single emphasis against 15
   of 72 categorical; the same pattern in two other groups). In the native-pptx bank decks,
@@ -2495,7 +2525,7 @@ forecast demarcation 13; horizontal bars (21): sorted 15, highlight one 13; stac
 (47): totals or "100% =" bases 20; football fields or ranges (14): a reference line at the
 offer or current price 8; financial or projection tables (42): shaded total rows 27, italic
 ratio rows 16; comps or benchmark tables (15): a median or statistic row 12, the subject
-highlighted 8; sensitivity grids (29): a boxed cell or region 17. For a page, the house's own
+highlighted 8; sensitivity grids (29): a boxed cell or region 17. For a page, the reference's own
 digest pages (`exhibit_habits.records[].marks`) and the marks its files draw come first.
 
 By message (coders' message-level coding):
@@ -2574,7 +2604,7 @@ Recurring table habits (bank decks, both coder groups): $ only on the first and 
 x on multiples; italic ratio rows under their $ row; a units column separate from the
 labels; NM and NA written out, never left blank.
 
-Density: median page fill is 0.85 in every house type. Median elements per page: bank about
+Density: median page fill is 0.85 in every deck type. Median elements per page: bank about
 80 (two decks at 145 and 119), consulting about 30, chart book about 35. Dense tables reach
 110 to 230 elements (one at 170).
 
@@ -2586,7 +2616,7 @@ inconsistent across pages; in the native-pptx bank decks also pictures past the 
 misregistered overlay boxes, comma decimals in a borrowed chart, repeated titles, and
 mixed fonts between pasted exhibits and slide text; two chart-book charts on non-zero
 baselines. These are what a generator should be better than, not what it should copy.
-Recorded beside them as one coder's judgement, to weigh as opinion against the house's own
+Recorded beside them as one coder's judgement, to weigh as opinion against the reference's own
 pages: a missed subject highlight; a title claim with no bracket summing it.
 
 ### A.10 Variety over consecutive pages
@@ -2655,7 +2685,7 @@ whether they share one frame is the plan's question.
 
 About 40 of the coded pages form the external starter set of the page library (section
 10.4): 15 bank, 21 consulting and 4 chart-book pages, chosen from each coder group's most
-instructive pages and balanced across house type and composition rather than chart pages
+instructive pages and balanced across deck type and composition rather than chart pages
 first. 15 of the 40 have a table, matrix, diagram or structured text, not a chart, as their
 main exhibit.
 
@@ -2665,7 +2695,7 @@ main exhibit.
 
 Offer these as the way to think, tied to evidence, not as rules. Each question that cites
 counts is *inferred* from what the corpus pages show (Appendix A); the counts say how often
-the corresponding move appears. The house's own measured practice is the strongest
+the corresponding move appears. The reference's own measured practice is the strongest
 evidence; where a page departs, the report says why.
 
 Per deck:
@@ -2678,7 +2708,7 @@ Per section:
 - What is the storyline, page by page, in one sentence each? Where does the reader need
   evidence, and where only a statement?
 - Which compositions and layouts will each page use, and how does that compare with the
-  house's own variety? Which repeats are deliberate parallels, and why? (Every long run in
+  reference's own variety? Which repeats are deliberate parallels, and why? (Every long run in
   the corpus was a sibling template held on purpose; median composition change 0.69 over
   23 decks; A.10.)
 - Which pages are one of a set, meant to be compared by flipping? They share one scale and
@@ -2687,17 +2717,17 @@ Per section:
 
 Per page:
 - What should the reader leave with: the page's message, or, on a reference page, what
-  they look up? Which slot of this house carries it (`guide.titles.claims_elsewhere`; the
+  they look up? Which slot of this reference carries it (`guide.titles.claims_elsewhere`; the
   corpus found titles, lead-in bullets ending in a colon, sidebars, takeaway bands,
   kickers, units lines, the labels of numbered rows), or does this page need somewhere
-  else? Does this house argue in titles, or name the
+  else? Does this reference argue in titles, or name the
   topic and argue elsewhere? How long are its titles? (Claim titles on 197 of 317
   consulting pages, 2 of 231 bank pages, 0 of 30 chart-book pages; on 109 topic-title pages
   the claim sits in another slot; A.3.)
 - Is this a page of argument or a page of reference? (Topic titles, appendix counters and
   "For reference:" prefixes mark reference pages; they carry complete tables with
-  housekeeping such as spanners, totals and footnotes and little emphasis: in one bank coder
-  group 54 of 224 exhibits had only housekeeping.)
+  furniture such as spanners, totals and footnotes and little emphasis: in one bank coder
+  group 54 of 224 exhibits had only furniture.)
 - Which layout do the company's past decks use for a page like this, and which
   placeholders do they fill?
 - Which element proves the message most directly, and does its size reflect that? Where
@@ -2726,16 +2756,16 @@ Per page:
 
 Per exhibit:
 - What is the data, in its own terms: how many things, measured how many ways, over what?
-  What must the reader see in it? Which forms could show that, and which does the house
+  What must the reader see in it? Which forms could show that, and which does the reference
   use? Would a table say it better?
-- If the house has never shown this exhibit, how would its designers have drawn it with
+- If the reference has never shown this exhibit, how would its designers have drawn it with
   the roles, rules and devices they do use?
 - What comparison is the reader making, and against what? (Subject against peers:
   highlight the subject on 22 of 46 such exhibits, emphasise a median or statistic row on
   12 of 46, sort on 13 of 46. Against a decision value: a reference line, used on 77
   exhibits, at the offer, the current price, the median or a policy cap. When peers are not
   one population, benchmark the subject against each cluster's median.)
-- Where on this exhibit does the claim live? How does the house mark such a place (its
+- Where on this exhibit does the claim live? How does the reference mark such a place (its
   digest records and the marks its files draw)? (Circled or boxed marks on 105 exhibits, 50 of them tables; a box on the
   scenario region of a sensitivity grid; the bars that sum to the claim coloured; one panel
   left unboxed to prove "except this one".)
@@ -2749,7 +2779,7 @@ Per exhibit:
   a full table; only the first and last bars bracketed. Labelling every mark is common, 131
   exhibits, and coexists with one emphasised item. Scaffolding is left out: gridlines absent
   on 136 of 169 bank and consulting charts where recorded, legends replaced by direct labels
-  on 80 of 213 charts; but one house draws light gridlines on 47 of 47. Non-focus parts are
+  on 80 of 213 charts; but one firm draws light gridlines on 47 of 47. Non-focus parts are
   faded rather than deleted.)
 - How will the reader find the subject (colour, position, order held across panels)?
 - What value is the decision made against (current price, offer, median, target)? Is it
@@ -2770,7 +2800,7 @@ Per exhibit:
   was pairing each number with its base.)
 - What does the chart not say that the reader needs, and where does that go?
 - How much does the reader need to read off the marks, and how will they tell series
-  apart? What number formats, units and negatives does the house write?
+  apart? What number formats, units and negatives does the reference write?
 - What would a managing director circle in red on this page?
 
 Per build (on the renders):
@@ -2829,7 +2859,7 @@ What the corpus measured above contained (all public; described here by type onl
   - seven PDF decks released through regulatory filings or litigation: pitch books, board
     decks (including a go-private board deck and a fairness opinion bound with filing
     text), a scanned restructuring update with no text layer, and a credentials deck.
-- **Strategy-consulting decks** (12 decks from three houses; 317 coded content pages),
+- **Strategy-consulting decks** (12 decks from three firms; 317 coded content pages),
   released through public-records requests: public-sector reviews, fact packs, operational
   diagnostics, governance and financial reviews, and a memo. Several run to hundreds of
   pages and were coded at a stride.

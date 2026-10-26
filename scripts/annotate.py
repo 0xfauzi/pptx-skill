@@ -28,8 +28,8 @@ spacing roles the spec names. A choice the spec leaves out is written as the neu
 value in DEFAULTS (nothing drawn: no pad, no gap, a solid stroke, no head, one line) and
 listed in the report's `defaults_taken`; a choice with no neutral value (a colour, a
 stroke width, which side, how far, the shape, the alignment, where a label sits) is
-required and refused by name. A shape may come from the house's own file instead
-(`house_mark`: a mark a reference page draws, read by the extractor).
+required and refused by name. A shape may come from the reference's own file instead
+(`reference_mark`: a mark a reference page draws, read by the extractor).
 
 The collision contract: an annotation may overlap only its anchor
 (its host). It may not cover another page element, another annotation, the page edge
@@ -44,7 +44,7 @@ A value anchor must be a number inside its axis's min..max, and a label may not 
 a word between characters (layout.split_words, the solver's own test).
 
 A mark with no words of its own and nothing named that explains it is drawn and warned
-(`annotation unexplained`), with the house's own count of such marks beside it: the
+(`annotation unexplained`), with the reference's own count of such marks beside it: the
 warning is answered in the report. An explanation that is named and does not hold is a
 false statement and refuses the page (`annotation explanation not found`).
 """
@@ -69,19 +69,19 @@ EMU_PER_PT = 12_700
 KINDS = ("outline_box", "band", "reference_line", "arrow", "callout", "bracket", "badge", "category_row", "mark")
 COMMON_KEYS = {"id", "host", "kind", "anchor"}
 KIND_KEYS = {
-    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape", "house_mark", "label", "gap_role", "explained_by"},
+    "outline_box": {"line_role", "line_width_pt", "dash", "pad_role", "shape", "reference_mark", "label", "gap_role", "explained_by"},
     "band": {"fill_role", "label", "pad_role", "explained_by"},
     "reference_line": {"line_role", "line_width_pt", "dash", "label", "gap_role", "explained_by"},
     "arrow": {"line_role", "line_width_pt", "dash", "label", "position", "gap_role"},
     "callout": {"line_role", "line_width_pt", "fill_role", "label", "position", "gap_role", "pad_role", "head"},
-    "bracket": {"line_role", "line_width_pt", "style", "house_mark", "side", "gap_role", "depth_role", "label", "explained_by"},
+    "bracket": {"line_role", "line_width_pt", "style", "reference_mark", "side", "gap_role", "depth_role", "label", "explained_by"},
     "badge": {"fill_role", "label", "position", "gap_role", "pad_role"},
     "category_row": {"cells", "role", "ink_role", "position", "gap_role", "gap_lines", "after", "shape", "cell_width", "label", "align"},
-    "mark": {"prst", "house_mark", "line_role", "line_width_pt", "dash", "fill_role", "pad_role", "points", "head_end", "tail_end", "label",
+    "mark": {"prst", "reference_mark", "line_role", "line_width_pt", "dash", "fill_role", "pad_role", "points", "head_end", "tail_end", "label",
              "gap_role", "explained_by"},
 }
 #: the choices each kind cannot make for itself (no neutral value exists for them); a
-#: shape or style may instead come from the house's file (house_mark), checked in place
+#: shape or style may instead come from the reference's file (reference_mark), checked in place
 REQUIRED = {
     "outline_box": ("line_role", "line_width_pt"),
     "band": ("fill_role",),
@@ -93,7 +93,7 @@ REQUIRED = {
     "category_row": ("cells", "position", "gap_role", "cell_width"),
     "mark": (),
 }
-#: what the shape or style of a kind is, when neither it nor house_mark says (no neutral)
+#: what the shape or style of a kind is, when neither it nor reference_mark says (no neutral)
 SHAPE_KEY = {"outline_box": "shape", "bracket": "style", "mark": "prst"}
 LABEL_KEYS = {"text", "role", "ink_role", "position", "max_width_share", "align"}
 #: a label's own choices with no neutral value: what it says, in what, and how it aligns
@@ -435,6 +435,9 @@ def _check_keys(ann: dict, where: str) -> str:
     if kind not in KINDS:
         raise AnnotationRefused(f"{where}: kind {kind!r} not in {list(KINDS)} (`mark` draws any OOXML preset or line where no shorthand says it)")
     allowed = COMMON_KEYS | KIND_KEYS[kind]
+    renamed = sorted(set(ann) & set(RENAMED_KEYS))
+    if renamed:
+        raise AnnotationRefused(f"{where}: " + "; ".join(RENAMED_KEYS[k] for k in renamed))
     extra = sorted(set(ann) - allowed)
     if extra:
         raise AnnotationRefused(f"{where}: unknown keys {extra} for a {kind}; allowed {sorted(allowed)}")
@@ -443,10 +446,10 @@ def _check_keys(ann: dict, where: str) -> str:
         raise AnnotationRefused(f"{where}: {_a(kind)} needs {missing}: no neutral value exists for them")
     if kind in SHAPE_KEY:
         key = SHAPE_KEY[kind]
-        if key in ann and "house_mark" in ann:
-            raise AnnotationRefused(f"{where}: {key} and house_mark each say what the {kind} draws; give one")
-        if key not in ann and "house_mark" not in ann:
-            raise AnnotationRefused(f"{where}: {_a(kind)} needs {key} (or house_mark: {{\"slide\": N}}, a mark the reference's file draws): "
+        if key in ann and "reference_mark" in ann:
+            raise AnnotationRefused(f"{where}: {key} and reference_mark each say what the {kind} draws; give one")
+        if key not in ann and "reference_mark" not in ann:
+            raise AnnotationRefused(f"{where}: {_a(kind)} needs {key} (or reference_mark: {{\"slide\": N}}, a mark the reference's file draws): "
                                     "no neutral shape exists")
     if not isinstance(ann.get("anchor"), dict):
         raise AnnotationRefused(f"{where}: anchor must be an object")
@@ -482,7 +485,7 @@ def resolve(annotations: list, elements: list[dict], ctx: L.Context, scale: Frac
     host, everything else after the page's own elements, in the spec's order), the
     per-annotation report, and the problems. An unlabelled mark that names nothing
     explaining it is drawn, so the render shows it, and warned as `annotation unexplained`
-    with the house's own count of such marks (house_evidence), to be answered in the
+    with the reference's own count of such marks (reference_evidence), to be answered in the
     report; an explanation that is named and does not hold refuses the page."""
     eg = EmitGuide(guide)
     by_id = {el["id"]: el for el in elements}
@@ -568,7 +571,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
                 # a blank category label (a dense time axis labels every n-th) is named by its index
                 label = (geo.categories[i] or f"category #{i}") if geo.family != "xy" else i
                 other_marks.append((f"mark {name!r} {label!r}", m))
-    house = house_mark(ann, kind, guide or {}, where) if "house_mark" in ann else None
+    copied = reference_mark(ann, kind, guide or {}, where) if "reference_mark" in ann else None
     lw = round(float(ann.get("line_width_pt", 0)) * EMU_PER_PT)
     if "dash" not in ann and (kind in ("outline_box", "reference_line", "arrow") or (kind == "mark" and ann.get("line_role"))):
         default("dash")
@@ -616,7 +619,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         footprint.append({"rect": lb, "text": True, "tokens": label["text"].split()})
 
     if kind == "outline_box":
-        prst = house["prst"] if house else preset_name(ann["shape"], where)
+        prst = copied["prst"] if copied else preset_name(ann["shape"], where)
         box = (r[0] - pad, r[1] - pad, r[2] + 2 * pad, r[3] + 2 * pad)
         drawn.append({"id": f"{aid}-box", "kind": "rect", "box": [round(v) for v in box], "fill_role": None, "prst": prst, **stroke})
         footprint += [{"outline": box, "width": lw}]
@@ -699,10 +702,10 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         side = ann["side"]
         if side not in ("above", "below", "left", "right"):
             raise AnnotationRefused(f"{where}: side {side!r} not in above, below, left, right")
-        if house:
-            style = next((st for st, presets in BRACKET_STYLES.items() if house["prst"] in presets), None)
+        if copied:
+            style = next((st for st, presets in BRACKET_STYLES.items() if copied["prst"] in presets), None)
             if style is None:
-                raise AnnotationRefused(f"{where}: house_mark {house['ref']!r} on reference slide {house['slide']} is a {house['prst']!r}, "
+                raise AnnotationRefused(f"{where}: reference_mark {copied['ref']!r} on reference slide {copied['slide']} is a {copied['prst']!r}, "
                                         f"which draws no one-sided bracket ({', '.join(p for ps in BRACKET_STYLES.values() for p in ps)}); give style")
         else:
             style = ann["style"]
@@ -746,7 +749,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         drawn.append(lab.text_element(f"{aid}-label", label, tb, lines, fit, label["align"], anchor="m"))
         footprint += [{"rect": box}, {"rect": tb, "text": True, "tokens": label["text"].split()}]
     elif kind == "mark":
-        prst = house["prst"] if house else (ann["prst"] if ann["prst"] == "line" else preset_name(ann["prst"], where))
+        prst = copied["prst"] if copied else (ann["prst"] if ann["prst"] == "line" else preset_name(ann["prst"], where))
         geometry = _mark_parts(ann, prst, where)
         if prst == "line":
             (fx0, fy0), (fx1, fy1) = _points(ann["points"], where)
@@ -780,8 +783,8 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     entry = {"id": aid, "kind": kind, "host": host["id"], "anchor": ann["anchor"], "status": "placed",
              "anchor_emu": [round(v) for v in r], "drawn": [d["id"] for d in drawn], "defaults_taken": taken,
              "_footprint": footprint, "_host_box": host["box"], "_other_marks": other_marks, "_lines": strokes, "_geometry": geometry}
-    if house:
-        entry["house_mark"] = {k: house[k] for k in ("slide", "ref", "prst", "geometry", "over")}
+    if copied:
+        entry["reference_mark"] = {k: copied[k] for k in ("slide", "ref", "prst", "geometry", "over")}
     return drawn, entry
 
 
@@ -1023,13 +1026,13 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
 
 #: the shorthand kinds that can be drawn saying nothing, and the geometry each draws as the
 #: file states it (ooxml.geometry_of; a `mark`'s comes from its preset, fill and stroke): a
-#: house precedent is a reference page whose file draws a mark of that geometry, carrying
+#: reference precedent is a reference page whose file draws a mark of that geometry, carrying
 #: no text of its own, on other content
 MARK_GEOMETRY: dict[str, str] = {"outline_box": "outline", "band": "fill", "reference_line": "line", "bracket": "bracket"}
 #: what a cited reference mark must sit on to stand for a mark on each kind of host, as the
 #: file states it (exhibit_facts marks' `over` and `on_drawn_structure`): a mark on a chart
 #: needs a mark on a native chart; a mark on a table needs one on a native table or on the
-#: units of a structure the house built from shapes (keybank's slide 10 sets its estimates
+#: units of a structure the reference built from shapes (keybank's slide 10 sets its estimates
 #: as rows of filled text shapes); a mark on a text, a picture or a shape needs one on the
 #: same. A picture's content is pixels, so a mark on one is precedent only for a mark on
 #: a picture: the file cannot say it was a chart or a table
@@ -1052,12 +1055,15 @@ def _sits_on(mark: dict, host_kind: str) -> bool:
     return bool(over & kinds) or (host_kind == "table" and mark.get("on_drawn_structure") is True)
 
 
-EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "house_precedent")
+EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "reference_precedent")
+#: annotation keys, and explained_by keys, that were renamed: each refused by name with its new spelling
+RENAMED_KEYS = {"house_mark": "house_mark is now reference_mark (a mark a reference page's file draws): rename the key",
+                "house_precedent": "explained_by.house_precedent is now explained_by.reference_precedent: rename the key"}
 EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words naming what the mark encloses>"}, '
                      '{"annotation": "<a labelled annotation on the same host and anchor: a callout or arrow saying what it marks>"}, '
                      '{"legend": "<series name the host chart\'s legend shows in the mark\'s ink>"}, '
                      '{"footnote": {"marker": "1", "note": "<text element id whose paragraph starts with the marker>"}} or '
-                     '{"house_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on the same '
+                     '{"reference_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on the same '
                      'kind of host: a native chart for a chart, a native table or a shape-built structure for a table, a text, a picture or a '
                      'shape for the same; the guide\'s variety.pages[].exhibit_facts.marks)')
 #: a footnote marker: one to three characters with no space in them ("*", "1", "(a)", "†")
@@ -1071,7 +1077,7 @@ STOP_WORDS = {"the", "and", "for", "with", "from", "that", "this", "are", "was",
 
 class AnnotationUnexplained(AnnotationRefused):
     """A mark that says nothing about what it marks and names nothing that does: warned,
-    with the house's own count of such marks, and answered in the report."""
+    with the reference's own count of such marks, and answered in the report."""
 
 
 class ExplanationNotFound(AnnotationRefused):
@@ -1111,6 +1117,10 @@ def marker_opens(text: str, marker: str) -> bool:
 def reference_page(guide: dict, slide, where: str, missing: type[AnnotationRefused]) -> dict:
     """The facts the extractor read from reference slide `slide` (variety.pages[].exhibit_facts),
     or `missing` naming why there are none."""
+    import plan
+    if not plan.has_reference(guide):
+        raise AnnotationRefused(f"{where}: the guide was made with no reference, so no reference page draws a mark to take; say what the "
+                                "mark draws (its shape or style) and what explains it on this page")
     if not isinstance(slide, int) or isinstance(slide, bool):
         raise AnnotationRefused(f"{where}: slide is a page number of the reference, got {slide!r}")
     pages = (guide.get("variety") or {}).get("pages")
@@ -1123,37 +1133,41 @@ def reference_page(guide: dict, slide, where: str, missing: type[AnnotationRefus
     return facts
 
 
-def house_mark(ann: dict, kind: str, guide: dict, where: str) -> dict:
+def reference_mark(ann: dict, kind: str, guide: dict, where: str) -> dict:
     """The mark a reference page's file draws that this annotation takes its shape from
-    (`house_mark: {"slide": N, "ref": "<its ref>"}`; the ref may be left out where the page
+    (`reference_mark: {"slide": N, "ref": "<its ref>"}`; the ref may be left out where the page
     draws exactly one mark of the kind's geometry): its preset, as the file names it."""
-    hm = ann["house_mark"]
+    hm = ann["reference_mark"]
     if not isinstance(hm, dict) or "slide" not in hm or set(hm) - {"slide", "ref"}:
-        raise AnnotationRefused(f"{where}: house_mark is {{\"slide\": N}} or {{\"slide\": N, \"ref\": \"<a mark's ref>\"}} (draft.md lists each page's marks)")
-    facts = reference_page(guide, hm["slide"], f"{where}: house_mark", AnnotationRefused)
+        raise AnnotationRefused(f"{where}: reference_mark is {{\"slide\": N}} or {{\"slide\": N, \"ref\": \"<a mark's ref>\"}} (draft.md lists each page's marks)")
+    facts = reference_page(guide, hm["slide"], f"{where}: reference_mark", AnnotationRefused)
     want = MARK_GEOMETRY.get(kind)
     marks = [m for m in facts["marks"] if isinstance(m, dict)]
     fitting = [m for m in marks if (want is None or m.get("geometry") == want) and ("ref" not in hm or m.get("ref") == hm["ref"])]
     listed = [f"{m.get('ref')} ({m.get('geometry')}, {m.get('prst')})" for m in marks]
     if len(fitting) != 1:
         why = "no" if not fitting else f"{len(fitting)}"
-        raise AnnotationRefused(f"{where}: house_mark: reference slide {hm['slide']} draws {why} {want + ' ' if want else ''}mark(s)"
+        raise AnnotationRefused(f"{where}: reference_mark: reference slide {hm['slide']} draws {why} {want + ' ' if want else ''}mark(s)"
                                 f"{' with ref ' + repr(hm['ref']) if 'ref' in hm else ''}; its marks: {listed or 'none'}"
                                 f"{'; name one by ref' if len(fitting) > 1 else ''}")
     m = fitting[0]
     prst = "line" if m.get("geometry") == "line" else m.get("prst")
     if not isinstance(prst, str) or not prst:
-        raise AnnotationRefused(f"{where}: house_mark {m.get('ref')!r} on reference slide {hm['slide']} names no preset the file states; give the shape")
+        raise AnnotationRefused(f"{where}: reference_mark {m.get('ref')!r} on reference slide {hm['slide']} names no preset the file states; give the shape")
     return {"slide": hm["slide"], "ref": m.get("ref"), "prst": prst, "geometry": m.get("geometry"), "over": m.get("over")}
 
 
-def house_evidence(guide: dict, geometry: str, host_kind: str) -> str:
-    """The house's own count of marks of `geometry` on `host_kind`, with and without words of
+def reference_evidence(guide: dict, geometry: str, host_kind: str) -> str:
+    """The reference's own count of marks of `geometry` on `host_kind`, with and without words of
     their own, as its files draw them (variety.pages[].exhibit_facts.marks); the pages whose
-    facts were not read are counted as unread, never as none."""
+    facts were not read are counted as unread, never as none; "no reference" on a guide made
+    with none."""
+    import plan
+    if not plan.has_reference(guide):
+        return plan.NO_REFERENCE
     pages = (guide.get("variety") or {}).get("pages")
     if not isinstance(pages, list) or not pages:
-        return "the guide reads no reference pages (variety.pages), so the house's habit for such a mark is unmeasured"
+        return "the guide reads no reference pages (variety.pages), so the reference's habit for such a mark is unmeasured"
     bare: list = []
     worded: list = []
     unread: list = []
@@ -1173,7 +1187,7 @@ def house_evidence(guide: dict, geometry: str, host_kind: str) -> str:
     if unread:
         said += f"; {len(unread)} page(s) unread (no exhibit facts), so these counts are a floor"
     if bare:
-        said += f". Where this mark follows the house's own wordless {geometry}, explained_by {{\"house_precedent\": {{\"slide\": N}}}} cites it"
+        said += f". Where this mark follows the reference's own wordless {geometry}, explained_by {{\"reference_precedent\": {{\"slide\": N}}}} cites it"
     return said
 
 
@@ -1330,7 +1344,7 @@ def _id_of(value, where: str) -> str:
 def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, where: str,
                 siblings: dict | None = None, geometry: str | None = None) -> dict | None:
     """How a mark says what it means, proven; AnnotationUnexplained when it names nothing
-    (warned, with the house's own count: house_evidence); ExplanationNotFound when what it
+    (warned, with the reference's own count: reference_evidence); ExplanationNotFound when what it
     names is not there (refused). A mark that carries a label says it itself (None:
     nothing to prove). Otherwise `explained_by` names one of: a text element on the page
     and the words in it that name what the mark encloses (a word or figure of the anchored
@@ -1353,10 +1367,12 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
     how = ann.get("explained_by")
     if how is None:
         raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks; a blind rater read "
-                                    "an unlabelled red circle as \"a model's attempt to annotate\". House evidence: "
-                                    f"{house_evidence(guide, geometry, host['kind'])}. Answer this in the report (what the mark tells a reader "
+                                    "an unlabelled red circle as \"a model's attempt to annotate\". Reference evidence: "
+                                    f"{reference_evidence(guide, geometry, host['kind'])}. Answer this in the report (what the mark tells a reader "
                                     f"with no words beside it), or give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
-    shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"house_precedent"})
+    shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"reference_precedent"})
+    if isinstance(how, dict) and set(how) & set(RENAMED_KEYS):
+        raise AnnotationRefused(f"{where}: " + "; ".join(RENAMED_KEYS[k] for k in sorted(set(how) & set(RENAMED_KEYS))))
     if not isinstance(how, dict) or set(how) not in shapes:
         raise AnnotationRefused(f"{where}: explained_by is one of {EXPLAINED_EXAMPLE}; got {how!r}")
     for key in ("text", "annotation", "legend"):
@@ -1423,9 +1439,9 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
             raise ExplanationNotFound(f"{where}: no text the mark encloses ends with {mk!r} as its own token, apart from any figure or word "
                                       f"(it holds {[t for t in texts if t][:8]}); put the marker on the figure or label it explains")
         return {"by": "footnote", "marker": mk, "note": fn["note"]}
-    hp = how["house_precedent"]
+    hp = how["reference_precedent"]
     if not isinstance(hp, dict) or set(hp) != {"slide"}:
-        raise AnnotationRefused(f"{where}: explained_by.house_precedent is {{\"slide\": N}}, a page of the reference")
+        raise AnnotationRefused(f"{where}: explained_by.reference_precedent is {{\"slide\": N}}, a page of the reference")
     slide = hp["slide"]
     facts = reference_page(guide, slide, where, ExplanationNotFound)
     seen: list[str] = []
@@ -1440,7 +1456,7 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
                         f"{' (a structure built from shapes)' if m.get('on_drawn_structure') else ''}, and the host {host['id']!r} is a {host['kind']}: "
                         f"a mark on a {host['kind']} takes its precedent from one on {_host_words(host['kind'])}")
             continue
-        return {"by": "house_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over"),
+        return {"by": "reference_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over"),
                 "on_drawn_structure": m.get("on_drawn_structure")}
     raise ExplanationNotFound(f"{where}: reference slide {slide} draws no {geometry} without text on {_host_words(host['kind'])}"
                               + (f" ({'; '.join(seen)})" if seen else " (its file holds no such mark; one inside a pasted picture is pixels the file cannot show)"))

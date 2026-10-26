@@ -1,7 +1,7 @@
 # Emphasis, fills and marks: questions, and what decks measurably do
 
 Questions to ask about every mark on a page, with what professional decks measurably do.
-None of it is a rule. The guide's motifs, fill roles and the house's digest records (what
+None of it is a rule. The guide's motifs, fill roles and the reference's digest records (what
 each of its exhibits marks and how, in words) are the strongest evidence you have: start
 there, and where this page departs, say why in the report. Only measurable defects refuse.
 Counts are pages carrying each device, of 578 coded content pages (bank 231, consulting
@@ -18,26 +18,26 @@ Counts are pages carrying each device, of 578 coded content pages (bank 231, con
 
 - What is this mark's job: separate, select, locate, connect? Can you name it in one
   phrase? A mark with no job is decoration.
-- Which device does this house use for that job (its digest and motifs say)? Repetition
+- Which device does this reference use for that job (its digest and motifs say)? Repetition
   or cross-page consistency was recorded on 82 pages: where you vary a device from the
-  house's, or between recurrences, is the variation saying something?
-- What is the scarce device in this house: one emphasis colour on one item (88 pages), not
-  every fill. What is it pointing at, and is that the claim? The house's look-here colour
+  reference's, or between recurrences, is the variation saying something?
+- What is the scarce device in this reference: one emphasis colour on one item (88 pages), not
+  every fill. What is it pointing at, and is that the claim? The reference's look-here colour
   is the guide's `color.emphasis` (answered from the renders, pictures included); a red
   box round a figure is emphasis, not `color.negative`, which says a value is bad.
 - Does every connector, bracket and arrow visibly join the two things it relates?
-- Does the house show gradients, shadows, rounded corners, icons (icons: 32 of 578 coded
-  pages, 2 of them bank)? Where this page adds one the house does not draw, what does it
-  say that the house's own devices cannot?
+- Does the reference show gradients, shadows, rounded corners, icons (icons: 32 of 578 coded
+  pages, 2 of them bank)? Where this page adds one the reference does not draw, what does it
+  say that the reference's own devices cannot?
 - Can the absence of a mark carry meaning (one panel left unboxed to prove "except this
   one")?
 
 ## What coders counted
 
-Coders labelled what they saw on 578 pages; these are evidence of what houses did, not a set
+Coders labelled what they saw on 578 pages; these are evidence of what firms did, not a set
 of devices to choose from, and a page may use none of them or something no label names.
-The house's own digest pages (`exhibit_habits`, `variety.pages[].exhibit_facts`) say what
-THIS house draws, and come first. The corpus totals that answer the questions above:
+The reference's own digest pages (`exhibit_habits`, `variety.pages[].exhibit_facts`) say what
+THIS reference draws, and come first. The corpus totals that answer the questions above:
 
 - Selecting one item: a single emphasis colour on one item on 88 pages (bank 38,
   consulting 50); a boxed or circled figure on 102 (bank 30, consulting 68, chart book 4);
@@ -72,7 +72,7 @@ that on the page.
 
 ## Motifs that recur
 
-A device the house uses (a kicker over a hairline, a numbered badge, a header treatment)
+A device the reference uses (a kicker over a hairline, a numbered badge, a header treatment)
 teaches the reader a grammar. Deliberate repetition or cross-page consistency was recorded
 on 82 pages. Where a recurrence differs, does the reader learn something from the
 difference?

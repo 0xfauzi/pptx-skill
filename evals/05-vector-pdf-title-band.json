@@ -1,7 +1,7 @@
 {
  "id": "05-vector-pdf-title-band",
  "skills": [
-  "building-house-style-decks"
+  "building-pptx-decks"
  ],
  "target_spec_scenario": 5,
  "reference": {
@@ -9,7 +9,7 @@
   "files": [
    "refs/files/mi_jazz_pharma_sellside_pitchbook.pdf"
   ],
-  "notes": "No template: blank template at the guide's page size, --chrome draw. Arial is drawn as Liberation Sans, a metric alias, so fit is measurable. The pptx twin in refs/files is the same deck: the judge's panel drops it by hash, and it must not be given as a house deck of another house."
+  "notes": "No template: blank template at the guide's page size, --chrome draw. Arial is drawn as Liberation Sans, a metric alias, so fit is measurable. The pptx twin in refs/files is the same deck: the judge's panel drops it by hash, and it must not be given as a second reference deck."
  },
  "brief": "Five-page cost diagnostic for a university: cost baseline, spans and layers, procurement, implementation plan, savings bridge.",
  "data": {
@@ -110,15 +110,15 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
-   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
+   "statement": "Every title fits the band above the top rule; a title longer than the reference's longest, and a register the reference writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the reference' and 'title register rare in the reference' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the reference's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the reference's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the reference's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
-   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "statement": "The section's realised variety is at or above the reference's 10th percentile deck, or each warning is explained as a deliberate parallel.",
    "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
   },
   {
@@ -138,7 +138,7 @@
    "check": "preflight.py --reference lists Arial as metric_alias; no 'font refused'."
   },
   {
-   "statement": "Undeclared runs longer than the house's longest are refused at the plan and declared or removed before the build; where the house has no run evidence, the corpus's longest run (plan.CORPUS_LONGEST_RUN, 2) stands in, and a repeat it warns about is answered.",
+   "statement": "Undeclared runs longer than the reference's longest are refused at the plan and declared or removed before the build; where the reference has no run evidence, the corpus's longest run (plan.CORPUS_LONGEST_RUN, 2) stands in, and a repeat it warns about is answered.",
    "check": "plan.check.json refusals empty; any run past the run it is held to (repeats[].held_to and its basis) carries deliberate_parallel; each run warning answered in the plan or the report."
   },
   {

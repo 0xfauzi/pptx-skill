@@ -2,6 +2,7 @@
 
 ## Contents
 - What you answer, and what the finalizer refuses
+- No reference
 - Value shapes
 - Description and derivation rules
 - Floors
@@ -25,7 +26,7 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
   new `/extra_roles/<name>`, and a new type role at a size the levels table shows, or at
   another size with a `why` of three words or more (then tagged `off_ladder` and listed
   under `completion.off_ladder`: a weaker model given continuous sizes drifted to 8.5,
-  9.5, 20 and 22pt, so the house's levels are the first evidence, and a departure is
+  9.5, 20 and 22pt, so the reference's levels are the first evidence, and a departure is
   answered in the report); on a raster reference, one whose value carries
   `"provenance": "raster_inference"`. Every role you add states its `weight`.
 - A key whose target is observed or deterministically inferred is refused with its
@@ -44,6 +45,17 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
 - Renders are a camera for colour, proportion and position, not for text fit, line
   spacing, padding or rule weight: those are measured or they stay open.
 
+## No reference
+
+A blank draft (`extract_style.py --blank`) opens every address of the look, the page size
+included; every answer is the model's choice and is stored with provenance `model_choice`.
+Every open address must be answered (a left-open one refuses the guide: on this path
+nothing has a default), `null` included where the table below allows it. The floors carry
+only the 7pt absolute floor (nothing was measured), so no role may sit under 7pt. `/chrome`
+takes `[]` for pages with no furniture, and its entries leave out `slides_present` (every
+entry is drawn on every page). `/reference/page` takes the page size you choose. The corpus
+counts in the design references are questions beside each choice, never a value to write.
+
 ## Value shapes
 
 Every open address takes the value below; `--check` prints the line for each address it
@@ -54,13 +66,13 @@ value instead. A left-out key never closes anything.
 | address | value | null means |
 |---|---|---|
 | `/color/roles/color.(surface\|ink\|accent1)` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | refused |
-| `/color/roles/color.emphasis` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the house marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, and an annotation names the ink or rule role instead |
-| `/color/roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the house has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is refused. A colour seen only inside pasted pictures is not absent: answer it with "evidence": "pictures" |
+| `/color/roles/color.emphasis` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the reference marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, and an annotation names the ink or rule role instead |
+| `/color/roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | the reference has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is refused. A colour seen only inside pasted pictures is not absent: answer it with "evidence": "pictures" |
 | `/extra_roles/<name>` | {"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures | refused |
 | `/typography/roles/type.(title\|body)` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt" | refused |
 | `/typography/roles/<name>/members` | the open members only: any of "weight", "italic", "family", "alignment", "case", "ink_role", "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt", plus "why"; never "size_pt" | refused |
 | `/typography/roles/<name>/line_spacing` | a multiple of the size, e.g. 1.2 ("/typography/roles/*/line_spacing": v answers every open one not named) | single spacing (drawn at 1.2 x size) |
-| `/typography/roles/<name>` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"; add "evidence": "pictures" when the house sets such text only inside pasted pictures | the house has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is refused. Text the house sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off the pictures with "evidence": "pictures". One of type.caption, type.footnote, type.source_line must stay answered |
+| `/typography/roles/<name>` | {"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional "line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"; add "evidence": "pictures" when the reference sets such text only inside pasted pictures | the reference has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is refused. Text the reference sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off the pictures with "evidence": "pictures". One of type.caption, type.footnote, type.source_line must stay answered |
 | `/typography/families` | {"major": "<face>", "minor": "<face>"} | refused |
 | `/typography/families/substitutes` | {"<face named in the file>": "<installed face measured in its place>"} | refused |
 | `/typography/scale_ratio` | a number, e.g. 1.25 | the levels are not a geometric ladder |
@@ -72,10 +84,10 @@ value instead. A left-out key never closes anything.
 | `/shape_language/corner_radii` | {"modal_radius_emu": int, "rounded_share": 0..1, "why": "..."} | refused |
 | `/shape_language/icon_style` | a string, e.g. "none" or "white line icons in accent circles" | refused |
 | `/imagery/register_kind` | a string, e.g. "photographs, wide crops" or "none" | refused |
-| `/tables` | {"header_fill_role", "header_ink_role", "banding_role" (each a colour role, or null when the house has none: never left out), "header_bold", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role" (a spacing step) or, when no step is near the house's inset, "cell_padding_role": null with "cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "totals_bold" (true or false; left out, the build lists the bold it writes), "banding_phase" (0: the first body row banded, 1: the second; left out, the build lists 0), "merged_cell_convention", "why"} | refused |
+| `/tables` | {"header_fill_role", "header_ink_role", "banding_role" (each a colour role, or null when the reference has none: never left out), "header_bold", "edge_rules": {"table_top", "header_bottom", "row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, "cell_padding_role" (a spacing step) or, when no step is near the reference's inset, "cell_padding_role": null with "cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", "totals_bold" (true or false; left out, the build lists the bold it writes), "banding_phase" (0: the first body row banded, 1: the second; left out, the build lists 0), "merged_cell_convention", "why"} | refused |
 | `/charts` | {"series_color_roles": [roles in order], "per_kind": {"<bar\|column\|line\|...>": {"gridlines_major": 0..1, "data_labels": 0..1, "legend_position": "b\|t\|r\|l\|tr\|none"}}, "why"} | refused |
-| `/continuation` | what the house does when a page continues onto the next, read off its pages: in words ("none seen" is an answer), or {"contd_mark": "<the mark as the house writes it>" or null, "why": "where it is seen, or that none is"} | refused |
-| `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the house was not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never a prohibition | refused |
+| `/continuation` | what the reference does when a page continues onto the next, read off its pages: in words ("none seen" is an answer), or {"contd_mark": "<the mark as the reference writes it>" or null, "why": "where it is seen, or that none is"} | refused |
+| `/description` | {"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the reference was not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never a prohibition | refused |
 | `/derivation_rules` | a list of sentences | refused |
 | `/titles/register` | see Titles below | refused |
 | `/variety/content_pages` | a list of page numbers | refused |
@@ -83,13 +95,16 @@ value instead. A left-out key never closes anything.
 | `/chrome` | a list of {"chrome_id": "chrome-1", "kind": "rule\|band\|logo\|label\|page_number\|footer\|date", "box_in": [left, top, width, height] (inches on the page), "slides_present": <pages it is on, at least half the reference's to be drawn>, and as the kind needs: "text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"} (every text kind, page_number included, all four), "fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or "line_role" with "line_width_pt" (rule; a logo placeholder drawn as a line), "image_path" (logo), "anchor": "slide_top\|slide_bottom\|slide_left\|slide_right", "rotation_deg", "why"}. Nothing is filled in for you: the width, colour and text style the emitter would otherwise fall back on are refused by name when left out | refused |
 | `/composition` | {"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"} | refused |
 | `/notes/<name>` | a string | refused |
+| `/reference/page` | {"width_emu": int, "height_emu": int, "why": "..."} (a guide made with no reference: the page size you choose) | refused |
+| `/spacing/margins` | {"left": {"emu": int}, "right": {"emu": int}, "top": {"emu": int}, "bottom": {"emu": int}} (EMU, 0 or more) | refused |
+| `/typography/bullets` | {"<level>": {"glyph": "<glyph>", "font": "<face>", "indent_role": "space.<step>", "hanging_indent_role": "space.<step>"}}, or {} for text set without bullets | refused |
 
-Where the honest answer is that the house has none (no green for `color.positive`, no
+Where the honest answer is that the reference has none (no green for `color.positive`, no
 kicker), answer `null`: the guide records the role under `absent_roles`, and a page that
 names it is refused with that reason. Do not borrow another role's colour to fill the
 slot.
 
-`null` means none anywhere, pictures included. A house that pastes its exhibits as
+`null` means none anywhere, pictures included. A reference that pastes its exhibits as
 pictures still sets axis labels, data labels and emphasis marks in them: answer those
 with the value read off the pictures and `"evidence": "pictures"` (recorded as `seen_in:
 pictures`, so the report can say the value was read at camera precision). A `null` for
@@ -97,17 +112,17 @@ pictures`, so the report can say the value was read at camera precision). A `nul
 `axis_labels` or `value_labels` true, since native charts would then have no role to set
 them in.
 
-`color.emphasis` is the house's look-here colour: the outline box round a figure, the
+`color.emphasis` is the reference's look-here colour: the outline box round a figure, the
 circle, the highlighted bar. It is always open (no hue band decides it) and is not
 `color.negative`, which colours a bad value; annotations take it. `null` there says the
-house marks emphasis in its ink or rule colour, or not at all.
+reference marks emphasis in its ink or rule colour, or not at all.
 
 Many open `line_spacing` addresses (one per role) usually share one answer:
 `"/typography/roles/*/line_spacing": 1.2` answers every open one the patch does not name,
 and a named one keeps its own answer. It closes only open addresses. The number is a
 multiple of the size, and 1.0 is NOT single spacing: single spacing draws at 1.2 x the
-size, so a house set single-spaced is answered `null` (or 1.2), and 1.0 sets every role
-tighter than the house (round 6, jazz: answered 1.0, every role drew tighter).
+size, so a reference set single-spaced is answered `null` (or 1.2), and 1.0 sets every role
+tighter than the reference (round 6, jazz: answered 1.0, every role drew tighter).
 
 The table lists the value each address takes when it is open; `--check` lists which are
 open. A `/tables` or `/charts` the draft observed is not open, and a patch for it is
@@ -118,7 +133,7 @@ numbered; the guide is written only when none is left.
 ## Description and derivation rules
 
 Write `/description` (summary, typography, color, layout, tables, imagery, motifs,
-`not_seen`, tone; `not_seen` is what you did not see the house do, stored with the pages
+`not_seen`, tone; `not_seen` is what you did not see the reference do, stored with the pages
 it was read over, "icons: on 0 of 12 pages", a tendency to weigh and never a rule; the old
 `never_does` is refused by name) and `/derivation_rules` (how the palette and the type ladder extend to
 roles the reference never showed). You read these back while designing; write them for
@@ -131,15 +146,15 @@ below it. A size set on two or more pages counts even when the Tukey fence would
 (source lines that are 10 of 44 annotation runs set the floor at 8.0, not the fence's
 9.0); a size on one page under the fence is trimmed, and turned text is never a sample.
 When the body floor equals the body size there is no headroom: density comes from
-arrangement and content. An observed floor also binds the table roles: when the house's
+arrangement and content. An observed floor also binds the table roles: when the reference's
 own tables are pictures set below its body floor (keybank's are about 10pt over a 12pt
-body floor), native tables will be set at the floor and read larger than the house's; say
+body floor), native tables will be set at the floor and read larger than the reference's; say
 so in the report rather than asking for a smaller size, or measure them (below). You may lower a floor in the completion when the reference's
 captions show a smaller size in use, never below `absolute_floor_pt` (7.0pt, measured on
 two screen media by one rater for Arial and Calibri; print was not measured, so for a deck
 that will be printed keep the reference's own floor).
 
-`/tables/picture_text` measures the size a house sets its own tables at where they are
+`/tables/picture_text` measures the size a reference sets its own tables at where they are
 not native tables: `{"pictures": [{"id": "image42.png", "slide": 13, "face": "Calibri"}],
 "why": "..."}` for pictures in a .pptx (ids from `images.py list`), or `[{"page": N,
 "bbox": [x0, y0, x1, y1], "face": "..."}]` in PDF points from the top-left for a PDF. You
@@ -194,30 +209,30 @@ from a list, and the words are checked for being there (a phrase of at least thr
 - `what`: what the exhibit is, its form and what it is made of;
 - `message`: the one thing a reader takes from it;
 - `how_drawn`: what is compared against what, order, colour, labels, legend, gridlines,
-  number formats, as the house does them;
-- `marks`: what the house marks on it and how, where the claim lives, and whether words
+  number formats, as the reference does them;
+- `marks`: what the reference marks on it and how, where the claim lives, and whether words
   beside the mark say what it marks; or that it marks nothing;
 - `chart_or_table`, `axis_labels`, `value_labels`: true or false, read off the page.
 
 Each stub page also carries `file_facts`: what the file itself states (the exhibit
 structure and every mark drawn on content, with its geometry, what it sits on and whether
-it carries text), read by the extractor. That, not your words, is what a house precedent
-for an unlabelled mark is checked against (`explained_by: {"house_precedent": {"slide":
+it carries text), read by the extractor. That, not your words, is what a reference precedent
+for an unlabelled mark is checked against (`explained_by: {"reference_precedent": {"slide":
 N}}`: slide N's file draws a mark of the same geometry with no text of its own, on the
 same kind of host: a native chart for a mark on a chart, a native table or a structure
-the house built from shapes for a mark on a table). A ring
+the reference built from shapes for a mark on a table). A ring
 inside a pasted picture is pixels: describe it in `marks`; it is no precedent. On every
 page holding a chart or a table, answer
 the page's `source_line`: `true` when it carries a source or note line naming where its
 figures come from, `false` when not; leave it `null` on other pages. The finalizer counts
-them (`exhibit_habits.source_lines`) and prints the count under `house_habits`; the build
-warns on a data page without a source line where at least half of the house's data pages
+them (`exhibit_habits.source_lines`) and prints the count under `reference_habits`; the build
+warns on a data page without a source line where at least half of the reference's data pages
 carry one, or where the habit is unmeasured (fewer than three data pages), quoting the
-house's count; the report answers it. A page with a source line is never a departure, and
+reference's count; the report answers it. A page with a source line is never a departure, and
 nothing here refuses (build_deck.py `source_line_problem`; build-report.md). Answer with `--digest $DECK_WORK/ref/digest`: a page dropped,
 repeated or added, a candidate added and a record repeated are each refused by name, and a
 patch value for `/exhibit_habits` is refused. The finalizer counts the source lines and
-keeps the records as you wrote them; it computes nothing from your words. The house's
+keeps the records as you wrote them; it computes nothing from your words. The reference's
 exhibit structure variety is read from the file by the extractor, not from the digest.
 
 ## Content pages: /variety/content_pages
@@ -227,7 +242,7 @@ disclaimer, hidden and generated pages are not). On a PDF no divider or disclaim
 proposed, so a contents page or a letter counts as content until you answer. Look at the
 renders and answer with the list of content pages, e.g. `[3, 4, 5, 17]`. A page not in the
 sequence, a hidden page, a duplicate, an empty list or a non-list is refused by name. The
-house's variety is re-measured over your list on every completion.
+reference's variety is re-measured over your list on every completion.
 
 ## Worked completions
 
@@ -237,3 +252,5 @@ document for CalSTRS, 2024, from a public board packet; it is not under `refs/`)
 `examples/digests/`. Both apply cleanly to the current extractor's drafts with nothing left
 open. They show the shape of an answer; they are not answers for another deck, and an
 evaluation on either deck holds them out (`evals/holdout.py`).
+`examples/no-reference.completion.json` answers a blank draft: a whole look chosen for a
+three-page deck with no reference, every answer with its why.

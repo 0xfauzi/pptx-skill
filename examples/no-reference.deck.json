@@ -1,0 +1,468 @@
+{
+ "slides": [
+  {
+   "id": "s1-summary",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Operating review"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Revenue grew 9.4% a year to $203.4m while on-time departures rose to 96.1%"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "left",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Growth"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "Revenue rose from $142.0m in 2021 to $203.4m in 2025, 9.4% a year"
+          },
+          {
+           "role": "type.h2",
+           "text": "Reliability"
+          },
+          {
+           "role": "type.body",
+           "bullet_level": 0,
+           "text": "On-time departures reached 96.1% in 2025, 2.7 points above 2024, on the same 14 vessels"
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "element",
+         "id": "kpis",
+         "kind": "table",
+         "weight": 1.0,
+         "table": {
+          "columns": [
+           {
+            "key": "m",
+            "label": "Metric",
+            "value_kind": "text"
+           },
+           {
+            "key": "a",
+            "label": "2024",
+            "value_kind": "number"
+           },
+           {
+            "key": "b",
+            "label": "2025",
+            "value_kind": "number"
+           }
+          ],
+          "rows": [
+           [
+            "Revenue ($m)",
+            "186.9",
+            "203.4"
+           ],
+           [
+            "Vessels",
+            "14",
+            "14"
+           ],
+           [
+            "On-time departures",
+            "93.4%",
+            "96.1%"
+           ]
+          ],
+          "header_rows": 1,
+          "totals_last_row": false
+         }
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company operating data, illustrative figures supplied for this review."
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "s2-revenue",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Growth"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Revenue rose every year from $142.0m to $203.4m"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "chart",
+         "kind": "chart",
+         "weight": 1.6
+        },
+        {
+         "type": "element",
+         "id": "note",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Five years of growth"
+          },
+          {
+           "role": "type.body",
+           "text": "Each year added revenue; the total rise was $61.4m, 9.4% a year."
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company operating data, illustrative figures supplied for this review."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "chart": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "2021",
+      "2022",
+      "2023",
+      "2024",
+      "2025"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Revenue ($m)",
+       "values": [
+        142.0,
+        158.5,
+        171.2,
+        186.9,
+        203.4
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 4,
+         "fill_role": "color.accent2"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 60,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none"
+    }
+   }
+  },
+  {
+   "id": "s3-routes",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Routes"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "North Sound carries 30% of revenue; the four routes total $203.4m"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "lead",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "Revenue and passengers by route in 2025; the routes sum to the year's $203.4m and 1,358 thousand passengers."
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "routes",
+       "kind": "table",
+       "weight": 1.0,
+       "table": {
+        "columns": [
+         {
+          "key": "r",
+          "label": "Route",
+          "value_kind": "text"
+         },
+         {
+          "key": "rev",
+          "label": "Revenue ($m)",
+          "value_kind": "number"
+         },
+         {
+          "key": "pax",
+          "label": "Passengers (k)",
+          "value_kind": "number"
+         }
+        ],
+        "rows": [
+         [
+          "North Sound",
+          "61.2",
+          "412"
+         ],
+         [
+          "Harbour Loop",
+          "54.8",
+          "366"
+         ],
+         [
+          "Island Link",
+          "47.9",
+          "318"
+         ],
+         [
+          "Coastal Run",
+          "39.5",
+          "262"
+         ],
+         [
+          "Total",
+          "203.4",
+          "1,358"
+         ]
+        ],
+        "header_rows": 1,
+        "totals_last_row": true
+       }
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: company operating data, illustrative figures supplied for this review."
+        }
+       ]
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

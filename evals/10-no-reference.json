@@ -1,0 +1,98 @@
+{
+ "id": "10-no-reference",
+ "skills": [
+  "building-pptx-decks"
+ ],
+ "target_spec_scenario": [
+  12
+ ],
+ "reference": {
+  "type": "none: the user gives no deck, template or brand guideline",
+  "files": [],
+  "notes": "The look is the model's: a blank draft with every address open, a blank package at the page size it chooses, --chrome draw, no --reference."
+ },
+ "brief": "Three pages for a board pack on our ferry business, any look you think reads well on screen: revenue growth, the summary figures, revenue and passengers by route.",
+ "data": {
+  "revenue_usd_m": [
+   [
+    "2021",
+    142.0
+   ],
+   [
+    "2022",
+    158.5
+   ],
+   [
+    "2023",
+    171.2
+   ],
+   [
+    "2024",
+    186.9
+   ],
+   [
+    "2025",
+    203.4
+   ]
+  ],
+  "routes_2025": [
+   [
+    "North Sound",
+    61.2,
+    412
+   ],
+   [
+    "Harbour Loop",
+    54.8,
+    366
+   ],
+   [
+    "Island Link",
+    47.9,
+    318
+   ],
+   [
+    "Coastal Run",
+    39.5,
+    262
+   ]
+  ],
+  "fleet": 14,
+  "on_time_pct": [
+   [
+    "2024",
+    93.4
+   ],
+   [
+    "2025",
+    96.1
+   ]
+  ]
+ },
+ "expected_behavior": [
+  {
+   "statement": "The agent makes a blank draft and answers every address itself, page size included, each with a why; no address is left to a default.",
+   "check": "Pass or fail: extract_style.py --blank; complete_guide.py writes the guide with core_open [] and still_open []; every completed value carries value_provenance model_choice."
+  },
+  {
+   "statement": "No corpus figure is copied into the look as a default, and no other deck's look is borrowed without the user naming it.",
+   "check": "Read the completion's whys: each states a reason for this deck, never a corpus count as the value."
+  },
+  {
+   "statement": "Every hard limit holds: fit, contrast, floors (nothing under 7pt), roles not literals, tie-outs, a valid package.",
+   "check": "Pass or fail: deck.build.json every page fit, contrast.violations empty, validate --render and validate --emit --guide pass; the routes table's total ties out (203.4, 1,358)."
+  },
+  {
+   "statement": "Nothing is compared with a reference: the report reads 'no reference' wherever it would.",
+   "check": "Pass or fail: judge.verdict, repetition.against_reference.*.verdict, slides[].title.length.*.verdict, source_lines.reference.habit, contrast.precedent_source and leakage.verdict read 'no reference'; no warning names a reference."
+  },
+  {
+   "statement": "Every stated figure is computed (9.4% a year, $61.4m, 30%, 2.7 points).",
+   "check": "Pass or fail: a script that asserts each figure from the data; the build's --computed file is its output."
+  },
+  {
+   "statement": "The final report says which look was chosen and why, what the user must supply, and every page's status.",
+   "check": "Read the final report."
+  }
+ ]
+}

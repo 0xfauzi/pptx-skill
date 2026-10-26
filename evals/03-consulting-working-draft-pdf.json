@@ -1,7 +1,7 @@
 {
  "id": "03-consulting-working-draft-pdf",
  "skills": [
-  "building-house-style-decks"
+  "building-pptx-decks"
  ],
  "target_spec_scenario": 3,
  "reference": {
@@ -9,7 +9,7 @@
   "files": [
    "refs/files/mckinsey_uf_road_ahead_2023.pdf"
   ],
-  "notes": "Triage first: the deck is mixed, so extract, gallery and digest run with --pages 160-226. No template file: blank template at the triaged page size, --chrome draw. The run is a sibling template held on purpose (topic titles with a part counter, 'HR Processes (1/8)' to '(8/8)'), so the house's longest run is long and declared."
+  "notes": "Triage first: the deck is mixed, so extract, gallery and digest run with --pages 160-226. No template file: blank template at the triaged page size, --chrome draw. The run is a sibling template held on purpose (topic titles with a part counter, 'HR Processes (1/8)' to '(8/8)'), so the reference's longest run is long and declared."
  },
  "brief": "Four-page governance diagnostic for the board of a state pension fund: board effectiveness against benchmarks, skills gap, target operating model, 18-month roadmap.",
  "data": {
@@ -99,15 +99,15 @@
    "check": "For each stated figure, recompute it from the brief's data; zero mismatches. The agent's figure-check script is present and passes."
   },
   {
-   "statement": "Every title fits the band above the top rule; a title longer than the house's longest, and a register the house writes on under a tenth of its titles, is a warning answered in the report.",
-   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the house' and 'title register rare in the house' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
+   "statement": "Every title fits the band above the top rule; a title longer than the reference's longest, and a register the reference writes on under a tenth of its titles, is a warning answered in the report.",
+   "check": "deck.build.json: no page refused for its title's lines; each 'title longer than the reference' and 'title register rare in the reference' warning is named in the final report with its reason. The register verdicts (slides[].title.register) and the length verdicts are diagnostics, read beside the blind round, which judges the titles' taste."
   },
   {
-   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the house's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the house's. No exhibit is justified by a list of chart types.",
-   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the house's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
+   "statement": "Every exhibit was reasoned out before its spec: the plan carries a brief for it that weighs at least two forms and names the reference's nearest exhibit or why none is near; the render shows what the brief says the reader must see, and the report answers where its marks depart from the reference's. No exhibit is justified by a list of chart types.",
+   "check": "plan.py check passes on plan.json; for each exhibit, read its brief and the render: the reader finds reader_must_see without arithmetic and the compared value is drawn (pass or fail). How its marks compare with the reference's digest records (marks, in words) is a diagnostic: each departure is named in the report, and the blind round judges it."
   },
   {
-   "statement": "The section's realised variety is at or above the house's 10th percentile deck, or each warning is explained as a deliberate parallel.",
+   "statement": "The section's realised variety is at or above the reference's 10th percentile deck, or each warning is explained as a deliberate parallel.",
    "check": "deck.build.json repetition.warnings empty, or each named in the final report with its reason."
   },
   {
@@ -131,8 +131,8 @@
    "check": "--chrome draw; the chrome (the working-draft label, the status tags, the logo, the source line and the confidentiality line) is drawn on every page; no contrast refusal."
   },
   {
-   "statement": "Where a page continues a set, it carries the house's continuation as its pages show it, or the report says why not.",
-   "check": "Diagnostic: slides[].title register verdicts beside the house's counts; a continued set carries the house's '(n/m)' counter where the guide's /continuation records one, or the report answers its absence."
+   "statement": "Where a page continues a set, it carries the reference's continuation as its pages show it, or the report says why not.",
+   "check": "Diagnostic: slides[].title register verdicts beside the reference's counts; a continued set carries the reference's '(n/m)' counter where the guide's /continuation records one, or the report answers its absence."
   },
   {
    "statement": "The round trip's render was compared with the original page and its losses named.",

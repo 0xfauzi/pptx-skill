@@ -1,9 +1,9 @@
-# The judge's calibration corpus: eight houses, one per line (name=deck,deck,...).
+# The judge's calibration corpus: eight firms, one per line (name=deck,deck,...).
 # Paths under refs/ live in this repo (refs/fetch.sh fetches them); every other path is
 # relative to the deckgen checkout given as --corpus-root. Read by
-#   python3 -I scripts/fingerprint.py calibrate --houses-file oracles/calibration-houses.txt \
+#   python3 -I scripts/fingerprint.py calibrate --firms-file oracles/calibration-firms.txt \
 #       --corpus-root /path/to/deckgen --max-pages 25 --fit-weights
-# header and themes are two houses, not one (the two Apache POI test decks).
+# header and themes are two firms, not one (the two Apache POI test decks).
 gs=fixtures/corpus/jazz.pptx,fixtures/corpus/keybank.pptx,fixtures/corpus/netflix.pptx
 header=refs/files/45541_Header.pptx
 themes=refs/files/themes.pptx

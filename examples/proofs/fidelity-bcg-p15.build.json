@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -73,7 +73,7 @@
     "elements": 12,
     "covered_area_fraction": 0.356,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 242,
      "band": [
@@ -103,7 +103,7 @@
     "checked": 17,
     "violations": [],
     "warnings": [],
-    "house_precedent": [
+    "reference_precedent": [
      {
       "element": "chrome-2",
       "part": "chrome text",
@@ -401,38 +401,38 @@
     "length": {
      "chars": {
       "value": 97,
-      "house": {
+      "reference": {
        "median": 125.5,
        "p90": 151.5,
        "max": 168,
        "n": 26
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "words": {
       "value": 17,
-      "house": {
+      "reference": {
        "median": 18.5,
        "p90": 25.5,
        "max": 29,
        "n": 26
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      },
      "lines": {
       "value": 2,
-      "house": {
+      "reference": {
        "median": 2.0,
        "p90": 2.0,
        "max": 2,
        "n": 26
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register_term": "claim",
     "register": {
-     "house_counts": {
+     "reference_counts": {
       "topic": 2,
       "claim": 24,
       "question": 0,
@@ -441,7 +441,7 @@
      "share": 0.923,
      "threshold": 0.1,
      "threshold_basis": "unmeasured",
-     "verdict": "house register"
+     "verdict": "a register the reference writes"
     }
    },
    "emit_defaults_taken": {
@@ -493,7 +493,7 @@
   }
  ],
  "source_lines": {
-  "house": {
+  "reference": {
    "habit": "unmeasured",
    "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"
   },
@@ -533,99 +533,38 @@
    "status": "no evidence",
    "why": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house": {
-   "decks": [
-    {
-     "deck": "bcg-nystate-covid-impact-2020.pdf",
-     "status": "measured",
-     "content_pages": 31,
-     "composition": {
-      "V": 0.833,
-      "changed": 25,
-      "pairs": 30
-     },
-     "longest_run": 3
-    }
-   ],
-   "pooled": {
-    "status": "measured",
-    "decks": 1,
-    "decks_without_evidence": [],
-    "composition": {
-     "V": 0.833,
-     "changed": 25,
-     "pairs": 30,
-     "p10_deck_V": 0.833,
-     "deck_V": [
-      0.833
-     ],
-     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
-    },
-    "structures": {
-     "V": 0.467,
-     "changed": 14,
-     "pairs": 30,
-     "p10_deck_V": 0.467,
-     "deck_V": [
-      0.467
-     ],
-     "decks_unread": []
-    },
-    "kinds": {
-     "V": 0.467,
-     "changed": 14,
-     "pairs": 30,
-     "p10_deck_V": 0.467,
-     "deck_V": [
-      0.467
-     ],
-     "decks_unread": []
-    },
-    "distinct_per_page": {
-     "bcg-nystate-covid-impact-2020.pdf": 0.774
-    },
-    "longest_run": 3,
-    "sequences": [
-     [
-      "arch-6",
-      "arch-6",
-      "arch-6",
-      "arch-7",
-      "arch-8",
-      "arch-9",
-      "arch-10",
-      "arch-11",
-      "arch-12",
-      "arch-13",
-      "arch-14",
-      "arch-15",
-      "arch-16",
-      "arch-17",
-      "arch-18",
-      "arch-19",
-      "arch-20",
-      "arch-21",
-      "arch-22",
-      "arch-23",
-      "arch-24",
-      "arch-24",
-      "arch-24",
-      "arch-25",
-      "arch-26",
-      "arch-24",
-      "arch-24",
-      "arch-27",
-      "arch-24",
-      "arch-28",
-      "arch-29"
-     ]
-    ]
-   }
+  "reference": {
+   "deck": "bcg-nystate-covid-impact-2020.pdf",
+   "status": "measured",
+   "content_pages": 31,
+   "composition": {
+    "V": 0.833,
+    "changed": 25,
+    "pairs": 30
+   },
+   "structures": {
+    "V": 0.467,
+    "changed": 14,
+    "pairs": 30,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 0.467,
+    "changed": 14,
+    "pairs": 30,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 24,
+    "pages": 31,
+    "per_page": 0.774
+   },
+   "longest_run": 3
   },
-  "against_house": {
+  "against_reference": {
    "built": "no evidence: 1 content page, the longest stretch read in a row 1 (at least 3 pages in a row are needed: two pages make one pair, one observation)"
   },
-  "house_longest_run": 3,
+  "reference_longest_run": 3,
   "runs_over_reference": [],
   "warnings": [],
   "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
@@ -654,7 +593,7 @@
     "chrome-1"
    ]
   ],
-  "house": [
+  "reference": [
    {
     "chrome_id": "chrome-2",
     "kind": "page_number",
@@ -670,7 +609,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/deck.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -2445,17 +2384,17 @@
    {
     "kind": "name",
     "text": "new york city",
-    "why": "a term of the trade: every word of it is in the public decks of other houses",
+    "why": "a term of the trade: every word of it is in the public decks of other firms",
     "pages": [
      1
     ]
    }
   ],
   "what_to_do": {
-   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/freedom/refs/files",
+  "rarity_basis": "13 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/nohouse/refs/files",
   "chrome_excluded": {
    "bcg-nystate-covid-impact-2020.pdf": {
     "phrase": 5,
@@ -2468,7 +2407,7 @@
   "verdict": "possible carry-over: 194 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -2500,7 +2439,7 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/renders/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/renders/slide-01.png"
   ]
  },
  "judge": {
@@ -2545,7 +2484,7 @@
    }
   ],
   "overflow_where": [],
-  "house_spread": {
+  "reference_spread": {
    "n": 38,
    "min": 0.046,
    "median": 0.127,
@@ -2553,37 +2492,37 @@
    "max": 0.395
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/45541_Header.pptx": 0.597,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.896,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.397,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.272,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.412,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_netflix_financing_pitchbook.pptx": 0.418,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.542
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/45541_Header.pptx": 0.597,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.896,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.397,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.272,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.412,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_netflix_financing_pitchbook.pptx": 0.418,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/themes.pptx": 0.542
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
-  "same_house_on_panel": {},
+  "same_style_on_panel": {},
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
   "reference_rank": 1,
-  "within_house_spread": true,
+  "within_reference_spread": true,
   "layout_clean": true,
   "filed_under_reference": true
  },
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/fid-bcg-p15/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/fid-bcg-p15/renders"
  }
 }

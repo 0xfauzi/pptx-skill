@@ -11,7 +11,7 @@ when the draft lists it under `unresolved`, or when it is always writable (ALWAY
 /notes*, /extra_roles/<new name>, or a NEW type role: at a size level the reference writes,
 or at another size with a `why`, which then carries `off_ladder` and is listed in the
 completion record, since a model given continuous sizes was measured drifting off the
-house's ladder).
+reference's ladder).
 Any path whose target carries value_provenance observed or deterministic_inference is
 refused, naming the address and its provenance. A colour the patch names must be a role in
 the guide (hexes are allowed ONLY under `color.roles` and `extra_roles`, which is where new
@@ -46,12 +46,13 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
 from emit_pptx import CHROME_TEXT_KINDS, GUIDE_LEGEND_POSITIONS  # noqa: E402
+from layout import PRODUCT_SAFETY_FLOOR_PT
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: the title register and the title companions (references/page_craft_vocabulary.json); an exhibit is never read in a list
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 # the extractor never observes these, so they are always the model's to write
-#: the size a house sets its table text at inside pasted pictures, measured (picture_text)
+#: the size a reference sets its table text at inside pasted pictures, measured (picture_text)
 PICTURE_TEXT = "/tables/picture_text"
 ALWAYS_WRITABLE = {"/description", "/derivation_rules", "/continuation", "/typography/families/substitutes", PICTURE_TEXT}
 SETTLED = {"observed", "deterministic_inference"}
@@ -101,17 +102,17 @@ class PatchError(SystemExit):
 TYPE_ROLE_SHAPE = ('{"size_pt", "weight", "italic", "family", "alignment", "case", "ink_role", "why"}; optional '
                    '"line_spacing", "space_before_pt", "space_after_pt", "tracking_pt"')
 COLOR_SHAPE = '{"hex": "RRGGBB", "why": "..."} (a bare "RRGGBB" also applies); add "evidence": "pictures" when it is seen only inside pasted pictures'
-PICTURES_NOTE = '; add "evidence": "pictures" when the house sets such text only inside pasted pictures'
+PICTURES_NOTE = '; add "evidence": "pictures" when the reference sets such text only inside pasted pictures'
 #: the one value of a completion's "evidence" member: the answer is read off pictures the
-#: house pasted (a chart or table as an image), not off its text or shapes
+#: reference pasted (a chart or table as an image), not off its text or shapes
 PICTURES = "pictures"
 VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/color/roles/color\.(surface|ink|accent1)", COLOR_SHAPE, None),
     (r"/color/roles/color\.emphasis", COLOR_SHAPE,
-     ('the house marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, '
+     ('the reference marks emphasis in no colour of its own (in its ink or rule colour, or not at all): recorded under absent_roles, '
       'and an annotation names the ink or rule role instead')),
     (r"/color/roles/[^/]+", COLOR_SHAPE,
-     ('the house has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is '
+     ('the reference has no such colour, not even inside its pictures: the role is recorded under absent_roles, and a page that names it is '
       'refused. A colour seen only inside pasted pictures is not absent: answer it with "evidence": "pictures"')),
     (r"/extra_roles/[^/]+", COLOR_SHAPE, None),
     (r"/typography/roles/type\.(title|body)", TYPE_ROLE_SHAPE, None),
@@ -120,8 +121,8 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/typography/roles/[^/]+/line_spacing", 'a multiple of the size, e.g. 1.2 ("/typography/roles/*/line_spacing": v answers every open one not named)',
      "single spacing (drawn at 1.2 x size)"),
     (r"/typography/roles/[^/]+", TYPE_ROLE_SHAPE + PICTURES_NOTE,
-     ('the house has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is '
-      'refused. Text the house sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off '
+     ('the reference has no such text anywhere, not even inside its pictures: recorded under absent_roles; a page that names the role is '
+      'refused. Text the reference sets only inside pasted pictures (axis labels on a chart image) is not absent: answer the value read off '
       'the pictures with "evidence": "pictures". One of type.caption, type.footnote, type.source_line must stay answered')),
     (r"/typography/families", '{"major": "<face>", "minor": "<face>"}', None),
     (r"/typography/families/substitutes", '{"<face named in the file>": "<installed face measured in its place>"}', None),
@@ -136,18 +137,18 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/shape_language/corner_radii", '{"modal_radius_emu": int, "rounded_share": 0..1, "why": "..."}', None),
     (r"/shape_language/icon_style", 'a string, e.g. "none" or "white line icons in accent circles"', None),
     (r"/imagery/register_kind", 'a string, e.g. "photographs, wide crops" or "none"', None),
-    (r"/tables", ('{"header_fill_role", "header_ink_role", "banding_role" (each a colour role, or null when the house has none: never '
+    (r"/tables", ('{"header_fill_role", "header_ink_role", "banding_role" (each a colour role, or null when the reference has none: never '
      'left out), "header_bold", "edge_rules": {"table_top", "header_bottom", '
      '"row_interior", "table_bottom", "table_left", "table_right", "column_interior": {"width_pt", "color_role"} or {"none": true}}, '
-     '"cell_padding_role" (a spacing step) or, when no step is near the house\'s inset, "cell_padding_role": null with '
+     '"cell_padding_role" (a spacing step) or, when no step is near the reference\'s inset, "cell_padding_role": null with '
      '"cell_padding_emu": <EMU> (a role wins over EMU), "alignment_by_column_type": {"numeric", "text"}, "totals_rule", '
      '"totals_bold" (true or false; left out, the build lists the bold it writes), "banding_phase" (0: the first body row banded, 1: '
      'the second; left out, the build lists 0), "merged_cell_convention", "why"}'), None),
     (r"/charts", ('{"series_color_roles": [roles in order], "per_kind": {"<bar|column|line|...>": {"gridlines_major": 0..1, '
      '"data_labels": 0..1, "legend_position": "' + "|".join(GUIDE_LEGEND_POSITIONS) + '"}}, "why"}'), None),
-    (r"/continuation", ('what the house does when a page continues onto the next, read off its pages: in words ("none seen" is an '
-     'answer), or {"contd_mark": "<the mark as the house writes it>" or null, "why": "where it is seen, or that none is"}'), None),
-    (r"/description", ('{"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the house was '
+    (r"/continuation", ('what the reference does when a page continues onto the next, read off its pages: in words ("none seen" is an '
+     'answer), or {"contd_mark": "<the mark as the reference writes it>" or null, "why": "where it is seen, or that none is"}'), None),
+    (r"/description", ('{"summary", "typography", "color", "layout", "tables", "imagery", "motifs", "not_seen": ["<what the reference was '
      'not seen doing>", ...], "tone"}; not_seen is stored with the pages it was read over, as evidence of a starting tendency, never '
      'a prohibition'), None),
     (r"/derivation_rules", "a list of sentences", None),
@@ -157,7 +158,13 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/chrome", CHROME_SHAPE, None),
     (r"/composition", '{"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"}', None),
     (r"/notes/[^/]+", "a string", None),
+    (r"/reference/page", '{"width_emu": int, "height_emu": int, "why": "..."} (a guide made with no reference: the page size you choose)', None),
+    (r"/spacing/margins", '{"left": {"emu": int}, "right": {"emu": int}, "top": {"emu": int}, "bottom": {"emu": int}} (EMU, 0 or more)', None),
+    (r"/typography/bullets", ('{"<level>": {"glyph": "<glyph>", "font": "<face>", "indent_role": "space.<step>", "hanging_indent_role": '
+                              '"space.<step>"}}, or {} for text set without bullets'), None),
 )
+#: the four sides /spacing/margins answers
+MARGIN_SIDES = ("left", "right", "top", "bottom")
 #: a spacing step is answered in EMU; one under a point (12,700 EMU) is a value written in
 #: points or pixels (6 meant as 6 pt is 6 EMU, 0.0005 pt), refused rather than stored.
 #: In the guides built for this repo's proofs, observed steps (a zero margin aside) start at
@@ -166,7 +173,7 @@ MIN_STEP_EMU = 12_700
 STEP_UNIT_HINT = "a step is EMU (12,700 per point, 91,440 per 0.1 in): was it written in points or pixels?"
 #: the spacing steps the round trip (import_slide) and the components read by name
 SPACING_STEPS_NEEDED = ("space.margin", "space.gutter", "space.xs", "space.sm")
-#: the colour roles a completed /tables names, each answered (null: the house has none)
+#: the colour roles a completed /tables names, each answered (null: the reference has none)
 TABLE_ROLE_KEYS = ("header_fill_role", "header_ink_role", "banding_role")
 TABLE_KEYS = {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules", "cell_padding_role", "cell_padding_emu",
               "alignment_by_column_type", "totals_rule", "totals_bold", "banding_phase", "merged_cell_convention", "why", "provenance"}
@@ -203,15 +210,15 @@ def shape_error(path: str, value) -> str | None:
                     "A source-line habit is not a chart setting: it is measured from the digest (each page's source_line)")
         unsaid = sorted(k for k in TABLE_ROLE_KEYS if k not in value) if path == "/tables" else []
         if unsaid:
-            return (f"/tables: {unsaid} not answered; each is a colour role, or null when the house's tables have none (a header "
+            return (f"/tables: {unsaid} not answered; each is a colour role, or null when the reference's tables have none (a header "
                     "with no fill, no banding). Left out, it would read as none without anyone having said so")
         pad = value.get("cell_padding_emu") if path == "/tables" else None
         if pad is not None and (not isinstance(pad, int) or isinstance(pad, bool) or pad < 0):
             return f"/tables: cell_padding_emu {pad!r} is a whole number of EMU, 0 or more (45,720 is 0.05 in, 3.6 pt)"
         if path == "/tables" and value.get("totals_bold") is not None and not isinstance(value["totals_bold"], bool):
-            return "/tables: totals_bold is true or false (whether the house sets its totals rows bold), or null when its pages show none"
+            return "/tables: totals_bold is true or false (whether the reference sets its totals rows bold), or null when its pages show none"
         if path == "/tables" and value.get("banding_phase") is not None and (value["banding_phase"] not in (0, 1) or isinstance(value["banding_phase"], bool)):
-            return "/tables: banding_phase is 0 (the house bands its first body row) or 1 (its second), or null when it bands none"
+            return "/tables: banding_phase is 0 (the reference bands its first body row) or 1 (its second), or null when it bands none"
         if path == "/charts":
             per_kind = value.get("per_kind") or {}
             bad = {k: v.get("legend_position") for k, v in per_kind.items() if isinstance(v, dict) and "legend_position" in v
@@ -219,6 +226,13 @@ def shape_error(path: str, value) -> str | None:
             if bad:
                 return (f"/charts: legend_position {bad} not in {list(GUIDE_LEGEND_POSITIONS)}; a chart spec writes the same "
                         "word as legend.position, and \"none\" as legend: \"none\"")
+    if path == "/reference/page" and (not isinstance(value, dict) or set(value) - {"width_emu", "height_emu", "why"} or not all(
+            isinstance(value.get(k), int) and not isinstance(value.get(k), bool) and value[k] >= 914400 for k in ("width_emu", "height_emu"))):
+        return f"/reference/page: expected {shape}; each side a whole number of EMU, one inch (914400) or more"
+    if path == "/spacing/margins" and (not isinstance(value, dict) or set(value) != set(MARGIN_SIDES) or not all(
+            isinstance(v, dict) and set(v) <= {"emu", "why"} and isinstance(v.get("emu"), int) and not isinstance(v["emu"], bool) and v["emu"] >= 0
+            for v in value.values())):
+        return f"/spacing/margins: expected {shape}, all four sides"
     if path == "/continuation":
         return continuation_error(value)
     if path == "/description":
@@ -234,7 +248,7 @@ CONTINUATION_CLOSED = ("header_repeat", "takeaway_policy")
 def continuation_error(value) -> str | None:
     """/continuation in words, or {"contd_mark": text or null, "why": phrase}; the closed
     choices it once took are refused by name, since nothing reads them and a choice from a
-    list is not a reading of the house's pages."""
+    list is not a reading of the reference's pages."""
     shape = value_shape("/continuation")[0]  # type: ignore[index]
     if isinstance(value, str):
         return plan._phrase_error(value, "/continuation", 1)
@@ -243,38 +257,41 @@ def continuation_error(value) -> str | None:
     closed = [k for k in CONTINUATION_CLOSED if k in value]
     if closed:
         return (f"/continuation: {closed} {'is a closed choice' if len(closed) == 1 else 'are closed choices'} nothing reads; say what the "
-                "house does with a continued page in why (or answer in words), and give its mark as contd_mark")
+                "reference does with a continued page in why (or answer in words), and give its mark as contd_mark")
     stray = sorted(set(value) - {"contd_mark", "why"})
     missing = sorted({"contd_mark", "why"} - set(value))
     if stray or missing:
         return f"/continuation: {('unknown keys ' + str(stray)) if stray else ''}{'; ' if stray and missing else ''}{(str(missing) + ' not answered') if missing else ''}; expected {shape}"
     if value["contd_mark"] is not None and not (isinstance(value["contd_mark"], str) and value["contd_mark"].strip()):
-        return f"/continuation: contd_mark is the mark as the house writes it, or null when none is seen; not {value['contd_mark']!r}"
+        return f"/continuation: contd_mark is the mark as the reference writes it, or null when none is seen; not {value['contd_mark']!r}"
     return plan._phrase_error(value["why"], "/continuation why", plan.BRIEF_MIN_WORDS)
 
 
 def description_error(value) -> str | None:
     """/description: an object; `never_does` is refused by name (renamed `not_seen`: what the
-    house was not seen doing is evidence of a tendency, read back while designing, never a
+    reference was not seen doing is evidence of a tendency, read back while designing, never a
     rule), and not_seen is a list of phrases."""
     if not isinstance(value, dict):
         return f"/description: expected {value_shape('/description')[0]}"  # type: ignore[index]
     if "never_does" in value:
-        return ("/description: never_does is now not_seen: what the house was not seen doing, stored with the pages it was read over as "
+        return ("/description: never_does is now not_seen: what the reference was not seen doing, stored with the pages it was read over as "
                 "evidence of a starting tendency, never a prohibition; rename the key")
     seen = value.get("not_seen")
     if seen is not None and not (isinstance(seen, list) and all(plan._words(v) >= 1 for v in seen)):
-        return f"/description: not_seen is a list of phrases, each what the house was not seen doing ([] when nothing stands out); not {seen!r}"
+        return f"/description: not_seen is a list of phrases, each what the reference was not seen doing ([] when nothing stands out); not {seen!r}"
     return None
 
 
 def not_seen(guide: dict, items: list[str]) -> dict:
-    """not_seen as evidence: each thing the model did not see the house do, with the pages
+    """not_seen as evidence: each thing the model did not see the reference do, with the pages
     it read (the reference's), so it reads "icons: on 0 of 33 pages", a count and not a rule."""
+    if not plan.has_reference(guide):
+        return {"pages_read": plan.NO_REFERENCE, "items": [{"what": v} for v in items],
+                "reading": "no reference: what the chosen look leaves out, by choice"}
     pages = plan.reference_pages(guide)
     return {"pages_read": pages if pages is not None else "not stated: the guide gives no page count (reference.slides)",
             "items": [{"what": v, "seen_on": 0, "of_pages": pages} for v in items],
-            "reading": ("the model's reading of the reference's pages: what it did not see the house do. A starting tendency to "
+            "reading": ("the model's reading of the reference's pages: what it did not see the reference do. A starting tendency to "
                         "weigh, never a prohibition: a page that does one says why in the report")}
 
 
@@ -371,9 +388,9 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
     if new_role and not raster and plan._phrase_error(value.get("why"), "why", plan.BRIEF_MIN_WORDS) is None:
         return
     under = f"; it sits under {settled[0]}, value_provenance {settled[1]}" if settled else ""
-    off = (f"; {value['size_pt']}pt is off the house's levels {sorted(levels)}: a new role there needs a why of at least "
+    off = (f"; {value['size_pt']}pt is off the reference's levels {sorted(levels)}: a new role there needs a why of at least "
            f"{plan.BRIEF_MIN_WORDS} distinct words (it is then tagged off_ladder and listed; a model given continuous sizes was "
-           "measured drifting to 8.5, 9.5, 20 and 22pt, so the house's levels are the first evidence)") if new_role and not raster else ""
+           "measured drifting to 8.5, 9.5, 20 and 22pt, so the reference's levels are the first evidence)") if new_role and not raster else ""
     raise PatchError(f"{path}: not an open address{under}. A patch answers the draft's unresolved list and nothing else (a new "
                      f"type role at a size the reference writes, levels {sorted(levels)}, or off them with a why"
                      f"{'; on this raster reference, a new role with provenance raster_inference' if raster else ''}){off}; open: {sorted(open_paths)}")
@@ -465,7 +482,7 @@ def title_register(guide: dict, value) -> dict:
 
 
 #: a digest record: the model's reading in its own words, plus three readings of the page
-#: that later steps hold the house to (a data page, chart text the house sets); nothing
+#: that later steps hold the reference to (a data page, chart text the reference sets); nothing
 #: in a record is chosen from a list
 EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": plan.BRIEF_MIN_WORDS}  # least words
 EXHIBIT_FLAGS = ("chart_or_table", "axis_labels", "value_labels")
@@ -494,7 +511,7 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
     is named, as is a candidate list that differs from the stub's. Every page is answered (an
     empty list states the page holds no exhibit; a missing or null list is an omission); a
     record repeated on its page is named; every exhibit says in words what it is, its
-    message, how the house draws it and what it marks (EXHIBIT_TEXT, checked for being
+    message, how the reference draws it and what it marks (EXHIBIT_TEXT, checked for being
     there, never for what it says), and answers EXHIBIT_FLAGS true or false. All omissions
     are named in one refusal. The sample is the stub's, never the completed file's. What
     the file itself shows of each page (its structure, its marks) is not here: the
@@ -605,7 +622,7 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
 def content_pages(guide: dict, value) -> dict:
     """The model's list of the reference's content pages, proven at the boundary: a list of
     slide numbers, each a page of the draft's variety sequence that is not hidden, each named
-    once. The house's variety is re-measured over it (plan.house_deck)."""
+    once. The reference's variety is re-measured over it (plan.deck_variety)."""
     listed = {p["slide"]: p["triage"] for p in guide["variety"]["pages"]}
     if not isinstance(value, list) or not value:
         raise PatchError("/variety/content_pages: a non-empty list of slide numbers")
@@ -622,7 +639,8 @@ def content_pages(guide: dict, value) -> dict:
 def core_open(guide: dict) -> list[str]:
     """Core addresses still open: absent, partial, or listed in `unresolved` (the address
     itself or its /members). A member refinement that carries a measured default, such as
-    line_spacing, does not hold a role open."""
+    line_spacing, does not hold a role open. On a guide made with no reference every open
+    address is core."""
     listed = {u["path"] for u in guide.get("unresolved", [])}
 
     def is_open(addr: str) -> bool:
@@ -632,6 +650,10 @@ def core_open(guide: dict) -> list[str]:
     out = [a for a in CORE_ROLES if is_open(a)]
     if all(is_open(a) for a in CORE_ANNOTATION):
         out.append(" | ".join(CORE_ANNOTATION))
+    if not plan.has_reference(guide):
+        # no reference: the whole look is the model's, so an address left open would be a
+        # default nobody chose; every one is core (a role or colour answered null is answered)
+        out += [u["path"] for u in guide.get("unresolved", []) if u["path"] not in out and not any(u["path"] in o.split(" | ") for o in out)]
     return out
 
 
@@ -657,14 +679,31 @@ def apply(guide: dict, patch: dict, digest_stub: dict | None = None) -> tuple[di
         open_paths.pop(path, None)
     if not refusals:
         refusals += table_role_errors(guide)
+    if not plan.has_reference(guide):
+        _model_choice(guide)
     guide["unresolved"] = [u for u in guide.get("unresolved", []) if u["path"] in open_paths]
     if (guide.get("variety") or {}).get("pages"):
         # re-measured on every completion: the content pages or the exhibit types may have just been answered
-        guide["variety"]["measure"] = plan.house_deck(guide)
+        guide["variety"]["measure"] = plan.deck_variety(guide)
     completion_record(guide)["applied"].extend(applied)
     if bulk_notes:
         completion_record(guide).setdefault("bulk", []).extend(bulk_notes)
     return guide, applied, refusals
+
+
+def _model_choice(node) -> None:
+    """Every completed value on a guide made with no reference is the model's choice, not an
+    inference from evidence: its provenance says so, wherever model_prov wrote it."""
+    if isinstance(node, dict):
+        prov = node.get("provenance")
+        if isinstance(prov, dict) and prov.get("value_provenance") == "model_inference":
+            prov["value_provenance"] = plan.MODEL_CHOICE
+            prov["role_provenance"] = "chosen"
+        for v in node.values():
+            _model_choice(v)
+    elif isinstance(node, list):
+        for v in node:
+            _model_choice(v)
 
 
 def completion_record(guide: dict) -> dict:
@@ -690,12 +729,12 @@ def record_absent(guide: dict, path: str, role: str, why: str) -> None:
     guide.setdefault(ABSENT_SHAPE, {})[role] = {"address": path, "why": why, "provenance": model_prov(why)}
 
 
-#: chart text roles, and the digest reading that says the house sets such text on an exhibit
+#: chart text roles, and the digest reading that says the reference sets such text on an exhibit
 CHART_TEXT_FLAGS = {"type.axis_label": ("axis_labels", "exhibits with axis labels"), "type.data_label": ("value_labels", "exhibits with values on their marks")}
 
 
 def chart_text_in_digest(guide: dict, role: str) -> str | None:
-    """Where the completed digest records the house drawing a chart text role, or None."""
+    """Where the completed digest records the reference drawing a chart text role, or None."""
     records = (guide.get("exhibit_habits") or {}).get("records") or []
     if role in CHART_TEXT_FLAGS:
         flag, what = CHART_TEXT_FLAGS[role]
@@ -711,7 +750,7 @@ def seen_in(path: str, value: dict) -> dict:
     if "evidence" not in value:
         return {}
     if value["evidence"] != PICTURES:
-        raise PatchError(f"{path}: evidence {value['evidence']!r}; the one value is \"{PICTURES}\" (read off pictures the house pasted)")
+        raise PatchError(f"{path}: evidence {value['evidence']!r}; the one value is \"{PICTURES}\" (read off pictures the reference pasted)")
     return {"seen_in": PICTURES}
 
 
@@ -741,10 +780,13 @@ def chrome_entries(guide: dict, value) -> list[dict]:
     width, a band a fill, a text kind its text and its whole text_style, a logo a picture or
     a placeholder fill, a placeholder line its width). What the emitter would otherwise fall
     back on (0.75pt, the rule colour or black, the minor face or Arial, 9pt, not bold, no ink)
-    is refused by name, so the drawn chrome is the house's and never a default. Stray keys
+    is refused by name, so the drawn chrome is the reference's and never a default. Stray keys
     are named. Every problem is listed in one refusal."""
+    referenced = plan.has_reference(guide)
+    if not referenced and value == []:
+        return []  # no reference: no chrome is a choice of look, not an omission
     if not isinstance(value, list) or not value:
-        raise PatchError(f"/chrome: expected {CHROME_SHAPE}")
+        raise PatchError(f"/chrome: expected {CHROME_SHAPE}" + ("" if referenced else ", or [] for pages with no chrome"))
     n = max(1, int((guide.get("reference") or {}).get("slides") or 1))
     errors: list[str] = []
     ids: list[str] = []
@@ -753,8 +795,11 @@ def chrome_entries(guide: dict, value) -> list[dict]:
         if not isinstance(ch, dict):
             errors.append(f"{where}: not an object")
             continue
-        missing = [k for k in CHROME_REQUIRED if k not in ch]
+        missing = [k for k in CHROME_REQUIRED if k not in ch and (referenced or k != "slides_present")]
         stray = sorted(set(ch) - set(CHROME_REQUIRED) - CHROME_OPTIONAL)
+        if not referenced and "slides_present" in ch:
+            errors.append(f"{where}: slides_present counts the reference's pages an entry is on; with no reference every entry is drawn on "
+                          "every page (a page leaves one off with its own chrome choice): leave it out")
         if missing:
             errors.append(f"{where}: {missing} not answered")
         if stray:
@@ -769,7 +814,9 @@ def chrome_entries(guide: dict, value) -> list[dict]:
         if not (isinstance(box, list) and len(box) == 4 and all(isinstance(v, int | float) and not isinstance(v, bool) for v in box) and box[2] > 0 and box[3] > 0):
             errors.append(f"{where}: box_in is [left, top, width, height] in inches, width and height above 0")
         sp = ch.get("slides_present")
-        if not isinstance(sp, int) or isinstance(sp, bool) or not 0 < sp <= n:
+        if not referenced:
+            pass
+        elif not isinstance(sp, int) or isinstance(sp, bool) or not 0 < sp <= n:
             errors.append(f"{where}: slides_present is the number of the reference's {n} pages it is on")
         elif sp < 0.5 * n:
             errors.append(f"{where}: on {sp} of {n} pages, under half: the build draws only furniture on half the pages or more, so this entry would draw nothing")
@@ -806,11 +853,13 @@ def chrome_entries(guide: dict, value) -> list[dict]:
         style = ch.get("text_style")
         if style is not None and (not isinstance(style, dict) or set(style) - {"family", "size_pt", "bold", "ink_hex"}):
             errors.append(f"{where}: text_style is {{\"family\", \"size_pt\", \"bold\", \"ink_hex\"}}")
+        elif isinstance(style, dict) and isinstance(style.get("size_pt"), int | float) and style["size_pt"] < PRODUCT_SAFETY_FLOOR_PT:
+            errors.append(f"{where}: text_style size_pt {style['size_pt']} is below the {PRODUCT_SAFETY_FLOOR_PT}pt absolute floor")
     if errors:
         raise PatchError(f"/chrome: {len(errors)} problem{'s' if len(errors) > 1 else ''}: " + "; ".join(errors))
     out = []
     for order, ch in enumerate(value):
-        entry = {**ch, "layers": ch.get("layers") or ["slide"], "of_slides": n, "paint_order": ch.get("paint_order", order),
+        entry = {**ch, "layers": ch.get("layers") or ["slide"], "of_slides": n if referenced else None, "paint_order": ch.get("paint_order", order),
                  "provenance": model_prov(ch.get("why") or "completion of /chrome")}
         box = entry["box_in"]
         entry.setdefault("exclusion_zone_in", list(box))
@@ -841,11 +890,11 @@ def composition_answer(value) -> dict:
 
 
 def picture_text(guide: dict, value) -> dict:
-    """The size a house sets its table text at inside pasted pictures, MEASURED: the model
+    """The size a reference sets its table text at inside pasted pictures, MEASURED: the model
     names which pictures are tables and the face it reads in them; images.text_size reads
-    each one's size off its pixels at the scale the house draws it. The table floor
+    each one's size off its pixels at the scale the reference draws it. The table floor
     (layout.table_floor_pt) is lowered to the smallest, so a native table may be set as
-    small as the house's own picture tables, in the build and in validate --emit alike."""
+    small as the reference's own picture tables, in the build and in validate --emit alike."""
     shape = ('{"pictures": [{"id": "image42.png", "slide": 13, "face": "Calibri"}, ...], "why": "..."} for a .pptx '
              '(ids from images.py list), or [{"page": N, "bbox": [x0, y0, x1, y1], "face": ...}] in PDF points for a PDF')
     if not isinstance(value, dict) or not isinstance(value.get("pictures"), list) or not value["pictures"]:
@@ -883,15 +932,15 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         return
     if parts[0] == "color" and parts[1] == "roles" and value is None:
         guide["color"]["roles"].pop(parts[2], None)
-        record_absent(guide, path, parts[2], "answered null: the house shows no such colour")
+        record_absent(guide, path, parts[2], "answered null: the reference shows no such colour")
     elif parts[0] == "typography" and parts[1] == "roles" and len(parts) == 3 and value is None:
         drawn = chart_text_in_digest(guide, parts[2])
         if drawn:
-            raise PatchError(f"{path}: null says the house sets no such text, but the digest records it drawn: {drawn}. Text the house "
+            raise PatchError(f"{path}: null says the reference sets no such text, but the digest records it drawn: {drawn}. Text the reference "
                              f"sets only inside pasted pictures is not absent: answer the value read off those pictures with "
                              f"\"evidence\": \"pictures\", so native charts can set it")
         guide["typography"]["roles"].pop(parts[2], None)
-        record_absent(guide, path, parts[2], "answered null: the house sets no such text")
+        record_absent(guide, path, parts[2], "answered null: the reference sets no such text")
     elif parts[0] == "color" and parts[1] == "roles":
         role = parts[2]
         if isinstance(value, str) and HEX_RE.match(value):
@@ -922,7 +971,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
                 raise PatchError(f"{path}: a role needs at least size_pt")
             weight = value.get("weight")
             if not (isinstance(weight, int | float) and not isinstance(weight, bool) and 100 <= weight <= 900):
-                raise PatchError(f"{path}: weight {weight!r}; a role states its weight (400 regular, 700 bold, as the house sets this "
+                raise PatchError(f"{path}: weight {weight!r}; a role states its weight (400 regular, 700 bold, as the reference sets this "
                                  "text): left out, it would be drawn at a weight nobody chose")
             spec = {k: value.get(k) for k in TYPE_MEMBERS}
             # an added role says which floor family it belongs to (a 7pt furniture line is
@@ -936,7 +985,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
                 observed = ((guide.get("floors") or {}).get(fam) or {}).get("floor_pt") is not None and "/floors/" + fam + "/floor_pt" not in open_paths
                 raise PatchError(f"{path}: {spec['size_pt']}pt is below the {fam} floor {floor_for(guide, role)}pt"
                                  + (f"; that floor is the smallest {fam} text the reference sets as text, observed, so it cannot be lowered. "
-                                    f"Answer {floor_for(guide, role)}pt or more; if the house's own tables are pictures set smaller, "
+                                    f"Answer {floor_for(guide, role)}pt or more; if the reference's own tables are pictures set smaller, "
                                     "native tables will read larger than they do: say so in the report" if observed else ""))
             spec["provenance"] = model_prov(value.get("why", ""), value)
             spec.update(seen_in(path, value))
@@ -948,7 +997,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
                 ladder = sorted(levels) if levels else "no evidence: the guide has no levels table"
                 spec["provenance"]["off_ladder"] = {"size_pt": spec["size_pt"], "levels": ladder, "nearest_level": near, "why": value.get("why")}
                 completion_record(guide).setdefault("off_ladder", []).append(
-                    f"{path}: {spec['size_pt']}pt, off the house's levels {ladder}" + (f" (nearest {near}pt)" if near is not None else "") + f": {value.get('why')}")
+                    f"{path}: {spec['size_pt']}pt, off the reference's levels {ladder}" + (f" (nearest {near}pt)" if near is not None else "") + f": {value.get('why')}")
             roles[role] = spec
             if role not in FLOOR_FAMILY:
                 fam = fam_asked or "body"
@@ -985,6 +1034,12 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         check_color_refs(guide, value if isinstance(value, dict) else {}, path)
     elif path == "/chrome":
         guide["chrome"] = chrome_entries(guide, value)
+    elif path == "/reference/page":
+        w, h = value["width_emu"], value["height_emu"]
+        guide["reference"]["page"] = {"width_emu": w, "height_emu": h, "width_in": round(w / 914400, 3), "height_in": round(h / 914400, 3),
+                                      "orientation": "landscape" if w >= h else "portrait", "provenance": model_prov(value.get("why") or "")}
+    elif path == "/spacing/margins":
+        guide["spacing"]["margins"] = {side: {"emu": v["emu"], "provenance": model_prov(v.get("why") or "completion")} for side, v in value.items()}
     elif path == "/composition":
         guide["composition"] = composition_answer(value)
     elif path == "/titles/register":
@@ -1126,7 +1181,7 @@ def main(argv: list[str]) -> int:
     out.write_text(json.dumps(guide, indent=1, default=str))
     summary: dict = {"out": str(out), "applied": applied, "core_open": core, "still_open": [u["path"] for u in guide["unresolved"]]}
     if guide["completion"].get("off_ladder"):
-        # a departure from the house's ladder, where the model sees it: answer it in the report
+        # a departure from the reference's ladder, where the model sees it: answer it in the report
         summary["off_ladder"] = guide["completion"]["off_ladder"]
     eh = guide.get("exhibit_habits")
     if isinstance(eh, dict):
@@ -1137,8 +1192,8 @@ def main(argv: list[str]) -> int:
         bare = [(s, m) for s, m in marks if not m["carries_text"]]
         by_geometry = {g: sorted({s for s, m in bare if m["geometry"] == g}) for g in sorted({m["geometry"] for _, m in bare})}
         bare_text = "; ".join(f"{g} on slides {pages}" for g, pages in by_geometry.items()) or "none"
-        summary["house_habits"] = {
-            "source_lines": f"house {habit['habit']}: {habit['evidence']}: {SOURCE_LINE_ADVICE[habit['habit']]}",
+        summary["reference_habits"] = {
+            "source_lines": f"reference {habit['habit']}: {habit['evidence']}: {SOURCE_LINE_ADVICE[habit['habit']]}",
             "marks": (f"the file draws {len(marks)} marks on content, {len(bare)} carrying no text of their own ({bare_text}); "
                       "marks inside pasted pictures are pixels the file cannot show: read them in the digest. An unlabelled mark on a "
                       "new page names what explains it (annotation explained_by)")}

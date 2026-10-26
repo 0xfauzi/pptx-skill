@@ -17,7 +17,7 @@ read from pixels; the report leaves /typography/families open.
 
 Calibration (keybank.pptx rendered at 100 dpi and re-measured, 2026-10-20; the numbers
 live in PORT_AUDIT.md): line pitch over body text 14.4pt for the 12pt body (1.2 x size,
-the explicit lnSpc the house writes); the modal text-line height is close to the size for
+the explicit lnSpc the reference writes); the modal text-line height is close to the size for
 mixed-case Arial lines; chrome rows found at the top rule and bottom rule the OOXML walk
 reports; margins within one spacing step of the walk's.
 """

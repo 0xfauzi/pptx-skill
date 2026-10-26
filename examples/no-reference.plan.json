@@ -1,0 +1,43 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {"id": "s1-summary", "intent": "the answer first", "message": "Revenue grew 9.4% a year to $203.4m while on-time departures rose to 96.1%",
+   "composition": "new:two-columns", "title_register": "claim", "deliberate_parallel": null,
+   "exhibits": [
+    {"reader_must_see": "the three operating figures for 2025 beside 2024, and which way each moved",
+     "comparison": "each metric in 2025 against the same metric in 2024",
+     "data": "three metrics by two years, mixed units (dollars, a count, a percent)",
+     "forms_considered": [
+      {"form": "two-year comparison table", "reason": "chosen: mixed units sit in one grid and each row reads across"},
+      {"form": "big numbers in a row", "reason": "three figures alone lose the year they are compared with"}],
+     "chosen_form": "two-year comparison table",
+     "why": "a reader checks each figure against last year, which a two-column grid shows without arithmetic",
+     "marks": "nothing on the table: the title states the claim and the left column explains it"}]},
+  {"id": "s2-revenue", "intent": "the growth itself", "message": "Revenue rose every year from $142.0m to $203.4m",
+   "composition": "new:two-columns", "title_register": "claim", "deliberate_parallel": "the growth page sets its evidence beside its words as the summary does, so the two read as one argument",
+   "exhibits": [
+    {"reader_must_see": "that revenue rose in each of the five years, and by how much in total",
+     "comparison": "each year's revenue against the year before it",
+     "data": "one series of five yearly values in dollars millions",
+     "forms_considered": [
+      {"form": "column chart of yearly revenue", "reason": "chosen: five ordered values read as heights against one baseline"},
+      {"form": "line chart", "reason": "five points draw a line, but the yearly amounts are the figures the reader quotes"},
+      {"form": "table of five years", "reason": "the reader would compare numbers instead of seeing the rise"}],
+     "chosen_form": "column chart of yearly revenue",
+     "why": "the rise is a sequence of heights; labelled columns show it and carry the figures",
+     "marks": "values on every column; the 2025 column in the ochre accent where the claim ends"}]},
+  {"id": "s3-routes", "intent": "where the revenue comes from", "message": "North Sound carries 30% of revenue; the four routes total $203.4m",
+   "composition": "new:table-under-lead", "title_register": "claim", "deliberate_parallel": null,
+   "exhibits": [
+    {"reader_must_see": "each route's revenue and passengers, and that they add up to the year's total",
+     "comparison": "the four routes against each other and against the total",
+     "data": "four routes by two measures, revenue in dollars millions and passengers in thousands, with a total",
+     "forms_considered": [
+      {"form": "table of routes with a totals row", "reason": "chosen: two measures and a total that ties out read in one grid"},
+      {"form": "horizontal bar chart of route revenue", "reason": "shows the ranking but drops passengers and the total"}],
+     "chosen_form": "table of routes with a totals row",
+     "why": "the reader looks the figures up and checks they sum to the total, which a table does directly",
+     "marks": "the totals row set bold under a rule"}]}
+ ]
+}

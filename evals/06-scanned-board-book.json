@@ -1,7 +1,7 @@
 {
  "id": "06-scanned-board-book",
  "skills": [
-  "building-house-style-decks"
+  "building-pptx-decks"
  ],
  "target_spec_scenario": 6,
  "reference": {
@@ -9,7 +9,7 @@
   "files": [
    "refs/files/goldman_airvana_why_goldman_2009.pdf"
   ],
-  "notes": "deck_class raster: palette, ink, chrome, margins and line pitch from pixels; faces named by eye; the house's variety is no evidence; the judge cannot judge."
+  "notes": "deck_class raster: palette, ink, chrome, margins and line pitch from pixels; faces named by eye; the reference's variety is no evidence; the judge cannot judge."
  },
  "brief": "Five-page credentials section for a sell-side pitch to a telecom equipment company: why us, league table, selected deals, team, buyer universe.",
  "data": {
@@ -117,7 +117,7 @@
    "check": "guide provenance raster_inference; the report names the faces and why."
   },
   {
-   "statement": "With no variety evidence in the house, the plan is held to the corpus's longest run (plan.CORPUS_LONGEST_RUN, 2): no undeclared run longer than that, and every repeat it warns about is answered.",
+   "statement": "With no variety evidence in the reference, the plan is held to the corpus's longest run (plan.CORPUS_LONGEST_RUN, 2): no undeclared run longer than that, and every repeat it warns about is answered.",
    "check": "plan.check.json: no refusal; each repeats[] entry's held_to basis names the corpus; each warning answered in the plan or the report."
   },
   {
@@ -125,7 +125,7 @@
    "check": "judge.cannot_judge present; the report's verdict cites the renders."
   },
   {
-   "statement": "Logos the house shows are carried and placed, or the report asks the user for them.",
+   "statement": "Logos the reference shows are carried and placed, or the report asks the user for them.",
    "check": "Render inspection; report."
   }
  ]

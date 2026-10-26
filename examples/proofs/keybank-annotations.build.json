@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -115,7 +115,7 @@
       "pad_role: 0 EMU: drawn on the anchor's own edge"
      ],
      "explained_by": {
-      "by": "house_precedent",
+      "by": "reference_precedent",
       "slide": 10,
       "geometry": "outline",
       "shape": "sp[id=2]",
@@ -136,7 +136,7 @@
     "elements": 5,
     "covered_area_fraction": 0.608,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 127,
      "band": [
@@ -166,7 +166,7 @@
     "checked": 9,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -261,9 +261,9 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 11 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 11 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -273,33 +273,33 @@
     "length": {
      "chars": {
       "value": 52,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house p90"
+      "verdict": "above reference p90"
      },
      "words": {
       "value": 11,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -473,7 +473,7 @@
     "elements": 9,
     "covered_area_fraction": 0.411,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 153,
      "band": [
@@ -503,7 +503,7 @@
     "checked": 12,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -598,14 +598,14 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 60 chars against the house max of 57 (median 35.0, 11 titles)"
+     "detail": "title: 60 chars against the reference max of 57 (median 35.0, 11 titles): a departure; answer it in one line in the report"
     },
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 10 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 10 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -615,33 +615,33 @@
     "length": {
      "chars": {
       "value": 60,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "words": {
       "value": 10,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -811,7 +811,7 @@
     "elements": 11,
     "covered_area_fraction": 0.542,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 42,
      "band": [
@@ -857,7 +857,7 @@
       "backing_hex": "FFFFFF"
      }
     ],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -954,9 +954,9 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 8 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 8 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -966,33 +966,33 @@
     "length": {
      "chars": {
       "value": 50,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house p90"
+      "verdict": "above reference p90"
      },
      "words": {
       "value": 8,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -1103,7 +1103,7 @@
     "elements": 8,
     "covered_area_fraction": 0.517,
     "text_boxes_mostly_empty": "none",
-    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 55,
      "band": [
@@ -1133,7 +1133,7 @@
     "checked": 12,
     "violations": [],
     "warnings": [],
-    "house_precedent": [],
+    "reference_precedent": [],
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
@@ -1230,9 +1230,9 @@
    "solver_status": "fit",
    "problems": [
     {
-     "kind": "title longer than the house",
+     "kind": "title longer than the reference",
      "severity": "warning",
-     "detail": "title: 12 words against the house max of 7 (median 5.0, 11 titles)"
+     "detail": "title: 12 words against the reference max of 7 (median 5.0, 11 titles): a departure; answer it in one line in the report"
     }
    ],
    "title": {
@@ -1242,33 +1242,33 @@
     "length": {
      "chars": {
       "value": 57,
-      "house": {
+      "reference": {
        "median": 35.0,
        "p90": 40.0,
        "max": 57,
        "n": 11
       },
-      "verdict": "above house p90"
+      "verdict": "above reference p90"
      },
      "words": {
       "value": 12,
-      "house": {
+      "reference": {
        "median": 5.0,
        "p90": 6.0,
        "max": 7,
        "n": 11
       },
-      "verdict": "above house max"
+      "verdict": "above reference max"
      },
      "lines": {
       "value": 1,
-      "house": {
+      "reference": {
        "median": 1.0,
        "p90": 1.0,
        "max": 2,
        "n": 11
       },
-      "verdict": "within house p90"
+      "verdict": "within reference p90"
      }
     },
     "register": {
@@ -1283,13 +1283,13 @@
   }
  ],
  "source_lines": {
-  "house": {
+  "reference": {
    "habit": "few",
    "share": 0.2,
    "pages_with": [
     9
    ],
-   "evidence": "the house sources 1 of 5 data pages (20%: pages 9)"
+   "evidence": "the reference sources 1 of 5 data pages (20%: pages 9)"
   },
   "deck": {
    "data_pages": 4,
@@ -1427,115 +1427,71 @@
     ]
    ]
   },
-  "house": {
-   "decks": [
-    {
-     "deck": "mi_keybank_first_niagara_fig_ma.pptx",
-     "status": "measured",
-     "content_pages": 11,
-     "composition": {
-      "V": 0.9,
-      "changed": 9,
-      "pairs": 10
-     },
-     "longest_run": 2
-    }
-   ],
-   "pooled": {
-    "status": "measured",
-    "decks": 1,
-    "decks_without_evidence": [],
-    "composition": {
-     "V": 0.9,
-     "changed": 9,
-     "pairs": 10,
-     "p10_deck_V": 0.9,
-     "deck_V": [
-      0.9
-     ],
-     "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
-    },
-    "structures": {
-     "V": 1.0,
-     "changed": 10,
-     "pairs": 10,
-     "p10_deck_V": 1.0,
-     "deck_V": [
-      1.0
-     ],
-     "decks_unread": []
-    },
-    "kinds": {
-     "V": 1.0,
-     "changed": 10,
-     "pairs": 10,
-     "p10_deck_V": 1.0,
-     "deck_V": [
-      1.0
-     ],
-     "decks_unread": []
-    },
-    "distinct_per_page": {
-     "mi_keybank_first_niagara_fig_ma.pptx": 0.636
-    },
-    "longest_run": 2,
-    "sequences": [
-     [
-      "arch-2",
-      "arch-3",
-      "arch-4",
-      "arch-4",
-      "arch-3",
-      "arch-4",
-      "arch-5",
-      "arch-6",
-      "arch-7",
-      "arch-2",
-      "arch-8"
-     ]
-    ]
-   }
+  "reference": {
+   "deck": "mi_keybank_first_niagara_fig_ma.pptx",
+   "status": "measured",
+   "content_pages": 11,
+   "composition": {
+    "V": 0.9,
+    "changed": 9,
+    "pairs": 10
+   },
+   "structures": {
+    "V": 1.0,
+    "changed": 10,
+    "pairs": 10,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 1.0,
+    "changed": 10,
+    "pairs": 10,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 7,
+    "pages": 11,
+    "per_page": 0.636
+   },
+   "longest_run": 2
   },
-  "against_house": {
+  "against_reference": {
    "composition_V": {
     "value": 1.0,
-    "house_pooled": 0.9,
-    "house_p10_deck": 0.9,
-    "verdict": "at or above the house's 10th percentile deck",
-    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+    "reference_V": 0.9,
+    "verdict": "at or above the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
    },
    "structures_V": {
     "value": 0.667,
-    "house_pooled": 1.0,
-    "house_p10_deck": 1.0,
-    "verdict": "below the house's 10th percentile deck",
-    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+    "reference_V": 1.0,
+    "verdict": "below the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
    },
    "kinds_V": {
     "value": 0.333,
-    "house_pooled": 1.0,
-    "house_p10_deck": 1.0,
-    "verdict": "below the house's 10th percentile deck",
-    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+    "reference_V": 1.0,
+    "verdict": "below the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
    },
    "distinct_per_page": {
     "value": 1.0,
-    "house_p10_window": 0.5,
+    "reference_p10_window": 0.5,
     "windows": 8,
     "window_pages": 4,
-    "verdict": "at or above the house's 10th percentile window",
+    "verdict": "at or above the reference's 10th percentile window",
     "threshold": "unmeasured: the 10th percentile window is a choice"
    },
    "longest_run": {
     "built": 1,
-    "house": 2
+    "reference": 2
    }
   },
-  "house_longest_run": 2,
+  "reference_longest_run": 2,
   "runs_over_reference": [],
   "warnings": [
-   "structures_V 0.667 below the house's 10th percentile deck (1.0); the threshold is unmeasured",
-   "kinds_V 0.333 below the house's 10th percentile deck (1.0); the threshold is unmeasured"
+   "structures_V 0.667 below the reference's (1.0): a departure (the line is unmeasured); answer it in one line in the report",
+   "kinds_V 0.333 below the reference's (1.0): a departure (the line is unmeasured); answer it in one line in the report"
   ],
   "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
  },
@@ -1565,7 +1521,7 @@
    [],
    []
   ],
-  "house": [
+  "reference": [
    {
     "chrome_id": "chrome-6",
     "kind": "label",
@@ -1605,7 +1561,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1739,10 +1695,10 @@
    }
   ],
   "what_to_do": {
-   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/freedom/refs/files",
+  "rarity_basis": "12 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/nohouse/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -1755,7 +1711,7 @@
   "verdict": "possible carry-over: 5 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1787,14 +1743,14 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/renders/slide-04.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.117,
   "components": {
    "families": 0.0,
@@ -1889,7 +1845,7 @@
    }
   ],
   "overflow_where": [],
-  "house_spread": {
+  "reference_spread": {
    "n": 12,
    "min": 0.055,
    "median": 0.091,
@@ -1897,37 +1853,37 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/45541_Header.pptx": 0.524,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.468,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/themes.pptx": 0.522
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/45541_Header.pptx": 0.524,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.468,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/themes.pptx": 0.522
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
-  "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.14,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.123,
-   "/home/user/pptx-skill/.claude/worktrees/freedom/refs/files/mi_netflix_financing_pitchbook.pptx": 0.151
+  "same_style_on_panel": {
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.14,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.123,
+   "/home/user/pptx-skill/.claude/worktrees/nohouse/refs/files/mi_netflix_financing_pitchbook.pptx": 0.151
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
   "reference_rank": 1,
-  "within_house_spread": true,
+  "within_reference_spread": true,
   "layout_clean": true,
   "filed_under_reference": true
  },
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/out/w3/kb/annotations/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nh/out/fin/kb/annotations/renders"
  }
 }

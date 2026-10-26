@@ -5,10 +5,12 @@ that assumption was checked here. A port without a row is not a port. Rows follo
 ledger protocol: what was adopted, why on merit for THIS skill's goal, what was deliberately
 changed, and the evidence.
 
-Goal the merit column is judged against: given any reference deck (pptx or PDF), generate
-dense, expert pitch-book pages that a blind rater files under the same house, including
-components the reference never showed, with the agent's judgment doing the design and
-instruments doing the measuring.
+Goal the merit column is judged against: given any one reference deck (pptx or PDF), generate
+dense, expert pitch-book pages that a blind rater files with that reference, including
+components the reference never showed, or, given none, pages in a look the agent chooses
+under the same hard limits; the agent's judgment does the design and instruments do the
+measuring. Rows written before the section "No house" below say "house" for what is now
+the reference (one deck, never pooled); they are kept as written, as the record of the time.
 
 Judge distances quoted in a row are the figure measured when the row was written; later rows changed the judge (layout gates, the fixed panel, the house spread) and the emitter, so rows disagree with each other by design. Calibration counts follow the same rule (row 26's 147/161 and row 41's 157/171 are what those runs measured). The current figures are the re-runnable ones: `examples/proofs/*.build.json` (section 0.086, re-run 2026-10-20 on a fresh keybank guide; round trip 0.056 when recorded), and the calibration in `fingerprint.DEFAULT_WEIGHTS` (152/165 with the shipped weights, houses in `oracles/calibration-houses.txt`).
 
@@ -532,3 +534,43 @@ Left open: the risk 4a measurement (a model answering the warning in a located w
 round-5 ring page) needs a model run; the McKinsey marker reads 1.78:1 against its bands
 and is reported, not refused (no measured floor for a mark against its neighbour); the
 admissions' judge totals now include the forced-variant slides.
+
+## No house: one reference deck, or none
+
+The owner's direction: no house style. Anyone drops in their presentation and it is used as
+the reference; with no reference, the model has full latitude over the look. The skill takes
+one reference deck (given several, the model uses the one the user names, or asks); nothing
+pools decks. Hard limits stay hard (fit, overlap, contrast, tie-outs, roles not literals,
+valid package, renderer divergence, confidentiality, no invented numbers, measured floors
+with the 7pt absolute floor); a reference's habits are evidence beside a choice, answered in
+one line when a page departs.
+
+| Item | Before (freedom, 9015da7) | Change | After | Gate removed (scratch copy) |
+|---|---|---|---|---|
+| Brief | `nearest_house_exhibit` required (a reference page, or why none) | removed; optional `in_reference_look` (a phrase: how the look applies to the chosen form); the old key refused by name (`plan.RENAMED_BRIEF_KEYS`) | refused: "nearest_house_exhibit was removed: an exhibit's design starts from reader_must_see, comparison and data ..." | "unknown keys ['nearest_house_exhibit']" (no new spelling) |
+| Look on no reference | | `in_reference_look` on a guide with no reference refused | "there is no reference look to apply; leave it out" | plan passes |
+| Run longer than the reference's | keybank plan with an undeclared run of 3 (longest 2): refused | a warning, a departure to answer in one line; the corpus stand-in (`CORPUS_LONGEST_RUN`) removed: with no run evidence nothing is judged | warning | refused again |
+| Pooling | `--house-deck` on plan.py and build_deck.py; `plan.py house` | removed; `cli.RENAMED_FLAGS` and `plan.RENAMED_COMMANDS` refuse them by name; `plan.reference_variety` measures the one deck | "--house-deck was removed: the skill takes one reference deck ..."; "plan.py house is now plan.py reference" | argparse "unrecognized arguments" / "invalid choice" |
+| Renamed keys | `house_mark`, `explained_by.house_precedent`, library `house_type`, `--houses-file` | `reference_mark`, `reference_precedent`, `deck_type`, `--firms-file`; each old spelling refused by name | each refused naming the new key | generic unknown-key, explained_by-shape and not_a_tag_field refusals |
+| Report keys | `house_precedent`, `house_habits`, `house_spread`, `within_house_spread`, `same_house_on_panel`, `against_house`, `house_longest_run`, `chrome.house`, `source_lines.house` | `reference_*`, `same_style_on_panel`, `chrome.reference`, `source_lines.reference`; judge calibration classes are firms | renamed in every report | |
+| No reference | none | `extract_style.py --blank`: every look address open, page size included (`BLANK_OPEN`), provenance `model_choice` (`plan.MODEL_CHOICE`), every open address core; `plan.has_reference` the one test; `/reference/page`, `/spacing/margins`, `/typography/bullets` shapes; chrome `[]` and no `slides_present`; chrome text under 7pt refused; `--reference` beside a blank guide refused | the 3-page proof deck builds; every comparison reads "no reference" | each removed: an open `/chrome` written exit 0; a malformed page stored (KeyError later); `slides_present` and 6pt chrome taken; the build judged a blank guide against keybank (0.381); a guide with no sha256 read as no reference; a no-reference page warned "no source line"; the judge key absent |
+| Floor message | "no scale clears the legibility floor for the roles in use" | `layout.floor_breaches` names each role (one definition; `scale_clears_floors` reads it) | "... type.source_line at 6pt is below its floor 7pt" | message only, gate unchanged |
+
+`examples/house/` (14 specimen pages of one earlier style) and every pointer to it are gone.
+The no-reference example is `examples/no-reference.*` with its proof.
+
+Rebuilt from a FRESH extraction on freedom (9015da7) and on this change (scratchpad nh,
+run.sh base and fin): keybank section, annotations, bridge, round trip, McKinsey PDF and
+the four fidelity pages give the same status, scale, measured text lines, judge total and
+filing on both trees; the only differences are renamed strings (`title longer than the
+reference`, `explained_by.by reference_precedent`). Example plans pass with the same
+warnings. `proofs/kb3-rt.build.json`, last written by an old build, is now this run's: the
+round trip refuses on contrast (ink_inverse over accent1 at 1.54:1) on freedom and here
+alike, judge 0.056. ruff over `scripts/` and `components/`: 123 before, 122 after (a
+duplicated `deck` key in `fingerprint.py print` the rename exposed is fixed).
+
+Left with the word in it, on purpose: the refusals of old spellings (`plan.py`,
+`annotate.py`, `library.py`, `cli.py`, one eval check, planning-and-variety.md), the
+development corpus's own field name read as written (`library.CORPUS_FIELD`), deckgen's
+fixture path `default_house_style` (oracles), this audit's earlier rows, and the worktree
+path inside the proof reports.

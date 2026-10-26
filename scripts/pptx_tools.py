@@ -446,7 +446,7 @@ def _guide_floors(guide: dict | None) -> dict:
 
 def _guide_rule_widths_emu(guide: dict | None) -> set[int]:
     """Every stroke width the guide itself declares: a rule below the floor that the
-    guide asks for is the house's choice, reported and not failed."""
+    guide asks for is the reference's choice, reported and not failed."""
     widths: set[int] = set()
     if not guide:
         return widths
@@ -750,7 +750,7 @@ def main(argv: list[str]) -> int:
     s = sub.add_parser("clean"); s.add_argument("deck"); s.add_argument("-o", "--out", required=True)
     s = sub.add_parser("validate"); s.add_argument("deck"); s.add_argument("--render", action="store_true")
     s.add_argument("--emit", action="store_true", help="the emitter read-back: shared table edges, stroke floor, gradients, varyColors, size floors, literal page numbers")
-    s.add_argument("--guide", default=None, help="style guide for the floors and the rule widths the house itself declares (with --emit)")
+    s.add_argument("--guide", default=None, help="style guide for the floors and the rule widths the reference itself declares (with --emit)")
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out")

@@ -94,13 +94,13 @@ KEPT_IMAGE_KINDS = frozenset({"page_image", "contact_sheet"})
 WITHHELD_KIND = "withheld_render"
 
 # --- vocabulary -------------------------------------------------------------------------------
-# House type and composition: the synthesis taxonomy that tagged the 578-page development
+# Deck type and composition: the synthesis taxonomy that tagged the 578-page development
 # corpus (pagecraft synth/analyze_all.py: page_family); TARGET_SPEC A.2 counts these
 # compositions under longer spellings. The corpus starter set uses exactly these strings.
 # They are a coder's families for search, never a menu: each list ends in "other", whose
-# words (house_type_as_recorded, composition_as_recorded) say what the page is.
+# words (deck_type_as_recorded, composition_as_recorded) say what the page is.
 
-HOUSE_TYPES = ("investment bank", "consulting", "chart book", "other")
+DECK_TYPES = ("investment bank", "consulting", "chart book", "other")
 COMPOSITIONS = (
     "single chart, full width",
     "single table, full width",
@@ -118,8 +118,10 @@ COMPOSITIONS = (
 # exhibit is tagged in words: what it is, its data, its message and how it is annotated.
 TITLE_REGISTERS: dict[str, str] = VOCABULARY["title_register"]
 # Fields the model fills after looking. Everything else in an entry is measured or recorded.
-TAG_FIELDS = ("house_type", "composition_family", "composition_as_recorded", "title", "title_register", "exhibits",
+TAG_FIELDS = ("deck_type", "composition_family", "composition_as_recorded", "title", "title_register", "exhibits",
               "emphasis_devices", "craft", "why_instructive", "designer_questions")
+#: tag fields that were renamed, each refused by name with its new spelling
+RENAMED_TAGS = {"house_type": "deck_type", "house_type_as_recorded": "deck_type_as_recorded"}
 EXHIBIT_TEXT_FIELDS = ("type", "data_shape", "message")
 EXHIBIT_FIELDS = (*EXHIBIT_TEXT_FIELDS, "annotations_as_recorded")
 
@@ -599,9 +601,10 @@ def check_entry(entry: dict) -> list[str]:
         if value is not None and not (isinstance(value, str) and value in allowed):
             problems.append(f"{field} {value!r} is not in the vocabulary (library.py vocab)")
 
-    one_of("house_type", entry.get("house_type"), HOUSE_TYPES)
-    if entry.get("house_type") == "other" and not entry.get("house_type_as_recorded"):
-        problems.append("house_type 'other' needs house_type_as_recorded")
+    problems += [f"{old} is now {new}: rename the key (library.py tag)" for old, new in RENAMED_TAGS.items() if old in entry]
+    one_of("deck_type", entry.get("deck_type"), DECK_TYPES)
+    if entry.get("deck_type") == "other" and not entry.get("deck_type_as_recorded"):
+        problems.append("deck_type 'other' needs deck_type_as_recorded")
     one_of("composition_family", entry.get("composition_family"), COMPOSITIONS)
     if entry.get("composition_family") == "other" and not entry.get("composition_as_recorded"):
         problems.append("composition_family 'other' needs composition_as_recorded (the composition in words)")
@@ -652,7 +655,10 @@ def tag(lib: Library, tags: dict) -> list[str]:
     if unknown:
         raise Refused("unknown_entries", f"no stub for {', '.join(unknown)}")
     for entry_id, fields in tags.items():
-        outside = sorted(set(fields) - set(TAG_FIELDS) - {"house_type_as_recorded"})
+        renamed = sorted(set(fields) & set(RENAMED_TAGS))
+        if renamed:
+            raise Refused("renamed_tag_field", f"{entry_id}: " + "; ".join(f"{k} is now {RENAMED_TAGS[k]}" for k in renamed))
+        outside = sorted(set(fields) - set(TAG_FIELDS) - {"deck_type_as_recorded"})
         if outside:
             raise Refused("not_a_tag_field", f"{entry_id}: {', '.join(outside)} are measured or recorded, not tags ({', '.join(TAG_FIELDS)})")
     refused = []
@@ -766,7 +772,9 @@ def _corpus_problems(page: dict) -> list[str]:
     return out
 
 
-CORPUS_HOUSE = {"investment bank": "investment bank", "consulting": "consulting", "asset manager market guide (JPM)": "chart book"}
+CORPUS_DECK_TYPE = {"investment bank": "investment bank", "consulting": "consulting", "asset manager market guide (JPM)": "chart book"}
+#: the development corpus's own spelling of a tag field, where it differs (its library.json is read as written)
+CORPUS_FIELD = {"deck_type": "house_type"}
 
 
 def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
@@ -798,12 +806,12 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
         entry = stub(deck_id, page["page"], record, size, None, "no evidence: rendered by the corpus readers", rel, page["reader"])
         entry["source_sha256"] = None
         entry["look_at"] = rel
-        house = page["house_type"]
-        entry.update({k: page[k] for k in TAG_FIELDS})
+        recorded = page[CORPUS_FIELD["deck_type"]]
+        entry.update({k: page[CORPUS_FIELD.get(k, k)] for k in TAG_FIELDS})
         entry["exhibits"] = [{k: v for k, v in ex.items() if k not in CORPUS_LIST_TAGS} for ex in page["exhibits"]]
-        entry["house_type"] = CORPUS_HOUSE.get(house, "other")
-        if entry["house_type"] != house:
-            entry["house_type_as_recorded"] = house
+        entry["deck_type"] = CORPUS_DECK_TYPE.get(recorded, "other")
+        if entry["deck_type"] != recorded:
+            entry["deck_type_as_recorded"] = recorded
         lib.pages = [e for e in lib.pages if e["entry_id"] != entry["entry_id"]] + [entry]
         lines.append(f"{entry['entry_id']}: {'; '.join(check_entry(entry)) or 'ok'}")
     lib.save()
@@ -948,7 +956,7 @@ def pick(intent_text: str, composition: str | None, data_shape: str | None, aspe
         for _, entry, s in chosen:
             entry_aspect = (entry.get("page_size") or {}).get("aspect")
             flags = [k for k in ("composition", "aspect") if s[k]]
-            lines.append(f"   {entry['entry_id']} [{entry['house_type']}; {entry['composition_family']}] tags {'+'.join(flags) or 'none'}, "
+            lines.append(f"   {entry['entry_id']} [{entry['deck_type']}; {entry['composition_family']}] tags {'+'.join(flags) or 'none'}, "
                          f"data-shape words {s['data_shape']}, intent words {s['words']}, aspect {entry_aspect}"
                          + (" (does not match the page asked: examples do not transfer across aspect ratios)" if aspect is not None and not s["aspect"] else ""))
             image = entry.get("image")
@@ -1038,9 +1046,9 @@ def main(argv: list[str]) -> int:
         elif args.cmd == "forget":
             print(forget(Library(Path(args.lib)), args.deck))
         elif args.cmd == "vocab":
-            print(json.dumps({"house_type": HOUSE_TYPES, "title_register": TITLE_REGISTERS, "composition_family": COMPOSITIONS,
+            print(json.dumps({"deck_type": DECK_TYPES, "title_register": TITLE_REGISTERS, "composition_family": COMPOSITIONS,
                               "spelling": ("a title register is the slug; a family is a coder's grouping for search, and other with words "
-                                           "(house_type_as_recorded, composition_as_recorded) files a page none names; an exhibit is "
+                                           "(deck_type_as_recorded, composition_as_recorded) files a page none names; an exhibit is "
                                            "tagged in words, never from a list"),
                               "tag_fields": TAG_FIELDS, "exhibit_fields": EXHIBIT_FIELDS}, indent=1))
     except Refused as refused:

@@ -1,7 +1,7 @@
 {
  "id": "08-confidentiality",
  "skills": [
-  "building-house-style-decks"
+  "building-pptx-decks"
  ],
  "target_spec_scenario": 11,
  "reference": {
@@ -14,7 +14,7 @@
    "KeyBank",
    "$4.1 billion"
   ],
-  "chrome": "The bank name in the footer ('Goldman Stanley') is the house's furniture on every page: it is chrome, drawn by the template, never a finding."
+  "chrome": "The bank name in the footer ('Goldman Stanley') is the reference's furniture on every page: it is chrome, drawn by the template, never a finding."
  },
  "brief": "Run scenario 01 with the reference deck built into a company page library (library.py permit, build, tag) and picked from while designing.",
  "data": "as scenario 01",

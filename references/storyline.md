@@ -1,7 +1,7 @@
 # Storyline: questions for sequencing a section
 
 These are questions to ask, with what professional decks measurably do. None of them is
-a rule. The house's measured habits are the strongest evidence you have: start there, and
+a rule. The reference's measured habits are the strongest evidence you have: start there, and
 where this section departs, say why in the report. Only measurable defects refuse. Counts are from 578 coded content pages of 24 decks
 (investment bank 231, strategy consulting 317, one market chart book 30), one coder per
 page, good to about plus or minus 2 to 3.
@@ -23,12 +23,12 @@ page, good to about plus or minus 2 to 3.
 
 - What is the storyline, page by page, in one sentence each? Where does the reader need
   evidence, and where only a statement?
-- Does the section state its answer before its evidence, or build to it? What does this
-  house do on its summary pages?
-- Read in order, do the pages' messages (wherever the house puts them: titles, lead-ins,
+- Does the section state its answer before its evidence, or build to it? With a reference,
+  what does it do on its summary pages?
+- Read in order, do the pages' messages (wherever the reference puts them: titles, lead-ins,
   takeaway bands) form one argument a reader could accept without the exhibits?
 - Which compositions and layouts will each page use, and how does that compare with the
-  house's own variety? Which repeats are deliberate parallels, and why?
+  reference's own variety? Which repeats are deliberate parallels, and why?
 - Which pages are one of a set, meant to be compared by flipping? Pages meant to be
   compared share one scale and one category order (mismatched sibling scales were recorded
   as human defects, below). Does the set also read better on one frame, or does a page
@@ -52,13 +52,13 @@ page, good to about plus or minus 2 to 3.
   ellipsis) appear in four consulting decks.
 - Most pages are not charts: 346 of 578 pages carry no data chart (bank 135 of 231,
   consulting 210 of 317, chart book 1 of 30). A section plan that is all charts is unlike
-  every house type measured.
+  every deck type measured.
 
 ## Questions for a draft plan
 
 - Do two pages state the same thing in different words? Would one page serve the reader
   better?
-- Where the house states claims first, is any evidence scheduled before the claim it
+- Where the reference states claims first, is any evidence scheduled before the claim it
   supports, and is that order deliberate?
 - Is the section carved by argument, or by data source or workstream? Which does this
   reader need?

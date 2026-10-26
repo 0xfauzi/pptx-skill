@@ -4,7 +4,7 @@ validate, render and judge. The one command the model runs after writing a deck 
 
     build_deck.py deck.json --guide guide.json --template tpl.pptx -o out.pptx
                   [--reference ref.pptx] [--others a.pptx b.pdf] [--renders DIR] [--no-render]
-                  [--plan plan.json] [--house-deck other.guide.json ...]
+                  [--plan plan.json]
 
 deck.json:
 {
@@ -29,7 +29,7 @@ chart, rule; a `rect` is a text element with a fill (styling) or an image/rule.
 The report (stdout and <out>.build.json) carries, per slide: fit or unfittable, the
 scale chosen, lines per text element, every violation, the fitting row prefix of each
 table when a split is needed, and after rendering the judge's distance to the reference
-and to every other house given. An unfittable slide is still emitted from its last
+and to every other deck of its panel. An unfittable slide is still emitted from its last
 attempt and marked, so the render shows what did not fit; nothing is dropped silently.
 
 After the solve and before the emit, four more instruments read the resolved page:
@@ -38,14 +38,19 @@ labels included, against the fill the page draws behind it; below 3.0:1 refuses 
 page with reason "contrast", below AA warns; no ink is ever swapped to pass it), `register` (kind counts, decoration count and container ratio against the
 reference's register_stats bands), `tieouts` (a totals row that is not the column sum,
 a warning listed first under `problems`), the source-line check (a table or chart with
-no type.source_line or type.footnote paragraph warns, quoting the house's count, where at
-least half the house's data pages carry one or the habit is unmeasured; it never refuses,
-and the deck-level `source_lines` sets the deck's count beside the house's), and `title` (the page title's characters, words and lines against the house's
-titles, and the register the slide states against the house's register counts; warnings only).
+no type.source_line or type.footnote paragraph warns, quoting the reference's count, where at
+least half the reference's data pages carry one or the habit is unmeasured; it never refuses,
+and the deck-level `source_lines` sets the deck's count beside the reference's), and `title` (the page title's characters, words and lines against the reference's
+titles, and the register the slide states against the reference's register counts; warnings only).
+On a guide made with no reference (extract_style.py --blank) every hard limit runs (fit,
+overlap, contrast, tie-outs, roles, the package, the render checks, the floors) and every
+comparison with a reference (titles, variety, source-line and mark habits, contrast
+precedent, the judge, the reference's chrome) reports "no reference" instead of a warning
+or a score.
 `repetition` at deck level is the section's realised variety: each page's content (the
 frame left out) assigned a realised composition by the extractor's own leader clustering,
-measured by plan.py (V, distinct per page, runs) against the house's content pages, with
-any run longer than the house's longest flagged and, given --plan, every page whose
+measured by plan.py (V, distinct per page, runs) against the reference's content pages, with
+any run longer than the reference's longest flagged and, given --plan, every page whose
 realised composition disagrees with the plan's. After the emit, each page with a
 chart carries `chart_defaults_taken`: every chart choice its spec left out, with the
 value the file got for it.
@@ -88,7 +93,7 @@ def source_roles(guide: dict) -> tuple[str, ...]:
     """The role a source line is set in: type.source_line where the guide has it, so a
     note in type.footnote ("Note: ...", a "(1)" marker's note) is not counted as one (bcg's
     Note-only pages, which its digest reads as carrying no source); type.footnote where the
-    guide has no source_line role (the house sets its sources as footnotes)."""
+    guide has no source_line role (the reference sets its sources as footnotes)."""
     roles = (guide.get("typography") or {}).get("roles") or {}
     return ("type.source_line",) if roles.get("type.source_line") else ("type.footnote",)
 #: A totals row headed by one of these is a statistic over the column, not its sum.
@@ -139,13 +144,12 @@ def top_rules(guide: dict) -> list[dict]:
     bottom edge: the rule under the title. The title band is everything above them. The
     miner's edge anchor is not the test: bain's yellow rule sits 1.42 in down an 8.5 in
     page, past the miner's edge distance, and is still the rule its titles sit on."""
-    ref = guide.get("reference", {})
-    n = max(1, ref.get("slides", 1))
-    page = ref.get("page") or {}
+    from emit_pptx import recurring_chrome
+    page = guide.get("reference", {}).get("page") or {}
     page_w, page_h = page.get("width_emu"), page.get("height_emu")
     if not page_w or not page_h:
         return []
-    return [ch for ch in guide.get("chrome", []) if ch["kind"] == "rule" and ch.get("slides_present", 0) >= 0.5 * n
+    return [ch for ch in recurring_chrome(guide) if ch["kind"] == "rule"
             and ch.get("anchor") != "slide_bottom" and ch["box_in"][2] * EMU_PER_INCH >= 0.5 * page_w
             and (ch["box_in"][1] + ch["box_in"][3]) * EMU_PER_INCH <= 0.5 * page_h]
 
@@ -315,7 +319,7 @@ RUN_KEYS = {"text", "emphasis", "ink_role", "bold", "italic"}
 def check_presentation(nid: str, kind: str, st: dict) -> None:
     """A presentation value nothing would draw is refused by name, never dropped: an
     anchor outside t, m, b fell back to top in silence (round 5: "middle" on three
-    houses), and a prst on a text element drew a plain box."""
+    reference decks), and a prst on a text element drew a plain box."""
     from emit_pptx import SpecError, preset_shape
     if "anchor" in st and st["anchor"] not in TEXT_ANCHORS:
         raise SystemExit(f"{kind} {nid!r}: anchor {st['anchor']!r} is not one of {list(TEXT_ANCHORS)} (t top, m middle, b bottom)")
@@ -438,8 +442,8 @@ def ink_boxes(elements: list[dict], resolved: dict) -> list[tuple[int, int, int,
 
 def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict) -> dict:
     """Words, elements and covered area of the page against the reference's own bands
-    (10th to 90th percentile): below the band is sparse for this house, above it denser
-    than the house ever goes. The build reports it because a page that fits can still end
+    (10th to 90th percentile): below the band is sparse for this reference, above it denser
+    than the reference ever goes. The build reports it because a page that fits can still end
     half-way down the canvas, and nothing else here notices."""
     words = 0
     for el in elements:
@@ -464,7 +468,7 @@ def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict
     out = {"words": words, "elements": n_elements, "covered_area_fraction": round(covered, 3),
            "text_boxes_mostly_empty": empty or "none",
            "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image "
-                            "and fill at its box, unioned; a text box stretched past its lines is not covered. The house band "
+                            "and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band "
                             "unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous"}
     for key, value in (("words_per_slide", words), ("elements_per_slide", n_elements), ("content_area_fraction", covered)):
         band = bands.get(key) or {}
@@ -620,7 +624,7 @@ def chrome_layers(guide: dict, mode: str, page: dict | None = None) -> list[dict
     out = []
     ground = (guide.get("ground") or {}).get("image_path")
     if mode == "draw" and ground and Path(ground).is_file():
-        # the house's ground picture lies under everything (emit_pptx._picture_background)
+        # the reference's ground picture lies under everything (emit_pptx._picture_background)
         out.append({"kind": "ground", "id": "ground", "box": [0, 0, page_w, page_h], "path": ground})
     for ch in chrome_on_page(guide, mode, page):
         box = list(chrome_box_emu(ch))
@@ -703,7 +707,7 @@ def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict
             # scored against both, as against two fills a partial band leaves
             backings, undecidable = ground_extremes(band["path"], band["box"], box), False
             for hexv in backings:
-                names.setdefault(hexv, "the house's ground picture")
+                names.setdefault(hexv, "the reference's ground picture")
             continue
         if band["kind"] != "band" or not _intersects(band["box"], box):
             continue
@@ -779,17 +783,18 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
     The ink scored is the ink the spec names: nothing swaps it, so a wrong one is
     refused here by name.
 
-    House precedent: a pair under AA that the reference itself draws (the same ink hex
-    over the same backing hex, ooxml.ink_backings) at this size or smaller is the house's
-    own choice, not a defect of the deck. It is filed under `house_precedent` with the
+    Reference precedent: a pair under AA that the reference itself draws (the same ink hex
+    over the same backing hex, ooxml.ink_backings) at this size or smaller is the reference's
+    own choice, not a defect of the deck. It is filed under `reference_precedent` with the
     reference's evidence, neither refused nor warned. On a PDF reference a pair counts only
     where the page's render draws it (ooxml.confirm_on_render): a misread backing or words
     in their backing's own colour are no precedent, and the finding names why under
     `no_precedent`. `precedent` None means no reference was given, and every pair is judged
-    on WCAG alone."""
+    on WCAG alone; on a guide made with no reference the report says "no reference"."""
     eg = EmitGuide(guide)
-    out: dict = {"checked": 0, "violations": [], "warnings": [], "house_precedent": [], "undecidable": [], "unbound": [], "nearest_pass": None,
-                 "precedent_source": "reference" if precedent is not None else "none: no --reference, so no pair can claim the house's precedent"}
+    out: dict = {"checked": 0, "violations": [], "warnings": [], "reference_precedent": [], "undecidable": [], "unbound": [], "nearest_pass": None,
+                 "precedent_source": ("reference" if precedent is not None else "none: no --reference, so no pair can claim the reference's precedent")
+                 if plan.has_reference(guide) else plan.NO_REFERENCE}
 
     def file(finding: dict) -> None:
         out["checked"] += 1
@@ -799,7 +804,7 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
             finding = {**finding, "no_precedent": seen["not_confirmed"]}
             seen = None
         if finding["ratio"] < finding["threshold"] and seen and isinstance(finding["size_pt"], (int, float)) and seen["min_size_pt"] <= finding["size_pt"]:
-            out["house_precedent"].append({**finding, "reference": {"min_size_pt": seen["min_size_pt"], "chars": seen["chars"], "pages": sorted(seen["pages"])[:12]}})
+            out["reference_precedent"].append({**finding, "reference": {"min_size_pt": seen["min_size_pt"], "chars": seen["chars"], "pages": sorted(seen["pages"])[:12]}})
             return
         if finding["ratio"] < CONTRAST_REFUSAL:
             out["violations"].append(finding)
@@ -986,7 +991,7 @@ BUILD_UNREAD = "the written file was not read back for this page"
 
 def emitted_structures(path: Path, numbers: list[int], guide: dict, slides: list[dict]) -> tuple[dict[int, dict | None], str | None]:
     """Each built page's exhibit structure and kinds ({"structure", "kinds"}), read from the
-    file the build wrote with the one reader that reads the house's pages
+    file the build wrote with the one reader that reads the reference's pages
     (ooxml.exhibit_facts), the chrome the build drew (named by its chrome_id) and the footer
     placeholders left out. A picture sized by a role (slide.images[id] with height_role or
     width_role: a logo, an icon, a wordmark) is a mark, not an exhibit, and is left out too
@@ -1041,7 +1046,7 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
             entry["problems"].append({"kind": "exhibit without a brief", "severity": "refusal",
                                       "detail": f"the written page holds {facts['structure']} and its plan page {page['id']!r} briefs no exhibit "
                                                 "(exhibits: []): write the brief for each exhibit (what the reader must see, the comparison, "
-                                                "the data, the forms weighed, the chosen form and why, the nearest house exhibit, the marks) "
+                                                "the data, the forms weighed, the chosen form and why, the marks) "
                                                 "and plan.py check it before the spec"})
             if entry["status"] == "fit":
                 entry["status"], entry["reason"] = "unfittable", "exhibit without a brief"
@@ -1057,25 +1062,26 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
 BORDERLINE_SIMILARITY = 0.1
 
 
-def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: list[dict] | None = None, others: list[dict] | None = None,
+def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: list[dict] | None = None,
                   slide_ids: dict[int, str] | None = None, structures: dict[int, dict | None] | None = None,
-                  names: list[str] | None = None, plan_check: dict | None = None, unread_why: str = BUILD_UNREAD) -> dict:
+                  plan_check: dict | None = None, unread_why: str = BUILD_UNREAD) -> dict:
     """The built section's realised variety. Each solved page's content is its flattened
     elements' boxes with the page frame (frame_tracks) left out; pages get a realised
     composition by the extractor's own leader clustering (leader_clusters on
     slide_similarity, Hungarian box IoU over the larger set, at the archetype threshold),
-    which is how the house's archetypes were assigned, and are measured by plan.py's one
+    which is how the reference's archetypes were assigned, and are measured by plan.py's one
     measure: V, distinct compositions per page, the longest run and every run. A page that
-    did not solve breaks the sequence (absence, not a change). Against the house
-    (guide.variety, pooled with `others`), a run longer than the house's longest is flagged;
-    with no house evidence none is judged, and the report says so. Against the plan, each
+    did not solve breaks the sequence (absence, not a change). Against the reference
+    (guide.variety), a run longer than the reference's longest is flagged as a departure to
+    answer in the report; with no run evidence none is judged, and with no reference every
+    comparison reads "no reference". Against the plan, each
     adjacent pair where plan and build disagree (the plan repeats a composition and the
     build changes it, or the reverse) flags the later page. The exhibit structure of each
     page, read from the file the build wrote (emitted_structures), is measured the same way
-    against the structure the extractor read off the house's own pages: nobody names it, so
+    against the structure the extractor read off the reference's own pages: nobody names it, so
     a section of pages that each set a table beside a chart reads as the repeat it is
-    however the plan describes them. The house's measure keeps its
-    title as content where the build leaves the frame out: the house is held to the more
+    however the plan describes them. The reference's measure keeps its
+    title as content where the build leaves the frame out: the reference is held to the more
     lenient count, never the stricter one."""
     frame = frame_tracks(pages, guide)
     framed = {(n, tuple(b)) for t in frame for n, b in zip(t["pages"], t["boxes"])}
@@ -1098,24 +1104,26 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
             pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": sim >= ARCHETYPE_IOU_THRESHOLD,
                           **({"borderline": True} if abs(sim - ARCHETYPE_IOU_THRESHOLD) < BORDERLINE_SIMILARITY else {})})
     built = plan.measure_deck("built", segments, unread_why)
-    house = plan.house_of([guide, *(others or [])], names)
-    pooled = house["pooled"]
-    longest = pooled.get("longest_run") if pooled["status"] == "measured" else None
+    ref = plan.reference_variety(guide)
+    longest = ref.get("longest_run") if ref["status"] == "measured" else None
+    held = (longest if longest is not None else plan.NO_REFERENCE if ref["status"] == plan.NO_REFERENCE
+            else f"not judged: the reference's longest run is no evidence ({ref.get('why')})")
     runs = built.get("runs") or []
     over: list[dict] | str = ([{"pages": r["pages"], "length": len(r["pages"]), "realised": r["composition"]} for r in runs if len(r["pages"]) > longest]
-                              if longest is not None else f"not judged: the house's longest run is no evidence ({pooled.get('why')})")
+                              if longest is not None else held)
     out: dict = {"threshold": ARCHETYPE_IOU_THRESHOLD, "frame_left_out": sorted(t["id"] for t in frame), "pairs": pairs,
                  "realised": [{"page": n, "composition": realised[n], **((structures or {}).get(n) or {})} for n, _ in pages], "measure": built,
-                 "house": {"decks": [{k: d[k] for k in ("deck", "status", "content_pages", "composition", "longest_run", "why") if k in d} for d in house["decks"]],
-                           "pooled": pooled},
-                 "against_house": ({"composition_V": plan.against(built["composition"]["V"], pooled, "composition"),
-                                    **{f"{name}_V": plan.against(built[name].get("V"), pooled, name) for name, _ in plan.FACT_MEASURES},
-                                    "distinct_per_page": plan.distinct_against(built["distinct"]["per_page"], built["content_pages"], pooled),
-                                    "longest_run": {"built": built["longest_run"], "house": longest if longest is not None else "no evidence"}}
-                                   if built["status"] == "measured" else {"built": built["why"]}),
-                 "house_longest_run": longest if longest is not None else "no evidence", "runs_over_reference": over}
-    warnings = [f"{k} {v['value']} {v['verdict']} ({v.get('house_p10_deck', v.get('house_p10_window'))}); the threshold is unmeasured"
-                for k, v in (out["against_house"].items() if built["status"] == "measured" else []) if isinstance(v, dict) and v.get("verdict", "").startswith("below")]
+                 "reference": {k: ref[k] for k in ("deck", "status", "content_pages", "composition", *(n for n, _ in plan.FACT_MEASURES),
+                                                   "distinct", "longest_run", "why") if k in ref},
+                 "against_reference": ({"composition_V": plan.against(built["composition"]["V"], ref, "composition"),
+                                        **{f"{name}_V": plan.against(built[name].get("V"), ref, name) for name, _ in plan.FACT_MEASURES},
+                                        "distinct_per_page": plan.distinct_against(built["distinct"]["per_page"], built["content_pages"], ref),
+                                        "longest_run": {"built": built["longest_run"], "reference": held}}
+                                       if built["status"] == "measured" else {"built": built["why"]}),
+                 "reference_longest_run": held, "runs_over_reference": over}
+    warnings = [f"{k} {v['value']} {v['verdict']} ({v.get('reference_V', v.get('reference_p10_window'))}): a departure (the line is unmeasured); "
+                "answer it in one line in the report"
+                for k, v in (out["against_reference"].items() if built["status"] == "measured" else []) if isinstance(v, dict) and v.get("verdict", "").startswith("below")]
     edge = [p for p in pairs if p["similar"] and p.get("borderline")]
     if edge:
         note = ("; of the repeats, " + ", ".join(f"pages {p['pages'][0]}-{p['pages'][1]} ({p['similarity']})" for p in edge)
@@ -1286,9 +1294,9 @@ def source_line_of(elements: list[dict], guide: dict) -> dict:
                                for p in el["paragraphs"])}
 
 
-#: A definition, not a measured line: a data page departs from the house's source-line
-#: habit when it lacks a source line and at least this share of the house's data pages
-#: carry one (the house's majority), read from the completed digest over at least
+#: A definition, not a measured line: a data page departs from the reference's source-line
+#: habit when it lacks a source line and at least this share of the reference's data pages
+#: carry one (the reference's majority), read from the completed digest over at least
 #: SOURCE_LINE_MIN_PAGES data pages. Citing a source is never wrong, so a page WITH one is
 #: never a departure, and nothing here refuses: the count is evidence beside the choice.
 SOURCE_LINE_MAJORITY = 0.5
@@ -1296,15 +1304,19 @@ SOURCE_LINE_MIN_PAGES = 3
 #: what each habit means for a new page, as source_line_problem reads it
 SOURCE_LINE_ADVICE = {
     "most": "a data page without one is warned with this count; answer the warning in the report",
-    "few": "a data page without one does what most of the house's do; a page with one is never wrong",
-    "unmeasured": "a data page without one is warned (the house's habit is no evidence either way); answer the warning in the report",
+    "few": "a data page without one does what most of the reference's do; a page with one is never wrong",
+    "unmeasured": "a data page without one is warned (the reference's habit is no evidence either way); answer the warning in the report",
+    plan.NO_REFERENCE: "nothing is compared: say in the report where the deck's data comes from",
 }
 
 
 def source_line_habit(guide: dict) -> dict:
-    """The house's source-line habit from the digest, with its count: `most` (at least
+    """The reference's source-line habit from the digest, with its count: `most` (at least
     SOURCE_LINE_MAJORITY of its data pages carry one), `few` (fewer do), or `unmeasured`
-    (no answers, or too few data pages to say; never read as 'the house carries none')."""
+    (no answers, or too few data pages to say; never read as 'the reference carries none'),
+    or "no reference" on a guide made with none, where a page's source line is the model's call."""
+    if not plan.has_reference(guide):
+        return {"habit": plan.NO_REFERENCE, "evidence": "no reference: whether a data page carries a source line is the deck's own choice"}
     lines = (guide.get("exhibit_habits") or {}).get("source_lines")
     if not isinstance(lines, dict) or lines.get("share") is None:
         return {"habit": "unmeasured", "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"}
@@ -1313,19 +1325,19 @@ def source_line_habit(guide: dict) -> dict:
         return {"habit": "unmeasured", "evidence": f"{k} of {n} data pages carry one: fewer than {SOURCE_LINE_MIN_PAGES} data pages is no evidence of a habit"}
     share = lines["share"]
     return {"habit": "most" if share >= SOURCE_LINE_MAJORITY else "few", "share": share, "pages_with": lines.get("pages_with"),
-            "evidence": f"the house sources {k} of {n} data pages ({share:.0%}"
+            "evidence": f"the reference sources {k} of {n} data pages ({share:.0%}"
                         + (f": pages {', '.join(str(x) for x in lines.get('pages_with') or [])}" if 0 < k <= 5 else "") + ")"}
 
 
 def source_line_problem(elements: list[dict], guide: dict) -> dict | None:
-    """A data page without a source line where most of the house's data pages carry one,
-    or where the habit is unmeasured: a warning quoting the house's count, answered in the
-    report (keep the page as it is and say why, or add one). Never a refusal: the house's
+    """A data page without a source line where most of the reference's data pages carry one,
+    or where the habit is unmeasured: a warning quoting the reference's count, answered in the
+    report (keep the page as it is and say why, or add one). Never a refusal: the reference's
     count is evidence, not a measured defect."""
     page = source_line_of(elements, guide)
     habit = source_line_habit(guide)
     role = source_roles(guide)[0]
-    if page["data_page"] and not page["source_line"] and habit["habit"] != "few":
+    if page["data_page"] and not page["source_line"] and habit["habit"] not in ("few", plan.NO_REFERENCE):
         return {"kind": "no source line", "severity": "warning",
                 "detail": f"the page carries a table or a chart and no paragraph in {role}; {habit['evidence']}; this page has none: "
                           "add one, or say in the report why this page carries none"}
@@ -1590,37 +1602,40 @@ def page_title_id(slide: dict, spec_raw: dict) -> str | None:
 
 
 def claim_places(guide: dict) -> str:
-    """Where the house states the claims its topic titles leave out, with counts, from the
+    """Where the reference states the claims its topic titles leave out, with counts, from the
     completed /titles/register (claims_elsewhere: slide -> a place in words, or null)."""
+    if not plan.has_reference(guide):
+        return "no reference: a lead-in, a takeaway band or a sidebar, wherever the page's own design puts it"
     claims = (((guide.get("titles") or {}).get("register")) or {}).get("claims_elsewhere")
     if not isinstance(claims, dict) or not claims:
-        return "the guide's /titles/register records no claims_elsewhere: read the house's own pages for it"
+        return "the guide's /titles/register records no claims_elsewhere: read the reference's own pages for it"
     places = Counter(" ".join(str(v).split()).lower() for v in claims.values() if isinstance(v, str) and v.strip())
     stated = ", ".join(f"{p} ({n})" for p, n in places.most_common())
     silent = sum(1 for v in claims.values() if v is None)
     return (f"claims_elsewhere: {stated}" if stated else "claims_elsewhere names no place") + (f"; {silent} topic-titled page(s) state no claim" if silent else "")
 
 
-#: Asserted, unmeasured: a page whose stated register the house uses on fewer than this
+#: Asserted, unmeasured: a page whose stated register the reference uses on fewer than this
 #: share of its titles is warned. No measurement says where a register becomes foreign.
 RARE_REGISTER_SHARE = 0.10
 
 
 def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict, guide: dict) -> tuple[dict, list[dict]]:
-    """The page title against the house's titles (guide.titles): characters, words and the
-    solver's lines against the house distribution (above the house max warns), and the
+    """The page title against the reference's titles (guide.titles): characters, words and the
+    solver's lines against the reference distribution (above the reference max warns), and the
     register the page spec states (`slide.title.register`, in words, as the plan states
-    it): a coded term (plan.register_term) against the house's register counts (a term on
-    under RARE_REGISTER_SHARE of the house's titles warns), any other words reported as no
-    house count with the counts beside them. Only a register that is not words is refused.
+    it): a coded term (plan.register_term) against the reference's register counts (a term on
+    under RARE_REGISTER_SHARE of the reference's titles warns), any other words reported as no
+    count with the counts beside them. Only a register that is not words is refused.
     The register is never read from the title here: the spec states it, or it is reported
-    as not stated. Absence of house evidence is reported as such, never as zero."""
+    as not stated. Absence of evidence is reported as such, never as zero; on a guide made
+    with no reference nothing is compared and the report says "no reference"."""
     tid = page_title_id(slide, spec_raw)
     named = (slide.get("title") or {}).get("element")
     stated = (slide.get("title") or {}).get("register")
     if stated is not None and plan._words(stated) < 1:
         # the plan's own rule (plan.read_plan): any words; only a register that is not words is refused
-        raise SystemExit(f"{slide.get('id')}: title.register: the title's register in words (or a term the house's titles are coded in: "
+        raise SystemExit(f"{slide.get('id')}: title.register: the title's register in words (or a term the reference's titles are coded in: "
                          f"{'|'.join(plan.VOCABULARY['title_register'])}), not {stated!r}")
     el = next((e for e in elements if e["id"] == tid and e["kind"] == "text"), None) if tid else None
     if named and el is None:
@@ -1630,48 +1645,53 @@ def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict,
         return {"element": None, "register_stated": stated,
                 "verdict": "no title: the page names none (title.element) and holds no text element set in type.title"}, []
     # the title's own paragraphs: a subtitle set with it in the band above the rule (the
-    # house's subtitle on jazz) is a companion, which the house's title lengths leave out
+    # reference's subtitle on jazz) is a companion, which the reference's title lengths leave out
     own = [p for p in el["paragraphs"] if p.get("role") == "type.title"] or el["paragraphs"]
     text = paragraphs_words(own)
-    house = guide.get("titles")
+    titles = guide.get("titles") if plan.has_reference(guide) else None
     report: dict = {"element": tid, "text": text, "register_stated": stated}
     warnings: list[dict] = []
     lines = (sum(len(p["lines"]) for p in own) if all(p.get("lines") for p in own)
              else (entry.get("text_lines") or {}).get(tid) if len(own) == len(el["paragraphs"]) else None)
     measured = {"chars": len(text), "words": len(text.split()), "lines": lines}
-    if not house or not house["distribution"]["chars"]["n"]:
+    if not plan.has_reference(guide):
+        report["length"] = {k: {"value": v, "verdict": plan.NO_REFERENCE} for k, v in measured.items()}
+    elif not titles or not titles["distribution"]["chars"]["n"]:
         report["length"] = {k: {"value": v, "verdict": "no evidence: the guide has no titles read by position"} for k, v in measured.items()}
     else:
         report["length"] = {}
         for k, v in measured.items():
-            d = house["distribution"][k]
+            d = titles["distribution"][k]
             if v is None or not d["n"]:
                 verdict = "no evidence" if v is not None else "not measured"
             else:
-                verdict = "above house max" if v > d["max"] else "above house p90" if v > d["p90"] else "within house p90"
-            report["length"][k] = {"value": v, "house": {q: d[q] for q in ("median", "p90", "max", "n")}, "verdict": verdict}
-            if verdict == "above house max":
-                warnings.append({"kind": "title longer than the house", "severity": "warning",
-                                 "detail": f"{tid}: {v} {k} against the house max of {d['max']} (median {d['median']}, {d['n']} titles)"})
-    reg = (house or {}).get("register")
+                verdict = "above reference max" if v > d["max"] else "above reference p90" if v > d["p90"] else "within reference p90"
+            report["length"][k] = {"value": v, "reference": {q: d[q] for q in ("median", "p90", "max", "n")}, "verdict": verdict}
+            if verdict == "above reference max":
+                warnings.append({"kind": "title longer than the reference", "severity": "warning",
+                                 "detail": f"{tid}: {v} {k} against the reference max of {d['max']} (median {d['median']}, {d['n']} titles): "
+                                           "a departure; answer it in one line in the report"})
+    reg = (titles or {}).get("register")
     term = plan.register_term(stated) if stated is not None else None
     if stated is None:
         report["register"] = {"verdict": "not stated: the page spec names no title.register"}
+    elif not plan.has_reference(guide):
+        report["register"] = {"term": term, "verdict": plan.NO_REFERENCE}
     elif not reg:
         report["register"] = {"verdict": "no evidence: the guide's /titles/register is not completed"}
     elif term is None:
-        report["register"] = {"term": None, "house_counts": reg["counts"],
-                              "verdict": "no house count: the register is in words, none of the terms the house's titles are coded in"}
+        report["register"] = {"term": None, "reference_counts": reg["counts"],
+                              "verdict": "no count: the register is in words, none of the terms the reference's titles are coded in"}
     else:
         report["register_term"] = term
         stated = term
         share = reg["counts"].get(stated, 0) / reg["n"] if reg["n"] else None
-        report["register"] = {"house_counts": reg["counts"], "share": None if share is None else round(share, 3), "threshold": RARE_REGISTER_SHARE,
-                              "threshold_basis": "unmeasured", "verdict": "rare in the house" if share is not None and share < RARE_REGISTER_SHARE else "house register"}
+        report["register"] = {"reference_counts": reg["counts"], "share": None if share is None else round(share, 3), "threshold": RARE_REGISTER_SHARE,
+                              "threshold_basis": "unmeasured", "verdict": "rare in the reference" if share is not None and share < RARE_REGISTER_SHARE else "a register the reference writes"}
         if share is not None and share < RARE_REGISTER_SHARE:
-            warnings.append({"kind": "title register rare in the house", "severity": "warning",
-                             "detail": f"{tid}: a {stated} title, which the house writes on {reg['counts'].get(stated, 0)} of {reg['n']} titles "
-                                       f"({json.dumps(reg['counts'])}); the {RARE_REGISTER_SHARE:.0%} line is unmeasured"})
+            warnings.append({"kind": "title register rare in the reference", "severity": "warning",
+                             "detail": f"{tid}: a {stated} title, which the reference writes on {reg['counts'].get(stated, 0)} of {reg['n']} titles "
+                                       f"({json.dumps(reg['counts'])}); the {RARE_REGISTER_SHARE:.0%} line is unmeasured: a departure; answer it in one line in the report"})
     return report, warnings
 
 
@@ -1688,8 +1708,9 @@ def bullet_indents_taken(slide: dict, spec: L.Spec, guide: dict) -> list[str]:
     levels = sorted({q.bullet_level for node, _ in L.walk(spec.root) if isinstance(node, L.Element) for q in node.paragraphs if q.bullet_level is not None})
     if not levels:
         return []
+    whose = "the reference shows no bullets, so nothing of the reference's sets them" if plan.has_reference(guide) else "the guide sets no bullets"
     return [(f"bullet_indent_roles: levels {levels} indented {', '.join(BULLET_INDENTS_TAKEN[str(lv)] for lv in levels if str(lv) in BULLET_INDENTS_TAKEN)} "
-             "(the reference shows no bullets, so nothing of the house's sets them): does this text need bullets, numbered rows or prose?")]
+             f"({whose}): does this text need bullets, numbered rows or prose?")]
 
 
 def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto", page_chrome_choices: dict | None = None) -> None:
@@ -2075,26 +2096,16 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     return out
 
 
-def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs: list[str], template: str, ids: list, computed: list[str] | None = None,
+def leakage_of(out: str, reference: str | None, guide: dict, briefs: list[str], template: str, ids: list, computed: list[str] | None = None,
                furniture: list[str] | None = None) -> dict:
-    """leakage.py on the written deck against the past decks this build was given: the
-    reference, and each house deck's own file when it is found with its recorded sha256.
-    A past deck that cannot be read is named, never taken as clean."""
-    import hashlib
+    """leakage.py on the written deck against the past deck this build was given (the
+    reference). With no reference there is no past deck to find in the new one, and the
+    report says so; a reference guide built without --reference says it was not checked."""
     import leakage
-    past, unread = [], []
-    if reference:
-        past.append(reference)
-    for g in house_decks:
-        ref = g.get("reference") or {}
-        path = Path(ref.get("file") or "")
-        if ref.get("file") and path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == ref.get("sha256"):
-            past.append(str(path))
-        else:
-            unread.append(f"{ref.get('file')}: not found with the guide's sha256, so not compared")
-    if not past:
-        return {"verdict": "not checked: no past deck given (--reference, --house-deck)", "unread": unread}
-    return {**leakage.leakage(out, past, briefs, template, ids, computed, furniture), **({"unread": unread} if unread else {})}
+    if not reference:
+        return {"verdict": (plan.NO_REFERENCE + ": no past deck, so no past content can be found in this deck") if not plan.has_reference(guide)
+                else "not checked: no past deck given (--reference)"}
+    return leakage.leakage(out, [reference], briefs, template, ids, computed, furniture)
 
 
 def plan_message_figures(slide: dict, elements: list[dict], plan_pages: list[dict] | None) -> list[dict]:
@@ -2131,21 +2142,21 @@ def type_roles_of(obj) -> set[str]:
 
 
 def off_ladder_problems(elements: list[dict], guide: dict, judge: dict | None) -> list[dict]:
-    """A type role the completion wrote off the house's size ladder (provenance.off_ladder,
+    """A type role the completion wrote off the reference's size ladder (provenance.off_ladder,
     complete_guide.check_writable: allowed with a reason) that this page sets text in: a
     warning naming the levels, the nearest one, the reason given and the judge's size_hist
     distance for the deck, answered in the report. A weaker model given continuous sizes
-    drifted to 8.5, 9.5, 20 and 22pt (references/typography.md); the levels are the house's."""
+    drifted to 8.5, 9.5, 20 and 22pt (references/typography.md); the levels are the reference's."""
     roles = (guide.get("typography") or {}).get("roles") or {}
     d = ((judge or {}).get("components") or {}).get("size_hist")
-    distance = (f"the judge's size_hist distance for this deck is {d} (0 is the house's own mix of sizes)" if d is not None
+    distance = (f"the judge's size_hist distance for this deck is {d} (0 is the reference's own mix of sizes)" if d is not None
                 else "the judge's size_hist distance is not computed (no --reference, or the reference cannot be judged)")
     out = []
     for role in sorted(type_roles_of(elements)):
         tag = ((roles.get(role) or {}).get("provenance") or {}).get("off_ladder")
         if isinstance(tag, dict):
-            out.append({"kind": "type size off the house's ladder", "severity": "warning",
-                        "detail": f"{role} at {tag.get('size_pt')}pt is off the house's levels {tag.get('levels')} (nearest {tag.get('nearest_level')}pt), "
+            out.append({"kind": "type size off the reference's ladder", "severity": "warning",
+                        "detail": f"{role} at {tag.get('size_pt')}pt is off the reference's levels {tag.get('levels')} (nearest {tag.get('nearest_level')}pt), "
                                   f"written because: {tag.get('why')}; {distance}. Say in the report why this size and not the nearest level"})
     return out
 
@@ -2250,8 +2261,7 @@ class Outputs:
 
 
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
-          plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None, house_names: list[str] | None = None,
-          plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None, computed: list[str] | None = None) -> dict:
+          plan_pages: list[dict] | None = None, plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None, computed: list[str] | None = None) -> dict:
     outputs = outputs or Outputs(out, renders, do_render)
     outputs.start()  # before the solve: a missing -o directory otherwise fails only at the save
     out = str(outputs.stage_out)
@@ -2263,6 +2273,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     report = {"out": out, "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "slides": []}
     ref_slides = None
     precedent = None
+    referenced = plan.has_reference(guide, "--guide")
+    if reference and not referenced:
+        raise SystemExit("--reference: the guide was made with no reference (extract_style.py --blank), so there is no reference deck to "
+                         "compare with; build without --reference, or make the guide from this deck with extract_style.py")
     if reference:
         from ooxml import fingerprint_deck, ink_backings
         ref_slides = fingerprint_deck(reference)
@@ -2300,7 +2314,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 held = band // pitch
                 entry["reason"] = (f"title needs {sum(len(m.lines) for m in title_rows)} lines; the band above the top rule "
                                    f"({band / EMU_PER_INCH:.2f} in) holds {held} line{'' if held == 1 else 's'} at {title_rows[0].entry.size_pt}pt, "
-                                   f"so it does not fit. Shorten the title, or move a clause of it to where the house states claims "
+                                   f"so it does not fit. Shorten the title, or move a clause of it to where the reference states claims "
                                    f"({claim_places(guide)})")
             elif outcome.status != "fit":
                 # the brief names the cause on the page's own line, not only in the JSON
@@ -2357,16 +2371,16 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             annotation_pages[len(emitted)] = entry["annotations"]
         emitted.append(entry)
     sourced = [(e["id"], e["source_line"]) for e in emitted if "source_line" in e]
-    report["source_lines"] = {"house": source_line_habit(guide),
+    report["source_lines"] = {"reference": source_line_habit(guide),
                               "deck": {"data_pages": sum(1 for _, s in sourced if s["data_page"]),
                                        "with_source_line": [i for i, s in sourced if s["source_line"]],
                                        "data_pages_without": [i for i, s in sourced if s["data_page"] and not s["source_line"]]}}
     report["position_drift"] = position_drift(pages, guide)
     emit_report = emit_slides(emit_spec, template, guide, out, chrome)
-    # variety after the write: each page's exhibit structure is read off the file, as the house's was
+    # variety after the write: each page's exhibit structure is read off the file, as the reference's was
     structures, structures_unread = emitted_structures(out, [n for n, _ in pages], guide, deck["slides"])
-    report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages},
-                                         structures, house_names, plan_check, structures_unread or BUILD_UNREAD)
+    report["repetition"] = repetition_of(pages, guide, plan_pages, {n: deck["slides"][n - 1].get("id") for n, _ in pages},
+                                         structures, plan_check, structures_unread or BUILD_UNREAD)
     briefs_against_file(pages, emitted, {n: deck["slides"][n - 1].get("id") for n, _ in pages}, plan_pages, structures, structures_unread)
     report["emitted_slides"] = len(emit_report["slides"])
     # the file as written, measured against the boxes it was solved for
@@ -2378,9 +2392,9 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["status"], entry["reason"] = "unfittable", "emitted text overflows"
     n_ref = (guide.get("reference") or {}).get("slides")
     report["chrome"] = {**emit_report["chrome"], "drawn": [page["chrome_drawn"] for page in emit_report["slides"]],
-                        # the house's chrome every page starts from, with its counts; a page leaves one off or sets other words with a why (slide.chrome)
-                        "house": [{"chrome_id": ch["chrome_id"], "kind": ch["kind"], "text": chrome_text(ch), "on": f"{ch.get('slides_present')} of {n_ref} reference pages"}
-                                  for ch in chrome_on_page(guide, chrome)]}
+                        # the reference's chrome every page starts from, with its counts; a page leaves one off or sets other words with a why (slide.chrome)
+                        "reference": [{"chrome_id": ch["chrome_id"], "kind": ch["kind"], "text": chrome_text(ch), "on": f"{ch.get('slides_present')} of {n_ref} reference pages"}
+                                      for ch in chrome_on_page(guide, chrome)] if referenced else plan.NO_REFERENCE}
     for entry, page in zip(emitted, emit_report["slides"]):
         if page.get("charts"):
             # every chart choice the spec left out, with the value written for it
@@ -2392,10 +2406,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["chrome_choices"] = page["chrome_choices"]
     from pptx_tools import validate
     report["validation"] = validate(out, render=False)
-    # the chrome the build drew is the house's furniture, as the template's own text is: on a
+    # the chrome the build drew is the reference's furniture, as the template's own text is: on a
     # raster reference the past deck's copy of it is OCR text and never reads as chrome there
     furniture = [t for t in (chrome_text(ch) for ch in chrome_on_page(guide, chrome)) if t]
-    report["leakage"] = leakage_of(out, reference, house_decks or [], briefs or [], template, [e.get("id") for e in emitted], computed, furniture)
+    report["leakage"] = leakage_of(out, reference, guide, briefs or [], template, [e.get("id") for e in emitted], computed, furniture)
     if do_render:
         import subprocess
         rdir = str(outputs.stage_renders)
@@ -2477,13 +2491,15 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         from fingerprint import judge as judge_style
         judge = judge_style(out, reference, others, ref_slides=ref_slides)
         # the judge reads style; fit is the solver's verdict and validity the package's. A
-        # page is filed under the house only when all three hold, and never when the judge
+        # page is filed under the reference only when all three hold, and never when the judge
         # could not read the reference.
         all_fit = all(sl.get("status") == "fit" and not sl.get("violations") for sl in report["slides"])
         judge["filed_under_reference"] = None if "cannot_judge" in judge else (
-            bool(judge["nearest_is_reference"]) and bool(judge["within_house_spread"]) and judge["layout_clean"]
+            bool(judge["nearest_is_reference"]) and bool(judge["within_reference_spread"]) and judge["layout_clean"]
             and all_fit and bool(report.get("validation", {}).get("ok")))
         report["judge"] = judge
+    elif not referenced:
+        report["judge"] = {"verdict": plan.NO_REFERENCE, "why": "the judge measures a deck's distance to its reference; this guide was made with none"}
     for entry, page in zip(emitted, emit_spec["slides"], strict=True):
         entry["problems"].extend(off_ladder_problems(page["elements"], guide, report.get("judge")))
     written = outputs.finish(passed(report))
@@ -2506,7 +2522,6 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"])
     ap.add_argument("--plan", default=None, help="the section plan (plan.py): realised compositions are compared with the planned ones")
-    ap.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
     ap.add_argument("--computed", action="append", default=[], help="figures your own arithmetic produced from the user's data, as text; "
                     "a past deck's figure that matches one is listed under leakage.declared_computed instead of as distinctive")
@@ -2532,7 +2547,7 @@ def _run(args, outputs: Outputs) -> dict:
         if value is not None:
             import cli
             cli.in_path(value, f"--{name}" if name != "deck" else "the deck spec")
-    for name in ("brief", "computed", "house_deck"):
+    for name in ("brief", "computed"):
         for value in getattr(args, name, None) or []:
             import cli
             cli.in_path(value, f"--{name.replace('_', '-')}")
@@ -2540,12 +2555,10 @@ def _run(args, outputs: Outputs) -> dict:
     guide = json.loads(Path(args.guide).read_text())
     plan_pages = None
     plan_check = None
-    house_decks = [json.loads(Path(p).read_text()) for p in args.house_deck]
-    house_names = [f"--guide {args.guide}", *(f"--house-deck {p}" for p in args.house_deck)]
     if args.plan:
         # the plan gate is plan.py check's, whole: a plan it refuses is not built
         plan_json = json.loads(Path(args.plan).read_text())
-        plan_check = plan.check(plan_json, guide, house_decks, house_names)
+        plan_check = plan.check(plan_json, guide)
         if plan_check["status"] != "pass":
             raise plan.Refused(f"--plan: plan.py check refuses {args.plan}: " + "; ".join(plan_check["refusals"]))
         plan_pages = plan.read_plan(plan_json, guide)
@@ -2562,9 +2575,9 @@ def _run(args, outputs: Outputs) -> dict:
             "built": built, "of": planned,
             "note": "a run of the plan: the plan check covers the whole plan, the realised variety covers only the pages built"}
     else:
-        plan.house_of([guide, *house_decks], house_names)  # the house decks proven before the solve, not after it
-    return build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
-                 house_names, plan_check, args.brief, outputs, args.computed)
+        plan.reference_variety(guide)  # the guide proven before the solve, not after it
+    return build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages,
+                 plan_check, args.brief, outputs, args.computed)
 
 
 def brief_text(report: dict, outputs: Outputs) -> str:
@@ -2599,20 +2612,23 @@ def brief_text(report: dict, outputs: Outputs) -> str:
             lines.append("  defaults taken: " + ", ".join(f"{n} {name}" for name, n in counts.items() if n)
                          + " (slides[].<kind>_defaults_taken): write each choice you mean, or name it in the report as intended")
     rep = report.get("repetition") or {}
-    ah = rep.get("against_house") or {}
+    ah = rep.get("against_reference") or {}
     if isinstance(ah.get("composition_V"), dict):
         cv, sv, kv = ah["composition_V"], ah.get("structures_V") or {}, ah.get("kinds_V") or {}
-        lines.append(f"variety: composition V {cv.get('value')} (house p10 {cv.get('house_p10_deck')}), exhibit structure V {sv.get('value')} "
-                     f"(house p10 {sv.get('house_p10_deck')}), exhibit kinds V {kv.get('value')} (house p10 {kv.get('house_p10_deck')}), "
+
+        def beside(v: dict) -> str:
+            return f"reference {v['reference_V']}" if "reference_V" in v else str(v.get("verdict"))
+        lines.append(f"variety: composition V {cv.get('value')} ({beside(cv)}), exhibit structure V {sv.get('value')} "
+                     f"({beside(sv)}), exhibit kinds V {kv.get('value')} ({beside(kv)}), "
                      f"longest run {(ah.get('longest_run') or {}).get('built')} "
-                     f"(house {(ah.get('longest_run') or {}).get('house')})")
+                     f"(reference {(ah.get('longest_run') or {}).get('reference')})")
     lines += [f"  variety warning: {w}" for w in rep.get("warnings") or []]
     differing = ((rep.get("plan") or {}) if isinstance(rep.get("plan"), dict) else {}).get("pages_differing_from_plan") or []
     lines += [f"  differs from plan: {d.get('id')}: {d.get('detail')}" for d in differing]
     src = report.get("source_lines") or {}
     if src:
         deck_src = src["deck"]
-        lines.append(f"source lines: house {src['house']['habit']}: {src['house']['evidence']}; this deck: {len(deck_src['with_source_line'])} page(s) carry one "
+        lines.append(f"source lines: reference {src['reference']['habit']}: {src['reference']['evidence']}; this deck: {len(deck_src['with_source_line'])} page(s) carry one "
                      f"({', '.join(map(str, deck_src['with_source_line'])) or 'none'}), {deck_src['data_pages']} data page(s)")
     leak = report.get("leakage") or {}
     if leak:
@@ -2623,11 +2639,13 @@ def brief_text(report: dict, outputs: Outputs) -> str:
         lines.append(f"firm chrome: {f.get('chrome_id')} {f.get('text') or f.get('kind')!r}: {f.get('decision')}" + ("" if f.get("chosen") else " (not chosen by the deck)"))
     judge = report.get("judge") or {}
     if "total" in judge:
-        hs = judge.get("house_spread") or {}
-        lines.append(f"judge: total {judge['total']} (house median {hs.get('median')}, p90 {hs.get('p90')}, max {hs.get('max')}); nearest is the reference: "
+        hs = judge.get("reference_spread") or {}
+        lines.append(f"judge: total {judge['total']} (reference's own pages: median {hs.get('median')}, p90 {hs.get('p90')}, max {hs.get('max')}); nearest is the reference: "
                      f"{judge.get('nearest_is_reference')}; filed under the reference: {judge.get('filed_under_reference')} (necessary, not sufficient)")
     elif judge.get("cannot_judge"):
         lines.append(f"judge: cannot judge: {judge['cannot_judge']}")
+    elif judge.get("verdict") == plan.NO_REFERENCE:
+        lines.append(f"judge: {plan.NO_REFERENCE}")
     return "\n".join(lines)
 
 

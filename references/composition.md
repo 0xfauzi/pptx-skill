@@ -1,23 +1,23 @@
 # Composition: questions, and what decks measurably do
 
 Questions to ask about a page's arrangement, with what professional decks measurably do.
-None of it is a rule. The house's measured habits (`guide.composition`, `guide.variety`, its
+None of it is a rule. The reference's measured habits (`guide.composition`, `guide.variety`, its
 own pages) are the strongest evidence you have: start there, and where this page departs,
 say why in the report. Only measurable defects refuse. Counts are from 578 coded content pages (bank 231, consulting 317, chart book
 30), one coder per page, good to about plus or minus 2 to 3.
 
 ## Contents
 - Questions per page
-- Composition families by house type
+- Composition families by deck type
 - Exhibits per page, and co-equal blocks
 - Sidebars and takeaway boxes
 - Density
-- Conventions that belong to one house
+- Conventions that belong to one reference
 - What a blind rater noticed on generated pages
 
 ## Questions per page
 
-- Which layout do the house's past decks use for a page like this, and which placeholders
+- Which layout do the reference's past decks use for a page like this, and which placeholders
   do they fill?
 - Did the content's own structure pick the arrangement (how many entities, how many
   measures per entity, what is compared, what is concluded), or was a layout picked and
@@ -29,11 +29,11 @@ say why in the report. Only measurable defects refuse. Counts are from 578 coded
   one order) or a list of unrelated facts? Does each block's size say how much it matters
   to the message?
 - Is every edge on an axis the page already has? Is empty space a decision you can name?
-- Which house page is nearest to this intent, and what does it do that this page does not?
+- With a reference, which of its pages is nearest to this intent in look, and what does it do that this page does not?
 
-## What coders counted, by house type
+## What coders counted, by deck type
 
-The rows are the corpus coders' composition families with counts: evidence of how houses
+The rows are the corpus coders' composition families with counts: evidence of how firms
 arrange pages, never a set to choose from. (`library.py pick --composition` takes words:
 words that name one of these families match the library pages filed under it, any other
 words are matched against what each page records of its composition. It is a search over
@@ -77,14 +77,14 @@ Takeaway band, box or sidebar as an emphasis device: 46 pages.
 
 ## Density
 
-Median page fill is 0.85 in every house type. Median elements per page: bank about 80 (two
+Median page fill is 0.85 in every deck type. Median elements per page: bank about 80 (two
 decks at 145 and 119), consulting about 30, chart book about 35; dense tables reach 110 to
-230 elements. The guide's density bands are this house's own range: the build reports
+230 elements. The guide's density bands are this reference's own range: the build reports
 where the page sits in them, as evidence, and a page outside them says why in the report.
 
-## Conventions that belong to one house
+## Conventions that belong to one reference
 
-Each was found in one deck or one house; they show what mining a company's decks finds, not
+Each was found in one deck or one firm's decks; they show what mining a company's decks finds, not
 what to copy elsewhere: a bottom takeaway band on 20 of 30 pages; a chart of 62 to 70% of
 the width beside a grey full-height sidebar on 11 of 29 pages; a title panel on the left
 third of the page; rows of number badge, arrow label and finding box on 6 of 51 pages of
@@ -96,20 +96,21 @@ across 5 segment tables.
 
 The rater's recorded notes, the evidence here: "Chart variety and layout variety in
 generated slides are low. Generally the same patterns with different colours"; "Logos.
-Generated slides have none". Claim titles on every page of a topic house were caught in the
+Generated slides have none". Claim titles on every page of a deck whose reference titles by topic were caught in the
 blind round too (evals/README.md).
 
-Questions to put to a page against its house, with counts where the corpus has them:
+Questions to put to a page, with counts where the corpus has them:
 
 - A card grid: is the content a comparison, or a list that a grid makes look like one?
 - Number and label tiles: big numbers or KPI panels are 8 of 578 coded pages, all
-  consulting; icons are on 32 (2 bank, 30 consulting). Does this house draw them?
-- Corners: what do `guide.shape_language.corner_radii` (`rounded_share`) and the house's
+  consulting; icons are on 32 (2 bank, 30 consulting). Does this reference draw them?
+- Corners: what do `guide.shape_language.corner_radii` (`rounded_share`) and the reference's
   pages show?
-- Centred body text, three of everything, uniform spacing: does the house do this, and does
+- Centred body text, three of everything, uniform spacing: does the reference do this, and does
   this content have three parts or equal weight?
 - One composition on pages that are not siblings: is the repeat saying they are parallel?
 - Extra text or exhibits added to look full: would a split serve the reader better?
 
-Where the house does one of these (a consulting house pairing big numbers with icons; a
-house whose panels are equal small multiples), it is the house's habit.
+Where the reference does one of these (a consulting deck pairing big numbers with icons; a
+deck whose panels are equal small multiples), it is the reference's habit. With no
+reference, each is a question for the look you chose.
