@@ -1498,12 +1498,14 @@ def chart_texts(el: dict) -> tuple[list[tuple[str, str]], list[str]]:
     return out, unknown
 
 
-def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[dict]:
+def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: list[list[tuple]] | None = None) -> list[dict]:
     """Each chart's text as the renderer drew it, read off the render's words inside the
     chart's frame (pdftotext -bbox), against chart_texts. The words are set in lines (a
     word belongs to a line when its centre lies within half its height of the line's), and
     a label is found where consecutive words of one line spell it, spaces aside (pdftotext
-    splits a letterspaced 'Shore' into 'S' and 'hore'). A data label not found on one line
+    splits a letterspaced 'Shore' into 'S' and 'hore'). A turned label (rotation_deg, or one
+    LibreOffice turns itself to fit) is cut into fragments there, so a label not found on a
+    line is looked for whole among the page's turned runs (annotate.pdf_turned_runs). A data label not found on one line
     whose words are all drawn was wrapped by the renderer (round 7: 'First-lien / TLB'
     inside a stacked segment); a category label may wrap, so its words are found one by
     one; anything else is not drawn as written: LibreOffice drops category labels that do
@@ -1512,6 +1514,7 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
     out = []
     for i, page in enumerate(emit_pages):
         page_words = words[i] if i < len(words) else []
+        page_turned = (turned[i] if turned is not None and i < len(turned) else [])
         found: list[str] = []
         crossings: list[str] = []
         checked: dict[str, str] = {}
@@ -1523,6 +1526,8 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
             inside = [(box, t) for box, t in page_words
                       if x - pad <= box[0] + box[2] / 2 <= x + w + pad and y - pad <= box[1] + box[3] / 2 <= y + h + pad]
             lines = _word_lines(inside)
+            runs = [(box, "".join(t.split())) for box, t in page_turned
+                    if x - pad <= box[0] + box[2] / 2 <= x + w + pad and y - pad <= box[1] + box[3] / 2 <= y + h + pad]
             used: set[tuple[int, int]] = set()
             expected, unknown = chart_texts(el)
             missing, wrapped = [], []
@@ -1536,6 +1541,11 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
                                                    max(b[0] + b[2] for b in got) - min(b[0] for b in got),
                                                    max(b[1] + b[3] for b in got) - min(b[1] for b in got)), text)
                     continue
+                whole = "".join(text.split())
+                run = next((k for k, (_, t) in enumerate(runs) if t == whole), None)
+                if run is not None:
+                    runs.pop(run)  # drawn whole, turned
+                    continue
                 if part.startswith("category") or "\n" in text:
                     if all(_match_on_line(lines, tok, used) for tok in text.split()):
                         continue  # a category label wraps in its slot; a written break is two lines
@@ -1548,7 +1558,9 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[d
                 found.append(f"{el['id']} {part}: {text!r} is not drawn as written in the render"
                              + ("; LibreOffice drops category labels that do not fit their band and breaks squeezed ones: give the chart more extent "
                                 "along its category axis (a line of the label role per category on a horizontal bar), a smaller label role, fewer "
-                                "categories, or turn column labels (rotation_deg)" if part.startswith("category") else
+                                "categories, turn column labels (rotation_deg), or say which labels are drawn: label_interval (every Nth, as a dated "
+                                "axis is read; PowerPoint draws those, LibreOffice thins by its own fit, warned) or a category_row"
+                                if part.startswith("category") else
                                 "; LibreOffice broke or dropped it: a smaller label role, a shorter label, or room for it (gap_width, plot_area)"))
             for part, text in wrapped:
                 bars = str(el.get("type", "")).startswith(("COLUMN_", "BAR_"))
@@ -3004,6 +3016,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 if not Path(pdf).exists():
                     raise annotate.RenderUnread("the render wrote no PDF")
                 words = annotate.pdf_words(pdf)
+                turned = annotate.pdf_turned_runs(pdf)
                 if len(words) < len(emitted):
                     raise annotate.RenderUnread(f"the PDF has {len(words)} page(s) for {len(emitted)} emitted page(s)")
             except annotate.RenderUnread as error:
@@ -3018,7 +3031,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 if found["wrapped"] and entry["status"] == "fit":
                     entry["status"], entry["reason"] = "unfittable", "renderer divergence: text wrapped"
             # every chart's categories and data labels against the words the renderer drew
-            for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:]), strict=True):
+            for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:], turned[len(turned) - len(emitted):]), strict=True):
                 if found["checked"]:
                     entry["chart_text_drawn"] = found["checked"]
                 for f in found["found"]:

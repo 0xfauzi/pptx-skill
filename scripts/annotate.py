@@ -52,6 +52,7 @@ false statement and refuses the page (`annotation explanation not found`).
 from __future__ import annotations
 
 import html
+import math
 import re
 import subprocess
 import sys
@@ -1677,6 +1678,48 @@ def pdf_words(pdf: str) -> list[list[tuple[tuple[float, float, float, float], st
             words.append(((x0, y0, x1 - x0, y1 - y0), html.unescape(w.group(5))))
         pages.append(words)
     return pages
+
+
+def pdf_turned_runs(pdf: str) -> list[list[tuple[tuple[float, float, float, float], str]]]:
+    """Every run of turned text the renderer drew, per page, as (EMU box, text): the
+    characters set under one rotation, in the order the page draws them, a run ending where
+    the next character's origin is not where the last one's advance left off. pdftotext
+    cuts a turned label into fragments on different lines (round 8: 'Jan 23' at -45 degrees
+    came out as 'Ja', 'n', '23'), so a turned label is only read whole from here."""
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf) as doc:
+            pages = []
+            for page in doc.pages:
+                runs: list[tuple[tuple[float, float, float, float], str]] = []
+                cur: list[dict] = []
+                end: tuple[float, float] | None = None
+                for ch in page.chars:
+                    a, b, c, d, e, f = (float(v) for v in ch["matrix"])
+                    turned = abs(b) > 1e-3 or abs(c) > 1e-3
+                    # a run continues where the last character's advance (adv, in text space,
+                    # times the matrix) put the pen, within a fifth of the size
+                    joins = (turned and cur and tuple(round(v, 3) for v in cur[-1]["matrix"][:4]) == tuple(round(v, 3) for v in (a, b, c, d))
+                             and end is not None and math.hypot(e - end[0], f - end[1]) <= 0.2 * float(ch["size"]))
+                    if cur and not joins:
+                        runs.append(_turned_run(cur))
+                        cur = []
+                    if turned:
+                        cur.append(ch)
+                        adv = float(ch.get("adv") or 0.0)
+                        end = (e + a * adv, f + b * adv)
+                if cur:
+                    runs.append(_turned_run(cur))
+                pages.append(runs)
+            return pages
+    except Exception as error:  # noqa: BLE001  # pdfminer raises many types for a damaged file
+        raise RenderUnread(f"the render's turned text was not read: {type(error).__name__}: {error}") from None
+
+
+def _turned_run(chars: list[dict]) -> tuple[tuple[float, float, float, float], str]:
+    x0, x1 = min(float(c["x0"]) for c in chars), max(float(c["x1"]) for c in chars)
+    y0, y1 = min(float(c["top"]) for c in chars), max(float(c["bottom"]) for c in chars)
+    return ((x0 * EMU_PER_PT, y0 * EMU_PER_PT, (x1 - x0) * EMU_PER_PT, (y1 - y0) * EMU_PER_PT), "".join(c["text"] for c in chars))
 
 
 def _label_words(placed: list[dict], words: list[tuple]) -> set[int]:
