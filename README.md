@@ -1,6 +1,6 @@
-# pptx-skill: building-pptx-decks
+# pptx-skill: designing-presentations
 
-A skill (`name: building-pptx-decks`) for generating dense, expert-grade presentation
+A skill (`name: designing-presentations`) for designing dense, expert-grade presentation
 pages in the look of ANY reference deck the user drops in (a company template, a past
 deck, pptx or PDF), including exhibits and components the reference never showed, or,
 with no reference at all, in a look the model designs itself. One reference deck at a
@@ -12,6 +12,11 @@ wrong, and an outside judge that says which deck of a panel a new deck most rese
 
 `SKILL.md` is the skill: a checklist workflow under 500 lines that sends the agent to one
 reference file per task. Everything else supports it.
+
+To install it, put this tree in a skills directory under the skill's own name, for
+example `~/.claude/skills/designing-presentations/` (a symlink to this checkout will do):
+the Agent Skills specification asks for a skill's directory to match its `name`, and the
+repository keeps its own name.
 
 ## Why this exists
 

@@ -1,9 +1,9 @@
 ---
-name: building-pptx-decks
-description: Builds new native, editable PowerPoint pages in the look of any reference deck the user drops in (a company template, a past deck, any .pptx, or a vector or scanned PDF), or, with no reference, in a look the model designs itself. Reads a reference's look as roles with provenance, completes what the evidence never showed by looking, designs every exhibit from the data and the reader, solves every page with measured text fit, emits slides on the reference's masters or on a blank package, and refuses what is measurably wrong. Use when the user asks for a pitch book, board deck, consulting deck, CIM, management presentation or any .pptx section, wants pages in the look of a deck they supply, wants to extend an existing deck, supplies a PDF reference, or gives no reference at all.
+name: designing-presentations
+description: Designs and builds native, editable PowerPoint presentations, either in the look of a reference the user supplies (a company template, a past deck, any .pptx, or a vector or scanned PDF) or, with no reference, in a look reasoned out from the reader, the subject and the data with full design latitude. Reads a reference's look as roles with provenance, reasons out every exhibit from what the reader must see, measures text fit with the real fonts, emits slides on the reference's masters or on a blank package, and refuses only what is measurably wrong. Use when the user asks for a pitch book, board deck, consulting deck, CIM, investor or management presentation, or any .pptx pages; wants slides in the look of a deck or PDF they attach; wants to extend or edit an existing deck; or wants a presentation designed with no reference at all.
 ---
 
-# Building decks from a reference, or from none
+# Designing presentations, from a reference or from none
 
 You design; the scripts measure and refuse. You decide the template and layouts, the
 storyline, what each page says, its composition, every exhibit, every annotation, every
