@@ -754,7 +754,9 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
 # for this table only; "none" means no fill. totals_bold and banding_phase replace the
 # guide's own (table_defaults_taken lists them when neither says), edge_rules replaces
 # the guide's rule for each class it names (table_edge_rules).
-TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align", "spanner_align",
+#: a cell's words against its row's height: top (OOXML's own absence value), middle, bottom
+CELL_ANCHORS = {"t": "t", "m": "ctr", "b": "b"}
+TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align", "spanner_align", "cell_anchor",
                     "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role",
                     "totals_bold", "banding_phase", "edge_rules"}
 #: One emphasis group: the body rows (data-row indices) or the columns (column keys) it
@@ -884,6 +886,8 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
     for key in ("header_align", "spanner_align"):
         if el.get(key) is not None and el[key] not in TABLE_ALIGNS:
             raise SpecError(f"{where}: {key} {el[key]!r} not in {list(TABLE_ALIGNS)}")
+    if el.get("cell_anchor") is not None and el["cell_anchor"] not in CELL_ANCHORS:
+        raise SpecError(f"{where}: cell_anchor {el['cell_anchor']!r} not in {list(CELL_ANCHORS)} (top, middle, bottom of each row)")
     groups = table_emphasis(el)
 
     def role_hex(role: str | None, literal: str | None, label: str) -> tuple[str | None, str | None]:
@@ -1083,6 +1087,10 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 # the solver measured these words at the cell's width less this indent
                 ln.set("marL", str(int((el.get("cell_indents_emu") or {}).get(cs["indent_role"]) or guide.space(cs["indent_role"]))))
             tc_pr = cell._tc.get_or_add_tcPr()
+            if el.get("cell_anchor"):
+                # every cell of a row set against the row's height alike: a one-line figure
+                # beside a two-line label sits where the label's lines do
+                tc_pr.set("anchor", CELL_ANCHORS[el["cell_anchor"]])
             for child in list(tc_pr):
                 if child.tag in (qn("a:solidFill"), qn("a:noFill")):
                     tc_pr.remove(child)

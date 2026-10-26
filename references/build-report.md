@@ -92,7 +92,8 @@ its pages show it). Then build again.
 Listed per page before the figures. A refusal turns a fit page `unfittable` with the
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
-deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
+deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
+or says no chart on the page declares one); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
@@ -104,7 +105,8 @@ line, bracket or mark with no label and no `explained_by`, with the reference's 
 such marks with and without words: answer it in the report); `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
 which exhibit), `tieout` (a totals cell that does not equal its column), `no
-source line` (below), `renderer-unmeasured preset` (a shape in a preset no render here has
+source line` (below), `renderer divergence: category interval` (a `label_interval` or
+`tick_interval` above 1, which LibreOffice ignores: chart-recipes.md), `renderer-unmeasured preset` (a shape in a preset no render here has
 shown: look at it, and open the deck in PowerPoint before release), `type size off the
 reference's ladder` (a role the completion wrote off the reference's levels, with the levels, the
 reason given and the judge's `size_hist` distance), and `plan figure not on the page` (a

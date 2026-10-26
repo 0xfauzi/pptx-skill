@@ -28,7 +28,11 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
   under `completion.off_ladder`: a weaker model given continuous sizes drifted to 8.5,
   9.5, 20 and 22pt, so the reference's levels are the first evidence, and a departure is
   answered in the report); on a raster reference, one whose value carries
-  `"provenance": "raster_inference"`. Every role you add states its `weight`.
+  `"provenance": "raster_inference"`. Every role you add states its `weight`. A text the
+  reference's roles do not set well is a role you add, never a borrowed one: a one-line
+  panel header in a bar (`/typography/roles/type.panel_header` with the body's size,
+  `space_before_pt` and `space_after_pt` 0, its weight and ink, and a why), so the bar is
+  as tall as its line and its padding and not the body's paragraph spacing.
 - A key whose target is observed or deterministically inferred is refused with its
   provenance and evidence. If you think an observed value is wrong, say so in the report;
   never patch over it.
@@ -206,7 +210,8 @@ the copy replace each page's `exhibits: null` with records in the stub's
 `record_template` (an empty list states the page has none; one candidate may hold several
 exhibits). Each record is your own words, after looking at the crop; nothing is chosen
 from a list, and the words are checked for being there (a phrase of at least three words;
-`what` at least one), never for what they say:
+`what` and `marks` at least one, since an exhibit may mark nothing: "nothing ringed"),
+never for what they say:
 
 - `what`: what the exhibit is, its form and what it is made of;
 - `message`: the one thing a reader takes from it;

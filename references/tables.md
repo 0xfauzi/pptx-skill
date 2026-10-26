@@ -80,7 +80,10 @@ habits recorded on 35 pages; the reference's own are in its digest records (`how
   (0: the first body row banded, 1: the second), `edge_rules` (the guide's own shape, for
   the classes it names: `{"header_bottom": {"color_role": "color.rule", "width_pt": 1.0},
   "row_interior": {"none": true}}`; roles only, and no stroke under 0.5pt unless the
-  guide's own table rules declare that width), `header_align`, and `align` per column.
+  guide's own table rules declare that width), `header_align`, `align` per column, and
+  `cell_anchor` (`t`, `m` or `b`: where every cell's words sit in its row's height; left
+  out, top, OOXML's own; a row whose label wraps to two lines while its figures take one
+  reads aligned at `m`).
   These keys, `emphasis` and `totals_last_row` may sit on the element, inside its `table`
   spec or under `styling.<id>`; a key written twice with different values, or an unknown
   key, is refused.

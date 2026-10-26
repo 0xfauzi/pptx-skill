@@ -14,7 +14,9 @@ line of the copied text that still names a held-out deck by an alias (reference 
 cite the decks they were measured on): the evaluator reads that list and decides; nothing
 here edits the skill's text.
 
-refs/files (the judge's panel) is copied as the link it is. The skill's git metadata,
+refs/files (the judge's panel) becomes a folder of links to its files, the decks under
+test left out by sha256 and by name (the same deck in another format): the agent under test must not reach the deck it is tested on
+through the panel (round 7: the copy linked the whole folder). The skill's git metadata,
 bytecode caches and worktrees are left out, and so is evals/ (the scenarios' expected
 behaviours, which the agent under test must not read).
 """
@@ -98,6 +100,23 @@ def main(argv: list[str]) -> int:
         return {n for n in names if n in SKIP_DIRS or str(rel / n) in left_out or (rel == Path(".") and n == "evals")}
 
     shutil.copytree(SKILL, out, symlinks=True, ignore=ignore, dirs_exist_ok=True)
+    panel = SKILL / "refs" / "files"
+    withheld: list[str] = []
+    if panel.exists():
+        copied = out / "refs" / "files"
+        if copied.is_symlink() or copied.is_file():
+            copied.unlink()
+        elif copied.is_dir():
+            shutil.rmtree(copied)
+        copied.mkdir(parents=True)
+        for f in sorted(panel.resolve().iterdir()):
+            if not f.is_file():
+                continue
+            # by bytes, or by name: the same deck in another format (a PDF of the pptx under test)
+            if sha256(f) in tested or f.stem.lower() in {Path(t).stem.lower() for t in tested.values()} | set(aliases):
+                withheld.append(f.name)
+                continue
+            (copied / f.name).symlink_to(f)
     naming = []
     for p in sorted(out.rglob("*")):
         if p.is_symlink() or not p.is_file() or p.suffix not in TEXT_SUFFIXES:
@@ -118,6 +137,7 @@ def main(argv: list[str]) -> int:
     print(json.dumps({"out": str(out), "tested": sorted(tested.values()),
                       "held_out": held or "nothing: no example of examples/PROVENANCE.json is made from a deck given",
                       "untested_examples_kept": sorted(n for n in prov["references"] if n not in held),
+                      "panel_withheld": withheld or "nothing: no file of refs/files is a deck given",
                       "lines_still_naming_a_tested_deck": len(naming), "naming": naming,
                       "note": "the naming lines are the skill's own references citing measurements on the tested decks; "
                               "read them and decide whether the evaluation can stand with them"}, indent=1))

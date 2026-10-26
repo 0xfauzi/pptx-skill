@@ -169,7 +169,7 @@ rules and worked completions: [references/guide-completion.md](references/guide-
 ```bash
 python3 scripts/pptx_tools.py template "$REF" -o "$DECK_WORK/tpl.pptx"                    # pptx reference
 python3 scripts/pptx_tools.py blank -o "$DECK_WORK/tpl.pptx" --width-emu W --height-emu H    # PDF or no reference: W, H from guide.reference.page
-python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx"
+python3 scripts/pptx_tools.py layouts "$DECK_WORK/tpl.pptx" --reference "$REF"            # pptx reference: its slides counted
 ```
 
 Every page names one of the template's layouts. Which layout did the reference use for
@@ -201,9 +201,10 @@ each holds, what it would lose (a chart becomes a placeholder line, a PDF table 
 turned text is left out, merged cells are unmerged) and whether it fits at full scale:
 
 ```bash
-python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json"   # --pages 30-45 on a long deck
+python3 scripts/import_slide.py "$REF" --survey --guide "$DECK_WORK/ref/guide.json" -o "$DECK_WORK/rt/survey.json"   # --pages 30-45 on a long deck
 ```
 
+It prints one line per page for reading; the JSON, for a script, is the file `-o` names.
 The survey reads the reference once; on a long PDF give it `--pages` (bain's pages 34 to
 45: under a minute). A page that does not fit at full scale says why
 (`why_not_full_scale`: the element, the violation, the shortfall).

@@ -160,9 +160,12 @@ keybank (the pages named under "Proven on") and read from the render.
   `"horizontal"`. Left out on a visible axis, `chart_defaults_taken` lists it, and so
   does a title's `role` or `ink_role` left out.
 - `axes.category.label_interval` and `tick_interval`: label (tick) every n-th category
-  (c:tickLblSkip, c:tickMarkSkip): a daily price series labels every 20th day. Measured
-  on LibreOffice 24.2: the label interval is honoured, the tick interval is not (a tick
-  is drawn at every category).
+  (c:tickLblSkip, c:tickMarkSkip). PowerPoint honours both; LibreOffice 24.2.7 honours
+  neither (measured, round 7: 20 quarters at 4 drew all 20; 120 days at 20 drew every 6th,
+  its own thinning), so the build warns `renderer divergence: category interval`: the render
+  is not the page there. To draw the same labels in both (quarters by year), hide the axis
+  labels (`labels.show: false`) and draw a `category_row` annotation with a cell per
+  category, `null` where none is drawn (section "Rows aligned to categories").
 - `axes.<name>.labels.rotation_deg`: -90 to 90, written on the tick labels' text
   body. 0 keeps category labels level where LibreOffice would turn them to fit (it
   turned 12pt labels in 1.0 in slots to 45 degrees on a BCG page); -45 is the dated-axis

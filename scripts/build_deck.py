@@ -620,6 +620,25 @@ def unmeasured_presets(elements: list[dict]) -> list[dict]:
                        "PowerPoint before release (references/review.md), since the two renderers may draw it differently"} for prst, nid in seen]
 
 
+def label_interval_divergence(elements: list[dict]) -> list[dict]:
+    """A category axis labelled or ticked every n-th category (label_interval, tick_interval
+    above 1): a warning. Measured, round 7, LibreOffice 24.2.7: c:tickLblSkip and
+    c:tickMarkSkip are not honoured on a line or column chart at any rotation; LibreOffice
+    thins the labels by its own fit (120 categories at an interval of 20 drew every 6th) and
+    PowerPoint draws every n-th, so the render reviewed may show other labels than the page."""
+    out = []
+    for el in elements:
+        for name, ax in ((el.get("axes") or {}).items() if el["kind"] == "chart" else []):
+            for k in ("label_interval", "tick_interval"):
+                if isinstance(ax, dict) and isinstance(ax.get(k), int) and ax[k] > 1:
+                    out.append({"kind": "renderer divergence: category interval", "severity": "warning",
+                                "detail": f"{el['id']} axes.{name}.{k} {ax[k]}: LibreOffice ignores it and draws its own selection of "
+                                          f"{'labels' if k == 'label_interval' else 'ticks'} (measured), PowerPoint draws every {ax[k]}th; the render "
+                                          "is not the page here. To draw the same labels in both, hide the axis labels and draw a category_row "
+                                          "with a cell per category, null where none is drawn"})
+    return out
+
+
 def chrome_layers(guide: dict, mode: str, page: dict | None = None) -> list[dict]:
     """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
     under whatever lands on them) and text lines (a run to score), each with its EMU page
@@ -1368,8 +1387,13 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
         else:
             where = f"{v['element']} {v['row_class']} rows"
         problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})"})
-    entry["bridge_ties"] = bridge_ties(elements)
-    problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in entry["bridge_ties"])
+    failures = bridge_ties(elements)
+    problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in failures)
+    # each declared bridge by name, with a verdict that says so: an empty list read as
+    # "nothing checked" and "everything ties" alike
+    declared = [el.get("id", "chart") for el in elements if el["kind"] == "chart" and el.get("bridge")]
+    entry["bridge_ties"] = {c: ([b["detail"] for b in failures if b["chart"] == c] or "ties: every total equals the steps before it, every drawn span its step")
+                            for c in declared} or "no chart on this page declares a bridge"
     problems.extend(measured or [])
     entry["source_line"] = source_line_of(elements, guide)
     found = source_line_problem(elements, guide)
@@ -1992,7 +2016,10 @@ def full_scale_cause(ctx, outcome) -> list[str]:
     over = (L.outcome_json(ctx, outcome).get("unfittable") or {}).get("overshoot_emu") or 0
     for t in table_budgets(ctx, outcome):
         if t["rows_to_fit"] < t["body_rows"]:
-            causes.insert(0, f"table {t['id']}: the page is {over / EMU_PER_INCH:.2f} in over at full scale, and {t['rows_to_fit']} of its "
+            # first only when the table's own rows outgrow its box; otherwise another block
+            # took the height and the table's count is a budget, not the cause
+            own = bool(t["box_in"]) and t["rows_need_in"] > t["box_in"][3]
+            causes.insert(0 if own else len(causes), f"table {t['id']}: the page is {over / EMU_PER_INCH:.2f} in over at full scale, and {t['rows_to_fit']} of its "
                              f"{t['body_rows']} body rows fit with everything else as written (rows_to_fit): cut rows, shorten the cells "
                              f"that wrap, cut other text, or split the table after row {max(0, t['rows_to_fit'] - 1)} at a declared boundary")
         if t["box_in"] and t["rows_need_in"] > t["box_in"][3]:
@@ -2366,9 +2393,18 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                                    f"so it does not fit. Shorten the title, or move a clause of it to where the reference states claims "
                                    f"({claim_places(guide)})")
             elif outcome.status != "fit":
-                # the brief names the cause on the page's own line, not only in the JSON
+                # the brief names the cause on the page's own line, not only in the JSON. The
+                # cause is the page at FULL scale first: at the smallest scale tried the page
+                # is shrunk, and what crosses then (a heading over a rule) is the shrinking's
+                # effect, not the cause (a sidebar 0.09 in too tall read as the headings: round 7)
+                import copy
+                _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, L.Fraction(1))
+                entry["why_not_full_scale"] = full_scale_cause(full_ctx, full)
                 causes = full_scale_cause(ctx, outcome)
-                entry["reason"] = causes[0] + (f" (and {len(causes) - 1} more under slides[].violations)" if len(causes) > 1 else "")
+                first = entry["why_not_full_scale"][0]
+                entry["reason"] = (f"at full scale: {first}"
+                                   + ("" if causes[0] == first else f"; at the smallest scale tried ({float(outcome.resolved.scale):.2f}): {causes[0]}")
+                                   + " (every cause under slides[].why_not_full_scale and slides[].violations)")
             resolved = L.resolved_json(ctx, outcome.resolved)
             entry["scale"] = resolved["scale_float"]
             entry["violations"] = resolved["violations"]
@@ -2396,7 +2432,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             breaks, unread, spills = chart_label_breaks(elements, ctx)
             if breaks or unread or spills:
                 entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread, "spills": spills}
-            entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + annotation_problems + [
+            entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + label_interval_divergence(elements) + annotation_problems + [
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks] + [

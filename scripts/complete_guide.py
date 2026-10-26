@@ -67,14 +67,14 @@ CORE_ANNOTATION = ("/typography/roles/type.caption", "/typography/roles/type.foo
 CHROME_KINDS = ("rule", "band", "logo", "label", "page_number", "footer", "date")
 CHROME_REQUIRED = ("chrome_id", "kind", "box_in", "slides_present")
 CHROME_OPTIONAL = {"text", "text_style", "fill_hex", "fill_role", "line_hex", "line_role", "line_width_pt", "rotation_deg", "anchor",
-                   "layers", "image_path", "paint_order", "why"}
+                   "layers", "image_path", "paint_order", "carries_content", "why"}
 CHROME_ANCHORS = ("slide_top", "slide_bottom", "slide_left", "slide_right")
 CHROME_SHAPE = ('a list of {"chrome_id": "chrome-1", "kind": "' + "|".join(CHROME_KINDS) + '", "box_in": [left, top, width, height] '
                 '(inches on the page), "slides_present": <pages it is on, at least half the reference\'s to be drawn>, and as the kind needs: '
                 '"text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"} '
                 '(every text kind, page_number included, all four), "fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or '
                 '"line_role" with "line_width_pt" (rule; a logo placeholder drawn as a line), "image_path" (logo), '
-                '"anchor": "' + "|".join(CHROME_ANCHORS) + '", "rotation_deg", "why"}. Nothing is filled in for you: the width, colour and '
+                '"anchor": "' + "|".join(CHROME_ANCHORS) + '", "rotation_deg", "carries_content" (a band the page sets content on: a title band), "why"}. Nothing is filled in for you: the width, colour and '
                 'text style the emitter would otherwise fall back on are refused by name when left out')
 #: what a text kind is drawn in: the face, size, weight and ink the reference shows
 CHROME_TEXT_STYLE = ("family", "size_pt", "bold", "ink_hex")
@@ -487,7 +487,9 @@ def title_register(guide: dict, value) -> dict:
 #: a digest record: the model's reading in its own words, plus three readings of the page
 #: that later steps hold the reference to (a data page, chart text the reference sets); nothing
 #: in a record is chosen from a list
-EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": plan.BRIEF_MIN_WORDS}  # least words
+#: least words; marks takes any words, since what an exhibit marks may be nothing ("nothing
+#: ringed" was refused as too short: round 7)
+EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": 1}
 EXHIBIT_FLAGS = ("chart_or_table", "axis_labels", "value_labels")
 EXHIBIT_KEYS = {"candidate", *EXHIBIT_TEXT, *EXHIBIT_FLAGS, "why"}
 
@@ -838,6 +840,9 @@ def chrome_entries(guide: dict, value) -> list[dict]:
             if unsaid:
                 errors.append(f"{where}: a {kind} is drawn in its text_style; {unsaid} not answered (the face, size, weight and ink the "
                               "reference shows): left out they would fall back to the minor face or Arial, 9pt, not bold and no ink")
+        if "carries_content" in ch and not (kind == "band" and isinstance(ch["carries_content"], bool)):
+            errors.append(f"{where}: carries_content is true or false on a band: true when the page sets content on it (a title band, a "
+                          "panel the body sits on), so it is ground and no zone is reserved for it")
         if kind == "band" and not (ch.get("fill_hex") or ch.get("fill_role")):
             errors.append(f"{where}: a band needs fill_hex or fill_role, or it draws nothing")
         if kind == "logo" and not (ch.get("image_path") or ch.get("fill_hex") or ch.get("fill_role") or ch.get("line_hex") or ch.get("line_role")):
@@ -864,6 +869,10 @@ def chrome_entries(guide: dict, value) -> list[dict]:
     for order, ch in enumerate(value):
         entry = {**ch, "layers": ch.get("layers") or ["slide"], "of_slides": n if referenced else None, "paint_order": ch.get("paint_order", order),
                  "provenance": model_prov(ch.get("why") or "completion of /chrome")}
+        if entry.pop("carries_content", False):
+            # stated in the count the extractor writes, so build_deck.is_surface reads one field:
+            # content on every page that carries the band (each page, with no reference)
+            entry["carries_content_on"] = ch.get("slides_present") or 1
         box = entry["box_in"]
         entry.setdefault("exclusion_zone_in", list(box))
         out.append(entry)
@@ -993,7 +1002,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             spec["provenance"] = model_prov(value.get("why", ""), value)
             spec.update(seen_in(path, value))
             levels = size_levels(guide)
-            if (path not in open_paths and role not in roles and float(spec["size_pt"]) not in levels
+            # with no reference there is no ladder to be off: every size is the model's choice
+            if (plan.has_reference(guide) and path not in open_paths and role not in roles and float(spec["size_pt"]) not in levels
                     and spec["provenance"]["value_provenance"] != "raster_inference"):
                 # writable only with a why (check_writable): the departure is tagged and listed
                 near = min(levels, key=lambda lv: (abs(lv - float(spec["size_pt"])), lv)) if levels else None

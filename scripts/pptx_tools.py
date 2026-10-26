@@ -172,16 +172,24 @@ def print_text(entries: list[dict]) -> None:
 # --- layouts ---------------------------------------------------------------------------------------
 
 
-def layouts(path: str) -> dict:
+def layouts(path: str, reference: str | None = None) -> dict:
     """Every master and layout of the deck, each layout with its placeholders, its other
-    shapes and how many of the deck's slides use it ("used_by_slides", 0 included, "used"
-    in words): an unused layout is listed like any other, with its count. Usage is counted
-    by the layout's part, so two masters' layouts of one name are two counts."""
+    shapes and how many slides use it ("used_by_slides", 0 included, "used" in words): an
+    unused layout is listed like any other, with its count. Usage is counted by the
+    layout's part, so two masters' layouts of one name are two counts; with `reference`
+    (the deck a template was made from, whose layout parts it keeps) the reference's
+    slides are counted. A file with no slides and no reference counts nothing: its usage
+    reads "not counted", never 0 of 0."""
     prs = Presentation(path)
+    counted = Presentation(reference) if reference else prs
     usage: dict[str, int] = {}
-    for slide in prs.slides:
+    for slide in counted.slides:
         part = str(slide.slide_layout.part.partname)
         usage[part] = usage.get(part, 0) + 1
+    own_parts = {str(layout.part.partname) for m in prs.slide_masters for layout in m.slide_layouts}
+    if reference and set(usage) - own_parts:
+        raise SystemExit(f"layouts --reference: {sorted(set(usage) - own_parts)} hold slides of {reference} and are not layouts of {path}; "
+                         "pass the deck this template was made from (pptx_tools.py template keeps its layout parts)")
     masters = []
     for mi, master in enumerate(prs.slide_masters):
         lay = []
@@ -194,8 +202,10 @@ def layouts(path: str) -> dict:
             others = [{"name": s.name, "kind": str(s.shape_type).split(" ")[0] if s.shape_type else "?",
                        "box_in": [round(v / EMU_PER_INCH, 3) for v in (s.left or 0, s.top or 0, s.width or 0, s.height or 0)]}
                       for s in layout.shapes if not s.is_placeholder]
-            used = usage.get(str(layout.part.partname), 0)
-            lay.append({"name": layout.name, "part": str(layout.part.partname), "used_by_slides": used, "used": f"on {used} of {len(prs.slides)} slides",
+            used = usage.get(str(layout.part.partname), 0) if len(counted.slides) else None
+            lay.append({"name": layout.name, "part": str(layout.part.partname), "used_by_slides": used,
+                        "used": (f"on {used} of {len(counted.slides)} {'reference ' if reference else ''}slides" if used is not None else
+                                 "not counted: this file holds no slides (a template); pass --reference with the deck it was made from"),
                         "placeholders": phs, "other_shapes": others})
         masters.append({"index": mi, "part": str(master.part.partname), "layouts": lay,
                         "shapes": [{"name": s.name, "placeholder": s.is_placeholder} for s in master.shapes]})
@@ -743,7 +753,7 @@ def main(argv: list[str]) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("blank"); s.add_argument("-o", "--out", required=True); s.add_argument("--width-emu", type=int, required=True); s.add_argument("--height-emu", type=int, required=True)
     s = sub.add_parser("text"); s.add_argument("deck"); s.add_argument("--json", action="store_true")
-    s = sub.add_parser("layouts"); s.add_argument("deck")
+    s = sub.add_parser("layouts"); s.add_argument("deck"); s.add_argument("--reference", help="the deck a template was made from: count its slides' use of each layout")
     s = sub.add_parser("template"); s.add_argument("deck"); s.add_argument("-o", "--out", required=True); s.add_argument("--keep", default="")
     s = sub.add_parser("duplicate"); s.add_argument("deck"); s.add_argument("--slide", type=int, required=True); s.add_argument("-o", "--out", required=True); s.add_argument("--after", type=int, default=None)
     s = sub.add_parser("delete"); s.add_argument("deck"); s.add_argument("--slides", required=True); s.add_argument("-o", "--out", required=True)
@@ -771,7 +781,7 @@ def main(argv: list[str]) -> int:
         print(json.dumps(entries, indent=1)) if args.json else print_text(entries)
         return 0
     if args.cmd == "layouts":
-        print(json.dumps(layouts(args.deck), indent=1)); return 0
+        print(json.dumps(layouts(args.deck, args.reference), indent=1)); return 0
     if args.cmd == "template":
         keep = [int(k) for k in args.keep.split(",") if k.strip()]
         print(json.dumps(template(args.deck, args.out, keep))); return 0
