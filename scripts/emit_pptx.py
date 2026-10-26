@@ -70,6 +70,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -904,6 +905,8 @@ CHART_DEFAULTS = {
     "title": "none",
     "plot_area": "automatic: each renderer places the plot inside the frame itself",
     "axis.title": "none: no axis title",
+    "axis.title.role": "no size or face written: each renderer's own axis title style (LibreOffice and PowerPoint differ)",
+    "axis.title.ink_role": "no colour written: each renderer's own axis title ink",
     "axis.title.orientation": "along: the title runs along its axis, turned a quarter on a vertical axis",
     "series.axis": "primary",
 }
@@ -1102,6 +1105,9 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 if not isinstance(t.get("text"), str) or not t["text"].strip():
                     raise SpecError(f"{aw} title: text is required")
                 _text_style(guide, t, f"{aw} title")
+                for k in ("role", "ink_role"):
+                    if k not in t:
+                        took(f"axes.{name}.title.{k}", f"axis.title.{k}")
                 if "orientation" in t:
                     _enum(f"{aw} title", "orientation", t["orientation"], AXIS_TITLE_ORIENTATIONS)
                 else:
@@ -1158,6 +1164,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                         raise SpecError(f"{aw}: {k} belongs to a category axis (every n-th category labelled or ticked)")
                     if isinstance(ax[k], bool) or not isinstance(ax[k], int) or not 1 <= ax[k] <= 31999:
                         raise SpecError(f"{aw}: {k} is a whole number of categories, 1 or more")
+        _values_inside_axes(el, groups, axes, family, where)
     elif el.get("axes"):
         raise SpecError(f"{where}: a {type_name} has no axes")
     if any(chart_family(t) in ("bar", "bar_stacked") for t, _, _ in groups):
@@ -1207,6 +1214,57 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     else:
         took("plot_area", "plot_area")
     return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults, "groups": groups}
+
+
+def _values_inside_axes(el: dict, groups: list[tuple[str, str, list[int]]], axes: dict, family: str, where: str) -> None:
+    """A value past a written axis min or max is clipped at the plot's edge by the
+    renderer and drawn as if it were the bound: refused, never drawn wrong. A stacked
+    group is checked by its running sums (positive and negative stacks apart); a 100%
+    stacked group spans its axis by construction."""
+    def num(v) -> bool:
+        return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+    def check(axis_name: str, v: float, what: str) -> None:
+        ax = axes.get(axis_name) or {}
+        lo, hi = ax.get("min"), ax.get("max")
+        if num(lo) and v < lo or num(hi) and v > hi:
+            bounds = f"{lo if num(lo) else 'auto'}..{hi if num(hi) else 'auto'}"
+            raise SpecError(f"{where} {what}: {v:g} is outside axes.{axis_name} {bounds}; the renderer would clip it at the plot's edge "
+                            "and draw it as the bound (widen the axis, or break it and say so on the page)")
+
+    series = el.get("series") or []
+    for t, axis, members in groups:
+        axis_name = "secondary_value" if axis == "secondary" else "value"
+        fam = chart_family(t)
+        if family in ("xy", "bubble"):
+            for si in members:
+                for pi, v in enumerate(series[si].get("values") or []):
+                    if isinstance(v, list) and len(v) >= 2:
+                        if num(v[0]):
+                            check("category", v[0], f"series[{si}] point {pi} x")
+                        if num(v[1]):
+                            check(axis_name, v[1], f"series[{si}] point {pi} y")
+            continue
+        if "100" in t:
+            continue
+        stacked = fam == "bar_stacked" or "STACKED" in t
+        n = len(el.get("categories") or [])
+        for ci in range(n):
+            pos = neg = 0.0
+            for si in members:
+                vals = series[si].get("values") or []
+                v = vals[ci] if ci < len(vals) else None
+                if not num(v):
+                    continue
+                if stacked:
+                    if v >= 0:
+                        pos += v
+                    else:
+                        neg += v
+                    reach = pos if v >= 0 else neg
+                    check(axis_name, reach, f"series[{si}] category {ci} (stacked to)")
+                else:
+                    check(axis_name, v, f"series[{si}] category {ci}")
 
 
 def combo_groups(el: dict, type_name: str, family: str, where: str) -> list[tuple[str, str, list[int]]]:

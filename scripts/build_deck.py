@@ -68,7 +68,7 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import annotate  # noqa: E402
 import component_api  # noqa: E402
-import images  # noqa: E402
+import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
@@ -219,7 +219,7 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
 
 
-def slide_picture(slide: dict, nid: str, guide: dict) -> "images.Picture":
+def slide_picture(slide: dict, nid: str, guide: dict) -> images.Picture:
     """slide.images[nid] validated once per build (images.picture: the source read and
     refused at the boundary by name)."""
     cache = slide.setdefault("_pictures", {})
@@ -1948,8 +1948,13 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             for f in bad:
                 entry["problems"].append({"kind": "picture not drawn as written", "severity": "refusal",
                                           "detail": f"{f['id']}: {f['differ_share']:.1%} of its box's pixels differ from the picture as written (at most {images.RENDER_TOLERANCE:.0%})"})
-            if bad and entry["status"] == "fit":
-                entry["status"], entry["reason"] = "unfittable", "picture not drawn as written"
+            small = [f for f in found if f["status"] == "too small to check"]
+            for f in small:
+                w, h = f["box_px"][2], f["box_px"][3]
+                entry["problems"].append({"kind": "picture too small to check", "severity": "refusal",
+                                          "detail": f"{f['id']}: drawn {w} x {h} px on the render, under {images.MIN_CHECK_PX} px on a side; at its aspect it does not show in its box (give it a box it shows in)"})
+            if (bad or small) and entry["status"] == "fit":
+                entry["status"], entry["reason"] = "unfittable", "picture not drawn as written" if bad else "picture too small to check"
     for placed in annotation_pages.values():
         for e in placed:
             if e.get("status") == "placed" and "render_check" not in e:

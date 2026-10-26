@@ -69,7 +69,7 @@ refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `cont
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation refused`,
 `annotation collides`, `annotation covers chart text`, `annotation render check failed`;
-`picture not drawn as written`, `picture render check failed`; `font refused`; `no source line` where the house carries source lines as a rule (below).
+`picture not drawn as written`, `picture too small to check`, `picture render check failed`; `font refused`; `no source line` where the house carries source lines as a rule (below).
 Warnings never refuse: `tieout` (a totals cell that does not equal its column), `no
 source line` elsewhere, and `plan figure not on the page` (a figure the plan's message
 for the page states that the page does not carry: the plan was written before the
@@ -186,7 +186,8 @@ the guide says is refused by name.
 - `pictures`: per picture on the page (a `slide.images` entry or a `category_row` cell),
   the box it was drawn in on the render (`box_px`), `differ_share` (the share of that
   box's pixels with no pixel of the picture as written within one pixel and 64 levels of
-  it) and `status`; above 5% refuses the page as `picture not drawn as written`. With
+  it) and `status`; above 5% refuses the page as `picture not drawn as written`, and a
+  picture drawn under 4 px on a side as `picture too small to check`. With
   `--no-render` it says not checked.
 - `image_defaults_taken`: per picture, every choice left out (align, valign, an icon's
   stroke caps and joins, fill rule) with the value written.

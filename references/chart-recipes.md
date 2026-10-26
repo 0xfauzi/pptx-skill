@@ -117,10 +117,13 @@ keybank (the pages named under "Proven on") and read from the render.
 - `axes.secondary_value`: the right-hand value axis (every key of `axes.value`), for the
   series on `axis: "secondary"`, refused when no series is on it; left out, it is written
   as the neutral value and listed. Its `cross_between` must equal `axes.value`'s (both
-  place the same categories).
+  place the same categories). On either value axis, a value past a written `min` or
+  `max` (a stacked group by its running sums) is refused before building: the renderer
+  clips it at the plot's edge and draws it as the bound.
 - `axes.<name>.title`: `{"text", "role", "ink_role", "orientation"}`; `orientation`
   `"along"` (turned a quarter on a vertical axis; the default, listed) or
-  `"horizontal"`. Left out on a visible axis, `chart_defaults_taken` lists it.
+  `"horizontal"`. Left out on a visible axis, `chart_defaults_taken` lists it, and so
+  does a title's `role` or `ink_role` left out.
 - `axes.category.label_interval` and `tick_interval`: label (tick) every n-th category
   (c:tickLblSkip, c:tickMarkSkip): a daily price series labels every 20th day. Measured
   on LibreOffice 24.2: the label interval is honoured, the tick interval is not (a tick

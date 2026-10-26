@@ -27,10 +27,12 @@ THE SVG SUBSET (anything else is refused by name, at the boundary):
   stroke="color.<role>" | "none" (required), stroke-width (required with a stroke),
   stroke-linecap (butt | round | square), stroke-linejoin (miter | round | bevel),
   fill-rule (nonzero | evenodd). Numbers are plain user units; no units, no percent.
-  At most 64 KiB and 400 shapes; no DOCTYPE, entity or processing instruction.
+  At most 64 KiB and 400 shapes, UTF-8 only; no DOCTYPE, entity or processing instruction;
+  every shape draws (a stroke two distinct points, a fill some area).
 Colours are the guide's roles, resolved when the file is written. The emitter writes the
 icon natively (an SVG part on an a:blip svgBlip extension, which PowerPoint 2016+ draws)
-with a PNG fallback rasterised here from the same parsed shapes, and the build compares
+(its coordinates mapped onto a 1000-unit viewBox, EMIT_UNITS) with a PNG fallback
+rasterised here from the same parsed shapes, and the build compares
 what the renderer drew in the box with this rasterisation (`render_check`).
 
 Reference files are untrusted: run this command with `python3 -I`; every picture read is
@@ -41,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import itertools
 import json
 import math
 import re
@@ -53,8 +56,8 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 
-from lxml import etree  # noqa: E402
-from PIL import Image  # noqa: E402
+from lxml import etree
+from PIL import Image
 
 SVG_NS = "http://www.w3.org/2000/svg"
 MAX_SVG_BYTES = 64 * 1024
@@ -232,6 +235,14 @@ def parse_svg(data: bytes, where: str) -> Icon:
     """The icon as parsed shapes, or ImageRefused naming the first thing outside the subset."""
     if len(data) > MAX_SVG_BYTES:
         raise ImageRefused(f"{where}: {len(data)} bytes; an icon is at most {MAX_SVG_BYTES}")
+    # the subset is UTF-8 only: in another encoding (UTF-16, UTF-7) a byte search for a
+    # declaration sees nothing, so the encoding is settled before anything is searched
+    if data.startswith((b"\xff\xfe", b"\xfe\xff", b"\x00\x00\xfe\xff", b"\xff\xfe\x00\x00")):
+        raise ImageRefused(f"{where}: a UTF-16 or UTF-32 byte order mark; an icon is UTF-8")
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        raise ImageRefused(f"{where}: not UTF-8; an icon is UTF-8") from None
     if re.search(rb"<!DOCTYPE|<!ENTITY", data, re.IGNORECASE):
         raise ImageRefused(f"{where}: a DOCTYPE or ENTITY declaration; the subset takes neither")
     parser = etree.XMLParser(resolve_entities=False, no_network=True, load_dtd=False, huge_tree=False, remove_comments=True, remove_pis=False)
@@ -239,8 +250,14 @@ def parse_svg(data: bytes, where: str) -> Icon:
         root = etree.fromstring(data, parser)
     except etree.XMLSyntaxError as error:
         raise ImageRefused(f"{where}: not well-formed XML ({error})") from None
+    info = root.getroottree().docinfo
+    if (info.encoding or "UTF-8").upper().replace("_", "-") not in ("UTF-8", "UTF8"):
+        raise ImageRefused(f"{where}: declares encoding {info.encoding!r}; an icon is UTF-8")
+    if info.doctype or info.internalDTD is not None or info.externalDTD is not None:
+        raise ImageRefused(f"{where}: a DOCTYPE or ENTITY declaration; the subset takes neither")
     taken: list[str] = []
-    for node in root.iter():
+    outside = list(root.itersiblings(preceding=True)) + list(root.itersiblings())
+    for node in outside + list(root.iter()):
         if not isinstance(node.tag, str):
             raise ImageRefused(f"{where}: a processing instruction or entity reference; the subset takes neither")
 
@@ -315,7 +332,10 @@ def parse_svg(data: bytes, where: str) -> Icon:
                 raise ImageRefused(f"{w}: width and height must be positive")
             if tag == "circle" and geo["r"] <= 0:
                 raise ImageRefused(f"{w}: r must be positive")
-        shapes.append(Shape(tag, geo, fill, stroke, sw, attrs["stroke-linecap"], attrs["stroke-linejoin"], attrs["fill-rule"]))
+        shape = Shape(tag, geo, fill, stroke, sw, attrs["stroke-linecap"], attrs["stroke-linejoin"], attrs["fill-rule"])
+        if not _draws(shape):
+            raise ImageRefused(f"{w}: draws no geometry (no two distinct points to stroke, no area to fill)")
+        shapes.append(shape)
         if len(shapes) > MAX_SHAPES:
             raise ImageRefused(f"{where}: more than {MAX_SHAPES} shapes")
     if not shapes:
@@ -550,6 +570,20 @@ def _ccw(poly: list[tuple[float, float]]) -> list[tuple[float, float]]:
     return poly if a >= 0 else poly[::-1]
 
 
+def _draws(shape: Shape) -> bool:
+    """Whether the shape marks the page: a stroke needs two distinct points, a fill a
+    subpath with extent in both directions."""
+    for pts, _ in subpaths(shape):
+        distinct = set(pts)
+        if shape.stroke != "none" and len(distinct) >= 2:
+            return True
+        if shape.fill != "none" and len(distinct) >= 3:
+            xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+            if max(xs) > min(xs) and max(ys) > min(ys):
+                return True
+    return False
+
+
 def _extent(icon: Icon) -> tuple[float, float, float, float]:
     xs, ys = [], []
     for s in icon.shapes:
@@ -578,8 +612,8 @@ def _coverage(polys: list[list[tuple[float, float]]], rule: str, w: int, h: int)
     if not edges:
         return buf
     edges.sort()
-    ymin = max(0, int(math.floor(edges[0][0])))
-    ymax = min(h, int(math.ceil(max(e[1] for e in edges))) + 1)
+    ymin = max(0, math.floor(edges[0][0]))
+    ymax = min(h, math.ceil(max(e[1] for e in edges)) + 1)
     for row in range(ymin, ymax):
         yc = row + 0.5
         xs = [(x0 + (yc - y0) * slope, d) for (y0, y1, x0, slope, d) in edges if y0 <= yc < y1]
@@ -588,13 +622,13 @@ def _coverage(polys: list[list[tuple[float, float]]], rule: str, w: int, h: int)
         xs.sort()
         wind = 0
         base = row * w
-        for (xa, da), (xb, _) in zip(xs, xs[1:]):
+        for (xa, da), (xb, _) in itertools.pairwise(xs):
             wind += da
             inside = (wind != 0) if rule == "nonzero" else (wind % 2 != 0)
             if not inside:
                 continue
-            a = max(0, int(math.ceil(xa - 0.5)))
-            b = min(w, int(math.ceil(xb - 0.5)))
+            a = max(0, math.ceil(xa - 0.5))
+            b = min(w, math.ceil(xb - 0.5))
             if b > a:
                 buf[base + a:base + b] = b"\xff" * (b - a)
     return buf
@@ -634,30 +668,70 @@ def _fmt(v: float) -> str:
     return repr(round(v, 4)).rstrip("0").rstrip(".") if "." in repr(round(v, 4)) else repr(round(v, 4))
 
 
+#: the emitted drawing's longer side, in user units. LibreOffice 24.2 draws an SVG part
+#: whose width and height are a few units (viewBox "0 0 10 10") inset by about 3 px in a
+#: 69 px box, so a correct icon read as 6.5% differing; the same shapes at 100 units drew
+#: with 0.0% (PORT_AUDIT.md, exhibit fidelity round 5). Every icon is therefore written at
+#: this size, whatever viewBox the model chose.
+EMIT_UNITS = 1000.0
+
+
+def _normalised(icon: Icon) -> tuple[float, float, float]:
+    """(scale, width, height) mapping the viewBox onto 0 0 width height, longer side EMIT_UNITS."""
+    vw, vh = icon.view_box[2], icon.view_box[3]
+    k = EMIT_UNITS / max(vw, vh)
+    return k, vw * k, vh * k
+
+
 def svg_bytes(icon: Icon, hexes: dict[str, str]) -> bytes:
     """The file's SVG, re-written from the parsed shapes (never the model's text): roles
-    resolved to the guide's colours, the viewBox's size as the drawing's size."""
-    vx, vy, vw, vh = icon.view_box
+    resolved to the guide's colours, every coordinate mapped onto a viewBox of
+    0 0 width height whose longer side is EMIT_UNITS, that size as the drawing's size."""
+    vx, vy = icon.view_box[0], icon.view_box[1]
+    k, ow, oh = _normalised(icon)
+
+    def ax(v: float) -> float:
+        return (v - vx) * k
+
+    def ay(v: float) -> float:
+        return (v - vy) * k
+
+    def seg(cmd: str, a: list[float]) -> list[float]:
+        up, rel = cmd.upper(), cmd.islower()
+        if up == "Z":
+            return []
+        if up == "A":
+            x, y = (a[5] * k, a[6] * k) if rel else (ax(a[5]), ay(a[6]))
+            return [a[0] * k, a[1] * k, a[2], a[3], a[4], x, y]
+        if up == "H":
+            return [a[0] * k if rel else ax(a[0])]
+        if up == "V":
+            return [a[0] * k if rel else ay(a[0])]
+        out = []
+        for i in range(0, len(a), 2):
+            out += [a[i] * k, a[i + 1] * k] if rel else [ax(a[i]), ay(a[i + 1])]
+        return out
+
     root = etree.Element(f"{{{SVG_NS}}}svg", nsmap={None: SVG_NS})
-    root.set("viewBox", " ".join(_fmt(v) for v in icon.view_box))
-    root.set("width", _fmt(vw))
-    root.set("height", _fmt(vh))
+    root.set("viewBox", f"0 0 {_fmt(ow)} {_fmt(oh)}")
+    root.set("width", _fmt(ow))
+    root.set("height", _fmt(oh))
     for s in icon.shapes:
         el = etree.SubElement(root, f"{{{SVG_NS}}}{s.tag}")
         g = s.geometry
         if s.tag == "path":
-            el.set("d", " ".join(c + (" " + " ".join(_fmt(v) for v in a) if a else "") for c, a in g["d"]))
+            el.set("d", " ".join(c + (" " + " ".join(_fmt(v) for v in seg(c, a)) if a else "") for c, a in g["d"]))
         elif s.tag == "polygon":
-            el.set("points", " ".join(f"{_fmt(x)},{_fmt(y)}" for x, y in g["points"]))
+            el.set("points", " ".join(f"{_fmt(ax(x))},{_fmt(ay(y))}" for x, y in g["points"]))
         else:
-            for k, v in g.items():
-                el.set(k, _fmt(v))
+            for key, v in g.items():
+                el.set(key, _fmt(ax(v) if key in ("x", "cx", "x1", "x2") else ay(v) if key in ("y", "cy", "y1", "y2") else v * k))
         el.set("fill", "none" if s.fill == "none" else "#" + hexes[s.fill])
         if s.tag in ("path", "polygon") and s.fill != "none":
             el.set("fill-rule", s.fill_rule)
         el.set("stroke", "none" if s.stroke == "none" else "#" + hexes[s.stroke])
         if s.stroke != "none":
-            el.set("stroke-width", _fmt(s.stroke_width))
+            el.set("stroke-width", _fmt(s.stroke_width * k))
             el.set("stroke-linecap", s.linecap)
             el.set("stroke-linejoin", s.linejoin)
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8")
@@ -684,7 +758,7 @@ def read_picture(path: str, where: str) -> tuple[str, int, int]:
             im.load()
     except Image.DecompressionBombError:
         raise ImageRefused(f"{where}: {path} declares more than {MAX_IMAGE_PIXELS} pixels") from None
-    except Exception as error:  # Pillow raises many types for a damaged file; each is a refusal
+    except Exception as error:  # noqa: BLE001  # Pillow raises many types for a damaged file; each is a refusal
         raise ImageRefused(f"{where}: {path} is not a readable picture ({type(error).__name__}: {error})") from None
     if fmt not in IMAGE_FORMATS:
         raise ImageRefused(f"{where}: {path} is {fmt}; a page picture is PNG, JPEG or GIF (an icon is an SVG under \"svg\")")
@@ -700,8 +774,9 @@ def role_extent_emu(guide: dict, role: str, lines: int, where: str) -> int:
     """A box dimension from the guide: a spacing role's size, or a type role's line pitch
     times `lines`, at full scale (the solver's own resolution)."""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import layout as L
     from fractions import Fraction
+
+    import layout as L
     try:
         if role.startswith("space."):
             if lines != 1:
@@ -843,6 +918,9 @@ RENDER_TOLERANCE = 0.05
 #: a crop is compared at most this many pixels on its longer side (both images scaled
 #: alike): the check reads whether the picture is there, not its finest detail
 CHECK_MAX_PX = 240
+#: the fewest render pixels a picture may be drawn across on either side; below this the
+#: render cannot show whether it is there (a 20000 x 1 logo drawn 69 x 0 px)
+MIN_CHECK_PX = 4
 
 
 def render_check(elements: list[dict], png: str, page_w_emu: int, guide: dict) -> list[dict]:
@@ -860,7 +938,8 @@ def render_check(elements: list[dict], png: str, page_w_emu: int, guide: dict) -
         x, y, w, h = placed_box(el["box"], el["aspect"], el.get("align", "center"), el.get("valign", "middle"))
         x0, y0 = round(x * k), round(y * k)
         x1, y1 = round((x + w) * k), round((y + h) * k)
-        if x1 - x0 < 4 or y1 - y0 < 4:
+        if x1 - x0 < MIN_CHECK_PX or y1 - y0 < MIN_CHECK_PX:
+            # a picture this small is not seen on the page either: refused, never passed
             out.append({"id": el["id"], "status": "too small to check", "box_px": [x0, y0, x1 - x0, y1 - y0]})
             continue
         crop = page.crop((x0, y0, x1, y1))
@@ -910,38 +989,70 @@ def render_check(elements: list[dict], png: str, page_w_emu: int, guide: dict) -
 # --- the reference's pictures ------------------------------------------------------------------
 
 
+#: a PDF region is rendered between these densities: below 72 a logo is coarser than the
+#: page itself; 1200 is past any print use, and the region's pixels are capped as well
+DPI_RANGE = (72, 1200)
+PDFTOPPM_TIMEOUT_S = 120
+
+
+def _package(ref: str):
+    """The reference as an ooxml.Package (member counts and sizes capped, entities not
+    resolved), or ImageRefused naming why it cannot be read."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import ooxml
+    try:
+        return ooxml.Package(ref)
+    except (zipfile.BadZipFile, ValueError, OSError) as error:
+        raise ImageRefused(f"{ref}: not a readable .pptx package ({type(error).__name__}: {error})") from None
+
+
+def _pdf(ref: str):
+    import pdfplumber
+    try:
+        return pdfplumber.open(ref)
+    except Exception as error:  # noqa: BLE001  # pdfminer raises many types for a damaged file; each is a refusal
+        raise ImageRefused(f"{ref}: not a readable PDF ({type(error).__name__}: {error})") from None
+
+
 def list_pictures(ref: str) -> list[dict]:
     """Every picture the reference holds, with an id `extract` takes."""
     out = []
     if ref.lower().endswith(".pptx"):
-        with zipfile.ZipFile(ref) as z:
-            names = set(z.namelist())
+        pkg = _package(ref)
+        with pkg.zip:
             uses: dict[str, list[int]] = {}
-            for n in sorted(names):
+            for n in sorted(pkg.names):
                 m = re.fullmatch(r"ppt/slides/_rels/slide(\d+)\.xml\.rels", n)
                 if not m:
                     continue
-                rels = etree.fromstring(z.read(n), etree.XMLParser(resolve_entities=False, no_network=True))
-                for rel in rels:
-                    t = rel.get("Target") or ""
-                    if "media/" in t:
-                        uses.setdefault("ppt/media/" + t.split("media/")[-1], []).append(int(m.group(1)))
-            for n in sorted(names):
+                slide = f"ppt/slides/slide{m.group(1)}.xml"
+                try:
+                    info = pkg.root(n).getroottree().docinfo
+                    rels = pkg.rels(slide)
+                except etree.XMLSyntaxError as error:
+                    raise ImageRefused(f"{ref}: {n} is not well-formed XML ({error}); which pictures the slide uses cannot be told") from None
+                if info.doctype or info.internalDTD is not None:
+                    raise ImageRefused(f"{ref}: {n} declares a DOCTYPE; a package part takes none (OPC), and its entities are not read")
+                for _, target in rels.values():
+                    if target.startswith("ppt/media/"):
+                        uses.setdefault(target, []).append(int(m.group(1)))
+            for n in sorted(pkg.names):
                 if not n.startswith("ppt/media/"):
                     continue
-                info = z.getinfo(n)
+                info = pkg.zip.getinfo(n)
                 entry = {"id": n.split("/")[-1], "bytes": info.file_size, "slides": sorted(set(uses.get(n, [])))}
                 if info.file_size <= MAX_IMAGE_BYTES:
                     try:
                         Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
-                        with Image.open(io.BytesIO(z.read(n))) as im:
+                        with Image.open(io.BytesIO(pkg.zip.read(n))) as im:
                             entry.update({"format": im.format, "px": list(im.size)})
-                    except Exception as error:
+                    except Exception as error:  # noqa: BLE001  # an unreadable member is listed as such, by name
                         entry["format"] = f"unreadable ({type(error).__name__})"
+                else:
+                    entry["format"] = f"not read: larger than {MAX_IMAGE_BYTES} bytes"
                 out.append(entry)
         return out
-    import pdfplumber
-    with pdfplumber.open(ref) as pdf:
+    with _pdf(ref) as pdf:
         for pn, page in enumerate(pdf.pages, 1):
             for k, im in enumerate(page.images):
                 out.append({"id": f"p{pn}-{im.get('name') or k}", "page": pn,
@@ -957,8 +1068,9 @@ def extract(ref: str, out: str, pic_id: str | None, page: int | None, bbox: list
         if not pic_id or page is not None:
             raise ImageRefused("a .pptx picture is named by its --id from `images.py list`")
         name = "ppt/media/" + pic_id
-        with zipfile.ZipFile(ref) as z:
-            if name not in z.namelist():
+        pkg = _package(ref)
+        with pkg.zip as z:
+            if name not in pkg.names:
                 raise ImageRefused(f"{pic_id}: no such picture; `images.py list` names them")
             if z.getinfo(name).file_size > MAX_IMAGE_BYTES:
                 raise ImageRefused(f"{pic_id}: larger than {MAX_IMAGE_BYTES} bytes")
@@ -972,25 +1084,40 @@ def extract(ref: str, out: str, pic_id: str | None, page: int | None, bbox: list
                 im.convert("RGBA").save(dest, "PNG")
         except ImageRefused:
             raise
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001  # Pillow raises many types for a damaged picture; each is a refusal
             raise ImageRefused(f"{pic_id}: unreadable picture ({type(error).__name__}: {error})") from None
         read_picture(str(dest), pic_id)
         return {"out": str(dest), "source": f"{ref}#{name}"}
     # PDF: the region rendered by poppler, so a vector logo and a masked picture both come out
-    if pic_id:
-        pics = {p["id"]: p for p in list_pictures(ref)}
-        if pic_id not in pics:
-            raise ImageRefused(f"{pic_id}: no such picture; `images.py list` names them")
-        page, bbox = pics[pic_id]["page"], pics[pic_id]["bbox_pt"]
-    if page is None or not bbox or len(bbox) != 4 or not (bbox[2] > bbox[0] and bbox[3] > bbox[1]):
-        raise ImageRefused("a PDF region is --page N and --bbox X0,Y0,X1,Y1 in PDF points from the top-left, X1 > X0 and Y1 > Y0")
+    if isinstance(dpi, bool) or not isinstance(dpi, int) or not DPI_RANGE[0] <= dpi <= DPI_RANGE[1]:
+        raise ImageRefused(f"--dpi {dpi!r}: a region is rendered at {DPI_RANGE[0]} to {DPI_RANGE[1]} dpi")
+    with _pdf(ref) as pdf:
+        n_pages = len(pdf.pages)
+        if pic_id:
+            pics = {p["id"]: p for p in list_pictures(ref)}
+            if pic_id not in pics:
+                raise ImageRefused(f"{pic_id}: no such picture; `images.py list` names them")
+            page, bbox = pics[pic_id]["page"], pics[pic_id]["bbox_pt"]
+        if page is None or not bbox or len(bbox) != 4 or not all(math.isfinite(v) for v in bbox) or not (bbox[2] > bbox[0] and bbox[3] > bbox[1]):
+            raise ImageRefused("a PDF region is --page N and --bbox X0,Y0,X1,Y1 in PDF points from the top-left, X1 > X0 and Y1 > Y0")
+        if not 1 <= page <= n_pages:
+            raise ImageRefused(f"--page {page}: the PDF has pages 1 to {n_pages}")
+        pw, ph = float(pdf.pages[page - 1].width), float(pdf.pages[page - 1].height)
+    if bbox[0] < 0 or bbox[1] < 0 or bbox[2] > pw + 0.5 or bbox[3] > ph + 0.5:
+        raise ImageRefused(f"--bbox {bbox}: outside page {page}, which is 0,0 to {pw:g},{ph:g} points")
     k = dpi / 72
+    wpx, hpx = max(1, int((bbox[2] - bbox[0]) * k)), max(1, int((bbox[3] - bbox[1]) * k))
+    if wpx * hpx > MAX_IMAGE_PIXELS:
+        raise ImageRefused(f"the region at {dpi} dpi is {wpx} x {hpx} px, over {MAX_IMAGE_PIXELS} pixels; lower --dpi")
     with tempfile.TemporaryDirectory(prefix="images-") as tmp:
         stem = Path(tmp) / "crop"
         cmd = ["pdftoppm", "-png", "-r", str(dpi), "-f", str(page), "-l", str(page), "-singlefile",
-               "-x", str(int(bbox[0] * k)), "-y", str(int(bbox[1] * k)), "-W", str(max(1, int((bbox[2] - bbox[0]) * k))), "-H", str(max(1, int((bbox[3] - bbox[1]) * k))),
+               "-x", str(int(bbox[0] * k)), "-y", str(int(bbox[1] * k)), "-W", str(wpx), "-H", str(hpx),
                ref, str(stem)]
-        done = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        try:
+            done = subprocess.run(cmd, capture_output=True, text=True, timeout=PDFTOPPM_TIMEOUT_S, check=False)
+        except subprocess.TimeoutExpired:
+            raise ImageRefused(f"pdftoppm did not render page {page} within {PDFTOPPM_TIMEOUT_S} s") from None
         png = stem.with_suffix(".png")
         if done.returncode or not png.exists():
             raise ImageRefused(f"pdftoppm could not render page {page}: {done.stderr.strip()[-300:]}")
@@ -1028,7 +1155,10 @@ def main(argv: list[str]) -> int:
             cli.in_path(args.ref, "the reference")
             cli.guard_args(args, "out")
             cli.out_path(Path(args.out), "picture")
-            bbox = [float(v) for v in args.bbox.split(",")] if args.bbox else None
+            try:
+                bbox = [float(v) for v in args.bbox.split(",")] if args.bbox else None
+            except ValueError:
+                raise ImageRefused(f"--bbox {args.bbox!r}: four numbers X0,Y0,X1,Y1") from None
             print(json.dumps(extract(args.ref, args.out, args.id, args.page, bbox, args.dpi), indent=1))
         else:
             guide = json.loads(Path(args.guide).read_text()) if args.guide else None

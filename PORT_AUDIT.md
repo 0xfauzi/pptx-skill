@@ -234,3 +234,41 @@ filed under its reference by the judge, which is necessary and not sufficient):
   0.112 against 0.084): revenue read back from the page's picture, logos extracted from
   the pptx. Still differs: the legend sits lower, the chart has no frame, the bars take the
   guide's blues rather than the picture's.
+
+### Verifier round on exhibit fidelity
+
+Six defects the adversarial verifier reproduced, each reproduced again here on the
+branch head before the fix, then fixed and shown failing with the fix taken out:
+
+- A. An icon whose shapes draw nothing (`<path d="M 1 1"/>`, `M 1 1 Z`) crashed the build
+  in `_extent`; a zero-length `<line>` passed as "drawn as written". Every shape must now
+  draw: a stroke needs two distinct points, a fill a subpath with extent both ways
+  (`images._draws`), refused by name.
+- B. The DOCTYPE refusal was a byte search, so a UTF-16 or UTF-7 file carrying an internal
+  entity passed, and a processing instruction before the root passed. An icon is UTF-8
+  only (byte order marks, undecodable bytes and any declared encoding but UTF-8 refused);
+  the parsed tree's DOCTYPE is refused as well as the bytes'; every node beside the root
+  is checked, not only its descendants.
+- C. A correctly drawn icon in a small viewBox was refused: LibreOffice 24.2 drew the
+  emitted `width="10" height="10"` SVG inset by about 3 px in a 69 px box (8x8 square in
+  0 0 10 10: 6.5% differing; full square 19.3%; circle 5.2%; the same square in a
+  100-unit box 0.0%). The emitted SVG now maps every coordinate onto a viewBox whose
+  longer side is 1000 units (`images.EMIT_UNITS`): the same three icons differ by 0.0%,
+  0.0% and 0.44%.
+- D. A picture drawn at 0 px (a 20000x1 PNG, an SVG of viewBox 0 0 1000000 1) passed as
+  "too small to check". It now refuses the page as `picture too small to check`.
+- E. `images.py list` and `extract` crashed on hostile references (nested entities in a
+  .rels, a non-zip .pptx, `--dpi 3000` running pdftoppm 120 s, `--dpi 0` writing a 1x1
+  PNG, a bbox off the page). The pptx is now read through `ooxml.Package` (the one
+  package reader: member caps, entities unresolved), a malformed or DOCTYPE-bearing
+  .rels is refused by name, dpi is 72 to 1200, the region's pixels are capped, the page
+  number and bbox are checked against the PDF, and a pdftoppm timeout is a refusal.
+- F. A value past a written axis min or max was clipped by the renderer and drawn as the
+  bound (volume 150 on a 0..100 secondary axis passed). `emit_pptx._values_inside_axes`
+  refuses it, stacked groups by their running sums; this covers both value axes, so the
+  older gap on the primary axis is closed too.
+- Minor: an axis title with no `role` or `ink_role` is now listed under
+  `chart_defaults_taken`.
+
+The four rebuilds and their statuses, scales and judge totals are unchanged (p15 0.12,
+p24 0.114, p5 0.058, p9 0.112); the p15 icon now reads 0.02% differing against 0.0%.

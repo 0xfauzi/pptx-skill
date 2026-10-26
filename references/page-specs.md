@@ -82,7 +82,8 @@ one of:
 - `{"svg": "/abs/icon.svg"}`: an icon you write in the SVG subset: `<svg viewBox>` with
   only `path`, `rect`, `circle`, `line` and `polygon` as its direct children, every
   `fill` and `stroke` a colour role or `none` (both required), plain numbers, nothing
-  else (no `g`, `text`, `style`, `transform`, `image`, units, DOCTYPE). The file is
+  else (no `g`, `text`, `style`, `transform`, `image`, units, DOCTYPE; UTF-8 only; a
+  shape that draws nothing is refused). The file is
   written natively (an SVG part on the picture's svgBlip extension, which PowerPoint
   2016+ draws) with a PNG fallback rasterised from the same shapes; the roles become the
   guide's colours when the file is written. `python3 scripts/images.py check ICON.svg
@@ -98,7 +99,9 @@ as large as its box allows, and every choice you left out is listed under the pa
 
 After the render the build compares what LibreOffice drew in each picture's box with the
 picture as written (the icon rasterised at the render's size, the file scaled to it) and
-refuses a page where more than 5% of the box differs (`picture not drawn as written`);
+refuses a page where more than 5% of the box differs (`picture not drawn as written`),
+or where the picture is drawn under 4 px on a side (`picture too small to check`: a
+20000 x 1 logo in a square box);
 `pictures` in the report gives every share. Measured: LibreOffice 24.2 draws the SVG
 part itself (with a blank PNG fallback the icon still drew), so the check reads the SVG
 path; PowerPoint's drawing is not measured.

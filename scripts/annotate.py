@@ -624,7 +624,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
     return drawn, entry
 
 
-def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: "Labeller", eg: EmitGuide, where: str, rows: dict, default, gap: float):
+def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labeller, eg: EmitGuide, where: str, rows: dict, default, gap: float):
     """A row of cells (text, or a picture) centred on the chart's categories, beyond the
     plot on one side, each inside its category's band: data rows under a chart, logos or
     icons as category labels. Positions from chart_geometry, text measured with the
