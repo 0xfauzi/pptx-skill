@@ -7,7 +7,7 @@ when a page is planned.
     library.py build   --lib LIB DECK... [--keep ID:PAGES] [--skip ID:PAGES] [--exclude ID[:PAGES]]
     library.py tag     --lib LIB TAGS.json
     library.py check   --lib LIB [--seal]
-    library.py pick    --intent TEXT [--composition C] [--exhibit F] [--move M]... [--data-shape TEXT]
+    library.py pick    --intent TEXT [--composition C] [--data-shape TEXT]
                        [--aspect W:H] [--gallery DIR] [--own LIB] [--library LIB] [--exclude ID] [--top N]
     library.py import  --lib LIB SRC/library.json --by WHO --basis TEXT
     library.py forget  --lib LIB --deck ID
@@ -46,9 +46,10 @@ owners' libraries.
 
 pick searches the reference's own gallery first (gallery.py's word-overlap ranking:
 gallery exemplars carry no tags), then the owner's library, then the external library, and
-says where each result came from. Library entries rank by structured tags (composition,
-exhibit family, annotation moves, aspect, then data-shape words) and by intent words only
-after them.
+says where each result came from. Library entries rank by composition, aspect, then
+data-shape words and intent words over what the model wrote of each exhibit. An exhibit
+is tagged in the model's own words (what it is, its data, its message, how it is
+annotated), never from a list of exhibit types or moves.
 """
 
 from __future__ import annotations
@@ -82,7 +83,7 @@ SKILL_ROOT = Path(__file__).resolve().parent.parent
 EXTERNAL_LIBRARY = SKILL_ROOT / "refs" / "library"
 RENDER_WIDTH_PX = 1600  # TARGET_SPEC 10.1: all pages at 1600 px
 EMU_PER_INCH = 914_400
-MANIFEST_SCHEMA = 3  # 2: every file names the pages it derives from ("pages"); 3: tags are page_craft_vocabulary slugs
+MANIFEST_SCHEMA = 4  # 2: every file names the pages it derives from ("pages"); 3: tags are vocabulary slugs; 4: exhibits in words
 # The kinds that hold a picture of a page. Kept kinds need `--images yes`; a withheld render
 # exists only while the model tags a tags-only deck, and `check --seal` deletes it.
 KEPT_IMAGE_KINDS = frozenset({"page_image", "contact_sheet"})
@@ -106,16 +107,14 @@ COMPOSITIONS = (
     "exhibit + text above or below",
     "big numbers / KPI panel",
 )
-# The title register, the exhibit family and the annotation moves are the digest's own
-# closed sets (references/page_craft_vocabulary.json); an entry stores the slug, and
-# the corpus's spelling is read only on import, through that file's corpus_spelling.
+# The title register is the title vocabulary's (references/page_craft_vocabulary.json). An
+# exhibit is tagged in words: what it is, its data, its message and how it is annotated.
 TITLE_REGISTERS: dict[str, str] = VOCABULARY["title_register"]
-EXHIBIT_FAMILIES: dict[str, str] = VOCABULARY["exhibit_type"]
-ANNOTATION_MOVES: dict[str, str] = VOCABULARY["annotation_move"]
 # Fields the model fills after looking. Everything else in an entry is measured or recorded.
 TAG_FIELDS = ("house_type", "composition_family", "composition_as_recorded", "title", "title_register", "exhibits",
               "emphasis_devices", "craft", "why_instructive", "designer_questions")
-EXHIBIT_FIELDS = ("type", "family", "data_shape", "message", "annotation_moves", "annotations_as_recorded")
+EXHIBIT_TEXT_FIELDS = ("type", "data_shape", "message")
+EXHIBIT_FIELDS = (*EXHIBIT_TEXT_FIELDS, "annotations_as_recorded")
 
 # --- triage proposal -------------------------------------------------------------------------
 DIVIDER_WORD_SHARE = 0.2
@@ -623,14 +622,18 @@ def check_entry(entry: dict) -> list[str]:
                     problems.append(f"exhibit {i} is not an object")
                     continue
                 missing = [f for f in EXHIBIT_FIELDS if ex.get(f) is None]
+                stray = sorted(set(ex) - set(EXHIBIT_FIELDS))
                 if missing:
                     problems.append(f"exhibit {i} not tagged: {', '.join(missing)}")
-                one_of(f"exhibit {i} family", ex.get("family"), EXHIBIT_FAMILIES)
-                for move in ex.get("annotation_moves") or []:
-                    one_of(f"exhibit {i} annotation move", move, ANNOTATION_MOVES)
-                for field in ("annotation_moves", "annotations_as_recorded"):
-                    if ex.get(field) is not None and not isinstance(ex[field], list):
-                        problems.append(f"exhibit {i} {field} must be a list")
+                if stray:
+                    problems.append(f"exhibit {i} carries {', '.join(stray)}: an exhibit is tagged in words ({', '.join(EXHIBIT_FIELDS)})")
+                for field in EXHIBIT_TEXT_FIELDS:
+                    value = ex.get(field)
+                    if value is not None and not (isinstance(value, str) and value.strip()):
+                        problems.append(f"exhibit {i} {field} must be words")
+                notes = ex.get("annotations_as_recorded")
+                if notes is not None and not (isinstance(notes, list) and all(isinstance(v, str) and v.strip() for v in notes)):
+                    problems.append(f"exhibit {i} annotations_as_recorded must be a list of words ([] = looked, none)")
     return problems
 
 
@@ -729,13 +732,15 @@ def forget(lib: Library, deck_id: str) -> str:
 
 # --- the corpus starter set ------------------------------------------------------------------
 
-# corpus spelling -> slug, per vocabulary list
-CORPUS_SPELLING = {name: {spelt: slug for slug, spelt in VOCABULARY["corpus_spelling"][name].items()} for name in ("exhibit_type", "annotation_move")}
+#: the corpus coders' closed-list tags, left behind on import: the entry keeps the words
+#: each exhibit was recorded in (type, data shape, message, annotations as recorded)
+CORPUS_LIST_TAGS = ("family", "annotation_moves")
 
 
 def _corpus_problems(page: dict) -> list[str]:
-    """Every family and move a corpus page writes that the corpus spelling does not name, and
-    every exhibits or moves value that is not a list (never read as empty)."""
+    """Every corpus exhibit that does not carry its words (type, data shape, message as
+    strings, annotations as recorded as a list of strings), and an exhibits value that is not
+    a list (never read as empty)."""
     where = f"{page.get('deck')}-p{page.get('page')}"
     exhibits = page.get("exhibits")
     if not isinstance(exhibits, list):
@@ -745,14 +750,10 @@ def _corpus_problems(page: dict) -> list[str]:
         if not isinstance(ex, dict):
             out.append(f"{where}: exhibit {i} {ex!r} is not an object")
             continue
-        if not (isinstance(ex.get("family"), str) and ex["family"] in CORPUS_SPELLING["exhibit_type"]):
-            out.append(f"{where}: exhibit {i} family {ex.get('family')!r}")
-        moves = ex.get("annotation_moves")
-        if not isinstance(moves, list):
-            out.append(f"{where}: exhibit {i} annotation_moves {moves!r} is not a list")
-            continue
-        out += [f"{where}: exhibit {i} annotation move {m!r}" for m in moves
-                if not (isinstance(m, str) and m in CORPUS_SPELLING["annotation_move"])]
+        out += [f"{where}: exhibit {i} {f} {ex.get(f)!r} is not words" for f in EXHIBIT_TEXT_FIELDS if not (isinstance(ex.get(f), str) and ex[f].strip())]
+        notes = ex.get("annotations_as_recorded")
+        if not (isinstance(notes, list) and all(isinstance(v, str) for v in notes)):
+            out.append(f"{where}: exhibit {i} annotations_as_recorded {notes!r} is not a list of words")
     return out
 
 
@@ -769,7 +770,7 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
         raise Refused("corpus_unreadable", f"{source} has no pages list of objects")
     unknown = [problem for p in pages for problem in _corpus_problems(p)]
     if unknown:
-        raise Refused("corpus_spelling_unknown", f"nothing imported; {len(unknown)} corpus values refused (not a list, or a term the corpus_spelling of page_craft_vocabulary.json does not name): {'; '.join(unknown)}")
+        raise Refused("corpus_unreadable", f"nothing imported; {len(unknown)} corpus exhibits refused: {'; '.join(unknown)}")
     lines = []
     for page in pages:
         deck_id = page["deck"]
@@ -790,9 +791,7 @@ def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
         entry["look_at"] = rel
         house = page["house_type"]
         entry.update({k: page[k] for k in TAG_FIELDS})
-        entry["exhibits"] = [dict(ex, family=CORPUS_SPELLING["exhibit_type"][ex["family"]],
-                                  annotation_moves=[CORPUS_SPELLING["annotation_move"][m] for m in ex["annotation_moves"]])
-                             for ex in page["exhibits"]]
+        entry["exhibits"] = [{k: v for k, v in ex.items() if k not in CORPUS_LIST_TAGS} for ex in page["exhibits"]]
         entry["house_type"] = CORPUS_HOUSE.get(house, "other")
         if entry["house_type"] != house:
             entry["house_type_as_recorded"] = house
@@ -834,18 +833,15 @@ def entry_words(entry: dict) -> frozenset[str]:
     text = [entry.get("title"), entry.get("composition_as_recorded"), entry.get("why_instructive"),
             *(entry.get("designer_questions") or []), *(entry.get("emphasis_devices") or [])]
     for ex in entry.get("exhibits") or []:
-        text += [ex.get("type"), ex.get("message"), *(ANNOTATION_MOVES.get(m) for m in ex.get("annotation_moves") or [] if isinstance(m, str))]
+        text += [ex.get("type"), ex.get("message"), *(ex.get("annotations_as_recorded") or [])]
     return frozenset().union(*(gallery.words(t) for t in text if isinstance(t, str)))
 
 
-def score(entry: dict, intent: frozenset[str], composition: str | None, exhibit: str | None, moves: list[str],
-          shape: frozenset[str], aspect: float | None) -> dict:
+def score(entry: dict, intent: frozenset[str], composition: str | None, shape: frozenset[str], aspect: float | None) -> dict:
     exhibits = entry.get("exhibits") or []
     entry_aspect = (entry.get("page_size") or {}).get("aspect")
     return {
         "composition": composition is not None and entry.get("composition_family") == composition,
-        "exhibit": exhibit is not None and any(ex.get("family") == exhibit for ex in exhibits),
-        "moves": len(set(moves) & {m for ex in exhibits for m in ex.get("annotation_moves") or []}),
         "aspect": aspect is not None and entry_aspect is not None and abs(entry_aspect - aspect) <= ASPECT_TOLERANCE,
         # one-character tokens ("x" between dimensions, a lone count) are in nearly every recorded shape
         "data_shape": len({w for w in shape if len(w) > 1} & frozenset().union(*(gallery.words(ex.get("data_shape") or "") for ex in exhibits))),
@@ -853,11 +849,9 @@ def score(entry: dict, intent: frozenset[str], composition: str | None, exhibit:
     }
 
 
-def pick(intent_text: str, composition: str | None, exhibit: str | None, move_names: list[str], data_shape: str | None, aspect_text: str | None,
+def pick(intent_text: str, composition: str | None, data_shape: str | None, aspect_text: str | None,
          gallery_dir: Path | None, own: Path | None, external: list[Path], exclude: set[str], top: int, guide: dict | None = None) -> str:
     composition = _vocab(composition, COMPOSITIONS, "--composition")
-    exhibit = _vocab(exhibit, EXHIBIT_FAMILIES, "--exhibit")
-    moves = [m for m in (_vocab(name, ANNOTATION_MOVES, "--move") for name in move_names) if m]
     aspect = _aspect(aspect_text)
     intent, shape = gallery.words(intent_text), gallery.words(data_shape or "")
     libraries: list[tuple[str, Library]] = []
@@ -874,7 +868,7 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
             raise Refused("library_not_external", f"--library {path} is owned by {lib.manifest['owner']!r}; pass a company's own pages with --own")
         libraries.append(("the external library", lib))
     lines = [f"intent words: {' '.join(sorted(intent))}",
-             f"asked: composition={composition} exhibit={exhibit} moves={moves or None} data shape words={' '.join(sorted(shape)) or None} aspect={aspect_text}",
+             f"asked: composition={composition} data shape words={' '.join(sorted(shape)) or None} aspect={aspect_text}",
              "searched in order: " + "; ".join(
                  ([f"the reference's own gallery {gallery_dir}"] if gallery_dir else ["no reference gallery given"])
                  + [f"{label} {lib.root} ({len(lib.pages)} entries)" for label, lib in libraries])]
@@ -889,8 +883,8 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
         common = frozenset.intersection(*captions) if len(captions) > 1 else frozenset()
         if intent & common:
             lines.append(f"   words in every gallery caption, left out: {' '.join(sorted(intent & common))}")
-        # the exhibit, moves and data shape asked are words the digest records carry too
-        asked = " ".join([*sorted(intent - common), *(w.replace("_", " ") for w in [exhibit, *moves] if w), *sorted(shape)])
+        # the data shape asked is in words the digest records carry too
+        asked = " ".join([*sorted(intent - common), *sorted(shape)])
         exemplars, crops = gallery.rank(gallery_dir, asked, guide)
         best = max([o for _, o, _ in exemplars] + [o for _, o in crops], default=0)
         lines.append("1. the reference's own gallery, " + ("tagged by the completed digest (each page's title and records)" if gallery.page_words(guide) else
@@ -915,8 +909,8 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
         # a word every entry carries tells no entry from another
         common = frozenset.intersection(*(entry_words(e) for e in good)) if len(good) > 1 else frozenset()
         for entry in good:
-            s = score(entry, intent - common, composition, exhibit, moves, shape, aspect)
-            structured = s["composition"] + s["exhibit"] + s["moves"]
+            s = score(entry, intent - common, composition, shape, aspect)
+            structured = int(s["composition"])
             # the page size orders examples within a tier and never makes one relevant by itself
             if structured or s["data_shape"] or s["words"]:
                 ranked.append(([-structured, -s["aspect"], -s["data_shape"], -s["words"], entry["entry_id"]], entry, s))
@@ -937,7 +931,7 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
             lines.append("   no evidence: no tagged entry shares a tag or a word with this intent")
         for _, entry, s in chosen:
             entry_aspect = (entry.get("page_size") or {}).get("aspect")
-            flags = [k for k in ("composition", "exhibit", "aspect") if s[k]] + ([f"{s['moves']} moves"] if s["moves"] else [])
+            flags = [k for k in ("composition", "aspect") if s[k]]
             lines.append(f"   {entry['entry_id']} [{entry['house_type']}; {entry['composition_family']}] tags {'+'.join(flags) or 'none'}, "
                          f"data-shape words {s['data_shape']}, intent words {s['words']}, aspect {entry_aspect}"
                          + (" (does not match the page asked: examples do not transfer across aspect ratios)" if aspect is not None and not s["aspect"] else ""))
@@ -979,9 +973,7 @@ def main(argv: list[str]) -> int:
     p = sub.add_parser("pick")
     p.add_argument("--intent", required=True)
     p.add_argument("--composition")
-    p.add_argument("--exhibit")
-    p.add_argument("--move", action="append", default=[], help="an annotation move the page needs (repeatable)")
-    p.add_argument("--data-shape")
+    p.add_argument("--data-shape", help="the data's shape in words; matched against the words each exhibit was tagged in")
     p.add_argument("--aspect", help="the page asked, as W:H (4:3, 16:9, 11:8.5)")
     p.add_argument("--gallery", help="the reference's own gallery.py output")
     p.add_argument("--guide", help="the completed guide: its digest records and titles tag the gallery's pages")
@@ -1020,7 +1012,7 @@ def main(argv: list[str]) -> int:
             return 1 if failures else 0
         elif args.cmd == "pick":
             external = [Path(p) for p in args.library] if args.library else ([EXTERNAL_LIBRARY] if (EXTERNAL_LIBRARY / "manifest.json").exists() else [])
-            print(pick(args.intent, args.composition, args.exhibit, args.move, args.data_shape, args.aspect, Path(args.gallery) if args.gallery else None,
+            print(pick(args.intent, args.composition, args.data_shape, args.aspect, Path(args.gallery) if args.gallery else None,
                        Path(args.own) if args.own else None, external, set(args.exclude), args.top,
                        json.loads(Path(args.guide).read_text()) if args.guide else None))
         elif args.cmd == "import":
@@ -1031,8 +1023,7 @@ def main(argv: list[str]) -> int:
             print(forget(Library(Path(args.lib)), args.deck))
         elif args.cmd == "vocab":
             print(json.dumps({"house_type": HOUSE_TYPES, "title_register": TITLE_REGISTERS, "composition_family": COMPOSITIONS,
-                              "exhibit_family": EXHIBIT_FAMILIES, "annotation_moves": ANNOTATION_MOVES,
-                              "spelling": "a tag is the slug; pick's --exhibit and --move take the slug or its label",
+                              "spelling": "a title register is the slug; an exhibit is tagged in words, never from a list",
                               "tag_fields": TAG_FIELDS, "exhibit_fields": EXHIBIT_FIELDS}, indent=1))
     except Refused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)

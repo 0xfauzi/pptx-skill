@@ -823,9 +823,7 @@ def render_setup(deck_path: Path, out: Path, width: int, deck: Deck, shown: list
     return page_of, fonts, raster_w, raster_h
 
 
-def _overlaps(a: Box, b: Box) -> bool:
-    """The two boxes share area (touching edges do not)."""
-    return min(a[0] + a[2], b[0] + b[2]) > max(a[0], b[0]) and min(a[1] + a[3], b[1] + b[3]) > max(a[1], b[1])
+_overlaps = ooxml.shares_area
 
 
 def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, include_generated: bool = False,
@@ -835,9 +833,11 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     title; a crop is a rectangle, so a title or chrome leaf that falls inside it is still
     drawn, and is named under `also_draws`) and one crop per exhibit
     candidate (a substantive component of legible area holding a table, chart, picture or a
-    drawn shape with no text), with `exhibits: null` for the model to answer after looking. Candidates
-    only aid the eye: the model decides what is an exhibit, and answers [] for a page
-    that holds none. Nothing is classified here."""
+    drawn shape with no text), with `exhibits: null` for the model to answer after looking, and,
+    given the guide, what the file itself states of the page (its exhibit structure and its
+    marks, as the extractor read them: `file_facts`). Candidates and facts only aid the eye:
+    the model decides what is an exhibit, describes it in its own words, and answers [] for
+    a page that holds none. Nothing is classified here."""
     pdf, deck, shown, sources, excluded, skipped, gap_emu, _, _, whole_pages = read_sources(deck_path, guide_path, include_generated, pages, raster_pages=True)
     # whole_pages: a raster reference, every page one picture: the digest reads whole pages and cuts nothing
     page_of, fonts, raster_w, raster_h = render_setup(deck_path, out, width, deck, shown, pdf)
@@ -854,10 +854,20 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         by_slide.setdefault(c.slide.index, []).append(c)
     stub_pages: list[dict[str, object]] = []
     rows: list[str] = []
+    # the extractor's reading of each page's file (one reading, never redone here)
+    read_facts: dict[int, dict] = {}
+    if guide_path is not None:
+        variety = json.loads(guide_path.read_text()).get("variety")
+        for p in (variety.get("pages") if isinstance(variety, dict) else None) or []:
+            if isinstance(p, dict) and isinstance(p.get("exhibit_facts"), dict):
+                read_facts[p["slide"]] = p["exhibit_facts"]
     for slide in sources:
         n = slide.index + 1
         body = [] if whole_pages else [leaf for leaf in content_leaves(slide) if leaf.role not in ("title", "ctrTitle")]
-        entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [], "exhibits": None, "source_line": None}
+        facts = read_facts.get(n)
+        entry: dict[str, object] = {"slide": n, "page_png": f"pages/{page_of[slide.index].name}", "content_crop": None, "candidates": [],
+                                    "file_facts": {k: facts.get(k) for k in ("structure", "kinds", "marks")} if facts else None,
+                                    "exhibits": None, "source_line": None}
         if body:
             extents = [extent_of(leaf) for leaf in body]
             left, top = min(e[0] for e in extents), min(e[1] for e in extents)
@@ -885,24 +895,25 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         stub_pages.append(entry)
         rows.append(f"| {n} | `{entry['page_png']}` | {('`' + entry['content_crop']['file'] + '`') if entry['content_crop'] else 'no content leaves'} | "  # type: ignore[index]
                     f"{', '.join('`' + c['id'] + '`' for c in entry['candidates']) or 'none'} |")  # type: ignore[union-attr]
-    vocab_path = Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json"
     stub: dict[str, object] = {
         "schema": "pptx-skill exhibit digest v1",
         "reference": deck_path.name,
         "reference_sha256": _sha256(deck_path),
         "render_fidelity": render_fidelity(fonts),
         "raster": {"width_px": raster_w, "height_px": raster_h, "px_per_pt": round(raster_w / (deck.width_emu / 12700), 2)},
-        "vocabulary": str(vocab_path),
         "sample_policy": ("every page, whole (a raster reference: no shapes to crop)" if whole_pages else "every evidence page") + (f" in {pages[0]}-{pages[1]}" if pages else ""),
         "pages_not_read": excluded,
         "generated_slides_skipped": skipped,
-        "record_template": {"candidate": "<a candidate id on this page, or null>", "class": "exhibit_class", "type": "exhibit_type",
-                            "data_shape": "data_shape", "message": "<the one message, in words>", "message_kind": "message_kind",
-                            "annotation_moves": [{"move": "annotation_move", "anchor": "<what it points at>",
-                                                  "labelled": "<on a mark move only (" + ", ".join(sorted({m for ms in json.loads(vocab_path.read_text())["annotation_kind_moves"].values() for m in ms})) + "): true or false>"}],
-                            "emphasis_devices": ["emphasis_device"], "number_formats": ["number_format"], "legend": "legend",
-                            "data_labels": "data_labels", "colour_logic": "colour_logic", "why": "<optional>"},
-        "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere",
+        "record_template": {"candidate": "<a candidate id on this page, or null>",
+                            "what": "<what the exhibit is, in your words: its form and what it is made of>",
+                            "message": "<the one thing a reader takes from it>",
+                            "how_drawn": "<how the house draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
+                            "marks": "<what the house marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim "
+                                     "lives, and whether words beside the mark say what it marks; or that it marks nothing and how the claim still reads>",
+                            "chart_or_table": "<true when it is a chart or a table, drawn natively or pasted as a picture: the pages the source-line habit is counted over>",
+                            "axis_labels": "<true when it sets axis or category labels>", "value_labels": "<true when it sets values on its marks>",
+                            "why": "<optional>"},
+        "source_line": "on every page holding a chart or a table: true or false, read off the page; null elsewhere",
         "pages": stub_pages,
     }
     (out / "digest.stub.json").write_text(json.dumps(stub, indent=1) + "\n")
@@ -912,13 +923,14 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "its candidate crops. A content crop is the rectangle around the page's content; a title or chrome",
         "leaf inside that rectangle is still drawn, and the stub names it under `also_draws`: it is not an exhibit.",
         "Copy `digest.stub.json` to `digest.json` in this directory and leave the stub as cut; in the copy, replace each",
-        "page's `exhibits: null` with a list of records in the record_template's shape, every value from",
-        f"`{vocab_path.name}` (an empty list states the page has no exhibit). On every page holding a data chart or a",
-        "table, answer `source_line`: true when the page carries a source or note line naming where its figures come",
-        "from, false when it carries none; on other pages leave it null. On every mark move (a ring or box, a band or",
-        "shading, a reference or event line, a bracket) answer `labelled`: true when words on the exhibit say what the mark",
-        "marks (a label beside it, the figure it rings), false when it stands alone and only the text around it explains it.",
-        "An unlabelled mark on a new page is refused unless it names its explanation, and this answer is the house's precedent.",
+        "page's `exhibits: null` with a list of records in the record_template's shape, each written in your own words",
+        "after looking at the crop: what the exhibit is, what the reader takes from it, how the house draws it and what it",
+        "marks (an empty list states the page has no exhibit). Nothing is chosen from a list; the words are checked for",
+        "being there, never for what they say. `file_facts` is what the file itself states of the page (its exhibit",
+        "structure and every mark drawn on its content, with whether the mark carries text), read by the extractor: it",
+        "cannot see inside a pasted picture, so a ring drawn in a picture is yours to describe. On every page holding a",
+        "chart or a table, answer `source_line`: true when the page carries a source or note line naming where its",
+        "figures come from, false when it carries none; on other pages leave it null.",
         "Keep every page and its candidates as cut:",
         "the completion is checked against the stub. Answer `/exhibit_habits` with complete_guide.py --digest <this directory>.", "",
         "| slide | page | content crop | candidates |", "|---|---|---|---|", *rows, ""]))
@@ -1145,15 +1157,11 @@ def skeleton_leaves(payload: dict[str, object]) -> list[tuple[str, str]]:
     return out
 
 
-#: the digest record fields whose words say what a house page does: its exhibit's type and
-#: data shape, its message and message kind, its annotation moves, emphasis devices and why
-DIGEST_WORD_FIELDS = ("type", "data_shape", "message", "message_kind", "emphasis_devices", "why", "class")
-
-
 def page_words(guide: dict | None) -> dict[int, frozenset[str]]:
     """Per reference page (1-based), the words that say what it does: its title and the
-    completed digest's records for it (DIGEST_WORD_FIELDS, each move and its anchor), with
-    vocabulary terms split at their underscores and function words left out. A gallery's
+    completed digest's records for it (every phrase a record holds: what, message,
+    how_drawn, marks, why; its true-or-false readings carry no words), with terms split
+    at their underscores and function words left out. A gallery's
     shapes carry no such words (an exemplar's vocabulary was its family id and shape kinds),
     so every intent overlapped every exemplar at 0; the digest the model completed in step 2
     is the house's own tagging of its pages."""
@@ -1172,9 +1180,7 @@ def page_words(guide: dict | None) -> dict[int, frozenset[str]]:
 
     for r in ((guide or {}).get("exhibit_habits") or {}).get("records") or []:
         if isinstance(r, dict) and isinstance(r.get("slide"), int):
-            for field in DIGEST_WORD_FIELDS:
-                add(r["slide"], r.get(field))
-            add(r["slide"], r.get("annotation_moves"))
+            add(r["slide"], {k: v for k, v in r.items() if k not in ("slide", "candidate")})
     for t in ((guide or {}).get("titles") or {}).get("records") or []:
         if isinstance(t, dict) and isinstance(t.get("slide"), int):
             add(t["slide"], t.get("text"))

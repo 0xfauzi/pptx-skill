@@ -1,7 +1,8 @@
 # Emphasis, fills and marks: questions, and what decks measurably do
 
 Questions to ask about every mark on a page, with what professional decks measurably do;
-never rules. The guide's motifs, fill roles and `exhibit_habits.emphasis_devices` decide.
+never rules. The guide's motifs, fill roles and the house's digest records (what each of
+its exhibits marks and how, in words) decide.
 Counts are pages carrying each device, of 578 coded content pages (bank 231, consulting
 317, chart book 30), one coder per page, good to about plus or minus 2 to 3.
 

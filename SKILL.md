@@ -12,9 +12,11 @@ fonts, solve geometry, write valid packages, render, and refuse what is measurab
 No script picks a colour, a chart or a layout for you; when you leave a choice out, the
 build writes a named neutral value and lists it, so you see every choice you did not make.
 
-The house wins. Its measured habits (title register and length, where claims sit, exhibit
-types, annotation moves, emphasis, source lines, variety, density) are in the guide you
-complete in step 2. The reference files on design offer questions plus counts from 578
+The house wins. Its habits (title register and length, where claims sit, how it draws and
+marks its exhibits, emphasis, source lines, variety, density) are in the guide you
+complete in step 2. No list of chart types or annotation moves exists anywhere in this
+skill: every exhibit is reasoned out from what the reader must see, the data and the
+house's own exhibits, and written down as a brief before its spec. The reference files on design offer questions plus counts from 578
 coded pages of 24 professional decks; where the house has evidence, the house's habit
 decides.
 
@@ -57,10 +59,12 @@ Deck progress:
          /exhibit_habits (from the digest) and /variety/content_pages
 - [ ] 3. Template: the company's template with its slides removed, or a blank page
 - [ ] 4. Round trip: rebuild one of the house's own pages and compare renders
-- [ ] 5. Section plan: plan.json, then plan.py check until it passes
+- [ ] 5. Section plan: plan.json with an exhibit brief per exhibit, written while
+         looking at the house's nearest exhibits and the data; plan.py check until it passes
 - [ ] 6. Page specs: context first, then capacity, then the spec
 - [ ] 7. Build with --plan; read the report; fix refusals
-- [ ] 8. Review every render at full size; write located findings; fix; rebuild
+- [ ] 8. Review every render at full size against the house and against each
+         exhibit's brief; write located findings; fix; rebuild
          (cap 8 builds per 5-page section; keep the best build)
 - [ ] 9. Annotation: mark each exhibit where the house marks such exhibits; rebuild
 - [ ] 10. Variety report: realised variety against the plan and the house
@@ -98,13 +102,15 @@ answers are read by looking, and they carry the house's habits into every later 
 
 - `/titles/register`: each title topic, claim or question; each companion block named;
   where a topic-title page states its claim.
-- `/exhibit_habits`: the digest, one record per exhibit in the closed vocabulary
-  (`references/page_craft_vocabulary.json`), every annotation move with its anchor (on a
-  mark, a ring, box, band, line or bracket, whether words on the exhibit say what it
-  marks: `labelled`), and on every data page whether it carries a source line. The run
-  prints `house_habits`: the house's source-line count and its labelled and unlabelled
-  marks. Those counts decide where your pages carry a source line and how a mark says
-  what it means.
+- `/exhibit_habits`: the digest, one record per exhibit in your own words after looking at
+  its crop: what it is, its message, how the house draws it, what it marks and whether
+  words beside the mark say what it marks; whether it is a chart or a table, and whether
+  it sets axis labels and values on its marks; and on every page holding a chart or a
+  table whether it carries a source line. Nothing is chosen from a list. Each stub page
+  also shows `file_facts`, what the file itself states (its exhibit structure and the
+  marks it draws, with whether each carries text). The run prints `house_habits`: the
+  house's source-line count and the marks its files draw. These decide where your pages
+  carry a source line and how a mark says what it means.
 - `/variety/content_pages`: which pages are content, read off the renders.
 
 Two answers are easy to get wrong. `null` says the house has no such text or colour
@@ -180,21 +186,36 @@ python3 scripts/plan.py check "$DECK_WORK/plan.json" --guide "$DECK_WORK/ref/gui
 
 It prints a short verdict; the whole report is the JSON.
 
-It refuses a malformed plan, a value outside the vocabulary, an archetype the guide does not
-hold, and an undeclared repeat longer than the house's longest run; it warns when the plan's
-variety falls below the house's. Fix every refusal; answer every warning in the plan or the
+Each exhibit on a page gets a brief in the plan, and the brief is where you think hard
+about the visual. Open the house's nearest exhibits first (the digest crops and records,
+the gallery, the renders) and the data, then write: what the reader must see; what is
+compared against what; the data's shape in your words; at least two forms you weighed,
+each with why not or why; the form chosen and why it shows what the reader must see; the
+house's nearest exhibit (a page of the reference, and what it does that this takes or
+departs from, or why none is near); and what will be marked, where the claim lives. A
+form you cannot argue for against another is not chosen yet. Questions and evidence:
+[references/charts.md](references/charts.md).
+
+It refuses a malformed plan, an incomplete brief (a field missing or a word or two, one
+form considered, a nearest page that is not a page of the reference), an archetype the
+guide does not hold, and an undeclared repeat longer than the house's longest run; it
+reads a brief for being there, never for what it says. It warns when the plan's
+composition variety falls below the house's. Fix every refusal; answer every warning in the plan or the
 report. Name compositions honestly: the same name whenever two pages share an arrangement.
 Compute every figure a title or lead-in states from the data, with a script that asserts
 it, before writing the sentence.
 
 ### 6. Page specs
 
+No exhibit spec is written before its brief exists. If the spec you are about to write
+draws a different form or marks a different place than the brief says, the brief was not
+finished: go back, look at the house's nearest exhibit again, and rewrite the brief first.
 For each page, gather its context before writing anything (see "Designing a page" below),
 then budget the text:
 
 ```bash
 python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "WHAT THE PAGE DOES"
-python3 scripts/library.py pick --intent "WHAT THE PAGE DOES" --exhibit FAMILY --aspect W:H \
+python3 scripts/library.py pick --intent "WHAT THE PAGE DOES" --data-shape "THE DATA IN WORDS" --aspect W:H \
         --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
 python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guide "$DECK_WORK/ref/guide.json" [--chrome draw]
 ```
@@ -215,13 +236,14 @@ and its text or table; a chart's own keys (type, series, axes, plot_area, legend
 Per-table emphasis (the subject row shaded, the row labels bold) is the table's
 `emphasis` list of roles, never a literal. Roles only; a literal colour, size, font or
 coordinate is refused. Grammar, limits and
-conventions: [references/page-specs.md](references/page-specs.md). Charts as worked JSON:
+conventions: [references/page-specs.md](references/page-specs.md). How to draw the form
+your brief chose, technique by technique (not a menu of forms):
 [references/chart-recipes.md](references/chart-recipes.md). Table spec keys:
 [references/tables.md](references/tables.md). Logos, icons and the user's pictures
 (a file, a logo taken from the reference with `images.py extract`, or an icon you write
 as a small SVG in colour roles), in boxes sized by roles: page-specs.md, "Pictures". A
 line and columns on two axes, data rows or logos aligned under a chart's categories:
-chart-recipes.md, "Combo" and "Category rows". A component the template never showed:
+chart-recipes.md, "Two value axes" and "Rows aligned to categories". A component the template never showed:
 [references/components.md](references/components.md). Building a company page library:
 [references/page-library.md](references/page-library.md).
 
@@ -251,17 +273,22 @@ content. Every field: [references/build-report.md](references/build-report.md).
 ### 8. Review every render
 
 Open every page image in `$DECK_WORK/out/renders/` at full size beside the house's nearest pages.
-Write located findings as a senior reviewer would (element id, what is wrong, the change;
-never a score), fix the specs, rebuild. Cap: 8 builds per 5-page section. Keep every build;
+Then hold each exhibit to its brief: does the reader see what `reader_must_see` says,
+in three seconds, without arithmetic? Is the comparison the brief names drawn, the value
+compared against on the exhibit? Are the marks where the claim lives, and does each say
+what it marks? Does the text add what the exhibit cannot? A render that fails its brief
+is a finding even when every gate passed. Write located findings as a senior reviewer would
+(element id, what is wrong, the change; never a score), fix the specs, rebuild. Cap: 8 builds per 5-page section. Keep every build;
 hand over the best one by refusals, then open findings, then likeness to the house, not the
 last one. What to look for and in what order:
 [references/review.md](references/review.md).
 
 ### 9. Annotation
 
-For each exhibit, read the house's `exhibit_habits.moves_by_data_shape` and
-`moves_by_message_kind`, decide where the claim lives on the exhibit, and mark it the way
-this house marks such places: `annotations` on the slide (reference lines, outline boxes,
+For each exhibit, take the `marks` line of its brief and the house's own records of
+what it marks (`exhibit_habits.records[].marks`, in words, and the marks its files draw),
+decide where the claim lives on the exhibit, and mark it the way this house marks such
+places: `annotations` on the slide (reference lines, outline boxes,
 bands, brackets, callouts, badges at data positions, rows of figures or logos under the
 categories), or native emphasis (a point fill, an
 emphasis row). Nothing annotates by itself; the build refuses an annotation that collides
@@ -272,11 +299,11 @@ has none, its rule or ink role.
 A mark says what it means. A ring, box, band, line or bracket either carries a `label`,
 or names under `explained_by` what explains it: words on the page that name what it
 encloses (`{"text": id, "quote": ...}`), a labelled callout on the same anchor, a legend
-entry in its ink, a footnote marker it shares with a note, or a page of the house's digest
-where the house draws the same move unlabelled on the same kind of exhibit. Otherwise the
+entry in its ink, a footnote marker it shares with a note, or a page of the reference whose
+file draws a mark of the same geometry with no text of its own. Otherwise the
 build refuses it as `annotation unexplained`: a red circle with no word beside it reads
 as a model's attempt to annotate. Kinds, anchors and four worked exhibits:
-[references/chart-recipes.md](references/chart-recipes.md) ("Annotations").
+[references/chart-recipes.md](references/chart-recipes.md) ("Marks at data positions").
 
 Source lines follow the house's count, not a habit of your own: the build warns
 `source line the house rarely carries` on a page with one where under half the house's
@@ -285,11 +312,15 @@ user asks for goes where the house puts notes; say where in the report.
 
 ### 10. Variety report
 
-From `repetition` in the build report: realised composition V and class V against the
-house's (`against_house`), runs over the house's longest, `warnings`, and every page in
-`plan.pages_differing_from_plan`. Explain each warning and each disagreement: a deliberate
-parallel, or a fix you made. Composition V cannot see a table beside a chart mirrored; class
-V can.
+From `repetition` in the build report: realised composition V, exhibit structure V and
+exhibit kinds V against the house's (`against_house`), runs over the house's longest,
+`warnings`, and every page in `plan.pages_differing_from_plan`. All are read from what was
+built, never from names: structure is each page's exhibits as the written file states them
+(chart plot types and series counts, tables, pictures, drawn shapes, panels), kinds the
+same with any chart a chart, each held against the same reading of the house's own pages.
+Explain each warning and each disagreement: a deliberate parallel, or a fix you made.
+Composition V cannot see a table beside a chart mirrored; kinds V can, even when each
+page's chart plots something else.
 
 ### 11. Validate and report
 
@@ -337,8 +368,10 @@ Questions to answer before writing the spec:
   facts (rank and size them)?
 - Table, chart, diagram or structured text: will the reader look up, compare, follow or
   match?
-- What is the data's shape, and which exhibit types fit it that this house uses? If the
-  house never showed this exhibit, how would its designers draw it with their roles?
+- What is the data's shape, in its own terms? Which forms could show the comparison the
+  reader must make, and what does each ask of the reader's eye? Which does the house's
+  nearest exhibit suggest, and where must this one depart? If the house never showed
+  anything like it, how would its designers draw it with their roles?
 - Where on the exhibit does the claim live, and how does this house mark such a place? How
   much does it label, does it use legends and gridlines?
 - What does the text add that the exhibit cannot? Is anything said twice?
@@ -396,7 +429,7 @@ around a refusal by changing the guide.
 | `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
 | [references/editing.md](references/editing.md) | read to extend, reorder or edit an existing deck |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
-| `references/page_craft_vocabulary.json` | data: the closed vocabulary for registers, exhibits and tags |
+| `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
 | `components/` | admitted components and the contract (`components/README.md`) |
 | `examples/` | worked deck specs, plans, completions, digests, and `proofs/` build reports |
 | `evals/` | end-to-end scenarios and the blind-round protocol |

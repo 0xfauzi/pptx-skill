@@ -31,7 +31,7 @@ Each `NN-*.json` holds:
 | File | Reference | What it exercises |
 |---|---|---|
 | 01-bank-pitchbook-valuation | native pptx pitch books on one master | topic titles, computed claims, football field, comps emphasis, bridge tie-out, pooled house variety |
-| 02-bank-financing | the same house, financing deck type | variety a reader can see: exhibit classes, honest composition names |
+| 02-bank-financing | the same house, financing deck type | variety a reader can see: exhibit structure read from the file, honest composition names, exhibit briefs |
 | 03-consulting-working-draft-pdf | a 520-page mixed consulting PDF, vector pages 160 to 226 | triage and a page range, drawn chrome, part-counter titles, declared sibling runs, round-trip losses |
 | 04-house-contrast-precedent | native pptx whose house sets white on its steel blue at 4.33:1 | contrast precedent from --reference, sensitivity region, measured source-line habit |
 | 05-vector-pdf-title-band | a 20-page vector PDF pitch book, no template | blank template, drawn chrome, metric-alias faces, runs over the house's longest, bridge tie-out |

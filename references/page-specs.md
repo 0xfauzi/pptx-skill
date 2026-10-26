@@ -151,7 +151,7 @@ its points computed, not traced):
 ```
 
 Logos and icons placed along a chart's categories are a `category_row` annotation
-(chart-recipes.md, "Category rows").
+(chart-recipes.md, "Rows aligned to categories").
 
 ## Conventions the build enforces
 
@@ -231,15 +231,16 @@ stronger evidence.
 ## Looking before writing: the page library
 
 ```bash
-python3 scripts/library.py pick --intent "valuation football field against the offer" \
-  --exhibit football_field_or_range_bars [--composition C] [--move M]... [--data-shape TEXT] \
+python3 scripts/library.py pick --intent "each valuation method's range against the offer" \
+  [--composition C] [--data-shape "seven low and high pairs and one offer value"] \
   [--aspect 4:3] --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
-python3 scripts/library.py vocab        # every value the tags take
+python3 scripts/library.py vocab        # the tag fields, and the few tags that are slugs
 ```
 
 It searches the reference's own gallery, then the company's library, then an external
-library (`refs/library`, git-ignored), and says which answered. Order: composition,
-exhibit family and annotation moves first, aspect next, data-shape and intent words last.
+library (`refs/library`, git-ignored), and says which answered. Order: composition first,
+aspect next, then data-shape and intent words against the words each exhibit was tagged
+in. Describe the page by what it must show, not by a chart type.
 Use each entry's `why` and `ask` lines as questions for your page, never as a layout to
 copy. An aspect mismatch is flagged: examples do not carry across page sizes. `no evidence`
 means nothing fits. Building a company library is in the page-library reference.

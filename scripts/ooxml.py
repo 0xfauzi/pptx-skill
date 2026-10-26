@@ -421,6 +421,10 @@ class ChartObs:
     text_size_pt: float | None
     text_color: str | None
     axis_line_color: str | None
+    # one entry per plot group of the plot area, as the chart XML states it: the group's
+    # element name less "Chart" (bar, line, scatter, ...), its barDir and grouping when it
+    # declares them, and how many series it holds
+    plots: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -601,6 +605,101 @@ def visual_extent(bounds: tuple[int, int, int, int], rotation: int) -> tuple[int
     cos, sin = abs(math.cos(radians)), abs(math.sin(radians))
     tw, th = round(w * cos + h * sin), round(w * sin + h * cos)
     return x + (w - tw) // 2, y + (h - th) // 2, tw, th
+
+
+# --- what a page's exhibits are made of, as the file states it ------------------------------
+# One definition, read the same way off a reference page and off a page the build wrote:
+# the variety of exhibit structure (plan.py) and a house precedent for a mark (annotate.py)
+# both read it. Nothing here names what an exhibit means; only what the file holds.
+
+#: the preset geometries that draw a brace or a bracket (ECMA-376 ST_ShapeType)
+BRACKET_PRESETS = frozenset({"leftBrace", "rightBrace", "leftBracket", "rightBracket", "bracePair", "bracketPair"})
+#: the element kinds that hold an exhibit whole: a mark drawn on one sits on an exhibit
+HOST_KINDS = frozenset({"chart", "table", "picture"})
+STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as one count
+
+
+def shares_area(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
+    """The two boxes share area (touching edges do not)."""
+    return min(a[0] + a[2], b[0] + b[2]) > max(a[0], b[0]) and min(a[1] + a[3], b[1] + b[3]) > max(a[1], b[1])
+
+
+def mark_geometry(sh: Shape) -> str | None:
+    """What a drawn shape draws, read from the file: "line" (a connector or a line preset),
+    "bracket" (a brace or bracket preset), "outline" (a stroke and no fill) or "fill" (a
+    fill). None for a text box with neither, a picture, a table, a chart or a group."""
+    if sh.kind == "line":
+        return "line"
+    if sh.kind not in ("shape", "text_shape", "text_box"):
+        return None
+    if sh.prst in BRACKET_PRESETS:
+        return "bracket"
+    if sh.fill is None and sh.line is not None:
+        return "outline"
+    return "fill" if sh.fill is not None else None
+
+
+def _fact_kind(sh: Shape) -> str:
+    return sh.kind if sh.kind in HOST_KINDS or sh.kind == "line" else ("text" if sh.text_chars else "shape")
+
+
+def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
+    """A page's exhibits as the file states them, over its content shapes (geometry, not
+    chrome by `is_chrome`):
+
+    - signature: the distinct kinds of exhibit the page holds: a native chart by its plot
+      groups as the chart XML states them (type, barDir, grouping, series count), a table,
+      a picture, and "drawn shapes" when the page draws fills, outlines or brackets that sit
+      on no chart, table or picture; ["text only"] when it holds none of these;
+    - panels: how many there are (each chart, table and picture, and the drawn shapes as
+      one); 0 on a text-only page;
+    - structure: the signature and the panels read as 1, 2 or 3+ (a definition, unmeasured:
+      a logo wall of 48 pictures and one of 50 are one structure), in one string. Two pages
+      hold the same exhibit structure when these strings are equal; renaming an exhibit in a
+      plan cannot change it;
+    - kinds: the same with every chart read as "chart", whatever its plot groups: two pages
+      that each set a table beside a chart hold the same kinds though one chart is a line
+      and the other columns (the sameness a reader of a section sees first);
+    - elements: content shapes counted by kind;
+    - marks: every line, bracket, outline or fill that shares area with another content
+      shape, with its geometry, what it sits on, and whether it carries text of its own.
+
+    What this cannot see: anything inside a picture (a pasted chart's ring is pixels), a
+    PDF's charts (a PDF states rectangles and paths, never a chart), and what a mark means."""
+    content = [sh for sh in print_.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and sh.kind != "group" and not is_chrome(sh)]
+    extent = {id(sh): visual_extent(sh.box, sh.rotation) for sh in content}  # type: ignore[arg-type]
+    plots = {c.ref: c.plots for c in print_.charts}
+    signature: list[str] = []
+    charts: list[dict] = []
+    for sh in content:
+        if sh.kind == "chart":
+            got = plots.get(sh.ref)
+            charts.append({"ref": sh.ref, "plots": got})
+            signature.append("chart " + (" + ".join(f"{p['type']}{' ' + p['dir'] if p['dir'] else ''}{' ' + p['grouping'] if p['grouping'] else ''} x{p['series']}"
+                                                    for p in got) if got else "(plots unread)"))
+        elif sh.kind in ("table", "picture"):
+            signature.append(sh.kind)
+    marks: list[dict] = []
+    drawn = False
+    for sh in content:
+        geometry = mark_geometry(sh)
+        if geometry is None:
+            continue
+        under = [o for o in content if o is not sh and shares_area(extent[id(sh)], extent[id(o)])]
+        if under:
+            marks.append({"ref": sh.ref, "geometry": geometry, "prst": sh.prst, "over": sorted({_fact_kind(o) for o in under}),
+                          "carries_text": bool(sh.text_chars)})
+        if geometry != "line" and not any(o.kind in HOST_KINDS for o in under):
+            drawn = True
+    if drawn:
+        signature.append("drawn shapes")
+    distinct = sorted(set(signature)) or ["text only"]
+    panels = len(signature)
+    counted = str(panels) if panels < STRUCTURE_PANELS_MAX else f"{STRUCTURE_PANELS_MAX}+"
+    count = f" ({counted} panel{'' if panels == 1 else 's'})" if panels else ""
+    return {"signature": distinct, "panels": panels, "structure": "; ".join(distinct) + count,
+            "kinds": "; ".join(sorted({"chart" if s.startswith("chart ") else s for s in distinct})) + count,
+            "elements": dict(sorted(Counter(sh.kind for sh in content).items())), "charts": charts, "marks": marks}
 
 
 def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:
@@ -1281,6 +1380,11 @@ class SlideWalker:
         if plot is None:
             return
         kinds = [_local(ch)[:-5] for ch in plot if _local(ch).endswith("Chart")]
+        plots = [{"type": _local(ch)[:-5],
+                  "dir": (ch.find(_c("barDir")).get("val") if ch.find(_c("barDir")) is not None else None),
+                  "grouping": (ch.find(_c("grouping")).get("val") if ch.find(_c("grouping")) is not None else None),
+                  "series": len(ch.findall(_c("ser")))}
+                 for ch in plot if _local(ch).endswith("Chart")]
         fills: list[str | None] = []
         layers: list[str] = []
         accents = ["accent1", "accent2", "accent3", "accent4", "accent5", "accent6"]
@@ -1352,7 +1456,7 @@ class SlideWalker:
             if tsize is not None and tcolor is not None:
                 break
         self.print.charts.append(ChartObs(ref, kinds, fills, layers, grid_major, grid_minor, grid_color, grid_w,
-                                          data_labels, legend_pos, has_title, tsize, tcolor, axis_line))
+                                          data_labels, legend_pos, has_title, tsize, tcolor, axis_line, plots))
 
     # tree -----------------------------------------------------------------------------
     def walk_tree(self, tree: etree._Element, layer: str, sink: list[Shape], with_text: bool, surface: str,

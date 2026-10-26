@@ -1,6 +1,6 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
- "ruler": "pillow_x128",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/deck.pptx",
+ "ruler": "harfbuzz",
  "slides": [
   {
    "id": "s1-exec",
@@ -21,19 +21,19 @@
    "tables": {
     "kpis": {
      "rows": 7,
-     "height_emu": 3020822,
+     "height_emu": 3203956,
      "column_widths_emu": [
-      1043828,
-      1029038,
-      749439,
-      1003737
+      1022045,
+      1022045,
+      763914,
+      1018038
      ]
     }
    },
    "density": {
     "words": 192,
     "elements": 5,
-    "covered_area_fraction": 0.417,
+    "covered_area_fraction": 0.428,
     "text_boxes_mostly_empty": "none",
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
@@ -53,7 +53,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.417,
+     "value": 0.428,
      "band": [
       0.4116,
       0.7078
@@ -237,14 +237,14 @@
      "rows": 11,
      "height_emu": 3000206,
      "column_widths_emu": [
-      646027,
-      1686966,
-      1096098,
-      1316228,
-      654969,
-      866627,
-      778559,
-      1351766
+      652149,
+      1679394,
+      1096361,
+      1313460,
+      658036,
+      866649,
+      782790,
+      1348401
      ]
     }
    },
@@ -438,6 +438,7 @@
    },
    "chart_defaults_taken": {
     "chart": [
+     "axes.category.title: none: no axis title",
      "plot_area: automatic: each renderer places the plot inside the frame itself"
     ]
    }
@@ -481,7 +482,7 @@
    "density": {
     "words": 145,
     "elements": 42,
-    "covered_area_fraction": 0.237,
+    "covered_area_fraction": 0.236,
     "text_boxes_mostly_empty": [
      {
       "id": "commentary",
@@ -508,7 +509,7 @@
      "verdict": "above"
     },
     "content_area_fraction": {
-     "value": 0.237,
+     "value": 0.236,
      "band": [
       0.4116,
       0.7078
@@ -681,31 +682,24 @@
    "violations": [],
    "text_lines": {
     "title": 1,
-    "risks": 7
+    "risks": 8
    },
    "tables": {
     "walk": {
      "rows": 7,
-     "height_emu": 2288286,
+     "height_emu": 2471420,
      "column_widths_emu": [
-      1930023,
-      935871,
-      1172706
+      1901619,
+      950098,
+      1186883
      ]
     }
    },
    "density": {
     "words": 95,
     "elements": 4,
-    "covered_area_fraction": 0.58,
-    "text_boxes_mostly_empty": [
-     {
-      "id": "risks",
-      "text_ends_in": 5.58,
-      "box_ends_in": 6.9,
-      "empty_share": 0.48
-     }
-    ],
+    "covered_area_fraction": 0.592,
+    "text_boxes_mostly_empty": "none",
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 95,
@@ -724,7 +718,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.58,
+     "value": 0.592,
      "band": [
       0.4116,
       0.7078
@@ -879,6 +873,7 @@
    },
    "chart_defaults_taken": {
     "chart": [
+     "axes.category.title: none: no axis title",
      "plot_area: automatic: each renderer places the plot inside the frame itself"
     ]
    }
@@ -927,7 +922,7 @@
      1,
      2
     ],
-    "similarity": 0.318,
+    "similarity": 0.315,
     "similar": false
    },
    {
@@ -950,19 +945,27 @@
   "realised": [
    {
     "page": 1,
-    "composition": "b1"
+    "composition": "b1",
+    "structure": "drawn shapes; table (2 panels)",
+    "kinds": "drawn shapes; table (2 panels)"
    },
    {
     "page": 2,
-    "composition": "b2"
+    "composition": "b2",
+    "structure": "chart bar bar clustered x1; table (2 panels)",
+    "kinds": "chart; table (2 panels)"
    },
    {
     "page": 3,
-    "composition": "b3"
+    "composition": "b3",
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes (1 panel)"
    },
    {
     "page": 4,
-    "composition": "b1"
+    "composition": "b1",
+    "structure": "chart bar col stacked x2; table (2 panels)",
+    "kinds": "chart; table (2 panels)"
    }
   ],
   "measure": {
@@ -983,17 +986,17 @@
     "changed": 3,
     "pairs": 3
    },
-   "exhibits": {
-    "status": "no evidence",
-    "why": "exhibits not read on 4 of 4 content pages (the build knows element kinds, not exhibit types; the plan's exhibit types are declared)"
-   },
-   "classes": {
+   "structures": {
     "V": 1.0,
-    "changed": 1,
-    "pairs": 1,
-    "pages_unread": [
-     3
-    ]
+    "changed": 3,
+    "pairs": 3,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 1.0,
+    "changed": 3,
+    "pairs": 3,
+    "pages_unread": []
    },
    "distinct": {
     "compositions": 3,
@@ -1039,7 +1042,7 @@
      ],
      "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
     },
-    "exhibits": {
+    "structures": {
      "V": 1.0,
      "changed": 10,
      "pairs": 10,
@@ -1049,13 +1052,13 @@
      ],
      "decks_unread": []
     },
-    "classes": {
-     "V": 0.9,
-     "changed": 9,
+    "kinds": {
+     "V": 1.0,
+     "changed": 10,
      "pairs": 10,
-     "p10_deck_V": 0.9,
+     "p10_deck_V": 1.0,
      "deck_V": [
-      0.9
+      1.0
      ],
      "decks_unread": []
     },
@@ -1088,10 +1091,17 @@
     "verdict": "at or above the house's 10th percentile deck",
     "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
    },
-   "classes_V": {
+   "structures_V": {
     "value": 1.0,
-    "house_pooled": 0.9,
-    "house_p10_deck": 0.9,
+    "house_pooled": 1.0,
+    "house_p10_deck": 1.0,
+    "verdict": "at or above the house's 10th percentile deck",
+    "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
+   },
+   "kinds_V": {
+    "value": 1.0,
+    "house_pooled": 1.0,
+    "house_p10_deck": 1.0,
     "verdict": "at or above the house's 10th percentile deck",
     "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
    },
@@ -1136,15 +1146,13 @@
      "changed": 3,
      "pairs": 3
     },
-    "exhibits": {
-     "V": 1.0,
-     "changed": 3,
-     "pairs": 3,
-     "pages_unread": []
-    },
-    "classes": {
+    "structures": {
      "status": "no evidence",
-     "why": "classes not read on 4 of 4 content pages (the plan declares exhibit types, not classes: the build measures the classes it realises)"
+     "why": "structure not read on 4 of 4 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
+    },
+    "kinds": {
+     "status": "no evidence",
+     "why": "kinds not read on 4 of 4 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
     },
     "distinct": {
      "compositions": 4,
@@ -1193,12 +1201,12 @@
     "planned": 1.0,
     "realised": 1.0
    },
-   "exhibits_V": {
-    "planned": 1.0,
-    "realised": "not measured: the build knows element kinds, not exhibit types; the plan's exhibit types are declared"
+   "structures_V": {
+    "planned": "not declared: a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
+    "realised": 1.0
    },
-   "classes_V": {
-    "planned": "not declared: the plan declares exhibit types, not classes: the build measures the classes it realises",
+   "kinds_V": {
+    "planned": "not declared: a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
     "realised": 1.0
    },
    "pages_differing_from_plan": []
@@ -1232,7 +1240,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1510,7 +1518,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files",
+  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -1523,7 +1531,7 @@
   "verdict": "possible carry-over: 12 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1555,21 +1563,21 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/renders/slide-04.png"
   ]
  },
  "judge": {
-  "reference": "refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.084,
   "components": {
    "families": 0.0,
-   "size_hist": 0.119,
+   "size_hist": 0.118,
    "size_ladder": 0.045,
    "title_size": 0,
-   "bold_ratio": 0.201,
+   "bold_ratio": 0.2,
    "text_colors": 0.026,
    "fills": 0.0,
    "lines": null,
@@ -1577,7 +1585,7 @@
    "kinds": 0.433,
    "background": 0.0,
    "margins": 0.364,
-   "coverage": 0.064,
+   "coverage": 0.076,
    "count": 0.368,
    "overlap": 0.0,
    "overflow": 0.0
@@ -1643,7 +1651,7 @@
     "worst": [
      [
       "bold_ratio",
-      0.455
+      0.453
      ],
      [
       "kinds",
@@ -1665,25 +1673,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/45541_Header.pptx": 0.501,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.618,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/themes.pptx": 0.492
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/45541_Header.pptx": 0.501,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.618,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/themes.pptx": 0.492
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.074,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.076,
-   "/home/user/pptx-skill/.claude/worktrees/wf_eab0e2d0-767-2/refs/files/mi_netflix_financing_pitchbook.pptx": 0.089
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.074,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.076,
+   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.089
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -1695,7 +1703,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/annot-job/proofs/sec/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/section/renders"
  }
 }

@@ -30,8 +30,10 @@ pages would. Then change the specs and build again. Never a score.
    placeholder text; tick labels that do not sit at their values.
 2. Consistency across pages: title position, chart text styling, source-line treatment,
    one element drifting between pages of one kind.
-3. The message: can it be found in two seconds? Is the exhibit annotated where the claim
-   lives, the way this house annotates (its `exhibit_habits`)? Does every stated figure
+3. The message: can it be found in two seconds? Hold each exhibit to its brief in the
+   plan: does the reader see what `reader_must_see` says, is the comparison it names
+   drawn, are the marks where the claim lives? Is the exhibit annotated the way this
+   house annotates (its digest records)? Does every stated figure
    compute from the page's own data?
 4. The house: side by side with the house's best pages, what differs? Title register and
    length, where the claim sits, how dense, how the house marks emphasis, whether it draws

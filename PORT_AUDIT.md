@@ -315,3 +315,43 @@ Proof on the merged tree (LibreOffice 24.2, 1600 px; reports in `examples/proofs
   Widening those two axes, and nothing else, brings back the unlabelled-mark refusal
   (2 of 5 pages fit; `annotation unexplained` on gap-ring, gap-end, m-rec and m-opex),
   where main passes 5 of 5.
+
+
+## No list of chart types: the model reasons about every visual
+
+Owner direction: "We shouldn't have a list of chart types anywhere. We should instruct the
+model to think hard about charts and other visuals." Before this change
+`references/page_craft_vocabulary.json` held closed lists the model chose from (25 exhibit
+types, 35 annotation moves, 14 emphasis devices, data shapes, message kinds, legend, data
+labels, colour logic, number formats), enforced by `plan.py`, the digest
+(`complete_guide.py`), `library.py` and the house precedent (`annotate.py`), and
+`references/charts.md` ranked chart families by house type.
+
+| What | Before | After | Checked by |
+|---|---|---|---|
+| The plan's exhibits | `exhibit_types` and `data_shapes`, slugs from the closed lists | An exhibit brief per exhibit, in the model's words: reader_must_see, comparison, data, forms_considered (two or more distinct, each with why or why not), chosen_form and why, nearest_house_exhibit (a page of the reference, or why none), marks. `plan.brief_errors` checks completeness only (every field, a phrase of 3 words or more, a form name 1, two distinct forms after case and punctuation, page 1 to reference.slides) and never what a brief says | keybank and mckinsey plans pass. Refused by name: one form; a form spelt twice in capitals with a full stop (this one first passed: the form key kept the stop, and was fixed); an empty reader_must_see; why "TBD"; nearest none "n/a"; page 99; marks left out. Each gate broken in a scratch copy (two forms to one, the page range dropped, the word count dropped): the bad plans pass; restored, refused |
+| The digest | Records in the closed lists, counts computed from model slugs (`types`, `moves_by_data_shape`, `marks_labelled` ...) | Records in words (`what`, `message`, `how_drawn`, `marks`) plus three page readings later steps hold the house to (`chart_or_table`, `axis_labels`, `value_labels`); the finalizer counts source lines only. What the file states is the extractor's: `variety.pages[].exhibit_facts`, shown on each stub page as `file_facts` | Refused by name: an empty how_drawn, a flag answered "yes", an old `type` slug key; a null type.axis_label while records answer axis_labels true. With the phrase, flag and axis-label checks broken in a scratch copy, the first, second and fourth pass; restored, all four refused. The example digests were converted from their earlier readings (messages and anchors kept) and every `what` rewritten after looking at the pages |
+| Facts the code verifies | Model-chosen move names and `labelled` answers | One reader, `ooxml.exhibit_facts`, on a reference page (extractor) and on a written page (build): charts by the plot groups the chart XML declares (type, barDir, grouping, series count, `ChartObs.plots`), tables, pictures, drawn shapes, panels 1, 2 or 3+, and every mark drawn on content with its geometry (line, bracket, outline, fill), what it sits on and whether it carries text of its own. `gallery._overlaps` is now `ooxml.shares_area`, one definition | keybank: slide 10's red outline over shape-built rows is the one mark without text; slide 5's boxes are pixels inside a pasted picture and are no longer precedent (`examples/keybank-annotations.deck.json` now cites slide 10; the page fits as before) |
+| House precedent | A digest record of the same move answered `labelled: false` on the host's class (and, with --plan, a type the plan lists) | Slide N's file draws a mark of the annotation's geometry (outline_box an outline, band a fill, reference_line a line, bracket a bracket) on content, carrying no text | Precedent on slide 10 passes; slide 5 refused (no mark in the file), slide 99 refused (not a page read), a band on 10 refused (no fill without text), a band on 12 refused (its fills carry text). Broken in a scratch copy: without the text check the band on 12 passes, without the geometry check the band on 10 passes; restored, both refused |
+| Variety of exhibits | V over the plan's exhibit types; class V of the house from the digest's model classes | Structure V and kinds V, read from the written file and held against the same reading of the reference's own pages; nothing in a plan or a digest moves them. Kinds reads any chart as "chart", so a table beside a chart reads alike whatever the chart plots | A plan whose every exhibit is renamed (forms, chosen form, reasons) gives an identical plan comparison and an identical build `repetition.measure` and `against_house`. Before, collapsing the keybank plan's exhibit types moved exhibit V from 1.0 to 0.0 and warned. Round-2 netflix (house pooled with keybank and jazz): the samey deck builds at structure V 1.0 (each chart plots something else) and kinds V 0.25 against the 10th percentile deck 0.494, warned; its revision at kinds V 0.75, not warned (class V before: 0.25 and 0.75). With kinds broken to keep plot groups the samey deck reads 1.0, unwarned; restored, warned |
+| Charts reference and recipes | A ranked family table, moves by data shape and by message | `charts.md`: questions and the evidence that changes thinking (table or chart, annotation is the norm, marks sit where the claim lives, text adds what the exhibit cannot); `chart-recipes.md` retitled "Chart techniques in the spec" and organised by technique (invisible base series, widths set by the layout, labels without axes, per-point fills, two value axes, marks at data positions, rows aligned to categories), the worked JSON kept | Read |
+| Library | Exhibit `family` and `annotation_moves` checked against the lists; `pick --exhibit --move` | Exhibits tagged in words (type, data_shape, message, annotations_as_recorded); pick ranks composition, aspect, then data-shape and intent words; corpus import keeps the coders' words and leaves their closed-list tags behind; manifest schema 4 | Corpus import: 40 entries, 0 problems. A pick asked "each valuation method's range against the offer price" with no type named returns bmo p125, the football field, first. Tags with an old `family` or an empty type refused |
+| Vocabulary file | Every closed list | The title register and title companions only, documented as a title's reading: nothing about an exhibit or a visual is chosen from a list | grep of scripts for the removed keys: none read |
+
+Not removed, said here so nobody reads them as a menu: the chart spec's `type` is the
+emitter's OOXML chart kind (what it can write, not what to choose); the library's house
+types and composition families are page arrangements from the corpus taxonomy; the
+annotation kinds are the drawing primitives the solver places. `examples/house/` specimen
+pages are named for what they show.
+
+Proof on the branch against main, every build from a fresh extraction (LibreOffice 24.2,
+1600 px): 23 builds (keybank section, annotations, bridge, round trip, 14 house specimens,
+mckinsey PDF, fidelity bcg p15 and p24, netflix p5, jazz p9) give the same status, scale
+per page, judge total and filing on both trees, byte for byte in the summary. The keybank
+round trip and 12 of the 14 specimens are refused on main and on the branch alike. Both
+plans pass `plan.py check`. ruff 0.16.9 defaults over `scripts/`: 119 on main, 119 on the
+branch. Weaknesses kept: a picture carries no structure, so a house that pastes its
+exhibits reads every such page as "picture" and its structure V is lenient; a PDF states
+no chart or table, and every PDF mark reads as carrying no text (a PDF text block is never
+a filled shape); a mark's label set beside it rather than in it reads as no text, so the
+file can call a labelled mark unlabelled; drawn shapes include a takeaway band.
