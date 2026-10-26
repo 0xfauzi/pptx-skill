@@ -640,6 +640,31 @@ def label_interval_divergence(elements: list[dict]) -> list[dict]:
     return out
 
 
+def bar_legend_order(elements: list[dict]) -> list[dict]:
+    """A horizontal bar chart with a legend of two or more entries: a warning naming the
+    order the legend draws. Measured, round 8, LibreOffice 24.2.7: a BAR_CLUSTERED legend
+    lists its series last first (series 'Alpha', 'Beta' drew 'Beta' then 'Alpha', at the
+    bottom and at the right, with the category axis reversed or not). Unreversed, that is
+    the order the bars sit in each group from the top; reversed (categories top-down) the
+    bars sit first series on top, against the legend. PowerPoint's order is unmeasured."""
+    out = []
+    for el in elements:
+        if el["kind"] != "chart" or not str(el.get("type", "")).startswith("BAR_"):
+            continue
+        legend = el.get("legend")
+        if not isinstance(legend, dict) or legend.get("position") in (None, "none"):
+            continue
+        names = [s.get("name") for s in el.get("series") or [] if s.get("name")]
+        if len(names) > 1:
+            out.append({"kind": "renderer divergence: legend order", "severity": "warning",
+                        "detail": f"{el['id']}: LibreOffice lists this horizontal bar chart's legend last series first "
+                                  f"({', '.join(repr(n) for n in reversed(names))}; measured), "
+                                  + ("against the bars, which sit first series on top in each group with the category axis reversed"
+                                     if ((el.get("axes") or {}).get("category") or {}).get("reverse") else "the order its bars sit in each group from the top")
+                                  + "; if the key should read in another order, name the series in text beside the chart"})
+    return out
+
+
 def chrome_layers(guide: dict, mode: str, page: dict | None = None) -> list[dict]:
     """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
     under whatever lands on them) and text lines (a run to score), each with its EMU page
@@ -2705,7 +2730,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             breaks, unread, spills = chart_label_breaks(elements, ctx)
             if breaks or unread or spills:
                 entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread, "spills": spills}
-            entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + label_interval_divergence(elements) + annotation_problems + [
+            entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + label_interval_divergence(elements) + bar_legend_order(elements) + annotation_problems + [
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
                  "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU"
                            + (f" along the category axis turned {b['turned_deg']:g} degrees" if b.get("turned_deg") else "")

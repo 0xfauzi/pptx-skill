@@ -133,7 +133,9 @@ keybank (the pages named under "Proven on") and read from the render.
   "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
   `hide_entries` is refused on BAR_* charts: LibreOffice counts a horizontal bar chart's
   legend entries from the other end, so `[0]` hid the last series ("Wave 3") instead of
-  the first (measured, round 6, nycha); draw the key as text there. A series with an
+  the first (measured, round 6, nycha); draw the key as text there. A horizontal bar
+  chart's legend is listed last series first in LibreOffice (round 8), so the build warns
+  `renderer divergence: legend order` with the order drawn. A series with an
   empty name has no legend entry (LibreOffice would draw "Series2" for it, measured, so
   the build hides its entry), except on a BAR_* chart with a legend, where it is refused
   for the same reason as `hide_entries`.
