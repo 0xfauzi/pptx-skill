@@ -274,6 +274,12 @@ wrong by one cent is caught by name:
 
 Declare it on every bridge you draw.
 
+A step of exactly zero (a multiple in and out at the same 10.0x) is content: keep its
+category, give it delta 0 and a step value of 0, so it draws no bar at the running level.
+Label it there (a point label "0.0" or "no change" on the label series), or the reader
+cannot tell a zero step from a missing one; the build warns `bridge zero step unlabelled`
+when no series labels it.
+
 Choices to make from the guide, not from this example: which role marks a total (the
 reference's anchor colour: keybank's first series colour is `color.accent2`), which marks an
 increase and a decrease (a guide with `color.positive` and `color.negative` has them;

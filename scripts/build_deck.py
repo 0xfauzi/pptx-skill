@@ -1260,6 +1260,19 @@ def tieouts_of(elements: list[dict]) -> list[dict]:
     return out
 
 
+def _label_shown(series: dict, index: int) -> bool:
+    """Whether the series draws a data label at `index`: its own point label, or the
+    series' labels shown and not hidden at that point."""
+    point = next((p for p in series.get("points") or [] if p.get("index") == index), {})
+    own = point.get("label")
+    if isinstance(own, dict):
+        if own.get("show") is False:
+            return False
+        if own.get("text") or own.get("show"):
+            return True
+    return bool((series.get("labels") or {}).get("show"))
+
+
 def bridge_ties(elements: list[dict]) -> list[dict]:
     """A chart that declares `bridge: {"deltas", "totals"}` is checked two ways: every
     total equals the running sum of the steps before it, and every category's DRAWN
@@ -1302,6 +1315,13 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
                     down += v
                 if v != 0 and fill != "none":
                     lo, hi = (a, b) if lo is None else (min(lo, a), max(hi, b))
+            if lo is None and d == 0 and i not in totals:
+                # a zero step is content (a multiple in and out at 10.0x): it draws no bar, so
+                # the reader finds it only by a label at that category
+                if not any(_label_shown(s, i) for s in el["series"]):
+                    out.append({"chart": where, "severity": "warning", "detail": f"{cats[i]!r} is a zero step and draws no bar; "
+                                "label it (a point label such as \"0.0\" or \"no change\") so it reads as a step that is zero, not a missing one"})
+                continue
             drawn = (lo or 0.0, hi or 0.0)
             if abs(drawn[0] - want[0]) > tol or abs(drawn[1] - want[1]) > tol:
                 out.append({"chart": where, "detail": f"{cats[i]!r} draws {drawn[0]:g} to {drawn[1]:g}; the bridge step covers {want[0]:g} to {want[1]:g}"})
@@ -1387,8 +1407,10 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
         else:
             where = f"{v['element']} {v['row_class']} rows"
         problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})"})
-    failures = bridge_ties(elements)
+    found = bridge_ties(elements)
+    failures = [b for b in found if b.get("severity", "refusal") == "refusal"]
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in failures)
+    problems.extend({"kind": "bridge zero step unlabelled", "severity": "warning", "detail": f"{b['chart']}: {b['detail']}"} for b in found if b not in failures)
     # each declared bridge by name, with a verdict that says so: an empty list read as
     # "nothing checked" and "everything ties" alike
     declared = [el.get("id", "chart") for el in elements if el["kind"] == "chart" and el.get("bridge")]

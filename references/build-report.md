@@ -93,7 +93,8 @@ Listed per page before the figures. A refusal turns a fit page `unfittable` with
 refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
-or says no chart on the page declares one); `chart label breaks mid-word`; `emitted text overflows`;
+or says no chart on the page declares one; a zero step that draws no bar ties, and is
+a warning, `bridge zero step unlabelled`, only when no series labels it); `chart label breaks mid-word`; `emitted text overflows`;
 `renderer divergence: text wrapped`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
