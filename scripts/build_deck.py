@@ -1855,8 +1855,8 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
 def title_node(spec_raw: dict) -> dict | None:
     """The page title by position: the first text element, in reading order (depth first,
     so a title inside a region counts), whose first paragraph is set in type.title. The
-    title report and the title-lines reason read this; the title band holds it only when it
-    is the root's first child (banded_title)."""
+    title report and the title-lines reason read this; the title band holds it when it is
+    the root's first child or inside it (banded_title)."""
     def walk(node: dict) -> dict | None:
         if node.get("kind") == "text" and (node.get("paragraphs") or [{}])[0].get("role") == "type.title":
             return node
@@ -1869,10 +1869,19 @@ def title_node(spec_raw: dict) -> dict | None:
 
 
 def banded_title(spec_raw: dict) -> dict | None:
-    """title_node when it is the root's first child: the one place the title band applies."""
+    """The block the title band holds: the root's first child when it is the title
+    (title_node) or a region holding it (a kicker over the title, round 7: with no
+    reference such a head was not banded, so the content under it started above the drawn
+    title rule and was refused as crossing it). None when the title sits anywhere else."""
     node = title_node(spec_raw)
     children = (spec_raw.get("root") or {}).get("children") or []
-    return node if node is not None and children and children[0] is node else None
+    if node is None or not children:
+        return None
+    first = children[0]
+
+    def holds(region: dict) -> bool:
+        return any(c is node or (c.get("type") == "region" and holds(c)) for c in region.get("children") or [])
+    return first if first is node or (first.get("type") == "region" and holds(first)) else None
 
 
 def page_title_id(slide: dict, spec_raw: dict) -> str | None:
@@ -2016,7 +2025,8 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto", page_ch
         # below the rule; a title that needs more lines than the band holds is refused
         # as overflow, never pushed under the rule
         root_children[0]["size"] = {"width_emu": None, "height_emu": band}
-        root_children[0]["scale_class"] = "fixed"
+        if root_children[0].get("type") != "region":
+            root_children[0]["scale_class"] = "fixed"
 
 
 def slide_chrome(slide: dict, guide: dict, mode: str) -> dict:

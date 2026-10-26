@@ -36,6 +36,12 @@ lifts (`fill_role`, `line_role`, `pad_role`, `anchor`, ...). A chart's own keys 
 `categories`, `series`, `axes`, `plot_area`, `legend`, ...) live under `slide.charts[<the
 node's id>]`, a picture's path under `slide.images`. Any other key on a node is read by
 nothing and is refused by name; a chart key written on the chart's node names the move.
+A region's `size` (`{"width_emu", "height_emu"}`, either or both) fixes its box: a round
+waymark disc is a region 457200 x 457200 with an ellipse fill in its styling, a fixed rail
+is a width alone. Its content is laid out inside the box and refused as `containment` when
+it does not fit; the box never grows. The build gives the block that holds the title (the
+title, or the root's first region when the title is inside it, a kicker over a title) the
+height of the band above a top rule, so what follows starts below the rule.
 The deck may carry `firm_chrome` beside `slides` (templates-and-chrome.md).
 
 ## Limits

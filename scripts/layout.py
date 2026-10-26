@@ -504,6 +504,10 @@ class Region:
     layout: Flex | Grid
     children: tuple[Region | Element, ...]
     weight: float | None
+    # a fixed box (`size`), each side optional: a square disc, a fixed-width rail, the
+    # title band; content taller or wider than it is refused as containment, never grown
+    width_emu: int | None = None
+    height_emu: int | None = None
 
 @dataclass(frozen=True)
 class SplittableGroup:
@@ -590,7 +594,14 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     if not isinstance(node_id, str) or not node_id or "#" in node_id:
         raise LayoutContractError(f"node id {node_id!r} must be a non-empty string without '#'")
     if raw.get("type", raw.get("node_type")) == "region":
-        region = Region(node_id, _parse_layout(raw["layout"], node_id), tuple(_parse_node(c) for c in raw.get("children", [])), _weight(raw))
+        size = raw.get("size") or {}
+        if not isinstance(size, Mapping) or set(size) - {"width_emu", "height_emu"}:
+            raise LayoutContractError(f"region {node_id!r}: size is {{\"width_emu\", \"height_emu\"}}, either or both")
+        for axis in ("width_emu", "height_emu"):
+            if size.get(axis) is not None and (type(size[axis]) is not int or size[axis] <= 0):
+                raise LayoutContractError(f"region {node_id!r}: size.{axis} must be a positive integer EMU")
+        region = Region(node_id, _parse_layout(raw["layout"], node_id), tuple(_parse_node(c) for c in raw.get("children", [])), _weight(raw),
+                        size.get("width_emu"), size.get("height_emu"))
         if isinstance(region.layout, Grid):
             placed = {a.child_id for a in region.layout.areas}
             missing = [c.id for c in region.children if c.id not in placed]
@@ -1520,6 +1531,11 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
         return height, height or 0
     is_column = isinstance(node.layout, Flex) and node.layout.direction == "column"
     child = [_region_heights(c, guide, scale, heights, floors, False, is_column) for c in node.children]
+    if node.height_emu is not None and not root:
+        # a fixed height is the box: its content is laid out inside it and checked for
+        # containment, never measured into a taller one
+        heights[node.id] = node.height_emu
+        return node.height_emu, node.height_emu
     if isinstance(node.layout, Grid):
         return None, 0
     _, pad_top, _, pad_bottom = pad_emu(node.layout, guide, scale)
@@ -1564,6 +1580,8 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
     s = checked_scale(scale)
     elements = [n for n, _ in walk(spec.root) if isinstance(n, Element)]
     intrinsics = {e.id: IntrinsicSize(e.width_emu, e.height_emu) for e in elements if e.width_emu is not None or e.height_emu is not None}
+    intrinsics.update({r.id: IntrinsicSize(r.width_emu, r.height_emu) for r, _ in walk(spec.root)
+                       if isinstance(r, Region) and r is not spec.root and (r.width_emu is not None or r.height_emu is not None)})
     probe = solve_tree(spec, guide, s, intrinsics)
     measurements: dict[str, list[ParagraphMeasurement]] = {}
     fits: dict[str, TableFit] = {}
