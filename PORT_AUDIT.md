@@ -639,4 +639,23 @@ words) and the new `drawn_lines`. The no-reference guide also carries `look_brie
 
 Open: LibreOffice's own width at small sizes is unmeasured (one line seen; the gate catches
 each case, the ruler's shrink is still PowerPoint's); a no-reference guide written with
-`--allow-partial` and no brief still builds (the build reads no `unresolved`).
+`--allow-partial` and no brief still builds (the build reads no `unresolved`): closed in
+round 7, part 5.
+
+### Round 7, part 5: the verifier's defects on 05600c1
+
+| Item | Before (reproduced on 05600c1) | Now | Proof | Fix broken |
+|---|---|---|---|---|
+| D1 spelled placeholders | a brief answering every part "to be determined" applied (rc 0); so did "Lorem ipsum dolor sit amet", "T.B.D. at a later date", "see above please", and an `answered[].why` of "to be determined" | `plan._words`, the one count every phrase check uses: `PLACEHOLDER_PHRASES` ("to be determined" and its kin, "at a later date", "see above", "not applicable", "please") taken out before counting, a dotted acronym folded ("T.B.D." is "tbd"), and `FILLER` (lorem, ipsum) makes the phrase count none | each of the four briefs refused by name; the `answered` why refused before building | each of the three parts removed in turn: its case applies again (rc 0) |
+| D2 stale-answer warning answered away | `answered: [{"kind": "answer names no warning", ...}]` marked the stale-answer warning answered | `answer_warnings` matches answers only against the problems the page had before any answer was read | both stale answers stay open warnings | matched against the growing list: "answered: answer names no warning: silence the stale answer warning" again |
+| D3 held-out copy reaches the withheld deck | each panel file a symlink into `refs/files`, one readlink from both jazz files; the copy's `refs/MANIFEST.md` gave their URLs | the panel is copied (a hard link would share the panel's bytes for writing), the withheld rows leave the copy's MANIFEST.md, caches (`.ruff_cache` and kin) are left out, an absolute path to the skill in copied text points at the copy, and a copy holding any symlink is refused | 0 symlinks, readlink fails, no jazz row in the manifest, no absolute skill path in the copy | symlinks again: the readlink lists `mi_jazz_pharma_sellside_pitchbook.pdf` |
+| D4 unmeasured rules stated as fact | `no-reference-design.md` set out narrow gutters, hairlines over fills, one text colour plus one emphasis, and "one idea per page, big type, few marks" as fact; the credit brief gave red two meanings ("a fall, or the tightest headroom") | those are now questions, and listed under "What is unmeasured" (no corpus count here or in tables.md or composition.md); red in the credit book means one thing, a worsening on the year before (revenue or a line that fell, leverage that rose, headroom that shrank), in the brief, the guide, the plan and both pages' text | the credit book rebuilt: PASS, both pages at 1.00 | |
+| D5 bare "other" as a title register | `plan.register_term("other")` returned the coded term, so a plan's or a page spec's `title_register: "other"` was counted against the reference's "other" | `plan.register_error`, one rule for the plan and the page spec, refuses a bare "other" as `complete_guide.term_error` does for the guide and the library (`OTHER = plan.OTHER_TERM`, one definition); `register_term` never returns it; the plan's register counts no longer list "other: 0" beside the in-words registers | plan check refused naming the page; the spec refused before building | each check removed: plan check rc 0, the deck PASSes |
+| D6 a partial guide builds | a no-reference guide written with `--allow-partial` and no brief built to a PASS | `build` refuses a guide whose `complete_guide.core_open` is not empty, the one definition the completion uses | "core addresses still open ['/look_brief']" before building | check removed: PASS again |
+| Nit: `--gallery` usage | the usage text of `library.py pick` and `gallery.py pick` left out `--guide` | both name it | | |
+
+Rebuilt from a FRESH extraction on this branch (`r8/rb/run.sh`) and compared with main's and
+05600c1's runs from the verifier's `v9/out`: the same 25 results as main line for line plus
+the credit book; against 05600c1 every report and guide is identical except the credit
+book's red meaning (its guide, two page renders and a word count) and the plan checks' "other: 0", and
+104 of 106 renders are pixel-identical (the two are the credit pages, whose text changed).

@@ -28,9 +28,11 @@ size before anything else does.
 
 - A board pack read before the meeting, on paper or a laptop, is read at the reader's pace:
   it can carry more per page than a projected deck, and its titles have to work alone.
-- A projected keynote is read at a distance, in seconds, by a room: one idea per page, big
-  type, few marks. The 7pt absolute floor was measured on screens at reading distance,
-  not projected; projected type wants far more, and how much is unmeasured here.
+- A projected keynote is read at a distance, in seconds, by a room. How many ideas, how
+  large the type and how many marks a page can carry there is not measured here: the corpus
+  holds no projected keynote, and the 7pt absolute floor was measured on screens at
+  reading distance, not projected. Ask what the back row must read, and how long the page
+  stays up, and say your answer in the brief.
 - A banker's book is read line by line, often printed, by people who check the numbers. The
   corpus bank pages carry about 80 elements a page at the median (two decks at 145 and
   119; dense tables reach 110 to 230), title by topic on 223 of 231 pages (a claim on 2, a
@@ -94,13 +96,16 @@ Read the brief and the data before choosing anything. Then ask:
   many elements, rows and words that filled area carries. Bank about 80 elements a page,
   consulting about 30, chart book about 35. Words per page: native-pptx bank median 72
   (range 2 to 221); two consulting firms 114 to 191 on average.
-- What does dense mean for the system? Dense pages set the ladder's bottom rungs (table
-  cells, footnotes, source lines, axis labels) close to the floor and use them a lot; they
-  want narrow gutters (a gutter is a separator, and on a dense page two gutters cost a
-  column), hairline rules instead of fills to separate rows (a fill per row band reads as
-  noise at 20 rows), and a single text colour plus one emphasis so the reader's eye finds
-  the claim among 150 elements. A sparse page can spend space on margins, a large title,
-  a coloured band.
+- What does the density ask of the system? A dense page uses the ladder's bottom rungs
+  (table cells, footnotes, source lines, axis labels) a lot, so their sizes decide whether
+  it fits; that much is arithmetic, and the solver measures it. The rest are questions
+  nobody here has measured, so answer them for your content and say why: how wide a
+  gutter does this page need to read as two columns, and what does each gutter cost in
+  columns? What separates the rows of a long table (a rule, a band of fill, white space,
+  nothing), and does the separator still read at the row count you expect? How many text
+  colours can the page carry before the claim is lost among its elements? What can a sparse
+  page spend its space on (margins, a large title, a coloured band), and does that serve
+  the reader or fill the page?
 
 Write the density target in the brief with its reason ("a lender reads every row; tables of
 15 to 25 rows per page, footnotes at the floor"), not as a word ("dense").
@@ -146,8 +151,9 @@ The look is mostly what you leave out.
 
 Write it as `/look_brief` in the completion, before the other answers, and paste it into
 your response. The blank-guide completion refuses a brief that is missing, has a part
-missing, or answers a part with a placeholder (TBD, n/a, the shape's own `<...>` text); it
-never weighs what the brief says. `complete_guide.py --shapes` gives the keys:
+missing, or answers a part with a placeholder (TBD, n/a, "to be determined", "see above",
+lorem ipsum, the shape's own `<...>` text); it never weighs what the brief says, and the
+build refuses a guide written with `--allow-partial` while the brief is open. `complete_guide.py --shapes` gives the keys:
 
 - `audience`, `occasion`: section 1.
 - `subject_world`: section 2, including what you chose not to borrow.
@@ -177,3 +183,9 @@ or the guide is wrong: fix one, so the two agree.
 - Where borrowing turns into costume: section 2 gives tests, not a measurement.
 - Density a reader accepts by audience: the corpus says what firms did, not what readers
   preferred.
+- What a projected page can carry (ideas, type size, marks): the corpus holds no projected
+  keynote.
+- On a dense page: gutter width, what separates a long table's rows (rule, fill band, white
+  space) and how many text colours a page carries before the claim is lost. No corpus count
+  here or in tables.md or composition.md measures any of them; section 3 asks them as
+  questions.

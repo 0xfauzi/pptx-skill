@@ -62,7 +62,7 @@
      ],
      "chosen_form": "column chart with a threshold line",
      "why": "the covenant is a line the ratio must stay under; columns against that line make the tight year visible",
-     "marks": "values on every column; the FY2024 column in brick red as the tightest; the covenant line in amber, named in the legend"
+     "marks": "values on every column; the FY2024 column in brick red, the year leverage rose; the covenant line in amber, named in the legend"
     },
     {
      "reader_must_see": "the net debt and EBITDA behind each year's ratio, and the headroom each year left",
@@ -80,7 +80,7 @@
      ],
      "chosen_form": "four-line table aligned under the chart's years",
      "why": "a lender recomputes the ratio from its inputs; the table puts them under the column they explain",
-     "marks": "the ratio row bold; FY2024's 1.7% headroom in brick red"
+     "marks": "the ratio row bold; FY2024's 1.7% headroom in brick red, the year it shrank"
     },
     {
      "reader_must_see": "both covenant tests for the last two years with the headroom left in FY2025",

@@ -471,7 +471,7 @@ def _vocab_error(name: str, value, where: str) -> str | None:
 
 
 #: the term a title or a block beside it is filed under when no coded term names it; its words are the model's
-OTHER = "other"
+OTHER = plan.OTHER_TERM
 
 
 def term_error(name: str, value, where: str) -> str | None:

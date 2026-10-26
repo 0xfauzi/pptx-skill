@@ -5,7 +5,7 @@ text-free skeleton of each exemplar.
 
     gallery.py deck.pptx --out DIR [--width 1600] [--guide guide.style.json] [--include-generated] [--pages 1-40]
     gallery.py ref.pdf --out DIR --guide draft.json [--pages 30-70]
-    gallery.py pick DIR --intent "two column comparison table beside commentary"
+    gallery.py pick DIR --guide guide.json --intent "two column comparison table beside commentary"
 
 A PDF is read through ooxml.py's PDF reader (text blocks, rectangles, rules and image
 regions are the leaves) and needs --guide: it has no placeholders, so its footer and page

@@ -38,7 +38,8 @@ python3 scripts/complete_guide.py "$DECK_WORK/ref/draft.json" "$DECK_WORK/ref/co
   never patch over it.
 - The core must close: type.title, type.body, color.surface, color.ink, color.accent1, and
   one of type.caption, type.footnote, type.source_line. `--allow-partial` writes a guide
-  with the open core listed under `completion.core_open`, for inspection only.
+  with the open core listed under `completion.core_open`, for inspection only: build_deck.py
+  refuses a guide with core still open.
 - Role names are the extractor's: on one bank deck `color.accent1` is the observed light
   grey and the deep blue is the second accent. Bind fills and inks by what the draft
   observed; the build's contrast gate confirms it.
@@ -64,7 +65,7 @@ counts in the design references are questions beside each choice, never a value 
 written first from [no-reference-design.md](no-reference-design.md) (audience, occasion,
 subject world, data character, density with its why, the look, a meaning per colour, the
 ladder's rationale, what was rejected). It is refused when missing, when a part is missing,
-or when a part is a placeholder (TBD, n/a, a repeated word, the shape's own `<...>` text);
+or when a part is a placeholder (TBD, n/a, "to be determined", lorem ipsum, a repeated word, the shape's own `<...>` text);
 what it argues is never judged. The guide stores it as `look_brief`, provenance
 `model_choice`.
 

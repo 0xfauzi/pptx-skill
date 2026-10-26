@@ -609,7 +609,7 @@
            "paragraphs": [
             {
              "role": "type.footnote",
-             "text": "FY2025 in green; red marks a fall."
+             "text": "FY2025 in green; red marks a worsening."
             }
            ]
           }
@@ -731,7 +731,7 @@
            "paragraphs": [
             {
              "role": "type.caption",
-             "text": "x, tested at each fiscal year end; FY2024 in red, the tightest year"
+             "text": "x, tested at each fiscal year end; FY2024 in red, a rise on FY2023"
             }
            ]
           },

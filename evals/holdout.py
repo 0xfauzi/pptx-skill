@@ -14,9 +14,13 @@ line of the copied text that still names a held-out deck by an alias (reference 
 cite the decks they were measured on): the evaluator reads that list and decides; nothing
 here edits the skill's text.
 
-refs/files (the judge's panel) becomes a folder of links to its files, the decks under
-test left out by sha256 and by name (the same deck in another format): the agent under test must not reach the deck it is tested on
-through the panel (round 7: the copy linked the whole folder). The skill's git metadata,
+refs/files (the judge's panel) becomes a folder of copies of its files, never
+linked: the decks under test are left out by sha256 and by name (the same deck in another
+format), and the copy's refs/MANIFEST.md loses their rows (their download URLs). The agent
+under test must not reach the deck it is tested on through the panel (round 7: the copy linked
+the whole folder, then each file, and one readlink named the folder still holding the deck).
+An absolute path to the skill in the copied text is rewritten to the copy, where the held-out
+files do not exist. The skill's git metadata,
 bytecode caches and worktrees are left out, and so is evals/ (the scenarios' expected
 behaviours, which the agent under test must not read).
 """
@@ -31,7 +35,7 @@ import sys
 from pathlib import Path
 
 SKILL = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", "__pycache__", ".claude"}
+SKIP_DIRS = {".git", "__pycache__", ".claude", ".ruff_cache", ".mypy_cache", ".pytest_cache"}  # caches name the skill's own paths
 TEXT_SUFFIXES = {".md", ".json", ".py", ".sh", ".txt"}
 
 
@@ -116,7 +120,16 @@ def main(argv: list[str]) -> int:
             if sha256(f) in tested or f.stem.lower() in {Path(t).stem.lower() for t in tested.values()} | set(aliases):
                 withheld.append(f.name)
                 continue
-            (copied / f.name).symlink_to(f)
+            shutil.copy2(f, copied / f.name)  # a copy: a link names the folder, or shares the panel's bytes for writing
+        manifest = out / "refs" / "MANIFEST.md"
+        if manifest.is_file() and withheld:
+            rows = manifest.read_text().splitlines(keepends=True)
+            manifest.write_text("".join(r for r in rows if not any(r.startswith(f"| {w} ") for w in withheld)))
+    roots_panel = str(panel.resolve())
+    roots = sorted({str(SKILL), roots_panel}, key=len, reverse=True)  # the longer first: one may hold the other
+    links = [str(p.relative_to(out)) for p in out.rglob("*") if p.is_symlink()]
+    if links:
+        raise Refused(f"the copy holds symbolic links, each naming a place outside it: {links}")
     naming = []
     for p in sorted(out.rglob("*")):
         if p.is_symlink() or not p.is_file() or p.suffix not in TEXT_SUFFIXES:
@@ -125,6 +138,8 @@ def main(argv: list[str]) -> int:
         # a pointer to a held-out file says so in the copy, so the agent under test is not
         # sent looking for the worked answer to its own deck (round 6, mckinsey)
         marked = text
+        for root in roots:
+            marked = marked.replace(root, str(out / "refs" / "files") if root == roots_panel else str(out))
         for f in sorted(left_out):
             marked = marked.replace(f"`{f}`", f"`{f}` (held out of this copy: it is made from the deck under test)")
         if marked != text:

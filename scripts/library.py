@@ -8,7 +8,7 @@ when a page is planned.
     library.py tag     --lib LIB TAGS.json
     library.py check   --lib LIB [--seal]
     library.py pick    --intent TEXT [--composition WORDS] [--data-shape TEXT]
-                       [--aspect W:H] [--gallery DIR] [--own LIB] [--library LIB] [--exclude ID] [--top N]
+                       [--aspect W:H] [--gallery DIR --guide GUIDE] [--own LIB] [--library LIB] [--exclude ID] [--top N]
     library.py import  --lib LIB SRC/library.json --by WHO --basis TEXT
     library.py forget  --lib LIB --deck ID
     library.py vocab

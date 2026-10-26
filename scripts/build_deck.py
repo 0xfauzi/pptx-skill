@@ -1715,10 +1715,8 @@ def title_report(slide: dict, spec_raw: dict, elements: list[dict], entry: dict,
     tid = page_title_id(slide, spec_raw)
     named = (slide.get("title") or {}).get("element")
     stated = (slide.get("title") or {}).get("register")
-    if stated is not None and plan._words(stated) < 1:
-        # the plan's own rule (plan.read_plan): any words; only a register that is not words is refused
-        raise SystemExit(f"{slide.get('id')}: title.register: the title's register in words (or a term the reference's titles are coded in: "
-                         f"{'|'.join(plan.VOCABULARY['title_register'])}), not {stated!r}")
+    if stated is not None and (e := plan.register_error(stated, f"{slide.get('id')}: title.register")):
+        raise SystemExit(e)  # the plan's own rule (plan.register_error)
     el = next((e for e in elements if e["id"] == tid and e["kind"] == "text"), None) if tid else None
     if named and el is None:
         kinds = sorted({e["kind"] for e in elements if e["id"] == named})
@@ -2371,14 +2369,15 @@ def answer_warnings(slide: dict, entry: dict) -> None:
     answered (it is fixed), and an answer that names no warning on the page is itself a
     warning: the page changed and the answer is stale."""
     problems = entry.setdefault("problems", [])
+    found = list(problems)  # the page's own problems: what answering adds below is never itself answerable
     for a in read_answers(slide):
-        hits = [p for p in problems if p.get("kind") == a["kind"] and a.get("detail", "") in str(p.get("detail", ""))]
+        hits = [p for p in found if p.get("kind") == a["kind"] and a.get("detail", "") in str(p.get("detail", ""))]
         if any(p.get("severity") == "refusal" for p in hits):
             problems.append({"kind": "answer to a refusal", "severity": "refusal",
                              "detail": f"answered names {a['kind']!r}, a refusal on this page: a refusal is fixed, never answered"})
             continue
         if not hits:
-            kinds = sorted({str(p.get("kind")) for p in problems if p.get("severity") != "refusal"})
+            kinds = sorted({str(p.get("kind")) for p in found if p.get("severity") != "refusal"})
             problems.append({"kind": "answer names no warning", "severity": "warning",
                              "detail": f"answered {a['kind']!r}{' (' + repr(a['detail']) + ')' if 'detail' in a else ''} matches no warning on this page "
                                        f"(its warnings: {kinds or 'none'}): remove the answer, or name the warning as the report does"})
@@ -2401,6 +2400,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     ref_slides = None
     precedent = None
     referenced = plan.has_reference(guide, "--guide")
+    from complete_guide import core_open
+    if open_core := core_open(guide):
+        raise SystemExit(f"--guide: core addresses still open {open_core}: a guide written with --allow-partial is for inspection, never "
+                         "built; answer them with complete_guide.py and build the guide it writes")
     if reference and not referenced:
         raise SystemExit("--reference: the guide was made with no reference (extract_style.py --blank), so there is no reference deck to "
                          "compare with; build without --reference, or make the guide from this deck with extract_style.py")

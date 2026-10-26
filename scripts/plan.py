@@ -461,9 +461,8 @@ def read_plan(plan, guide: dict) -> list[dict]:
                     errors += brief_errors(brief, f"{where} exhibits[{j}]", guide)
                     if isinstance(brief, dict):
                         briefed.setdefault(_brief_key(brief), []).append(f"{where} exhibits[{j}]")
-        if "title_register" in page and not (isinstance(page["title_register"], str) and _words(page["title_register"]) >= 1):
-            errors.append(f"{where} title_register: the title's register in words (or a term the reference's titles are coded in: "
-                          f"{'|'.join(VOCABULARY['title_register'])}), not {page['title_register']!r}")
+        if "title_register" in page and (e := register_error(page["title_register"], f"{where} title_register")):
+            errors.append(e)
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
             errors.append(f"{where} deliberate_parallel: null, or the reason in words")
@@ -488,23 +487,40 @@ PLACEHOLDERS = frozenset({"tbd", "tbc", "tba", "todo", "na", "n/a", "n.a", "n.a.
                           "lorem", "ipsum", "etc", "etc.", "...", "same", "ditto"})
 
 
+#: placeholders spelled out in words ("to be determined", "see above", "at a later date"),
+#: taken out of a phrase before its words are counted; with PLACEHOLDERS, one definition
+#: of a non-answer
+PLACEHOLDER_PHRASES = re.compile(
+    r"\bto be (?:determined|decided|confirmed|advised|agreed|announced|added|defined|done|written|filled(?: in)?|provided|"
+    r"completed|finali[sz]ed|updated|discussed|reviewed|supplied|given)\b|\bat a later (?:date|stage|time|point)\b|"
+    r"\b(?:see|as|same as) (?:above|below|before|elsewhere)\b|\bnot applicable\b|\bplease\b")
+#: filler text: a phrase that carries any of its words answers nothing at all
+FILLER = re.compile(r"\b(?:lorem|ipsum)\b")
+
+
 def _counted(token: str) -> bool:
     t = token.lower().rstrip(".,")
+    if re.fullmatch(r"(?:[^\W\d_]\.)+[^\W\d_]?", t):  # a dotted acronym: "T.B.D." is "tbd"
+        t = t.replace(".", "")
     return t not in PLACEHOLDERS and not (len(t) == 1 and t.isalpha() and t not in ("a", "i"))
 
 
 def _words(text) -> int:
     """The distinct words of a phrase that answer something: a word given twice counts once,
-    and placeholders (PLACEHOLDERS, a lone letter) not at all, so "TBD TBD TBD" is no phrase."""
+    and placeholders (PLACEHOLDERS, PLACEHOLDER_PHRASES, a lone letter) not at all, so "TBD TBD
+    TBD" and "to be determined" are no phrase; filler (FILLER) makes the whole phrase none."""
     if not isinstance(text, str):
         return 0
-    return len({t.lower() for t in _WORD.findall(unicodedata.normalize("NFKC", text)) if _counted(t)})
+    folded = unicodedata.normalize("NFKC", text).casefold()
+    if FILLER.search(folded):
+        return 0
+    return len({t for t in _WORD.findall(PLACEHOLDER_PHRASES.sub(" ", folded)) if _counted(t)})
 
 
 def _phrase_error(value, where: str, least: int) -> str | None:
     if not isinstance(value, str) or _words(value) < least:
         return (f"{where}: {'a phrase of at least ' + str(least) + ' distinct words' if least > 1 else 'words'} "
-                f"(placeholders such as TBD or n/a, and a word repeated, do not count), not {value!r}")
+                f"(placeholders such as TBD, n/a or 'to be determined', filler, and a word repeated, do not count), not {value!r}")
     return None
 
 
@@ -726,18 +742,36 @@ def check(plan, guide: dict) -> dict:
             "compositions": {"reference_archetypes_used": sorted({p["composition"] for p in pages} - set(new), key=_arch_order), "new": new},
             "title_registers": {"reference": (ref_registers if ref_registers is not None else "no evidence: /titles/register not completed")
                                 if referenced else NO_REFERENCE,
-                                "plan": {**{r: coded.count(r) for r in VOCABULARY["title_register"]},
+                                "plan": {**{r: coded.count(r) for r in VOCABULARY["title_register"] if r != OTHER_TERM},
                                          "in_words": {p["id"]: p["title_register"] for p, t in zip(pages, coded, strict=True) if t is None}},
                                 "pages": per_page}}
+
+
+#: the title vocabulary's term for what no other term names; a register stated as this word
+#: alone says nothing, in a plan, a page spec or a guide (complete_guide.term_error)
+OTHER_TERM = "other"
+
+
+def register_error(stated, where: str) -> str | None:
+    """A stated title register (a plan page's title_register, a page spec's title.register):
+    words, a coded term or the model's own; the bare word "other" says nothing and is refused,
+    the one rule complete_guide.term_error holds for the guide and the page library."""
+    named = '|'.join(t for t in VOCABULARY['title_register'] if t != OTHER_TERM)
+    if not (isinstance(stated, str) and _words(stated) >= 1):
+        return f"{where}: the title's register in words (or a term the reference's titles are coded in: {named}), not {stated!r}"
+    if _form_key(stated) == OTHER_TERM:
+        return f"{where}: say what the register is, in words (\"a label and a figure\"): a bare {stated!r} names nothing"
+    return None
 
 
 def register_term(stated: str) -> str | None:
     """The term of the title vocabulary a stated register names, by its slug or its label
     (folded as forms are: case, punctuation, a leading article, a plural s), or None when it
-    names none: then it is the model's own words, with no count of the reference's beside it."""
+    names none: then it is the model's own words, with no count of the reference's beside it.
+    "other" is never named by words: it files a register the guide states in words."""
     key = _form_key(stated)
     for slug, label in VOCABULARY["title_register"].items():
-        if key in (_form_key(slug), _form_key(label)):
+        if slug != OTHER_TERM and key in (_form_key(slug), _form_key(label)):
             return slug
     return None
 
