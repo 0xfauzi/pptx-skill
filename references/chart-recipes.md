@@ -76,6 +76,13 @@ keybank (the pages named under "Proven on") and read from the render.
   `categories`. Their two axes are both value axes placed by `min` and `max` alone: they
   take no `cross_between` (refused on either), and an annotation on them needs only
   `plot_area` with each named axis's `min` and `max`.
+- `axes.<name>.crosses`: where on this axis the other axis crosses it: `"min"`, `"max"`,
+  `"auto_zero"` or a number inside this axis's written `min` and `max`. Left out, the file
+  says autoZero, and an XY chart whose range spans zero draws its other axis (line and
+  tick labels) through the middle of the plot, where it meets annotations; the report
+  lists that default. `axes.value.crosses: "min"` puts the x axis along the bottom and
+  `axes.category.crosses: "min"` the y axis along the left (rendered in LibreOffice
+  24.2.7, round 8). On a category chart the category axis takes the three words only.
 - A `null` value is a gap: no bar or point is drawn there (the file writes
   `dispBlanksAs gap`), a line breaks, and annotations elsewhere on the chart are placed as
   usual; an anchor on the gap itself is refused (there is no mark to anchor on).

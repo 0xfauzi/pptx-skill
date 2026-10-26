@@ -81,6 +81,7 @@ from pptx.chart.data import BubbleChartData, CategoryChartData, XyChartData
 from pptx.chart.datalabel import DataLabels
 from pptx.dml.color import RGBColor
 from pptx.enum.chart import (
+    XL_AXIS_CROSSES,
     XL_CHART_TYPE,
     XL_LABEL_POSITION,
     XL_LEGEND_POSITION,
@@ -1127,7 +1128,11 @@ LABEL_KEYS = {"show", "position", "number_format", "role", "ink_role"}
 POINT_KEYS = {"index", "fill_role", "line_role", "label"}
 POINT_LABEL_KEYS = LABEL_KEYS | {"text"}
 AXIS_KEYS = {"visible", "line_role", "line_width_pt", "gridlines", "number_format", "reverse", "min", "max", "major_unit", "tick_marks", "labels", "cross_between", "title",
-             "label_interval", "tick_interval"}
+             "label_interval", "tick_interval", "crosses"}
+#: `crosses` on an axis: where on THIS axis the other axis crosses it (python-pptx's
+#: axis.crosses, written as c:crosses or c:crossesAt on the other axis). Left out, the file
+#: says autoZero: an XY chart whose range spans zero draws its axes through the plot.
+AXIS_CROSSES = {"auto_zero": XL_AXIS_CROSSES.AUTOMATIC, "min": XL_AXIS_CROSSES.MINIMUM, "max": XL_AXIS_CROSSES.MAXIMUM}
 AXIS_TITLE_KEYS = {"text", "role", "ink_role", "orientation"}
 #: "along": the title runs along its axis (turned on a vertical axis); "horizontal": level
 AXIS_TITLE_ORIENTATIONS = ("along", "horizontal")
@@ -1211,6 +1216,7 @@ CHART_DEFAULTS = {
     "axis.title.ink_role": "no colour written: each renderer's own axis title ink",
     "axis.title.orientation": "along: the title runs along its axis, turned a quarter on a vertical axis",
     "series.axis": "primary",
+    "axis.crosses": "autoZero: the other axis crosses this one at zero, drawn through the plot when the range spans zero",
 }
 #: the CHART_DEFAULTS that are a look: written as the theme's, a renderer's own or
 #: python-pptx's, never anyone's choice (Guide.take refuses them with no reference). The
@@ -1468,6 +1474,21 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                         "; an XY chart's two value axes are placed by min and max alone, and an annotation on it needs only those: remove it"
                         if family in ("xy", "bubble") else ""))
                 _enum(aw, "cross_between", ax["cross_between"], CROSS_BETWEEN)
+            if "crosses" in ax:
+                c = ax["crosses"]
+                if name == "secondary_value":
+                    raise SpecError(f"{aw}: crosses is written on the primary axes only; the secondary axis already sits at the far edge")
+                if isinstance(c, bool) or not (c in AXIS_CROSSES or isinstance(c, int | float)):
+                    raise SpecError(f"{aw}: crosses is \"auto_zero\", \"min\", \"max\" or a number on this axis (where the other axis crosses it)")
+                if isinstance(c, int | float):
+                    if name == "category" and family not in ("xy", "bubble"):
+                        raise SpecError(f"{aw}: a category axis crosses at \"min\", \"max\" or \"auto_zero\"; a number names a value")
+                    lo, hi = ax.get("min"), ax.get("max")
+                    if lo is None or hi is None or not lo <= c <= hi:
+                        raise SpecError(f"{aw}: crosses {c} needs this axis's min and max written and must lie between them ({lo}, {hi}): "
+                                        "outside the scale it names no point on the plot")
+            elif family in ("xy", "bubble") and name != "secondary_value" and (ax.get("min") is None or ax["min"] < 0):
+                took(f"axes.{name}.crosses", "axis.crosses")
             if ax.get("visible") is False:
                 # a hidden axis still scales the plot: its min, max and reverse are written
                 if name == "category" and family not in ("xy", "bubble") and {"min", "max", "major_unit", "number_format"} & set(ax):
@@ -1943,6 +1964,12 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 # the same categories on both pairs of axes: the secondary places them as the primary does
                 ax = {**ax, "cross_between": axes["value"]["cross_between"]}
             aw = f"{where} axes.{name}"
+            if "crosses" in ax:
+                c = ax["crosses"]
+                if isinstance(c, str):
+                    axis.crosses = AXIS_CROSSES[c]
+                else:
+                    axis.crosses_at = float(c)
             if ax.get("visible") is False and name == "secondary_value":
                 # LibreOffice drops the min and max of a DELETED secondary axis and plots its
                 # series on the primary scale (measured, round 7: a 0..30 margin line drawn
