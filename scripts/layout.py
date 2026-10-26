@@ -1796,6 +1796,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "capacity":
         from build_deck import capacity
         payload = capacity(capacity_slide(args.spec, args.slide), json.loads(Path(args.guide).read_text(encoding="utf-8")), args.chrome)
+        if args.out:
+            # written before anything is printed: a reader piping the listing into `head`
+            # closes the pipe, and a print after that raises before a later write is reached
+            Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")
+            print(f"wrote {args.out}")
         print(f"{payload['id']}: {payload['status']} at scale {payload['scale']} ({payload['ruler']})")
         for e in payload["elements"]:
             print(f"  {e['id']:<18} {e['role'] or '':<18} box {e['box_in']} in  lines {e['lines_now']}  chars {e['chars_now']}"
@@ -1808,10 +1814,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                   + "; tallest rows " + ", ".join(f"{x['row']} ({x['lines']} lines)" for x in t["tallest_rows"]))
         for cause in payload.get("why_not_full_scale", []):
             print(f"  why not at full scale: {cause}")
-        if args.out:
-            Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-            Path(args.out).write_text(json.dumps(payload, indent=1), encoding="utf-8")
-            print(f"wrote {args.out}")
         return 0 if payload["status"] == "fit" else 1
     ctx = build_context(args.spec, args.guide)
     if args.command == "solve":
