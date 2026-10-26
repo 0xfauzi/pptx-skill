@@ -659,3 +659,34 @@ Rebuilt from a FRESH extraction on this branch (`r8/rb/run.sh`) and compared wit
 the credit book; against 05600c1 every report and guide is identical except the credit
 book's red meaning (its guide, two page renders and a word count) and the plan checks' "other: 0", and
 104 of 106 renders are pixel-identical (the two are the credit pages, whose text changed).
+
+## Round 8: the genre builders' friction
+
+Reproduced on main (a2d1091) first, from the kept round-7 specs where they held the case and
+from one-page repros otherwise (`r8x/repro/`); each fix then broken (its commit's change to
+`scripts/` reversed in a copy, `r8x/brk/`) to show the defect return.
+
+| Item | Before (main) | Now | Proof | Fix broken |
+|---|---|---|---|---|
+| 1 Table floor | table roles filed in the body family: the completion refused `type.table_cell` at 7pt under keybank's 12pt body floor; dense-ref p2 with the core table roles was refused at every scale | a `table` floor family (extract_style, complete_guide): measured on native table cells, lowered by `/tables/picture_text`, 7pt with no reference | the 7pt completion applies; dense-ref p2 fits at 1.00 (`i1/p2-r8`) | completion refused again |
+| 1 Title band under descent | the band was sized at full scale; once the page descended, the root's padding shrank, the band ended above the rule and what followed crossed it at every scale | `Spec.band`, `layout.with_band`: the band node is resized per scale to end on the rule | a page 0.019 in over at 1.00 fits at 0.97 (`e1s24`) | refused at every scale |
+| 2 Spanner readback | a merged header cell wrapped at its first column's width: "row 0 wraps to 3 lines", refused | the origin cell wraps at its span's width, covered cells skipped | `i2` PASS | refused again |
+| 3 Stacked labels wrap | LibreOffice wrapped 'First-lien / TLB 3.75x' in its segment; the build passed | every chart's category and data labels read off the render's words in its frame (`renderer divergence: chart text`); a centred column label wider than its bar warned before | `i3a` refused with the alternative; `\n` and gap 40 PASS 8 of 8 | PASS again |
+| 3 Bar ranking drops names | a 14-name horizontal bar drew 7 names; the build passed | refused before the render when the band is under one line of the label role (measured over six heights: 0.99 of a line dropped 7, 1.11 drew all 14), and on the render; the category_row refusal says taller and gives the height | `sw1.7` | `--no-render` build PASS |
+| 3 Turned label | 'Neighbourhood' turned -90 refused as breaking mid-word though drawn whole | measured by its footprint along the axis | `i3c90` PASS, 24 of 24 on the render | refused again |
+| 4 XY axes cross at zero | no key; an XY chart from -2 drew its y axis inside the plot | `axes.<name>.crosses` (min, max, auto_zero, a number in the scale); autoZero listed when left out | rendered: axes at the plot's edge, crossesAt 10 at y = 10 | axis back at x = 0 |
+| 5 Zero bridge step | "draws 0 to 0; covers 1300 to 1300", refused | a zero step ties; unlabelled, it is warned | `i5` PASS | refused again |
+| 6 capacity -o | the JSON was written after the listing; piped into `head` the write was never reached | written first | `i6` | no file |
+| 6b rows_to_fit 0 | every fitting table on dense-noref s1 to s6 read rows_to_fit 0 (the probe box) | counted in the solved box | dense-noref s3: 32 of 32 | 0 again |
+| 7 Kinds V | 0.0 on dense-ref, dense-noref and investor, 0.25 on consulting, though chart forms differed every page | kinds read chart form, no count; three or more charts of one size are one small multiple (reader version bumped) | 1.0, 1.0, 1.0, 0.75; investor p1 8 panels to 3, its brief count | 0.0 and 8 again |
+| Title band, no reference | a kicker over the title in a head region was not banded; content crossed the drawn rule | the root's first region holding the title takes the band | `e1` PASS | refused again |
+| Region size | `size` on a region was ignored in silence (a disc drew 5,501,640 x 213,360 EMU) | regions read `size`; content that does not fit is containment | `e9` disc 457,200 x 457,200 | ignored again |
+| accent4 with no reference | `/color/roles/color.accent4` not an open address | writable on a blank draft; with a reference the refusal names `/extra_roles` | `e2` | refused again |
+| Scatter smooth | a markers-only scatter refused for no smooth | not asked where no line is drawn | `e3` PASS | refused again |
+| explained_by another anchor | refused unless the same anchor; a label inside an outline collided with it | passes when the label is drawn on the mark or within a label height; only an outline's strokes collide | `e4` PASS, `e4far` refused by name | both refusals back |
+| BAR legend order | LibreOffice lists it last series first (rendered, both positions, reversed axis or not) | warned with the drawn order; nothing reordered (PowerPoint unmeasured) | `e5` | no warning |
+| Hidden series position | not reproduced: `dLblPos` is written on every point label (investor b1 to b3, `e6`) and drawn there | no change | | |
+| Labels on steep lines | 19 labels under line segments passed (`e7`) | warned before the render from the measured offset (37,411 to 38,050 EMU above, 38,908 to 39,379 below); refused on the render against the label's ink band, and two labels drawn over each other | 17 warned, 18 refused on the render; `e7f` PASS | PASS again |
+| capacity annotations | none placed | placed with the build's own resolve, problems listed | `e4far` lists the refusal | none listed |
+| Brackets end to end | two brackets over adjacent groups met at one point | a bracket spans its marks; a pair closer than its depth warned | `e8b` render, `e8c` warned | meet again |
+| drawn_lines on tables | text boxes only | each cell found in its column of the render and held to the lines the fitter measured | dense-ref 1,400 cells drawn as written | not checked |

@@ -1617,9 +1617,9 @@ def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
 #: 0.17 to 0.38 of the box below its top and ends 0.21 to 0.31 above its bottom, or 0.06
 #: with a descender ('Aug'). A line is held to the ink band, never to the empty ascent and
 #: descent (investor p3: a cohort line ran under '1.47x' through its box's descent). Other
-#: faces are unmeasured; the insets are under the smallest measured.
-INK_TOP_INSET = 0.15
-INK_BOTTOM_INSET = {"descender": 0.05, "none": 0.2}
+#: faces are unmeasured; the insets are the smallest measured.
+INK_TOP_INSET = 0.17
+INK_BOTTOM_INSET = {"descender": 0.06, "none": 0.21}
 DESCENDERS = set("gjpqy,;()[]{}|/")
 
 
@@ -1642,7 +1642,9 @@ def lines_through_labels(el: dict, boxes: dict[str, tuple]) -> list[tuple[str, s
         return []
     out = []
     for part, box in boxes.items():
-        crossed = [name for name, seg, width in strokes if annotate._segment_hits(seg, width, box)]
+        # the line's centre must enter the ink band: a stroke whose edge grazes the band's
+        # corner (investor p3, about 2,000 EMU past '1.47x') hides no ink
+        crossed = [name for name, seg, _ in strokes if annotate._segment_hits(seg, 0, box)]
         if crossed:
             out.append((part, ", ".join(crossed[:2])))
     return out
