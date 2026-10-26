@@ -1,6 +1,7 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/deck.pptx",
  "ruler": "harfbuzz",
+ "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
   {
    "id": "a1-comps",
@@ -32,7 +33,10 @@
       1328496,
       1624986,
       1258717
-     ]
+     ],
+     "fitting_row_prefix": 14,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
     }
    },
    "annotations": [
@@ -55,7 +59,7 @@
      "status": "placed",
      "anchor_emu": [
       3230880,
-      4322856,
+      4414600,
       2648417,
       274574
      ],
@@ -92,7 +96,7 @@
      "status": "placed",
      "anchor_emu": [
       381000,
-      5146578,
+      5238322,
       8382000,
       274574
      ],
@@ -111,7 +115,8 @@
       "shape": "sp[id=2]",
       "over": [
        "text"
-      ]
+      ],
+      "on_drawn_structure": true
      },
      "collisions": [],
      "render_check": {
@@ -332,7 +337,10 @@
       714881,
       714881,
       714886
-     ]
+     ],
+     "fitting_row_prefix": 9,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
     }
    },
    "annotations": [
@@ -355,7 +363,7 @@
      "status": "placed",
      "anchor_emu": [
       3389014,
-      2400330,
+      2492074,
       2077241,
       1372870
      ],
@@ -399,7 +407,7 @@
      "status": "placed",
      "anchor_emu": [
       3389014,
-      1851182,
+      1942926,
       2077241,
       274574
      ],
@@ -429,7 +437,7 @@
      "status": "placed",
      "anchor_emu": [
       929640,
-      2949478,
+      3041222,
       7284720,
       274574
      ],
@@ -575,7 +583,7 @@
    "bridge_ties": [],
    "source_line": {
     "data_page": true,
-    "source_line": true
+    "source_line": false
    },
    "solver_status": "fit",
    "problems": [
@@ -588,11 +596,6 @@
      "kind": "title longer than the house",
      "severity": "warning",
      "detail": "title: 10 words against the house max of 7 (median 5.0, 11 titles)"
-    },
-    {
-     "kind": "source line the house rarely carries",
-     "severity": "warning",
-     "detail": "the page carries a type.source_line or type.footnote paragraph; house: 1 of 5 house data pages carry one (20%: pages 9; the lines at 80% and 50% are unmeasured). Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"
     }
    ],
    "title": {
@@ -669,9 +672,9 @@
      "status": "placed",
      "anchor_emu": [
       3421309,
-      1470826,
+      1553396,
       916257,
-      4300919
+      4227524
      ],
      "drawn": [
       "selected-band"
@@ -703,9 +706,9 @@
      "status": "placed",
      "anchor_emu": [
       3421309,
-      1470826,
+      1553396,
       916257,
-      4300919
+      4227524
      ],
      "drawn": [
       "selected-note-box",
@@ -734,9 +737,9 @@
      "status": "placed",
      "anchor_emu": [
       4566630,
-      1470826,
+      1553396,
       0,
-      4300919
+      4227524
      ],
      "drawn": [
       "offer-line",
@@ -764,9 +767,9 @@
      "status": "placed",
      "anchor_emu": [
       3238057,
-      1470826,
+      1553396,
       0,
-      4300919
+      4227524
      ],
      "drawn": [
       "unaffected-line",
@@ -788,7 +791,7 @@
    "density": {
     "words": 42,
     "elements": 11,
-    "covered_area_fraction": 0.55,
+    "covered_area_fraction": 0.542,
     "text_boxes_mostly_empty": "none",
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
@@ -808,7 +811,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.55,
+     "value": 0.542,
      "band": [
       0.4116,
       0.7078
@@ -1014,9 +1017,9 @@
      "status": "placed",
      "anchor_emu": [
       4567889,
-      1386568,
+      1470055,
       0,
-      4483195
+      4401543
      ],
      "drawn": [
       "mean-line",
@@ -1047,9 +1050,9 @@
      "status": "placed",
      "anchor_emu": [
       2642616,
-      2958263,
+      3013125,
       1983263,
-      343540
+      337283
      ],
      "drawn": [
       "subject-label",
@@ -1071,7 +1074,7 @@
    "density": {
     "words": 55,
     "elements": 8,
-    "covered_area_fraction": 0.525,
+    "covered_area_fraction": 0.517,
     "text_boxes_mostly_empty": "none",
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
@@ -1091,7 +1094,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.525,
+     "value": 0.517,
      "band": [
       0.4116,
       0.7078
@@ -1207,7 +1210,7 @@
     {
      "kind": "source line the house rarely carries",
      "severity": "warning",
-     "detail": "the page carries a type.source_line or type.footnote paragraph; house: 1 of 5 house data pages carry one (20%: pages 9; the lines at 80% and 50% are unmeasured). Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"
+     "detail": "the page carries a type.source_line paragraph; house: 1 of 5 house data pages carry one (20%: pages 9; the lines at 80% and 50% are unmeasured). Keep it only where the user's data needs one (an illustrative-figures note the brief asks for), and say why in the report"
     }
    ],
    "title": {
@@ -1269,11 +1272,11 @@
   "deck": {
    "data_pages": 4,
    "with_source_line": [
-    "a2-sensitivity",
     "a4-ranking"
    ],
    "data_pages_without": [
     "a1-comps",
+    "a2-sensitivity",
     "a3-football"
    ]
   }
@@ -1298,7 +1301,7 @@
      2,
      3
     ],
-    "similarity": 0.068,
+    "similarity": 0.069,
     "similar": false
    },
    {
@@ -1315,25 +1318,45 @@
     "page": 1,
     "composition": "b1",
     "structure": "table (1 panel)",
-    "kinds": "table (1 panel)"
+    "kinds": "table (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    }
    },
    {
     "page": 2,
     "composition": "b2",
-    "structure": "drawn shapes; table (2 panels)",
-    "kinds": "drawn shapes; table (2 panels)"
+    "structure": "table (1 panel)",
+    "kinds": "table (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 2,
+     "read_as": "decoration: beside a native exhibit"
+    }
    },
    {
     "page": 3,
     "composition": "b3",
     "structure": "chart bar bar stacked x3 (1 panel)",
-    "kinds": "chart (1 panel)"
+    "kinds": "chart (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    }
    },
    {
     "page": 4,
     "composition": "b4",
     "structure": "chart bar bar clustered x1 (1 panel)",
-    "kinds": "chart (1 panel)"
+    "kinds": "chart (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    }
    }
   ],
   "measure": {
@@ -1355,14 +1378,14 @@
     "pairs": 3
    },
    "structures": {
-    "V": 1.0,
-    "changed": 3,
+    "V": 0.667,
+    "changed": 2,
     "pairs": 3,
     "pages_unread": []
    },
    "kinds": {
-    "V": 0.667,
-    "changed": 2,
+    "V": 0.333,
+    "changed": 1,
     "pairs": 3,
     "pages_unread": []
    },
@@ -1460,14 +1483,14 @@
     "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
    },
    "structures_V": {
-    "value": 1.0,
+    "value": 0.667,
     "house_pooled": 1.0,
     "house_p10_deck": 1.0,
-    "verdict": "at or above the house's 10th percentile deck",
+    "verdict": "below the house's 10th percentile deck",
     "threshold": "unmeasured: the 10th percentile deck is a choice; no reader has measured where V reads as samey"
    },
    "kinds_V": {
-    "value": 0.667,
+    "value": 0.333,
     "house_pooled": 1.0,
     "house_p10_deck": 1.0,
     "verdict": "below the house's 10th percentile deck",
@@ -1489,7 +1512,8 @@
   "house_longest_run": 2,
   "runs_over_reference": [],
   "warnings": [
-   "kinds_V 0.667 below the house's 10th percentile deck (1.0); the threshold is unmeasured"
+   "structures_V 0.667 below the house's 10th percentile deck (1.0); the threshold is unmeasured",
+   "kinds_V 0.333 below the house's 10th percentile deck (1.0); the threshold is unmeasured"
   ],
   "plan": "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
  },
@@ -1521,7 +1545,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/deck.pptx",
   "slides": 4,
   "problems": [],
   "ok": true
@@ -1658,7 +1682,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files",
+  "rarity_basis": "12 public decks of other houses in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -1671,7 +1695,7 @@
   "verdict": "possible carry-over: 5 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1703,14 +1727,14 @@
   },
   "pages": 4,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/renders/slide-03.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/renders/slide-04.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/renders/slide-03.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/renders/slide-04.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/pptx-skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.118,
   "components": {
    "families": 0.0,
@@ -1719,13 +1743,13 @@
    "title_size": 0,
    "bold_ratio": 0.173,
    "text_colors": 0.064,
-   "fills": 0.036,
+   "fills": 0.037,
    "lines": 0.396,
    "aligns": 0.412,
    "kinds": 0.371,
    "background": 0.0,
-   "margins": 0.201,
-   "coverage": 0.037,
+   "margins": 0.218,
+   "coverage": 0.021,
    "count": 0.119,
    "overlap": 0.0,
    "overflow": 0.0
@@ -1733,12 +1757,8 @@
   "per_slide": [
    {
     "slide": 1,
-    "total": 0.112,
+    "total": 0.11,
     "worst": [
-     [
-      "margins",
-      0.543
-     ],
      [
       "kinds",
       0.49
@@ -1746,6 +1766,10 @@
      [
       "aligns",
       0.486
+     ],
+     [
+      "margins",
+      0.476
      ]
     ]
    },
@@ -1813,25 +1837,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/45541_Header.pptx": 0.524,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.466,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/themes.pptx": 0.521
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/45541_Header.pptx": 0.523,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.466,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/themes.pptx": 0.521
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/perella_weinberg_pitch.pdf"
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/bmo_fairness_opinion_board.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.143,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.124,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.152
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.142,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.124,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_netflix_financing_pitchbook.pptx": 0.152
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -1843,7 +1867,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/kb/annotations/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/kb/annotations/renders"
  }
 }

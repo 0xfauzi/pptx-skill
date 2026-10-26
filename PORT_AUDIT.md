@@ -355,3 +355,39 @@ exhibits reads every such page as "picture" and its structure V is lenient; a PD
 no chart or table, and every PDF mark reads as carrying no text (a PDF text block is never
 a filled shape); a mark's label set beside it rather than in it reads as no text, so the
 file can call a labelled mark unlabelled; drawn shapes include a takeaway band.
+
+## Open visuals, verified: decoration, precedent host, old guides, brief gaps
+
+The open-visuals branch merged onto round 6, then its adversarial verifier's defects were
+reproduced on the merged tree and fixed. Every case below was run first on the merge
+(before) and then on the fix (after).
+
+| Defect (verifier) | Before, on the merge | Fix | After |
+|---|---|---|---|
+| Kinds V beaten by decoration | The round-2 netflix samey deck with its chart-title banner unfilled on p3 and p5 read kinds V 1.0, unwarned (filled: 0.25, warned) | `ooxml.exhibit_facts`: fills, outlines and brackets beside a native chart, table or picture are decoration; on a page with none, fewer than `DRAWN_STRUCTURE_MIN` (3, a definition) are a band or callout. Decoration is no panel and no kind; each page records `drawn: {count, read_as}`; the facts carry `reader` (`EXHIBIT_FACTS_READER`) | Samey and unfilled both kinds V 0.25, warned; the revision 0.75, unwarned. House V unchanged (keybank 1.0, netflix 0.692, jazz 0.444); netflix p4 and jazz p9, p10, p11, p18 lose a decorative "drawn shapes" beside their pictures |
+| House precedent without the host's kind | An unlabelled box on the ranking bar chart citing keybank slide 10 (an outline over shape-built rows) built | `annotate.PRECEDENT_HOSTS`: a mark on a chart needs a cited mark on a native chart; a mark on a table one on a native table or on a page whose exhibit is a structure built from shapes (`on_drawn_structure`); a picture stands for neither | Refused by name; `keybank-annotations` (a box on the comps table citing slide 10) still builds, explained by slide 10 |
+| Old guides read without refusal | `plan.py check` and the build passed with a main-extracted guide (no exhibit facts) and with a branch-era guide (facts read the old way) | `plan.old_guide_error`, called by `read_house_guide`, which plan check, the build and every `--house-deck` go through: facts missing or read by another reader, or a digest still holding the closed-list keys (`EXHIBIT_HABIT_KEYS` are the only ones `complete_guide` writes) | Both guides refused by name, in plan check and in the build |
+| Briefs skippable | `exhibits: []` on every page passed plan check and built "4 of 4 fit" with 2 charts and 2 tables written | `build_deck.briefs_against_file`: a written page holding an exhibit (chart, table, picture, structure built from shapes) whose plan page briefs none is refused, `exhibit without a brief`; another count difference is warned; `slides[].briefs` gives both | All four pages refused by name; the keybank and mckinsey sections agree page by page |
+| Brief gaps (mechanical) | Passed: a chosen form none of those considered; one brief pasted for every exhibit; "TBD TBD TBD", "n/a n/a n/a", `{"none": "x y z"}`; forms differing only by plural, article, fullwidth letters or a Cyrillic letter; a nearest page that is the cover | `plan.brief_errors`: distinct words, placeholders and lone letters not counted; `_form_key` folds NFKC, case, punctuation, a leading article and a plural s; a form in two scripts refused; `chosen_form` must key to a form considered; one brief given twice across the plan refused (`_brief_key`); a nearest page must be a content page where the guide says which are | Each refused by name; what a brief says is still never read |
+| Example digests carrying the removed labels | keybank 74 label substrings in 22 `how_drawn`/`marks` fields, mckinsey 61 in 21 (matched against main's vocabulary file) | Each of the 26 records rewritten from looking at the page renders | 0 and 0 |
+| eval 02 checked structure V only | It could not see the samey section (structure V 1.0) | The check holds kinds V | Read |
+| "No list anywhere" in SKILL, README, charts.md, with lists remaining | | The claims say what is true: nothing asks the model to choose a form from a list or refuses one by name; corpus count tables are coders' labels shown as evidence; the code lists name what the emitter and annotation solver draw; `COVERAGE.md` no longer says "find the family" | Read |
+
+Break-the-fix, each gate taken out in a scratch copy of the tree with the case that proves
+it: decoration (any unit read as a structure) gave the unfilled samey deck kinds V 1.0,
+unwarned; the host check gave the chart box on slide 10 a pass; the old-guide check let
+the main guide build and plan-check; the brief-against-file check built the empty-brief
+plan "4 of 4 fit"; chosen form, pasted brief (also in capitals), placeholders (TBD, n/a, x
+y z), form folding (plural and article, fullwidth), mixed scripts and the content page
+each let its plan pass. Restored, each is refused as in the table.
+
+Rebuilt from a FRESH extraction on main (3952e74), on the merge before the fixes and on
+the fix, LibreOffice in this container: keybank section, annotations, bridge, round trip,
+the 14 house specimens, the mckinsey PDF section, and the four fidelity pages (bcg p15
+and p24 on a fresh bcg draft, netflix p5 and the jazz p9 page on a fresh netflix draft,
+each completed with its round-2 completion and no digest, templates made fresh). The
+summary (status and scale per page, judge total, filing) is identical on all three trees,
+24 builds. The fidelity proofs in `examples/proofs` are now these fresh builds: bcg p15
+builds at scale 0.95 and judge 0.149 on main and on the branch alike, where the round-2
+guide it was first built on gave 1.0 and 0.117; bcg p24 0.108, netflix p5 0.058, jazz p9
+0.112 as before. ruff over `scripts/`: 120 on main and on the branch.

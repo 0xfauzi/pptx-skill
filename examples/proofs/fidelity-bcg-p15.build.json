@@ -1,6 +1,7 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/deck.pptx",
  "ruler": "harfbuzz",
+ "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
   {
    "id": "p15",
@@ -8,10 +9,30 @@
    "attempts": [
     {
      "scale": "1",
+     "result": "2 violation(s)"
+    },
+    {
+     "scale": "87/100",
+     "result": "fit"
+    },
+    {
+     "scale": "47/50",
+     "result": "fit"
+    },
+    {
+     "scale": "97/100",
+     "result": "1 violation(s)"
+    },
+    {
+     "scale": "24/25",
+     "result": "1 violation(s)"
+    },
+    {
+     "scale": "19/20",
      "result": "fit"
     }
    ],
-   "scale": 1.0,
+   "scale": 0.95,
    "violations": [],
    "text_lines": {
     "title": 2,
@@ -34,14 +55,14 @@
    "density": {
     "words": 242,
     "elements": 12,
-    "covered_area_fraction": 0.383,
+    "covered_area_fraction": 0.356,
     "text_boxes_mostly_empty": "none",
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The house band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
      "value": 242,
      "band": [
-      73.7,
-      348.7
+      73.4,
+      332.6
      ],
      "verdict": "in band"
     },
@@ -54,9 +75,9 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.383,
+     "value": 0.356,
      "band": [
-      0.2057,
+      0.2056,
       1.0
      ],
      "verdict": "in band"
@@ -138,7 +159,7 @@
       "text": "Rate of economic recovery after lockdown",
       "ratio": 2.51,
       "threshold": 3.0,
-      "size_pt": 24.0,
+      "size_pt": 23.0,
       "bold": false,
       "backing": "color.surface",
       "ink_hex": "29BA74",
@@ -171,7 +192,7 @@
       "text": "Epidemic",
       "ratio": 2.51,
       "threshold": 4.5,
-      "size_pt": 14.0,
+      "size_pt": 13.5,
       "bold": false,
       "backing": "color.surface",
       "ink_hex": "29BA74",
@@ -204,7 +225,7 @@
       "text": "US economy",
       "ratio": 2.51,
       "threshold": 4.5,
-      "size_pt": 14.0,
+      "size_pt": 13.5,
       "bold": false,
       "backing": "color.surface",
       "ink_hex": "29BA74",
@@ -237,7 +258,7 @@
       "text": "NY economy",
       "ratio": 2.51,
       "threshold": 4.5,
-      "size_pt": 14.0,
+      "size_pt": 13.5,
       "bold": false,
       "backing": "color.surface",
       "ink_hex": "29BA74",
@@ -273,7 +294,7 @@
      "text": "The Covid scenario used in this analysis",
      "ratio": 7.23,
      "threshold": 4.5,
-     "size_pt": 14.0,
+     "size_pt": 13.5,
      "bold": false,
      "backing": "color.surface",
      "ink_hex": "575757",
@@ -367,7 +388,7 @@
       "house": {
        "median": 125.5,
        "p90": 151.5,
-       "max": 196,
+       "max": 168,
        "n": 26
       },
       "verdict": "within house p90"
@@ -409,34 +430,34 @@
     {
      "id": "epi-icon",
      "box_px": [
-      83,
-      281,
-      69,
+      79,
+      284,
+      68,
       69
      ],
-     "differ_share": 0.0002,
+     "differ_share": 0.0,
      "status": "drawn as written"
     },
     {
      "id": "us-icon",
      "box_px": [
-      83,
-      408,
-      69,
+      79,
+      412,
+      68,
       46
      ],
-     "differ_share": 0.0107,
+     "differ_share": 0.0393,
      "status": "drawn as written"
     },
     {
      "id": "ny-icon",
      "box_px": [
-      83,
-      594,
-      69,
+      79,
+      598,
+      68,
       43
      ],
-     "differ_share": 0.0084,
+     "differ_share": 0.0007,
      "status": "drawn as written"
     }
    ]
@@ -444,33 +465,8 @@
  ],
  "source_lines": {
   "house": {
-   "habit": "rule",
-   "share": 1.0,
-   "pages_with": [
-    13,
-    14,
-    16,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27,
-    28,
-    29,
-    30,
-    31,
-    32,
-    33,
-    34,
-    35
-   ],
-   "evidence": "22 of 22 house data pages carry one (100%; the lines at 80% and 50% are unmeasured)"
+   "habit": "unmeasured",
+   "evidence": "not measured: the guide's digest answers no source_line (re-run gallery.py digest and answer it)"
   },
   "deck": {
    "data_pages": 0,
@@ -487,8 +483,13 @@
    {
     "page": 1,
     "composition": "b1",
-    "structure": "picture (3+ panels)",
-    "kinds": "picture (3+ panels)"
+    "structure": "text only",
+    "kinds": "text only",
+    "panels": 0,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    }
    }
   ],
   "measure": {
@@ -532,12 +533,24 @@
      "p10_note": "unmeasured threshold (one deck: the 10th percentile is that deck)"
     },
     "structures": {
-     "status": "no evidence",
-     "why": "no deck's structures were read: bcg-nystate-covid-impact-2020.pdf: structure not read on 31 of 31 content pages (the guide carries no exhibit facts per page (extracted before they were read): re-run extract_style.py)"
+     "V": 0.467,
+     "changed": 14,
+     "pairs": 30,
+     "p10_deck_V": 0.467,
+     "deck_V": [
+      0.467
+     ],
+     "decks_unread": []
     },
     "kinds": {
-     "status": "no evidence",
-     "why": "no deck's kinds were read: bcg-nystate-covid-impact-2020.pdf: kinds not read on 31 of 31 content pages (the guide carries no exhibit facts per page (extracted before they were read): re-run extract_style.py)"
+     "V": 0.467,
+     "changed": 14,
+     "pairs": 30,
+     "p10_deck_V": 0.467,
+     "deck_V": [
+      0.467
+     ],
+     "decks_unread": []
     },
     "distinct_per_page": {
      "bcg-nystate-covid-impact-2020.pdf": 0.774
@@ -614,7 +627,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/deck.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -2399,7 +2412,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files",
+  "rarity_basis": "13 public decks of other houses in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files",
   "chrome_excluded": {
    "bcg-nystate-covid-impact-2020.pdf": {
     "phrase": 5,
@@ -2412,7 +2425,7 @@
   "verdict": "possible carry-over: 194 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -2444,15 +2457,15 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/renders/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/renders/slide-01.png"
   ]
  },
  "judge": {
   "reference": "/home/user/deckgen/fixtures/corpus/consulting/bcg-nystate-covid-impact-2020.pdf",
-  "total": 0.117,
+  "total": 0.149,
   "components": {
    "families": 0.148,
-   "size_hist": 0.607,
+   "size_hist": 0.948,
    "size_ladder": 0,
    "title_size": 0,
    "bold_ratio": 0.104,
@@ -2462,8 +2475,8 @@
    "aligns": null,
    "kinds": null,
    "background": 0.0,
-   "margins": 0.39,
-   "coverage": 0.076,
+   "margins": 0.355,
+   "coverage": 0.104,
    "count": null,
    "overlap": null,
    "overflow": null
@@ -2471,15 +2484,15 @@
   "per_slide": [
    {
     "slide": 1,
-    "total": 0.117,
+    "total": 0.149,
     "worst": [
      [
       "size_hist",
-      0.607
+      0.948
      ],
      [
       "margins",
-      0.39
+      0.355
      ],
      [
       "families",
@@ -2497,23 +2510,23 @@
    "max": 0.395
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/45541_Header.pptx": 0.589,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.909,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.381,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.262,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.404,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.411,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/themes.pptx": 0.534
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/45541_Header.pptx": 0.597,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.896,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.397,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.272,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.412,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_netflix_financing_pitchbook.pptx": 0.418,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/themes.pptx": 0.542
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/perella_weinberg_pitch.pdf"
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/bmo_fairness_opinion_board.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {},
@@ -2527,7 +2540,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/fid-bcg-p15/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/fid-bcg-p15/renders"
  }
 }

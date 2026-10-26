@@ -1,6 +1,7 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/deck.pptx",
  "ruler": "harfbuzz",
+ "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
   {
    "id": "s1-exec",
@@ -28,7 +29,10 @@
       1217894,
       916540,
       1190609
-     ]
+     ],
+     "fitting_row_prefix": 6,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
     }
    },
    "density": {
@@ -70,19 +74,20 @@
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
-     "element": "takeaway",
-     "paragraph": 0,
-     "run": 0,
-     "role": "type.body",
-     "ink": "color.ink_inverse",
-     "text": "Recommendation: decline; re-engage at $1",
-     "ratio": 7.98,
-     "threshold": 4.5,
+     "element": "kpis",
+     "row_class": "header",
+     "rows": [
+      0
+     ],
+     "ink": "color.ink",
+     "fill": null,
      "size_pt": 12.0,
-     "bold": false,
-     "backing": "color.accent1 of takeaway-box-fill",
-     "ink_hex": "000000",
-     "backing_hex": "00A9F4"
+     "bold": true,
+     "ratio": 5.66,
+     "threshold": 4.5,
+     "backing": "the house's ground picture",
+     "ink_hex": "FFFFFF",
+     "backing_hex": "2354F9"
     },
     "precedent_source": "reference"
    },
@@ -201,6 +206,12 @@
     "register": {
      "verdict": "not stated: the page spec names no title.register"
     }
+   },
+   "briefs": {
+    "plan": 1,
+    "file": 1,
+    "file_structure": "table (1 panel)",
+    "verdict": "agree"
    }
   },
   {
@@ -282,17 +293,19 @@
     "undecidable": [],
     "unbound": [],
     "nearest_pass": {
-     "element": "chrome-1",
-     "part": "chrome text",
-     "text": "McKinsey & Company",
-     "ink": "observed ink FFFFFF of chrome-1",
-     "ratio": 17.37,
+     "element": "commentary",
+     "paragraph": 1,
+     "run": 0,
+     "role": "type.body",
+     "ink": "color.ink",
+     "text": "Standalone midpoints run from $9.30 (P /",
+     "ratio": 5.66,
      "threshold": 4.5,
-     "size_pt": 9.0,
+     "size_pt": 12.0,
      "bold": false,
-     "backing": "color.surface",
+     "backing": "the house's ground picture",
      "ink_hex": "FFFFFF",
-     "backing_hex": "051C2C"
+     "backing_hex": "2354F9"
     },
     "precedent_source": "reference"
    },
@@ -411,6 +424,12 @@
     "register": {
      "verdict": "not stated: the page spec names no title.register"
     }
+   },
+   "briefs": {
+    "plan": 1,
+    "file": 1,
+    "file_structure": "drawn shapes (1 panel)",
+    "verdict": "agree"
    }
   }
  ],
@@ -454,14 +473,24 @@
    {
     "page": 1,
     "composition": "b1",
-    "structure": "drawn shapes; table (2 panels)",
-    "kinds": "drawn shapes; table (2 panels)"
+    "structure": "table (1 panel)",
+    "kinds": "table (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 1,
+     "read_as": "decoration: beside a native exhibit"
+    }
    },
    {
     "page": 2,
     "composition": "b2",
     "structure": "drawn shapes (1 panel)",
-    "kinds": "drawn shapes (1 panel)"
+    "kinds": "drawn shapes (1 panel)",
+    "panels": 1,
+    "drawn": {
+     "count": 20,
+     "read_as": "structure"
+    }
    }
   ],
   "measure": {
@@ -604,7 +633,8 @@
     "planned": "not declared: a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
     "realised": null
    },
-   "pages_differing_from_plan": []
+   "pages_differing_from_plan": [],
+   "pages_against_their_archetype": "unmeasured: the guide keeps each archetype's kinds and slide numbers, not its boxes, so whether a page realises the archetype it names (arch-10 built as an arch-15 list) is not checked here; pages_differing_from_plan compares adjacent pages only. Compare the render with the archetype's slides yourself and correct plan.json when they differ"
   }
  },
  "emitted_slides": 2,
@@ -637,7 +667,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/deck.pptx",
   "slides": 2,
   "problems": [],
   "ok": true
@@ -675,7 +705,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another house: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other houses in /home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files",
+  "rarity_basis": "13 public decks of other houses in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files",
   "chrome_excluded": {
    "mckinsey-calstrs-future-of-boards-2024.pdf": {
     "phrase": 0,
@@ -688,7 +718,7 @@
   "verdict": "possible carry-over: 1 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -720,13 +750,13 @@
   },
   "pages": 2,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/renders/slide-02.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/renders/slide-02.png"
   ]
  },
  "judge": {
   "reference": "/home/user/deckgen/fixtures/corpus/consulting/mckinsey-calstrs-future-of-boards-2024.pdf",
-  "total": 0.313,
+  "total": 0.321,
   "components": {
    "families": 0.054,
    "size_hist": 0.698,
@@ -738,9 +768,9 @@
    "lines": null,
    "aligns": null,
    "kinds": null,
-   "background": 0.0,
+   "background": null,
    "margins": 0.196,
-   "coverage": 0.186,
+   "coverage": 0.183,
    "count": null,
    "overlap": null,
    "overflow": null
@@ -748,7 +778,7 @@
   "per_slide": [
    {
     "slide": 1,
-    "total": 0.346,
+    "total": 0.355,
     "worst": [
      [
       "fills",
@@ -766,7 +796,7 @@
    },
    {
     "slide": 2,
-    "total": 0.295,
+    "total": 0.303,
     "worst": [
      [
       "fills",
@@ -792,26 +822,26 @@
    "max": 0.355
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/45541_Header.pptx": 0.548,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.284,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_netflix_financing_pitchbook.pptx": 0.288,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/themes.pptx": 0.487
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/45541_Header.pptx": 0.543,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.275,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_netflix_financing_pitchbook.pptx": 0.279,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/themes.pptx": 0.484
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/perella_weinberg_pitch.pdf"
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/bmo_fairness_opinion_board.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_house_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.796,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.273,
-   "/home/user/pptx-skill/.claude/worktrees/wf_093627a2-7a6-1/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.26
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.79,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.254,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/f1tree/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.25
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": false,
@@ -823,7 +853,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/nolist/out/br2/mk/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr1/out/f1full/mk/deck/renders"
  }
 }
