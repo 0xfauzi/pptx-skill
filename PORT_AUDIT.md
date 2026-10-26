@@ -297,3 +297,21 @@ before this change, before building; a logo extracted with `images.py extract` p
 builds. A firm_chrome replacement is matched to the template's picture by its read
 format, not its file name.
 
+
+Proof on the merged tree (LibreOffice 24.2, 1600 px; reports in `examples/proofs/`):
+
+- The four exhibit rebuilds pass at full scale and are filed under their reference.
+  Netflix p5 is unchanged at 0.058. BCG p15 reads 0.117 (was 0.12) and p24 0.108 (was
+  0.114) because the BCG house spread moved from median 0.131 to 0.127. The annotation
+  branch's PDF reading moved it, not this merge: the annotation branch alone gives the
+  same 0.127 median on another BCG deck.
+- Jazz p9 had put `pad_role` and a fill on a text element (the banner). The annotation
+  branch refuses that by name, because padding on a text element drew nothing. The
+  banner is now a region with the fill and the padding: 0.112, as before, with the
+  banner a little taller.
+- The new axis gate (F) refuses the blind-round bcg-sonnet deck before building:
+  `lev-a series[0] category 6: 346 is outside axes.value 0..130`. That deck drew its
+  "Total, six levers" bar clipped at 130, and lev-b's 93.7 was clipped on 0..34.
+  Widening those two axes, and nothing else, brings back the unlabelled-mark refusal
+  (2 of 5 pages fit; `annotation unexplained` on gap-ring, gap-end, m-rec and m-opex),
+  where main passes 5 of 5.
