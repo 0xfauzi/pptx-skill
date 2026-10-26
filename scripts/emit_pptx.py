@@ -1388,7 +1388,9 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 took(f"series[{si}].line_width_pt", "series.line_width_pt")
         else:
             took(f"series[{si}].line_role", "series.line_role")
-        if stroked and "smooth" not in s and s_family != "radar":
+        if stroked and "smooth" not in s and s_family != "radar" and s.get("line_role") != NONE:
+            # smoothing shapes a drawn line: a series whose line_role is "none" (a scatter of
+            # markers) draws none, so nothing is left to a look nobody chose (round 7)
             took(f"series[{si}].smooth", "series.smooth")
         if "dash" in s:
             _enum(sw, "dash", s["dash"], DASHES)

@@ -118,7 +118,8 @@ keybank (the pages named under "Proven on") and read from the render.
   bar and column types only. A stacked type wants `overlap: 100`; the series stack in
   every renderer only then.
 - `smooth` (true or false) on a line or scatter series is written as `c:smooth`; omitted,
-  the report names the value the file got.
+  the report names the value the file got. A series with `line_role: "none"` (a scatter
+  of markers) draws no line, so it is not asked for there.
 - `plot_area: {"x", "y", "w", "h"}` fixes the inner plot rectangle (inside the axes and
   their labels) as fractions of the chart frame, written as a manual layout. Leave room
   outside it for the tick labels: they are drawn outside the rectangle, not measured. A
