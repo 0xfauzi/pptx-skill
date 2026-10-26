@@ -55,6 +55,21 @@ CORE_ROLES = ("/typography/roles/type.title", "/typography/roles/type.body", "/c
 # at least one of these must be closed
 CORE_ANNOTATION = ("/typography/roles/type.caption", "/typography/roles/type.footnote", "/typography/roles/type.source_line")
 # whole-section paths the apply step knows how to write; each is writable only when open
+#: A hand-written chrome entry (a raster draft opens /chrome whole): the keys the emitter
+#: and the build read (emit_pptx.draw_chrome, chrome_on_page, build_deck.chrome_zones), so
+#: an entry that would draw nothing is refused here instead of drawing nothing in silence.
+CHROME_KINDS = ("rule", "band", "logo", "label", "page_number", "footer", "date")
+CHROME_REQUIRED = ("chrome_id", "kind", "box_in", "slides_present")
+CHROME_OPTIONAL = {"text", "text_style", "fill_hex", "fill_role", "line_hex", "line_role", "line_width_pt", "rotation_deg", "anchor",
+                   "layers", "image_path", "paint_order", "why"}
+CHROME_ANCHORS = ("slide_top", "slide_bottom", "slide_left", "slide_right")
+CHROME_SHAPE = ('a list of {"chrome_id": "chrome-1", "kind": "' + "|".join(CHROME_KINDS) + '", "box_in": [left, top, width, height] '
+                '(inches on the page), "slides_present": <pages it is on, at least half the reference\'s to be drawn>, and as the kind needs: '
+                '"text" (label, footer, date; "<page number>" marks the number), "text_style": {"family", "size_pt", "bold", "ink_hex"}, '
+                '"fill_hex" or "fill_role" (band; a logo placeholder), "line_hex" or "line_role" with "line_width_pt" (rule), "image_path" (logo), '
+                '"anchor": "' + "|".join(CHROME_ANCHORS) + '", "rotation_deg", "why"}')
+
+
 SECTION_PATHS = {"/description", "/derivation_rules", "/continuation", "/tables", "/charts", "/imagery", "/shape_language/icon_style",
                  "/color/accent_stepping", "/gallery", "/exemplars", "/spacing/baseline_emu",
                  "/typography/scale_ratio", "/density_bands/table_rows_per_inch", "/typography/families/substitutes"}
@@ -103,6 +118,8 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/typography/families/substitutes", '{"<face named in the file>": "<installed face measured in its place>"}', None),
     (r"/typography/scale_ratio", "a number, e.g. 1.25", "the levels are not a geometric ladder"),
     (r"/spacing/steps/[^/]+", "an integer EMU", None),
+    (r"/spacing/steps", '{"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} '
+     '(integers; space.xs, space.sm, space.margin and space.gutter are required: the round trip and the components read them)', None),
     (r"/spacing/baseline_emu", "an integer EMU", "no baseline grid"),
     (r"/density_bands/table_rows_per_inch", '{"metric": "table_rows_per_inch", "low", "high", "median", "n"}', "no table to measure"),
     (r"/floors/[^/]+/floor_pt", "a number of points, never below absolute_floor_pt", "no run in this family: the absolute floor holds"),
@@ -120,8 +137,12 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/titles/register", "see Titles below", None),
     (r"/variety/content_pages", "a list of page numbers", None),
     (r"/exhibit_habits", "never in the patch: answered by --digest DIR", None),
+    (r"/chrome", CHROME_SHAPE, None),
+    (r"/composition", '{"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"}', None),
     (r"/notes/[^/]+", "a string", None),
 )
+#: the spacing steps the round trip (import_slide) and the components read by name
+SPACING_STEPS_NEEDED = ("space.margin", "space.gutter", "space.xs", "space.sm")
 TABLE_KEYS = {"header_fill_role", "header_ink_role", "header_bold", "banding_role", "edge_rules", "cell_padding_role", "cell_padding_emu",
               "alignment_by_column_type", "totals_rule", "merged_cell_convention", "why", "provenance"}
 CHART_KEYS = {"series_color_roles", "per_kind", "why", "provenance"}
@@ -253,7 +274,7 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
 
 def _vocab_error(name: str, value, where: str) -> str | None:
     allowed = VOCABULARY[name]
-    return None if isinstance(value, str) and value in allowed else f"{where}: {value!r} is not in {name} ({'|'.join(allowed)})"
+    return None if isinstance(value, str) and value in allowed else f"{where}: {value!r}{plan.nearest(value, allowed)} is not in {name} ({'|'.join(allowed)})"
 
 
 def title_register(guide: dict, value) -> dict:
@@ -605,6 +626,91 @@ def expand_bulk(patch: dict, open_paths) -> tuple[dict, list[str]]:
 
 BULK_LINE_SPACING = "/typography/roles/*/line_spacing"
 
+def chrome_entries(guide: dict, value) -> list[dict]:
+    """A hand-written /chrome list, proven at the boundary: each entry names its id once,
+    a kind the emitter draws, a box, the pages it is on (an entry on under half of them
+    is never drawn, so it is refused), and what its kind draws with (a rule a stroke, a
+    band a fill, a text kind its text, a logo a picture or a placeholder fill). Stray keys
+    are named. Every problem is listed in one refusal."""
+    if not isinstance(value, list) or not value:
+        raise PatchError(f"/chrome: expected {CHROME_SHAPE}")
+    n = max(1, int((guide.get("reference") or {}).get("slides") or 1))
+    errors: list[str] = []
+    ids: list[str] = []
+    for i, ch in enumerate(value):
+        where = f"/chrome[{i}]"
+        if not isinstance(ch, dict):
+            errors.append(f"{where}: not an object")
+            continue
+        missing = [k for k in CHROME_REQUIRED if k not in ch]
+        stray = sorted(set(ch) - set(CHROME_REQUIRED) - CHROME_OPTIONAL)
+        if missing:
+            errors.append(f"{where}: {missing} not answered")
+        if stray:
+            errors.append(f"{where}: {stray} read by nothing")
+        cid, kind = ch.get("chrome_id"), ch.get("kind")
+        if not isinstance(cid, str) or not cid or cid in ids:
+            errors.append(f"{where}: chrome_id {cid!r} must be a name given once")
+        ids.append(cid)
+        if kind not in CHROME_KINDS:
+            errors.append(f"{where}: kind {kind!r}{plan.nearest(kind, CHROME_KINDS)} not in {list(CHROME_KINDS)}")
+        box = ch.get("box_in")
+        if not (isinstance(box, list) and len(box) == 4 and all(isinstance(v, int | float) and not isinstance(v, bool) for v in box) and box[2] > 0 and box[3] > 0):
+            errors.append(f"{where}: box_in is [left, top, width, height] in inches, width and height above 0")
+        sp = ch.get("slides_present")
+        if not isinstance(sp, int) or isinstance(sp, bool) or not 0 < sp <= n:
+            errors.append(f"{where}: slides_present is the number of the reference's {n} pages it is on")
+        elif sp < 0.5 * n:
+            errors.append(f"{where}: on {sp} of {n} pages, under half: the build draws only furniture on half the pages or more, so this entry would draw nothing")
+        if kind in ("label", "footer", "date") and not (isinstance(ch.get("text"), str) and ch["text"].strip()):
+            errors.append(f"{where}: a {kind} draws its text: answer text")
+        if kind == "rule" and not (ch.get("line_hex") or ch.get("line_role") or ch.get("fill_hex") or ch.get("fill_role")):
+            errors.append(f"{where}: a rule needs line_hex or line_role (and line_width_pt)")
+        if kind == "band" and not (ch.get("fill_hex") or ch.get("fill_role")):
+            errors.append(f"{where}: a band needs fill_hex or fill_role, or it draws nothing")
+        if kind == "logo" and not (ch.get("image_path") or ch.get("fill_hex") or ch.get("fill_role") or ch.get("line_hex") or ch.get("line_role")):
+            errors.append(f"{where}: a logo needs image_path (a file you cut from the reference) or a placeholder fill or line, or it draws nothing")
+        for key in ("fill_hex", "line_hex"):
+            if ch.get(key) is not None and not (isinstance(ch[key], str) and HEX_RE.match(ch[key])):
+                errors.append(f"{where}: {key} is a hex colour")
+        if ch.get("anchor") is not None and ch["anchor"] not in CHROME_ANCHORS:
+            errors.append(f"{where}: anchor {ch['anchor']!r} not in {list(CHROME_ANCHORS)}")
+        style = ch.get("text_style")
+        if style is not None and (not isinstance(style, dict) or set(style) - {"family", "size_pt", "bold", "ink_hex"}):
+            errors.append(f"{where}: text_style is {{\"family\", \"size_pt\", \"bold\", \"ink_hex\"}}")
+    if errors:
+        raise PatchError(f"/chrome: {len(errors)} problem{'s' if len(errors) > 1 else ''}: " + "; ".join(errors))
+    out = []
+    for order, ch in enumerate(value):
+        entry = {**ch, "layers": ch.get("layers") or ["slide"], "of_slides": n, "paint_order": ch.get("paint_order", order),
+                 "provenance": model_prov(ch.get("why") or "completion of /chrome")}
+        box = entry["box_in"]
+        entry.setdefault("exclusion_zone_in", list(box))
+        out.append(entry)
+    return out
+
+
+def composition_answer(value) -> dict:
+    """A hand-written /composition (a raster draft opens it whole): archetypes the plan
+    names by id, each an id of the form arch-N given once, with the pages it is seen on."""
+    shape = '{"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"}'
+    if not isinstance(value, dict) or not isinstance(value.get("archetypes"), list):
+        raise PatchError(f"/composition: expected {shape}")
+    errors, ids = [], []
+    for i, a in enumerate(value["archetypes"]):
+        aid = a.get("archetype_id") if isinstance(a, dict) else None
+        if not (isinstance(aid, str) and re.fullmatch(r"arch-\d+", aid)) or aid in ids:
+            errors.append(f"archetypes[{i}]: archetype_id {aid!r} must be arch-N, given once (the plan names compositions by it)")
+        ids.append(aid)
+        slides = a.get("slides") if isinstance(a, dict) else None
+        if not (isinstance(slides, list) and slides and all(isinstance(s, int) and not isinstance(s, bool) for s in slides)):
+            errors.append(f"archetypes[{i}]: slides is the list of reference pages it is seen on")
+    if errors:
+        raise PatchError("/composition: " + "; ".join(errors) + f"; expected {shape}")
+    return {"archetypes": [{**a, "occurrence_count": len(a["slides"])} for a in value["archetypes"]],
+            "bands": value.get("bands") or [], "column_grids": value.get("column_grids") or [], "alignment_edges": value.get("alignment_edges") or [],
+            "provenance": model_prov(value.get("why") or "completion of /composition")}
+
 
 def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict | None) -> None:
     check_writable(guide, path, value, open_paths)
@@ -685,6 +791,10 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
             else:
                 raise PatchError(f"{path}: member {member} is not open")
         check_color_refs(guide, value if isinstance(value, dict) else {}, path)
+    elif path == "/chrome":
+        guide["chrome"] = chrome_entries(guide, value)
+    elif path == "/composition":
+        guide["composition"] = composition_answer(value)
     elif path == "/titles/register":
         guide["titles"]["register"] = title_register(guide, value)
     elif path == "/exhibit_habits":
@@ -716,7 +826,20 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         # null: no run in this family, so the absolute floor is the floor (floor_for)
         guide["floors"][fam]["floor_pt"] = None if value is None else max(float(value), float(guide["floors"][fam].get("absolute_floor_pt") or 0))
     elif path.startswith("/spacing/steps/"):
-        guide["spacing"]["steps"][parts[2]] = {"emu": int(value), "provenance": model_prov("completion")}
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise PatchError(f"{path}: a positive integer EMU, got {value!r}")
+        guide["spacing"]["steps"][parts[2]] = {"emu": value, "provenance": model_prov("completion")}
+    elif path == "/spacing/steps":
+        # the whole scale at once (a raster draft opens it whole): proven here, stored as the
+        # vector extractor stores observed steps, so every reader takes one shape
+        if not isinstance(value, dict) or any(not (isinstance(k, str) and re.fullmatch(r"space\.[a-z_]+", k)) for k in value):
+            raise PatchError(f"{path}: expected {value_shape(path)[0]}")  # type: ignore[index]
+        bad = sorted(k for k, v in value.items() if not isinstance(v, int) or isinstance(v, bool) or v <= 0)
+        missing = sorted(set(SPACING_STEPS_NEEDED) - set(value))
+        if bad or missing:
+            raise PatchError(f"{path}: " + "; ".join(([f"{bad} must each be a positive integer EMU (\"space.sm\": 91440, not an object)"] if bad else [])
+                                                     + ([f"{missing} not answered: the round trip and the components read them"] if missing else [])))
+        guide["spacing"]["steps"] = {k: {"emu": v, "provenance": model_prov("completion")} for k, v in value.items()}
     elif path.startswith("/notes"):
         guide.setdefault("notes", []).append(str(value))
     else:

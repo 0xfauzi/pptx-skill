@@ -333,6 +333,7 @@ class Flex:
     pad_role: str | None
     align: str
     justify: str
+    pads: tuple = (None, None, None, None)  # left, top, right, bottom roles: pad_role on every side, or pad_roles
 
 @dataclass(frozen=True)
 class GridArea:
@@ -349,6 +350,7 @@ class Grid:
     areas: tuple[GridArea, ...]
     gutter_role: str
     pad_role: str | None
+    pads: tuple = (None, None, None, None)
 
 @dataclass(frozen=True)
 class Paragraph:
@@ -426,10 +428,27 @@ def _weight(raw: Mapping[str, Any]) -> float | None:
         raise LayoutContractError(f"node {raw.get('id')!r}: weight must be a positive number")
     return float(weight)
 
+PAD_SIDES = ("left", "top", "right", "bottom")
+
+
+def _pads(raw: Mapping[str, Any], region_id: str) -> tuple:
+    """The region's padding role per side (left, top, right, bottom): `pad_role` on every
+    side, or `pad_roles` naming each of the four sides (a role, or null for none). Both at
+    once, or a side left out, is refused: a side not named is not zero."""
+    per = raw.get("pad_roles")
+    if per is None:
+        return (raw.get("pad_role"),) * 4
+    if raw.get("pad_role") is not None:
+        raise LayoutContractError(f"region {region_id!r}: pad_role and pad_roles both given; write one")
+    if not isinstance(per, Mapping) or set(per) != set(PAD_SIDES):
+        raise LayoutContractError(f"region {region_id!r}: pad_roles names each of {list(PAD_SIDES)} (a spacing role, or null for none), got {per!r}")
+    return tuple(per[side] for side in PAD_SIDES)
+
+
 def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
     kind = raw.get("kind", raw.get("layout_type"))
     if kind == "flex":
-        flex = Flex(raw["direction"], raw["gap_role"], raw.get("pad_role"), raw.get("align", "stretch"), raw.get("justify", "start"))
+        flex = Flex(raw["direction"], raw["gap_role"], raw.get("pad_role"), raw.get("align", "stretch"), raw.get("justify", "start"), _pads(raw, region_id))
         if flex.direction not in ("row", "column") or flex.align not in ("start", "center", "end", "stretch") or flex.justify not in ("start", "center", "end", "space_between", "space_around"):
             raise LayoutContractError(f"region {region_id!r}: unsupported flex direction/align/justify (baseline and cross-axis space_between are refused)")
         return flex
@@ -441,7 +460,7 @@ def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
         for a in areas:
             if a.row < 0 or a.col < 0 or a.row_span < 1 or a.col_span < 1 or a.row + a.row_span > rows or a.col + a.col_span > cols:
                 raise LayoutContractError(f"region {region_id!r}: area for {a.child_id!r} spans past the grid")
-        return Grid(rows, cols, areas, raw["gutter_role"], raw.get("pad_role"))
+        return Grid(rows, cols, areas, raw["gutter_role"], raw.get("pad_role"), _pads(raw, region_id))
     raise LayoutContractError(f"region {region_id!r}: layout kind must be flex or grid")
 
 def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
@@ -469,7 +488,10 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
                                None if c.get("width_share") is None else decimal_fraction(c["width_share"]), c.get("min_width_role")) for c in t.get("columns", []))
         shares = [c.width_share for c in columns if c.width_share is not None]
         if any(not 0 < share <= 1 for share in shares) or sum(shares, Fraction(0)) > 1 or (len(shares) == len(columns) and sum(shares, Fraction(0)) != 1):
-            raise LayoutContractError(f"table {node_id!r}: width_share must lie in (0, 1], sum to at most 1, and to exactly 1 when every column has one")
+            total = sum(shares, Fraction(0))
+            raise LayoutContractError(f"table {node_id!r}: width_share must lie in (0, 1], sum to at most 1, and to exactly 1 when every column has one; "
+                                      f"these sum to {float(total):.6g} over {len(shares)} of {len(columns)} columns. Rounded shares rarely sum to 1: "
+                                      "leave one column's width_share out and it takes the rest")
         rows = tuple(tuple(str(cell) for cell in row) for row in t.get("rows", []))
         if not columns or any(len(row) != len(columns) for row in rows):
             raise LayoutContractError(f"table {node_id!r}: every row needs one cell per column")
@@ -645,11 +667,17 @@ class IntrinsicSize:
     height_emu: int | None = None
     min_height_emu: int = 0
 
+def pad_emu(layout: Flex | Grid, guide: Guide, scale: Fraction) -> tuple[int, int, int, int]:
+    """The region's padding in EMU, left, top, right, bottom."""
+    return tuple(space_emu(guide, role, scale, "x" if i % 2 == 0 else "y") if role is not None else 0
+                 for i, role in enumerate(layout.pads))  # type: ignore[return-value]
+
+
 def content_box(box: Box, layout: Flex | Grid, guide: Guide, scale: Fraction) -> Box:
-    if layout.pad_role is None:
+    left, top, right, bottom = pad_emu(layout, guide, scale)
+    if not (left or top or right or bottom):
         return box
-    pad_x, pad_y = space_emu(guide, layout.pad_role, scale, "x"), space_emu(guide, layout.pad_role, scale, "y")
-    return Box(min(box.left + pad_x, box.right), min(box.top + pad_y, box.bottom), max(0, box.width - 2 * pad_x), max(0, box.height - 2 * pad_y))
+    return Box(min(box.left + left, box.right), min(box.top + top, box.bottom), max(0, box.width - left - right), max(0, box.height - top - bottom))
 
 def solve_tree(spec: Spec, guide: Guide, scale: float | Fraction, intrinsics: Mapping[str, IntrinsicSize] | None = None) -> dict[str, Box]:
     """Every node's box at `scale`, from weights, tracks and measured extents.
@@ -1227,7 +1255,8 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
     child = [_region_heights(c, guide, scale, heights, floors, False, is_column) for c in node.children]
     if isinstance(node.layout, Grid) or not node.children:
         return None, 0
-    pad = 2 * space_emu(guide, node.layout.pad_role, scale, "y") if node.layout.pad_role else 0
+    _, pad_top, _, pad_bottom = pad_emu(node.layout, guide, scale)
+    pad = pad_top + pad_bottom
     if is_column:
         floor = sum(f for _, f in child) + gap_emu(guide, node.layout.gap_role, scale, "y") * (len(child) - 1) + pad
     else:

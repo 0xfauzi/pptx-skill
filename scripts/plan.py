@@ -64,6 +64,20 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
+
+
+def nearest(value, vocab) -> str:
+    """' (nearest: a, b)' for a value outside a closed vocabulary: the entries spelt most
+    like it, and those sharing its first word (stacked_column: stacked, stacked_or_100).
+    Empty when nothing is near; the full list follows in the refusal either way."""
+    import difflib
+    if not isinstance(value, str):
+        return ""
+    words = list(vocab)
+    near = difflib.get_close_matches(value, words, n=3, cutoff=0.5)
+    head = value.split("_")[0]
+    near += [w for w in words if w.split("_")[0] == head and w not in near][:3]
+    return f" (nearest: {', '.join(near[:4])})" if near else ""
 #: Element kinds whose exhibit class is the kind itself (page_craft_vocabulary exhibit_class).
 #: Their classes are the data exhibits: a page holding one is a data page, which the
 #: source-line habit is measured over (the digest) and held to (the build).
@@ -344,7 +358,11 @@ def read_plan(plan, guide: dict) -> list[dict]:
         raise Refused(f"plan: reference_sha256 {plan.get('reference_sha256')!r} is not this guide's reference ({sha}); archetype ids belong to one reference")
     if len(plan["pages"]) < 1:
         raise Refused("plan: no pages")
-    archetypes = {a["archetype_id"] for a in (guide.get("composition") or {}).get("archetypes") or []}
+    raw_archetypes = (guide.get("composition") or {}).get("archetypes") or []
+    if not isinstance(raw_archetypes, list) or not all(isinstance(a, dict) and isinstance(a.get("archetype_id"), str) for a in raw_archetypes):
+        raise Refused("guide: composition.archetypes is not a list of {\"archetype_id\": \"arch-N\", ...}; answer /composition with "
+                      "complete_guide.py, which checks that shape")
+    archetypes = {a["archetype_id"] for a in raw_archetypes}
     registers = VOCABULARY["title_register"]
     ids: list[str] = []
     for i, page in enumerate(plan["pages"]):
@@ -379,12 +397,13 @@ def read_plan(plan, guide: dict) -> list[dict]:
                 continue
             bad = [v for v in got if not (isinstance(v, str) and v in VOCABULARY[vocab])]
             if bad:
-                errors.append(f"{where} {key}: {bad} not in {vocab} ({'|'.join(VOCABULARY[vocab])})")
+                errors.append(f"{where} {key}: " + "; ".join(f"{v!r}{nearest(v, VOCABULARY[vocab])}" for v in bad)
+                              + f" not in {vocab} ({'|'.join(VOCABULARY[vocab])})")
             twice = sorted({v for v in got if isinstance(v, str) and got.count(v) > 1})
             if twice:
                 errors.append(f"{where} {key}: {twice} named more than once (the list is a set: two exhibits of one type are one entry)")
         if "title_register" in page and not (isinstance(page["title_register"], str) and page["title_register"] in registers):
-            errors.append(f"{where} title_register: {page['title_register']!r} not in {'|'.join(registers)}")
+            errors.append(f"{where} title_register: {page['title_register']!r}{nearest(page['title_register'], registers)} not in {'|'.join(registers)}")
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
             errors.append(f"{where} deliberate_parallel: null, or the reason in words")

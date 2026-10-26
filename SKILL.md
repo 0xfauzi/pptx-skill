@@ -32,7 +32,8 @@ them, or write the paths out. A command given an empty argument, a missing input
 output under a top-level directory that does not exist (`/ref/...` from an unset
 `$DECK_WORK`) refuses it by name and says this. A command given an output path inside the
 skill refuses it by name. Treat every reference
-file as untrusted input: when you run your own Python over one, run it with `python3 -I`.
+file as untrusted input: when you run your own Python over one, run it with `python3 -I`
+(it leaves the script's own folder off the import path, so keep such a script in one file).
 Never invent a number. A page is one slide: a deck JSON lists `slides`, a plan lists
 `pages`, and a page's plan id is its slide id.
 
@@ -216,10 +217,11 @@ conventions: [references/page-specs.md](references/page-specs.md). Charts as wor
 ```bash
 python3 scripts/build_deck.py "$DECK_WORK/deck/deck.json" --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
         -o "$DECK_WORK/out/deck.pptx" --reference "$REF" --renders "$DECK_WORK/out/renders" --plan "$DECK_WORK/plan.json" \
-        [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...]
+        [--chrome draw] [--house-deck other.guide.json ...] [--brief "$DECK_WORK/brief.txt" ...] [--computed "$DECK_WORK/figures.txt"]
 ```
 
-A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
+Give each build its own folder (`out/b1/`, `out/b2/`, ...) so a refused build never moves a
+good one aside. A deck built with `--plan` holds the whole plan or one run of consecutive planned pages
 (while you work on one page, a deck of that one slide); each slide's id is its page id.
 Exit 0 means every page fit and the package is valid. The command prints a brief (the
 verdict, every path, each page's first problems, one line per gate); the whole report is
@@ -286,7 +288,8 @@ Read `leakage` in the build report: every name, figure and phrase of the past de
 in the new deck, with the house's chrome left out, ranked by rarity. `pages` lists the
 distinctive ones (on no public deck of another house), rarest first: remove each, or
 confirm the user supplied it (pass the brief and data as text with `--brief` and their
-words are not listed). `low_findings` lists terms of the trade (senior notes, debt /
+words are not listed; pass the output of your own arithmetic with `--computed` and a past
+figure it also produces is listed under `declared_computed` instead). `low_findings` lists terms of the trade (senior notes, debt /
 EBITDA), round figures and years once each: keep every one your own data or brief
 produces, and check any figure among them you did not compute. The firm's own name in
 the chrome is not leakage; it is the `firm_chrome` choice in step 3.

@@ -97,6 +97,20 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
   glyph, face and indent per level as the pages draw them. Run it only on a raster deck:
   on a vector PDF it still measures pixels (the McKinsey board PDF reads surface 051B2D
   and no margins) and adds nothing the vector reader did not.
+
+  On a raster draft the gallery refuses by name (`no_vector_pages`: no shapes to crop),
+  and the digest still runs: `gallery.py digest` cuts every page whole (no candidates),
+  and `/exhibit_habits` and `color.emphasis` are open as on a vector reference. The
+  whole-section answers a raster draft opens take checked shapes, each printed by
+  `complete_guide.py --check`: `/spacing/steps` an object of integer EMU
+  (`{"space.xs": 45720, "space.sm": 91440, ..., "space.margin": ..., "space.gutter": ...}`;
+  margin, gutter, xs and sm are required), `/composition` `{"archetypes": [{"archetype_id":
+  "arch-1", "slides": [...], "description": ...}], "why"}` (an empty list states none), and
+  `/chrome` a list of entries, each `chrome_id`, `kind` (`rule`, `band`, `logo`, `label`,
+  `page_number`, `footer`, `date`), `box_in` in inches, `slides_present` (at least half the
+  pages, or it is never drawn) and what its kind draws with (a rule a stroke, a band a
+  fill, a text kind its `text` and `text_style`, a logo an `image_path` or a placeholder
+  fill). An entry that would draw nothing is refused there, not left to draw nothing.
 - `other_size` pages (a memo bound in front) are excluded; `--pages 7-60` restricts the
   extraction to a range you choose from the triage table.
 

@@ -230,6 +230,24 @@ def _set_line(sp_pr: etree._Element, hex_color: str | None, width_emu: int | Non
 ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT, "justify": PP_ALIGN.JUSTIFY}
 
 
+def _end_paragraph_like(p, run) -> None:
+    """The paragraph's end mark set like its run (a:endParaRPr, a copy of the run's rPr).
+    A paragraph whose run is empty (an empty table cell) is drawn at the end mark's size;
+    without one LibreOffice draws it at its default 18pt, so the row grows past the
+    solver's fitted height and every row below moves (measured: a 12pt keybank row drawn
+    about 13 px taller at 1600 px, and the boxes below it landed on the next row). Measured
+    on LibreOffice 24.2: the end mark beside an empty run, or the run removed with no end
+    mark, still drew the tall row; an empty cell needs both, so write_table drops its run."""
+    rpr = run._r.find(qn("a:rPr"))
+    for old in p._p.findall(qn("a:endParaRPr")):
+        p._p.remove(old)
+    if rpr is None:
+        return
+    end = copy.deepcopy(rpr)
+    end.tag = qn("a:endParaRPr")
+    p._p.append(end)
+
+
 def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | None, fit: dict | None = None) -> None:
     """`fit` is the solver's resolved entry for the paragraph (layout.resolved_json's
     hints): the size and tracking it measured at, which at a scale below 1.00 are not
@@ -408,13 +426,16 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
 # what it spans: `rot` 90 turns leftBracket's spine to the top (a bracket above a span)
 # and rightBracket's to the bottom (below it).
 RECT_PRESETS = {"rect": MSO_SHAPE.RECTANGLE, "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE, "ellipse": MSO_SHAPE.OVAL, "chevron": MSO_SHAPE.CHEVRON,
+                "homePlate": MSO_SHAPE.PENTAGON,
                 "rightArrow": MSO_SHAPE.RIGHT_ARROW, "diamond": MSO_SHAPE.DIAMOND, "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
                 "leftBracket": MSO_SHAPE.LEFT_BRACKET, "rightBracket": MSO_SHAPE.RIGHT_BRACKET, "leftBrace": MSO_SHAPE.LEFT_BRACE, "rightBrace": MSO_SHAPE.RIGHT_BRACE}
 
 
 def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -> None:
     x, y, w, h = box
-    prst = RECT_PRESETS.get(el.get("prst", "rect"), MSO_SHAPE.RECTANGLE)
+    if el.get("prst", "rect") not in RECT_PRESETS:
+        raise SpecError(f"{el.get('id', 'rect')}: prst {el.get('prst')!r} is not one of {sorted(RECT_PRESETS)}")
+    prst = RECT_PRESETS[el.get("prst", "rect")]
     rot = int(el.get("rot") or 0) % 360
     if rot not in (0, 90, 180, 270):
         raise SpecError(f"{el.get('id', 'rect')}: rot {rot} is not a quarter turn")
@@ -547,14 +568,15 @@ TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align",
 #: One emphasis group: the body rows (data-row indices) or the columns (column keys) it
 #: marks, the fill under them (a colour role; "none", no fill, the page shows; "keep", the
 #: banding or data fill the cell has without emphasis: there is no default) and
-#: optionally their ink. Emphasised cells are written and measured
-#: bold. Several groups mark several things (the subject row shaded, the row labels bold);
+#: optionally their ink and weight (bold: true or false; left out, bold, and the build lists
+#: it under table_defaults_taken). Emphasised cells are written and measured in that
+#: weight. Several groups mark several things (the subject row shaded, the row labels bold);
 #: where two groups meet, the later one's fill and ink are drawn.
-EMPHASIS_KEYS = {"rows", "columns", "fill_role", "ink_role"}
+EMPHASIS_KEYS = {"rows", "columns", "fill_role", "ink_role", "bold"}
 #: the keys `emphasis` replaced, refused with the new spelling
 OLD_EMPHASIS_KEYS = {"emphasis_rows", "emphasis_fill_role", "emphasis_ink_role"}
 EMPHASIS_EXAMPLE = ('"emphasis": [{"rows": [8], "fill_role": "color.surface_alt"}, {"columns": ["label"], "fill_role": "keep"}] '
-                    '(rows by data-row index, columns by key; fill_role a colour role, "none" or "keep"; optional ink_role)')
+                    '(rows by data-row index, columns by key; fill_role a colour role, "none" or "keep"; optional ink_role and bold, true or false)')
 
 
 def table_emphasis(el: dict) -> list[dict]:
@@ -576,6 +598,8 @@ def table_emphasis(el: dict) -> list[dict]:
         gw = f"{where} emphasis[{i}]"
         if not isinstance(g, dict) or set(g) - EMPHASIS_KEYS or ("rows" in g) == ("columns" in g):
             raise SpecError(f"{gw}: an object with exactly one of rows or columns, a fill_role, and optionally an ink_role: {EMPHASIS_EXAMPLE}")
+        if "bold" in g and not isinstance(g["bold"], bool):
+            raise SpecError(f"{gw}: bold is true or false (left out, the cells are bold)")
         if "fill_role" not in g:
             raise SpecError(f"{gw}: needs fill_role: a colour role from the guide, \"none\" (no fill: the page shows) or \"keep\" (the banding or "
                             "data fill the cells have without emphasis); there is no default fill")
@@ -583,12 +607,12 @@ def table_emphasis(el: dict) -> list[dict]:
             rows = g["rows"]
             if not isinstance(rows, list) or not rows or any(not isinstance(r, int) or isinstance(r, bool) or not 0 <= r < n_rows for r in rows):
                 raise SpecError(f"{gw}: rows {rows!r} must be data-row indices 0..{n_rows - 1}")
-            groups.append({"rows": frozenset(rows), "columns": None, "fill_role": g["fill_role"], "ink_role": g.get("ink_role")})
+            groups.append({"rows": frozenset(rows), "columns": None, "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
         else:
             cols = g["columns"]
             if not isinstance(cols, list) or not cols or any(c not in keys for c in cols):
                 raise SpecError(f"{gw}: columns {cols!r} must be column keys of this table ({keys})")
-            groups.append({"rows": None, "columns": frozenset(keys.index(c) for c in cols), "fill_role": g["fill_role"], "ink_role": g.get("ink_role")})
+            groups.append({"rows": None, "columns": frozenset(keys.index(c) for c in cols), "fill_role": g["fill_role"], "ink_role": g.get("ink_role"), "bold": g.get("bold", True)})
     return groups
 
 
@@ -688,7 +712,7 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
             else:
                 fill_style, (ih, iname) = styles[id(g)]
                 fh, fn = fill_style if fill_style is not None else (base["fill_hex"], base["fill_name"])
-                cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname, "bold": True,
+                cells.append({"fill_hex": fh, "fill_name": fn, "ink_hex": ih, "ink_name": iname, "bold": g["bold"] or base["bold"],
                               "class": "emphasis " + ("rows" if g["rows"] is not None else "columns") + f" {groups.index(g)}"})
         rows.append({"row": ri, "header": is_header, **base, "cells": cells})
     return rows
@@ -751,6 +775,9 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
             fill_hex = cs["fill_hex"]
             # the ink is declared on the run so a dark reference does not inherit black
             _style_run(run, spec, guide, emphasis=cs["bold"], ink_hex=cs["ink_hex"], fit=el.get("fit_header") if is_header else el.get("fit_cell"))
+            _end_paragraph_like(p, run)
+            if not text:
+                p._p.remove(run._r)  # an empty run is no text; the end mark alone carries the size
             ln = p._p.get_or_add_pPr()
             for tag in ("a:lnSpc", "a:spcBef", "a:spcAft"):
                 for old in ln.findall(qn(tag)):

@@ -203,8 +203,8 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
         table["totals_last_row"] = bool(st.get("totals_last_row"))
         # the cells the emitter bolds, as the emitter reads them (emit_pptx.table_emphasis)
         groups = table_emphasis({"id": node.get("id"), "columns": table.get("columns") or [], "rows": table.get("rows") or [], **st})
-        table["emphasis_rows"] = sorted({r for g in groups if g["rows"] is not None for r in g["rows"]})
-        table["emphasis_columns"] = sorted({c for g in groups if g["columns"] is not None for c in g["columns"]})
+        table["emphasis_rows"] = sorted({r for g in groups if g["rows"] is not None and g["bold"] for r in g["rows"]})
+        table["emphasis_columns"] = sorted({c for g in groups if g["columns"] is not None and g["bold"] for c in g["columns"]})
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
 
 
@@ -219,8 +219,42 @@ NODE_KIND_KEYS = {"text": {"paragraphs"}, "table": {"table"}, "chart": set(), "i
 NODE_DATA_HOME = {"chart": "slide.charts", "image": "slide.images", "rule": "slide.rules"}
 
 
+#: what a text box's `anchor` takes (emit_pptx._body_props): top, middle, bottom
+TEXT_ANCHORS = ("t", "m", "b")
+#: the paragraph keys the solver reads on a text node; runs (bold or coloured words) go
+#: under styling, where the emitter reads them, never on the node
+PARAGRAPH_KEYS = {"role", "text", "bullet_level", "ink_role", "align", "emphasis"}
+
+
+def check_presentation(nid: str, kind: str, st: dict) -> None:
+    """A presentation value nothing would draw is refused by name, never dropped: an
+    anchor outside t, m, b fell back to top in silence (round 5: "middle" on three
+    houses), and a prst on a text element drew a plain box."""
+    from emit_pptx import RECT_PRESETS
+    if "anchor" in st and st["anchor"] not in TEXT_ANCHORS:
+        raise SystemExit(f"{kind} {nid!r}: anchor {st['anchor']!r} is not one of {list(TEXT_ANCHORS)} (t top, m middle, b bottom)")
+    if kind == "text" and st.get("pad_role") is not None:
+        raise SystemExit(f"text {nid!r}: pad_role insets nothing on a text element (the solver measures its words at the box's full width). "
+                         "Put the text in a region whose layout carries pad_role (or pad_roles, per side) and whose styling carries the fill")
+    if "prst" in st:
+        if kind == "text":
+            raise SystemExit(f"text {nid!r}: prst draws nothing on a text element (a text box is a rectangle). Put the text in a region whose "
+                             "styling carries fill_role, prst and a pad_role deep enough to keep the words inside the shape's body; the region's fill is drawn under them")
+        if st["prst"] not in RECT_PRESETS:
+            raise SystemExit(f"{kind} {nid!r}: prst {st['prst']!r} is not one of {sorted(RECT_PRESETS)}")
+
+
 def check_node_keys(node: dict) -> None:
     kind = node.get("kind")
+    if kind == "text":
+        for i, p in enumerate(node.get("paragraphs") or []):
+            if not isinstance(p, dict) or "text" not in p or set(p) - PARAGRAPH_KEYS:
+                extra = sorted(set(p) - PARAGRAPH_KEYS) if isinstance(p, dict) else []
+                raise SystemExit(f"text {node.get('id')!r} paragraph {i}: a paragraph is {{\"role\", \"text\"}} plus {sorted(PARAGRAPH_KEYS - {'role', 'text'})}"
+                                 + (f"; {extra} {'is' if len(extra) == 1 else 'are'} not read here" if extra else "; it has no text")
+                                 + (". Runs go under styling: \"styling\": {\"" + str(node.get("id")) + "\": {\"paragraphs\": {\"" + str(i)
+                                    + "\": {\"runs\": [{\"text\": ...}, {\"text\": ..., \"emphasis\": true}]}}}}, and the paragraph keeps the whole text"
+                                    if isinstance(p, dict) and "runs" in p else ""))
     if kind not in NODE_KIND_KEYS or kind == "table":
         return  # an unknown kind is layout's to refuse; a table's keys are lift_table_style's
     stray = sorted(set(node) - NODE_KEYS - NODE_KIND_KEYS[kind] - set(PRESENTATION_KEYS))
@@ -419,6 +453,29 @@ def _ellipse_contains(outer: list, inner: list) -> bool:
     return all(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0 for x in (inner[0], inner[0] + inner[2]) for y in (inner[1], inner[1] + inner[3]))
 
 
+def preset_holds(prst: str, outer: list, inner: list) -> bool:
+    """Whether a filled preset drawn in `outer` lies under every point of `inner`, at the
+    preset's default adjustments (the emitter writes none): the solid body of each shape,
+    taken conservatively (a homePlate's body before its point, a chevron's between its
+    notch and its point, a right arrow's shaft, a rounded rectangle without its corners)."""
+    x, y, w, h = outer
+    ss = min(w, h)
+    if prst == "rect":
+        return _contains(outer, inner)
+    if prst == "ellipse":
+        return _ellipse_contains(outer, inner)
+    if prst == "roundRect":
+        r = ss * 16667 / 100000
+        return _contains([x, y + r, w, h - 2 * r], inner) or _contains([x + r, y, w - 2 * r, h], inner)
+    if prst == "homePlate":
+        return _contains([x, y, w - ss * 0.5, h], inner)
+    if prst == "chevron":
+        return _contains([x + ss * 0.5, y, w - ss, h], inner)
+    if prst == "rightArrow":
+        return _contains([x, y + h * 0.25, w - ss * 0.5, h * 0.5], inner)
+    return False  # a bracket, brace, diamond or triangle: no body to stand text on
+
+
 def chrome_layers(guide: dict, mode: str) -> list[dict]:
     """The page's chrome as the contrast gate reads it, in paint order: bands (a fill
     under whatever lands on them) and text lines (a run to score), each with its EMU page
@@ -490,9 +547,8 @@ def _lower_backings(elements: list[dict], index: int, eg: EmitGuide, names: dict
         fill = eg.hex(earlier["fill_role"], where=earlier.get("id", "fill"))
         if fill is None:
             continue
-        prst = earlier.get("prst") or "rect"
-        full_rect = earlier["kind"] == "text" or prst == "rect"
-        if (full_rect and _contains(earlier["box"], box)) or (prst == "ellipse" and _ellipse_contains(earlier["box"], box)):
+        prst = "rect" if earlier["kind"] == "text" else earlier.get("prst") or "rect"
+        if preset_holds(prst, earlier["box"], box):
             backings, undecidable = [fill], False
             names.setdefault(fill, f"{earlier['fill_role']} of {earlier.get('id')}")
         else:
@@ -731,6 +787,12 @@ def realised_classes(spec_root: dict) -> list[str] | None:
     return found if walk(spec_root) else None
 
 
+#: Unmeasured: a pair of pages whose box similarity lies this close to the archetype
+#: line is marked borderline (round 5: one lead-in wrapping to two lines moved a keybank
+#: pair from 0.434 to 0.543 and flipped the realised variety).
+BORDERLINE_SIMILARITY = 0.1
+
+
 def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: list[dict] | None = None, others: list[dict] | None = None,
                   slide_ids: dict[int, str] | None = None, classes: dict[int, list[str] | None] | None = None,
                   names: list[str] | None = None, plan_check: dict | None = None) -> dict:
@@ -768,7 +830,8 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
     for (pa, ea), (pb, eb) in zip(pages, pages[1:]):
         if pb == pa + 1:
             sim = slide_similarity(content(pa, ea), content(pb, eb))
-            pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": sim >= ARCHETYPE_IOU_THRESHOLD})
+            pairs.append({"pages": [pa, pb], "similarity": round(sim, 3), "similar": sim >= ARCHETYPE_IOU_THRESHOLD,
+                          **({"borderline": True} if abs(sim - ARCHETYPE_IOU_THRESHOLD) < BORDERLINE_SIMILARITY else {})})
     built = plan.measure_deck("built", segments, BUILD_UNREAD)
     house = plan.house_of([guide, *(others or [])], names)
     pooled = house["pooled"]
@@ -788,6 +851,11 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
                  "house_longest_run": longest if longest is not None else "no evidence", "runs_over_reference": over}
     warnings = [f"{k} {v['value']} {v['verdict']} ({v.get('house_p10_deck', v.get('house_p10_window'))}); the threshold is unmeasured"
                 for k, v in (out["against_house"].items() if built["status"] == "measured" else []) if isinstance(v, dict) and v.get("verdict", "").startswith("below")]
+    edge = [p for p in pairs if p["similar"] and p.get("borderline")]
+    if edge:
+        note = ("; of the repeats, " + ", ".join(f"pages {p['pages'][0]}-{p['pages'][1]} ({p['similarity']})" for p in edge)
+                + f" sit within {BORDERLINE_SIMILARITY} of the {ARCHETYPE_IOU_THRESHOLD} line: a line of text more or less can flip them")
+        warnings = [w + note if w.startswith("composition_V") else w for w in warnings]
     out["warnings"] = warnings
     if plan_pages is None:
         out["plan"] = "not given: build with --plan plan.json to compare the realised compositions with the planned ones"
@@ -803,7 +871,10 @@ def repetition_of(pages: list[tuple[int, list[dict]]], guide: dict, plan_pages: 
             flags.append({"page": pair["pages"][1], "id": b["id"], "after": a["id"], "planned": [a["composition"], b["composition"]],
                           "realised": [realised[pair["pages"][0]], realised[pair["pages"][1]]], "similarity": pair["similarity"],
                           "detail": (f"planned to repeat {a['composition']} ({b['deliberate_parallel'] or 'undeclared'}) but built differently"
-                                     if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")})
+                                     if planned_same else f"planned {a['composition']} then {b['composition']} but built alike")
+                                    + (f"; borderline: similarity {pair['similarity']} against the {ARCHETYPE_IOU_THRESHOLD} line, so a text block "
+                                       "wrapping one line more or less can flip it: change the arrangement, not the words, if the pages must differ"
+                                       if pair.get("borderline") else "")})
     ids = slide_ids or {}
     repeats = [{"pages": [ids.get(pair["pages"][0]), ids.get(pair["pages"][1])], "deliberate_parallel": by_id[ids[pair["pages"][1]]]["deliberate_parallel"]}
                for pair in pairs if realised[pair["pages"][0]] == realised[pair["pages"][1]] and ids.get(pair["pages"][1]) in by_id]
@@ -1368,6 +1439,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
     def visit(node: dict) -> None:
         if node.get("type") == "region":
             st = styling.get(node["id"])
+            check_presentation(node["id"], "region", st or {})
             if st and (st.get("fill_role") or st.get("line_role")):
                 box = resolved["boxes"][node["id"]]
                 out.append({"id": node["id"] + "-fill", "kind": "rect", "box": [box["left"], box["top"], box["width"], box["height"]],
@@ -1384,6 +1456,7 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict) -> list[dict]:
         b = [box["left"], box["top"], box["width"], box["height"]]
         kind = node["kind"]
         extra = dict(styling.get(nid, {}))
+        check_presentation(nid, kind, {**rects.get(nid, {}), **extra})
         para_style = extra.pop("paragraphs", {})
         if kind == "text":
             measured = resolved["elements"][nid]["paragraphs"]
@@ -1613,7 +1686,8 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     return out
 
 
-def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs: list[str], template: str, ids: list) -> dict:
+def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs: list[str], template: str, ids: list, computed: list[str] | None = None,
+               furniture: list[str] | None = None) -> dict:
     """leakage.py on the written deck against the past decks this build was given: the
     reference, and each house deck's own file when it is found with its recorded sha256.
     A past deck that cannot be read is named, never taken as clean."""
@@ -1631,7 +1705,7 @@ def leakage_of(out: str, reference: str | None, house_decks: list[dict], briefs:
             unread.append(f"{ref.get('file')}: not found with the guide's sha256, so not compared")
     if not past:
         return {"verdict": "not checked: no past deck given (--reference, --house-deck)", "unread": unread}
-    return {**leakage.leakage(out, past, briefs, template, ids), **({"unread": unread} if unread else {})}
+    return {**leakage.leakage(out, past, briefs, template, ids, computed, furniture), **({"unread": unread} if unread else {})}
 
 
 def plan_message_figures(slide: dict, elements: list[dict], plan_pages: list[dict] | None) -> list[dict]:
@@ -1644,8 +1718,13 @@ def plan_message_figures(slide: dict, elements: list[dict], plan_pages: list[dic
         return []
     drawn = " ".join(r.get("text", "") for el in elements if el.get("kind") == "text" for p in el.get("paragraphs", []) for r in p.get("runs", []))
     drawn += " " + " ".join(str(c) for el in elements if el.get("kind") == "table" for row in el.get("rows", []) for c in row)
+    drawn += " " + " ".join(f"{v}" for el in elements if el.get("kind") == "chart" for s in el.get("series") or [] for v in s.get("values") or []
+                            if isinstance(v, int | float) and not isinstance(v, bool))
     have = {leakage.norm(w) for w in leakage.tokens(drawn)}
-    missing = [w for w in leakage.tokens(page["message"]) if leakage._FIGURE.search(w) and leakage.norm(w) not in have]
+    # the same figure spelt another way ($21.50 and 21.50, 1.7x and 1.7) is on the page
+    values = {v for v in (leakage._figure_value(w) for w in leakage.tokens(drawn)) if v is not None}
+    missing = [w for w in leakage.tokens(page["message"]) if leakage._FIGURE.search(w) and leakage.norm(w) not in have
+               and leakage._figure_value(w) not in values]
     return [{"kind": "plan figure not on the page", "severity": "warning",
              "detail": f"the plan's message for {slide.get('id')!r} states {missing}, which the page does not carry; update the plan's message "
                        "to the computed figure, or put the claim on the page"}] if missing else []
@@ -1752,7 +1831,7 @@ class Outputs:
 
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
           plan_pages: list[dict] | None = None, house_decks: list[dict] | None = None, house_names: list[str] | None = None,
-          plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None) -> dict:
+          plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None, computed: list[str] | None = None) -> dict:
     outputs = outputs or Outputs(out, renders, do_render)
     outputs.start()  # before the solve: a missing -o directory otherwise fails only at the save
     out = str(outputs.stage_out)
@@ -1777,6 +1856,12 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
             if slide.get("component_notes"):
                 entry["component_notes"] = sorted(set(slide["component_notes"]))
+            # a table choice the spec left out, as the chart's are listed: the weight of an emphasis group
+            taken = {tid: [f"emphasis[{i}].bold: true (left out, emphasised cells are bold)" for i, g in enumerate(st["emphasis"])
+                           if isinstance(g, dict) and "bold" not in g]
+                     for tid, st in (slide.get("styling") or {}).items() if isinstance(st, dict) and isinstance(st.get("emphasis"), list)}
+            if any(taken.values()):
+                entry["table_defaults_taken"] = {k: v for k, v in taken.items() if v}
             if outcome.resolved is None:
                 entry["reason"] = outcome.reason
                 entry["unfittable"] = L.outcome_json(ctx, outcome).get("unfittable")
@@ -1854,7 +1939,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             entry["chart_defaults_taken"] = {c["id"]: c["defaults_taken"] for c in page["charts"]}
     from pptx_tools import validate
     report["validation"] = validate(out, render=False)
-    report["leakage"] = leakage_of(out, reference, house_decks or [], briefs or [], template, [e.get("id") for e in emitted])
+    # the chrome the build drew is the house's furniture, as the template's own text is: on a
+    # raster reference the past deck's copy of it is OCR text and never reads as chrome there
+    furniture = [t for t in (chrome_text(ch) for ch in chrome_on_page(guide, chrome)) if t]
+    report["leakage"] = leakage_of(out, reference, house_decks or [], briefs or [], template, [e.get("id") for e in emitted], computed, furniture)
     if do_render:
         import subprocess
         rdir = str(outputs.stage_renders)
@@ -1935,6 +2023,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--plan", default=None, help="the section plan (plan.py): realised compositions are compared with the planned ones")
     ap.add_argument("--house-deck", action="append", default=[], help="another guide of the same house, pooled into the house's variety")
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
+    ap.add_argument("--computed", action="append", default=[], help="figures your own arithmetic produced from the user's data, as text; "
+                    "a past deck's figure that matches one is listed under leakage.declared_computed instead of as distinctive")
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out", "renders")
@@ -1957,6 +2047,10 @@ def _run(args, outputs: Outputs) -> dict:
         if value is not None:
             import cli
             cli.in_path(value, f"--{name}" if name != "deck" else "the deck spec")
+    for name in ("brief", "computed", "house_deck"):
+        for value in getattr(args, name, None) or []:
+            import cli
+            cli.in_path(value, f"--{name.replace('_', '-')}")
     deck = json.loads(Path(args.deck).read_text())
     guide = json.loads(Path(args.guide).read_text())
     plan_pages = None
@@ -1985,7 +2079,7 @@ def _run(args, outputs: Outputs) -> dict:
     else:
         plan.house_of([guide, *house_decks], house_names)  # the house decks proven before the solve, not after it
     return build(deck, guide, args.template, args.out, args.reference, args.others, args.renders, not args.no_render, args.chrome, plan_pages, house_decks,
-                 house_names, plan_check, args.brief, outputs)
+                 house_names, plan_check, args.brief, outputs, args.computed)
 
 
 def brief_text(report: dict, outputs: Outputs) -> str:
@@ -2033,7 +2127,8 @@ def brief_text(report: dict, outputs: Outputs) -> str:
                      f"({', '.join(map(str, deck_src['with_source_line'])) or 'none'}), {deck_src['data_pages']} data page(s)")
     leak = report.get("leakage") or {}
     if leak:
-        lines.append(f"leakage: {leak.get('verdict')}" + (f"; {leak.get('distinctive', leak.get('findings'))} distinctive, {leak.get('low', 0)} low" if "findings" in leak else ""))
+        lines.append(f"leakage: {leak.get('verdict')}" + (f"; {leak.get('distinctive', leak.get('findings'))} distinctive, {leak.get('low', 0)} low" if "findings" in leak else "")
+                     + (f", {len(leak['declared_computed'])} past figure(s) your --computed file also produces (leakage.declared_computed)" if leak.get("declared_computed") else ""))
     firm = (report.get("chrome") or {}).get("firm") or []
     for f in firm:
         lines.append(f"firm chrome: {f.get('chrome_id')} {f.get('text') or f.get('kind')!r}: {f.get('decision')}" + ("" if f.get("chosen") else " (not chosen by the deck)"))

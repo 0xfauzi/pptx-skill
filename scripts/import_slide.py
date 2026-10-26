@@ -392,6 +392,10 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
              "import_lost": lost + ["each element's exact position and size (rebuilt from roles and weights)",
                                     "each table's own fills, rules and column widths (the guide's table look; widths measured)"
                                     if any('"kind": "table"' in json.dumps(c) for c in body_children) else None]}
+    unknown = json.dumps(root, ensure_ascii=False).count("�")
+    if unknown:
+        # ooxml reads a glyph the PDF maps to no character as U+FFFD: the words are not known
+        slide["import_lost"].insert(0, f"{unknown} character(s) the PDF maps to no character (written as �): retype them from the render")
     slide["import_lost"] = [x for x in slide["import_lost"] if x]
     if images:
         slide["images"] = images

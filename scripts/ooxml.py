@@ -378,6 +378,7 @@ class Shape:
     paragraphs: list | None = None  # slide-layer text shapes: [{level, bullet, align, mar_l_emu, line_spacing, space_before, space_after, runs: [{text, size_pt, bold, italic, color, family}]}]
     name: str | None = None  # p:cNvPr/@name: the emitter writes the element id there, so a finding can name it
     text_anchor: str | None = None  # bodyPr anchor (t | ctr | b) as declared on the shape
+    text_wrap: str | None = None  # bodyPr wrap (square | none) as declared on the shape
     corner_radius_emu: int | None = None  # roundRect only: adj / 100000 x min(w, h) of the drawn box
     paint_order: int = 0  # position in the page's painting sequence: a higher one paints over a lower one
     line_style: dict | None = None  # PDF text blocks only: modal family, size_pt, ink_hex and bold of the block's glyphs
@@ -1411,6 +1412,8 @@ class SlideWalker:
                 self._para_capture = [] if with_text else None
                 if bpr is not None and bpr.get("anchor"):
                     shape.text_anchor = bpr.get("anchor")
+                if bpr is not None and bpr.get("wrap"):
+                    shape.text_wrap = bpr.get("wrap")
                 style_el = sp.find(_p("style"))
                 font_ref = style_el.find(_a("fontRef")) if style_el is not None else None
                 style_color = self.chain.first_color(font_ref) if font_ref is not None else None
@@ -1826,6 +1829,8 @@ deck."""
 QUARTER_TURN_TOLERANCE = 0.02
 """A glyph matrix whose off-axis terms are under 2% of its scale is upright or a quarter
 turn; anything else (skewed, arbitrary angle) has no axis to read a size along."""
+#: pdfplumber's spelling of a glyph the font maps to no character
+CID_GLYPH = re.compile(r"\(cid:\d+\)")
 BULLET_GLYPHS = frozenset("\u2022\u25e6\u25aa\u25ab\u25a0\u25a1\u25cf\u25cb\u2023\u2043\u2013\u2014\u00bb\u203a\u27a2\u27a4\u2713\u2714\u00b7-*>")
 MID_LINE_PUNCTUATION = frozenset("-*>\u2013\u2014\u00b7\u00bb\u203a")
 """Bullet glyphs that also sit inside sentences ("3/16 - 4/19"): they open an item only at
@@ -1911,6 +1916,12 @@ def _pdf_glyph(ch: dict, w: float, h: float, painted: dict[tuple, int] | None = 
     italic = "italic" in name or "oblique" in name
     color = _pdf_color(ch.get("non_stroking_color"))
     text = str(ch.get("text", ""))
+    if CID_GLYPH.fullmatch(text):
+        # a glyph the font maps to no character: pdfplumber spells it "(cid:N)", seven
+        # characters of text the page never showed (bcg's leaked into round-trip text and
+        # the draft's title lengths). Which character it draws is unknown, so it is one
+        # character, Unicode's own for an unknown one, never a guess at the letter
+        text = "�"
     paint = (painted or {}).get(_pdf_key(ch), 0)
     if abs(b) <= tol and abs(c) <= tol and a > 0 and d > 0:
         return "ltr", _Glyph(text, family, bold, italic, color, float(ch.get("size", bottom - top)), x0, x1, top, bottom, paint)
