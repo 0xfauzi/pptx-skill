@@ -2027,6 +2027,8 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto", page_ch
         root_children[0]["size"] = {"width_emu": None, "height_emu": band}
         if root_children[0].get("type") != "region":
             root_children[0]["scale_class"] = "fixed"
+        # the band's bottom is the rule, at every scale the page is solved at (layout.with_band)
+        spec_raw["title_band"] = {"node_id": root_children[0]["id"], "bottom_emu": title_rule_top_emu(guide)}
 
 
 def slide_chrome(slide: dict, guide: dict, mode: str) -> dict:

@@ -76,6 +76,7 @@ roles} (or a list of those); tables.cell_padding_role | tables.cell_padding_emu
 
 from __future__ import annotations
 
+import dataclasses
 import argparse
 import json
 import sys
@@ -525,6 +526,12 @@ class Spec:
     zones: tuple[tuple[Box, str], ...]
     bullet_indent_roles: dict[int, str]
     deepest: tuple[str, ...] = ()  # the longest root-to-node chain of ids, reported by the build
+    # the title band (build_deck.prepare_page): the node that holds the title and the page
+    # y its box ends at (the top rule). Its height is that y less the root's top padding AT
+    # THE SCALE SOLVED, so a page that descends keeps its title block ending on the rule
+    # (round 7: a band sized at full scale ended above the rule once the padding shrank,
+    # and what followed crossed the rule at every scale below 1)
+    band: tuple[str, int] | None = None
 
 def walk(node: Region | Element, depth: int = 0) -> Iterator[tuple[Region | Element, int]]:
     yield node, depth
@@ -679,8 +686,28 @@ def parse_spec(raw: Mapping[str, Any]) -> Spec:
         if g.kind not in ("node_range", "table_row_range") or any(n not in seen for n in g.node_ids) or (g.kind == "table_row_range") != (g.row_range is not None):
             raise LayoutContractError(f"splittable group {g.group_id!r} is malformed")
     zones = tuple((Box(int(z["left"]), int(z["top"]), int(z["width"]), int(z["height"])), str(z.get("source", "zone"))) for z in page.get("reserved_zones", []))
+    band = raw.get("title_band")
+    if band is not None and (not isinstance(band, Mapping) or band.get("node_id") not in seen or type(band.get("bottom_emu")) is not int):
+        raise LayoutContractError(f"title_band {band!r}: the build's own {{node_id, bottom_emu}}")
     return Spec(int(page["width_emu"]), int(page["height_emu"]), root, groups, zones, {int(k): v for k, v in (raw.get("bullet_indent_roles") or {}).items()},
-                tuple(deepest))
+                tuple(deepest), None if band is None else (str(band["node_id"]), int(band["bottom_emu"])))
+
+
+def with_band(spec: Spec, guide: Guide, scale: Fraction) -> Spec:
+    """The spec with its title band's node sized for `scale`: from the root's top padding at
+    that scale down to the band's bottom (Spec.band). Unchanged with no band."""
+    if spec.band is None:
+        return spec
+    node_id, bottom = spec.band
+    height = max(0, bottom - pad_emu(spec.root.layout, guide, scale)[1])
+
+    def resize(node: Region | Element) -> Region | Element:
+        if node.id == node_id:
+            return dataclasses.replace(node, height_emu=height)
+        if isinstance(node, Region):
+            return dataclasses.replace(node, children=tuple(resize(c) for c in node.children))
+        return node
+    return dataclasses.replace(spec, root=resize(spec.root))  # type: ignore[arg-type]
 
 
 def defaults_taken(raw_root: Mapping[str, Any]) -> list[str]:
@@ -1576,8 +1603,9 @@ class Resolved:
 def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
     """ONE honest candidate: probe, measure, final solve, re-measure, validate.
     Floors are candidate ADMISSION (descend, the CLI), not checked here."""
-    spec, guide = ctx.spec, ctx.guide
+    guide = ctx.guide
     s = checked_scale(scale)
+    spec = with_band(ctx.spec, guide, s)
     elements = [n for n, _ in walk(spec.root) if isinstance(n, Element)]
     intrinsics = {e.id: IntrinsicSize(e.width_emu, e.height_emu) for e in elements if e.width_emu is not None or e.height_emu is not None}
     intrinsics.update({r.id: IntrinsicSize(r.width_emu, r.height_emu) for r, _ in walk(spec.root)
