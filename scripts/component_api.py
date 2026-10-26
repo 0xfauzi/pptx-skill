@@ -57,7 +57,7 @@ def make_api(guide_raw: dict, lg: L.Guide | None = None, ruler: L.Ruler | None =
     passes its own loaded guide, ruler and index so the component measures with
     exactly what the page is solved with; a standalone caller gets the defaults."""
     lg = lg if lg is not None else L.load_guide(guide_raw)
-    ruler = ruler if ruler is not None else L.default_ruler()
+    ruler = ruler if ruler is not None else L.ruler_for(guide_raw)
     index = index if index is not None else L.default_index()
     ctx = L.Context(lg, ruler, index)  # spec=None: a measuring-only context
 

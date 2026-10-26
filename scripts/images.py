@@ -1127,6 +1127,174 @@ def extract(ref: str, out: str, pic_id: str | None, page: int | None, bbox: list
             "note": "rendered with the page's own background: a logo on a coloured panel keeps that colour"}
 
 
+#: what a glyph is when the type size of a pasted picture is read off its pixels: a
+#: connected run of ink at least this many pixels tall (a smaller one is a comma, a dot or
+#: noise), no wider than GLYPH_MAX_ASPECT times its height (a rule or a bar is wider) and
+#: no narrower than GLYPH_MIN_ASPECT (a cell's vertical rule; Arial's l is 0.13 of its height)
+GLYPH_MIN_PX = 4
+GLYPH_MAX_ASPECT = 1.5
+GLYPH_MIN_ASPECT = 0.1
+#: a pixel is ink when its luma differs from its row's commonest luma by this much (0-255):
+#: dark text on a light row and light text on a filled header row alike
+INK_CONTRAST = 96
+TALL_GLYPHS = "0123456789ABDEFHKLNTbdhklt"
+
+
+def _picture_box(ref: str, pic_id: str, slide: int) -> tuple[int, int, tuple[float, float, float, float]]:
+    """(width EMU, height EMU, srcRect l, t, r, b as fractions) of picture `pic_id` drawn on
+    `slide` of a .pptx: the box the house displays it in, so its pixels map to points."""
+    pkg = _package(ref)
+    part = f"ppt/slides/slide{slide}.xml"
+    if part not in pkg.names:
+        raise ImageRefused(f"--slide {slide}: the deck has no {part}")
+    ns = {"p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+          "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+          "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"}
+    with pkg.zip:
+        rels = pkg.rels(part)
+        root = pkg.root(part)
+    boxes = []
+    for pic in root.iter(f"{{{ns['p']}}}pic"):
+        blip = pic.find(".//a:blip", ns)
+        rid = None if blip is None else blip.get(f"{{{ns['r']}}}embed")
+        if rid is None or rid not in rels or rels[rid][1] != "ppt/media/" + pic_id:
+            continue
+        ext = pic.find("p:spPr/a:xfrm/a:ext", ns)
+        if ext is None:
+            continue
+        src = pic.find(".//a:srcRect", ns)
+        crop = tuple(int((src.get(k) if src is not None else None) or 0) / 100_000 for k in ("l", "t", "r", "b"))
+        boxes.append((int(ext.get("cx")), int(ext.get("cy")), crop))
+    if len(boxes) != 1:
+        raise ImageRefused(f"{pic_id}: drawn {len(boxes)} times on slide {slide}; name a slide that draws it once")
+    return boxes[0]
+
+
+def face_file(face: str) -> str:
+    """The installed file the text ruler measures `face` with (the face itself or its
+    metric-compatible clone), or a refusal naming the face."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import textfit
+    try:
+        return textfit.default_index().resolve(face).path
+    except LookupError as error:
+        raise ImageRefused(f"--face {face!r}: {error}") from None
+
+
+def _tall_height_em(face_path: str) -> float:
+    """The median ink height of the glyphs that stand on the baseline and reach the cap or
+    ascender line (digits, capitals, ascender letters), as a share of the face's size, read
+    from the font file itself."""
+    from PIL import ImageFont
+    font = ImageFont.truetype(face_path, 1000)
+    heights = sorted(font.getbbox(d)[3] - font.getbbox(d)[1] for d in TALL_GLYPHS)
+    return heights[len(heights) // 2] / 1000
+
+
+def _line_tall_heights(glyphs: list[tuple[int, int]]) -> list[int]:
+    """Per text line, the height of its tall glyphs: glyphs are (bottom, height); a line is
+    the glyphs standing on one baseline (bottoms within a pixel of its commonest bottom),
+    and its tall height the 80th percentile of their heights, so a line of digits reads its
+    digits and a line of words its capitals and ascenders, not its x-height."""
+    bottoms: dict[int, int] = {}
+    for b, _ in glyphs:
+        bottoms[b] = bottoms.get(b, 0) + 1
+    out = []
+    taken: set[int] = set()
+    for b in sorted(bottoms, key=lambda k: -bottoms[k]):
+        if b in taken or bottoms[b] < 3:
+            continue
+        taken.update((b - 1, b, b + 1))
+        heights = sorted(gh for gb, gh in glyphs if abs(gb - b) <= 1)
+        if len(heights) >= 3:
+            out.append(heights[min(len(heights) - 1, int(0.8 * len(heights)))])
+    return out
+
+
+def _glyphs(im: Image.Image) -> list[tuple[int, int]]:
+    """(bottom row, height) in pixels of every glyph-like connected run of ink (4-connected)."""
+    gray = im.convert("L")
+    w, h = gray.size
+    px = gray.load()
+    ink = bytearray(w * h)
+    for y in range(h):
+        row = [px[x, y] for x in range(w)]
+        common = max(set(row), key=row.count)
+        for x, v in enumerate(row):
+            if abs(v - common) >= INK_CONTRAST:
+                ink[y * w + x] = 1
+    seen = bytearray(w * h)
+    out = []
+    for start in range(w * h):
+        if not ink[start] or seen[start]:
+            continue
+        stack, seen[start] = [start], 1
+        y0 = y1 = start // w
+        x0 = x1 = start % w
+        while stack:
+            k = stack.pop()
+            y, x = divmod(k, w)
+            y0, y1, x0, x1 = min(y0, y), max(y1, y), min(x0, x), max(x1, x)
+            for n in ((k - 1) if x else -1, (k + 1) if x < w - 1 else -1, k - w, k + w):
+                if 0 <= n < w * h and ink[n] and not seen[n]:
+                    seen[n] = 1
+                    stack.append(n)
+        gh, gw = y1 - y0 + 1, x1 - x0 + 1
+        if GLYPH_MIN_PX <= gh <= 0.25 * h and GLYPH_MIN_ASPECT * gh <= gw <= GLYPH_MAX_ASPECT * gh:
+            out.append((y1, gh))
+    return out
+
+
+def text_size(ref: str, face_path: str, face: str, pic_id: str | None = None, slide: int | None = None,
+              page: int | None = None, bbox: list[float] | None = None) -> dict:
+    """The type size a pasted picture sets its text at, read off its pixels: the commonest
+    glyph height (a table's digits) over the face's own digit height, at the scale the house
+    displays the picture. A .pptx picture is read from its own bytes in the box the slide
+    draws it in; a PDF region is rendered at 600 dpi. The face is the model's reading of the
+    picture; the measurement is this function's. Calibrated on native Arial tables of known
+    size rendered by LibreOffice and read back at 100 to 600 dpi (2026-10-26): 10pt read
+    10.2 to 10.5, 12pt read 11.5 to 12.6."""
+    if ref.lower().endswith(".pptx"):
+        if not pic_id or slide is None:
+            raise ImageRefused("a .pptx picture is named by --id (from `images.py list`) and the --slide that draws it")
+        cx, cy, (cl, ct, cr, cb) = _picture_box(ref, pic_id, slide)
+        with tempfile.TemporaryDirectory(prefix="images-") as tmp:
+            png = Path(tmp) / "pic.png"
+            extract(ref, str(png), pic_id, None, None)
+            with Image.open(png) as im:
+                im.load()
+                full_w, full_h = im.size
+                box = (round(cl * full_w), round(ct * full_h), round(full_w * (1 - cr)), round(full_h * (1 - cb)))
+                shown = im.convert("RGB").crop(box)
+        pt_per_px = cy / 12_700 / max(1, shown.height)
+        source = f"{ref}#ppt/media/{pic_id} on slide {slide}, drawn {cx / EMU_PER_INCH:.2f} x {cy / EMU_PER_INCH:.2f} in"
+    else:
+        dpi = 600
+        with tempfile.TemporaryDirectory(prefix="images-") as tmp:
+            png = Path(tmp) / "region.png"
+            done = extract(ref, str(png), pic_id, page, bbox, dpi)
+            with Image.open(png) as im:
+                shown = im.convert("RGB")
+        pt_per_px = 72 / dpi
+        source = done["source"]
+    glyphs = _glyphs(shown)
+    lines = _line_tall_heights(glyphs)
+    if len(lines) < 3:
+        raise ImageRefused(f"{len(lines)} text lines found in the picture ({len(glyphs)} glyphs): too few to read a type size from")
+    counts: dict[int, int] = {}
+    for gh in lines:
+        counts[gh] = counts.get(gh, 0) + 1
+    median = sorted(lines)[len(lines) // 2]
+    tall_em = _tall_height_em(face_path)
+    size = median * pt_per_px / tall_em
+    return {"source": source, "face": face, "glyphs": len(glyphs), "lines": len(lines), "median_line_tall_px": median,
+            "commonest_line_heights_px": dict(sorted(counts.items(), key=lambda kv: -kv[1])[:5]),
+            "pt_per_px": round(pt_per_px, 4), "tall_height_em": round(tall_em, 4),
+            "size_pt": round(size, 1), "band_pt": [round((median - 1) * pt_per_px / tall_em, 1), round((median + 1) * pt_per_px / tall_em, 1)],
+            "basis": "per text line, the height of its tall glyphs (digits, capitals, ascenders: the 80th percentile of the glyphs on "
+                     "its baseline); the median line over the face's own median tall-glyph height, at the drawn scale; one pixel either way is the band"}
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1139,6 +1307,13 @@ def main(argv: list[str]) -> int:
     b.add_argument("--bbox", default=None)
     b.add_argument("--dpi", type=int, default=600)
     b.add_argument("-o", "--out", required=True)
+    t = sub.add_parser("textsize")
+    t.add_argument("ref")
+    t.add_argument("--face", required=True, help="the face the picture's text is set in, as you read it (e.g. Calibri)")
+    t.add_argument("--id", default=None)
+    t.add_argument("--slide", type=int, default=None, help=".pptx: the slide that draws the picture")
+    t.add_argument("--page", type=int, default=None)
+    t.add_argument("--bbox", default=None)
     c = sub.add_parser("check")
     c.add_argument("svg")
     c.add_argument("--guide", default=None)
@@ -1160,6 +1335,13 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 raise ImageRefused(f"--bbox {args.bbox!r}: four numbers X0,Y0,X1,Y1") from None
             print(json.dumps(extract(args.ref, args.out, args.id, args.page, bbox, args.dpi), indent=1))
+        elif args.cmd == "textsize":
+            cli.in_path(args.ref, "the reference")
+            try:
+                bbox = [float(v) for v in args.bbox.split(",")] if args.bbox else None
+            except ValueError:
+                raise ImageRefused(f"--bbox {args.bbox!r}: four numbers X0,Y0,X1,Y1") from None
+            print(json.dumps(text_size(args.ref, face_file(args.face), args.face, args.id, args.slide, args.page, bbox), indent=1))
         else:
             guide = json.loads(Path(args.guide).read_text()) if args.guide else None
             pic = picture({"svg": args.svg}, "check", guide)

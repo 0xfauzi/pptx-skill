@@ -100,6 +100,14 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from chart_geometry import chart_family  # noqa: E402
 
+# the solver's own rules for case and header cells: it measured this text
+from layout import (  # noqa: E402
+    apply_case,
+    apply_case_runs,
+    header_labels,
+    header_spans,
+)
+
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
@@ -260,8 +268,6 @@ def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | 
     font.italic = bool(spec.get("italic", False))
     if ink_hex:
         font.color.rgb = RGBColor.from_string(ink_hex.upper())
-    if spec.get("case") == "upper":
-        run.text = run.text.upper()
     rpr = run._r.get_or_add_rPr()
     tracking = (fit["spc"] / 100 if fit else spec.get("tracking_pt")) or 0.0
     if tracking:
@@ -270,7 +276,7 @@ def _style_run(run, spec: dict, guide: Guide, *, emphasis: bool, ink_hex: str | 
 
 def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
     p_pr = p._p.get_or_add_pPr()
-    for tag in ("a:lnSpc", "a:spcBef", "a:spcAft", "a:buNone", "a:buChar", "a:buAutoNum", "a:buFont"):
+    for tag in ("a:lnSpc", "a:spcBef", "a:spcAft", "a:buClr", "a:buNone", "a:buChar", "a:buAutoNum", "a:buFont"):
         for el in p_pr.findall(qn(tag)):
             p_pr.remove(el)
     fit = para.get("fit")
@@ -307,6 +313,11 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict) -> None:
         p_pr.set("lvl", str(int(level)))
         p_pr.set("marL", str(int(indent)))
         p_pr.set("indent", str(-int(min(indent, hanging))))
+        # the house's bullet ink, where its glyphs carry their own (extract_style: bullets[level].ink)
+        bu_hex = guide.hex(entry["ink_role"], where="bullet") if entry.get("ink_role") else entry.get("ink_hex")
+        if bu_hex:
+            clr = etree.SubElement(p_pr, qn("a:buClr"))
+            etree.SubElement(clr, qn("a:srgbClr")).set("val", str(bu_hex).upper())
         if bufont:
             etree.SubElement(p_pr, qn("a:buFont")).set("typeface", bufont)
         bu = etree.SubElement(p_pr, qn("a:buChar"))
@@ -365,8 +376,8 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
         first = False
         _paragraph_props(p, spec, guide, para)
         runs = para.get("runs") or [{"text": para.get("text", "")}]
-        if spec.get("case") == "upper":
-            runs = [{**r, "text": r["text"].upper()} for r in runs]  # the solver measured the cased text
+        # the solver measured the cased text (layout.apply_case): write the same text
+        runs = [{**r, "text": t} for r, t in zip(runs, apply_case_runs([r["text"] for r in runs], spec.get("case")))]
         lines = para.get("lines")
         fit = para.get("fit")
         if lines and not fit:
@@ -375,7 +386,7 @@ def write_text(slide, el: dict, guide: Guide, box: tuple[int, int, int, int], sh
             # measured wrap: literal breaks between lines, runs split at line boundaries
             full = "".join(r["text"] for r in runs)
             if "".join(lines).replace(" ", "") != full.replace(" ", ""):
-                raise SpecError(f"{el.get('id')}: measured lines do not reconstruct the paragraph text")
+                raise SpecError(f"{el.get('id')}: the measured lines {lines!r} do not reconstruct the text written, {full!r}; the solver measured the text its role's case gives")
             cursor = 0
             run_spans = []
             for r in runs:
@@ -471,9 +482,10 @@ def write_rect(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
             p = tf.paragraphs[0] if first else tf.add_paragraph()
             first = False
             _paragraph_props(p, spec, guide, para)
-            for r in para.get("runs") or [{"text": para.get("text", "")}]:
+            runs = para.get("runs") or [{"text": para.get("text", "")}]
+            for r, text in zip(runs, apply_case_runs([r["text"] for r in runs], spec.get("case"))):
                 pr = p.add_run()
-                pr.text = r["text"]
+                pr.text = text
                 _style_run(pr, spec, guide, emphasis=bool(r.get("emphasis")), ink_hex=ink_hex)
         tf.margin_left = tf.margin_right = Emu(guide.space(el.get("pad_role"), 0))
         tf.margin_top = tf.margin_bottom = Emu(guide.space(el.get("pad_role"), 0))
@@ -600,7 +612,7 @@ def _cell_border(tc_pr: etree._Element, side: str, hex_color: str | None, width_
 # lifts them there from the tree node, its table spec or slide.styling, refusing a key
 # given twice). Each fill or ink key, when present, replaces the guide's tables value
 # for this table only; "none" means no fill.
-TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align",
+TABLE_STYLE_KEYS = {"totals_last_row", "emphasis", "header_align", "spanner_align",
                     "header_fill_role", "header_ink_role", "header_bold", "banding_role", "data_fill_role"}
 #: One emphasis group: the body rows (data-row indices) or the columns (column keys) it
 #: marks, the fill under them (a colour role; "none", no fill, the page shows; "keep", the
@@ -701,8 +713,9 @@ def table_row_styles(el: dict, guide: Guide) -> list[dict]:
             raise SpecError(f"{where} column {col.get('key')!r}: unknown keys {extra}; allowed {sorted(TABLE_COLUMN_KEYS)}")
         if col.get("align") is not None and col["align"] not in TABLE_ALIGNS:
             raise SpecError(f"{where} column {col.get('key')!r}: align {col['align']!r} not in {list(TABLE_ALIGNS)}")
-    if el.get("header_align") is not None and el["header_align"] not in TABLE_ALIGNS:
-        raise SpecError(f"{where}: header_align {el['header_align']!r} not in {list(TABLE_ALIGNS)}")
+    for key in ("header_align", "spanner_align"):
+        if el.get(key) is not None and el[key] not in TABLE_ALIGNS:
+            raise SpecError(f"{where}: {key} {el[key]!r} not in {list(TABLE_ALIGNS)}")
     groups = table_emphasis(el)
 
     def role_hex(role: str | None, literal: str | None, label: str) -> tuple[str | None, str | None]:
@@ -783,6 +796,8 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     header_spec, cell_spec = table_roles(el, guide)
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
     totals = bool(el.get("totals_last_row"))
+    labels = [header_labels(c, header_rows, f"table {el.get('id')!r}") for c in cols]
+    spans = header_spans(labels, header_rows)
     for ri in range(n_rows):
         row = table.rows[ri]
         if heights and ri < len(heights):
@@ -792,21 +807,25 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         data_index = ri - header_rows
         for ci, col in enumerate(cols):
             cell = table.cell(ri, ci)
-            text = col["label"] if is_header else str(rows[data_index][ci])
+            text = labels[ci][ri] if is_header else str(rows[data_index][ci])
+            if is_header and not any(c0 == ci for c0, _ in spans[ri]):
+                text = ""  # inside a spanner: the span's first cell carries its text
             cell.margin_left = cell.margin_right = cell.margin_top = cell.margin_bottom = Emu(pad)
             tf = cell.text_frame
             tf.word_wrap = True
             p = tf.paragraphs[0]
             p.text = ""
             run = p.add_run()
-            run.text = text
             spec = header_spec if is_header else cell_spec
+            run.text = apply_case(text, spec.get("case") or "as_typed")
             kind = col.get("value_kind", "label")
             align = (align_by_kind.get("numeric") if kind in ("number", "percent", "currency") else align_by_kind.get("text")) or ("right" if kind in ("number", "percent", "currency") else "left")
             if col.get("align"):
                 align = col["align"]
             if is_header and el.get("header_align"):
                 align = el["header_align"]
+            if is_header and el.get("spanner_align") and any(c0 == ci and c1 > c0 for c0, c1 in spans[ri]):
+                align = el["spanner_align"]
             p.alignment = ALIGN.get(align, PP_ALIGN.LEFT)
             cs = st["cells"][ci]
             fill_hex = cs["fill_hex"]
@@ -828,6 +847,10 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 etree.SubElement(sf, qn("a:srgbClr")).set("val", fill_hex.upper())
             else:
                 etree.SubElement(tc_pr, qn("a:noFill"))
+    for ri in range(header_rows):
+        for c0, c1 in spans[ri]:
+            if c1 > c0:
+                table.cell(ri, c0).merge(table.cell(ri, c1))  # gridSpan and hMerge: one cell across the span
     _write_table_edges(table, guide, n_rows, len(cols), header_rows, n_rows - 1 if totals else None)
 
 
@@ -1243,6 +1266,17 @@ def chart_parse(el: dict, guide: Guide) -> dict:
     return {"type": XL_CHART_TYPE[type_name], "type_name": type_name, "family": family, "defaults": defaults, "groups": groups}
 
 
+def _point_label_shown(s: dict, index: int) -> bool:
+    """Whether point `index` of series `s` carries a data label: its own point label's
+    show (a point label written without show is shown, as the writer draws it), else the
+    series labels' show (labels absent or show false: none)."""
+    for p in s.get("points") or []:
+        if isinstance(p, dict) and p.get("index") == index and isinstance(p.get("label"), dict):
+            return p["label"].get("show", True) is not False
+    labels = s.get("labels")
+    return isinstance(labels, dict) and labels.get("show", True) is not False
+
+
 def _values_inside_axes(el: dict, groups: list[tuple[str, str, list[int]]], axes: dict, family: str, where: str) -> None:
     """A value past a written axis min or max is clipped at the plot's edge by the
     renderer and drawn as if it were the bound: refused, never drawn wrong. A stacked
@@ -1289,6 +1323,8 @@ def _values_inside_axes(el: dict, groups: list[tuple[str, str, list[int]]], axes
                     else:
                         neg += v
                     reach = pos if v >= 0 else neg
+                    if v == 0 and not _point_label_shown(series[si], ci):
+                        continue  # a zero segment draws no bar and here no label: nothing is clipped (a football field's group-header row)
                     check(axis_name, reach, f"series[{si}] category {ci} (stacked to)")
                 else:
                     check(axis_name, v, f"series[{si}] category {ci}")
@@ -1964,7 +2000,10 @@ def draw_chrome(slide, guide: Guide, guide_data: dict, page_w: int, page_h: int,
             style = ch.get("text_style") or {}
             if text:
                 run = p.add_run()
-                run.text = text
+                # the space the reference sets between its words and the page number stays
+                # ("Version 39", never "Version1")
+                before = (ch.get("text") or "").split("<page number>")[0]
+                run.text = text + (" " if "<page number>" in (ch.get("text") or "") and before[-1:].isspace() else "")
                 run.font.name = style.get("family") or guide.families.get("minor") or "Arial"
                 run.font.size = Pt(float(style.get("size_pt") or guide.roles.get("type.caption", {}).get("size_pt") or 9))
                 run.font.bold = bool(style.get("bold"))
@@ -2221,7 +2260,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
                 title_ph.text_frame.text = ""
                 p = title_ph.text_frame.paragraphs[0]
                 run = p.add_run()
-                run.text = title["text"]
+                run.text = apply_case(title["text"], spec_t.get("case") or "as_typed")
                 ink = guide.hex(title.get("ink_role"), where="title") if title.get("ink_role") else (spec_t.get("ink") if HEX_RE.match(spec_t.get("ink") or "") else None)
                 _style_run(run, spec_t, guide, emphasis=False, ink_hex=ink)
                 if title.get("align"):

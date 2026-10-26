@@ -1145,31 +1145,77 @@ def skeleton_leaves(payload: dict[str, object]) -> list[tuple[str, str]]:
     return out
 
 
-def rank(gallery_dir: Path, intent_text: str) -> tuple[list[tuple[dict, int, list[str]]], list[tuple[dict, int]]]:
+#: the digest record fields whose words say what a house page does: its exhibit's type and
+#: data shape, its message and message kind, its annotation moves, emphasis devices and why
+DIGEST_WORD_FIELDS = ("type", "data_shape", "message", "message_kind", "emphasis_devices", "why", "class")
+
+
+def page_words(guide: dict | None) -> dict[int, frozenset[str]]:
+    """Per reference page (1-based), the words that say what it does: its title and the
+    completed digest's records for it (DIGEST_WORD_FIELDS, each move and its anchor), with
+    vocabulary terms split at their underscores and function words left out. A gallery's
+    shapes carry no such words (an exemplar's vocabulary was its family id and shape kinds),
+    so every intent overlapped every exemplar at 0; the digest the model completed in step 2
+    is the house's own tagging of its pages."""
+    from annotate import STOP_WORDS
+    out: dict[int, set[str]] = {}
+
+    def add(page: int, value: object) -> None:
+        if isinstance(value, str):
+            out.setdefault(page, set()).update(w for w in words(value.replace("_", " ")) if len(w) >= 3 and w not in STOP_WORDS)
+        elif isinstance(value, list):
+            for v in value:
+                add(page, v)
+        elif isinstance(value, dict):
+            for v in value.values():
+                add(page, v)
+
+    for r in ((guide or {}).get("exhibit_habits") or {}).get("records") or []:
+        if isinstance(r, dict) and isinstance(r.get("slide"), int):
+            for field in DIGEST_WORD_FIELDS:
+                add(r["slide"], r.get(field))
+            add(r["slide"], r.get("annotation_moves"))
+    for t in ((guide or {}).get("titles") or {}).get("records") or []:
+        if isinstance(t, dict) and isinstance(t.get("slide"), int):
+            add(t["slide"], t.get("text"))
+    return {k: frozenset(v) for k, v in out.items()}
+
+
+def rank(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> tuple[list[tuple[dict, int, list[str]]], list[tuple[dict, int]]]:
     """deckgen select_design_images (content/design_prompt.py:252-291): exemplars by
     overlap of the intent's words with family, id and skeleton vocabulary, crops by
-    overlap with the caption's words; ties break on id. Returns the top exemplars as
-    (entry, overlap, skeleton lines) and the top crops as (entry, overlap); library.py
-    pick reads the reference's own gallery through this."""
+    overlap with the caption's words; ties break on id. With the completed guide, each
+    exemplar and crop also carries its page's words (page_words: its title and its digest
+    records). Returns the top exemplars as (entry, overlap, skeleton lines) and the top
+    crops as (entry, overlap); library.py pick reads the reference's own gallery through this."""
     manifest = json.loads((gallery_dir / "manifest.json").read_text())
     intent = words(intent_text)
     leaves = {e["exemplar_id"]: skeleton_leaves(json.loads((gallery_dir / e["skeleton_file"]).read_text())) for e in manifest["exemplars"]}
+    tagged = page_words(guide)
 
     def exemplar_overlap(e: dict) -> int:
-        vocabulary = words(e["slide_family"]) | words(e["exemplar_id"]) | frozenset().union(*(words(label) for label, _ in leaves[e["exemplar_id"]]))
+        vocabulary = (words(e["slide_family"]) | words(e["exemplar_id"]) | frozenset().union(*(words(label) for label, _ in leaves[e["exemplar_id"]]))
+                      | tagged.get(e["source_slide_index"] + 1, frozenset()))
         return len(vocabulary & intent)
 
+    def crop_overlap(c: dict) -> int:
+        return len((words(c["caption"]) | tagged.get(c["source_slide_index"] + 1, frozenset())) & intent)
+
     exemplars = sorted(manifest["exemplars"], key=lambda e: (-exemplar_overlap(e), e["exemplar_id"]))[:EXEMPLAR_PICK]
-    crops = sorted(manifest["crops"], key=lambda c: (-len(words(c["caption"]) & intent), c["gallery_id"]))[:CROP_PICK]
+    crops = sorted(manifest["crops"], key=lambda c: (-crop_overlap(c), c["gallery_id"]))[:CROP_PICK]
     return ([(e, exemplar_overlap(e), [line for _, line in leaves[e["exemplar_id"]]]) for e in exemplars],
-            [(c, len(words(c["caption"]) & intent)) for c in crops])
+            [(c, crop_overlap(c)) for c in crops])
 
 
-def pick(gallery_dir: Path, intent_text: str) -> str:
+def pick(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> str:
     """rank() printed in the shape of deckgen's _exemplars_block and _gallery_block (600-632)."""
-    exemplars, crops = rank(gallery_dir, intent_text)
+    exemplars, crops = rank(gallery_dir, intent_text, guide)
+    tagged = bool(page_words(guide))
     lines = [f"intent words: {' '.join(sorted(words(intent_text)))}",
-             "Exemplars ranked by overlap of the intent with each exemplar's family, id and skeleton vocabulary; ties on exemplar id."]
+             "Exemplars ranked by overlap of the intent with each exemplar's family, id and skeleton vocabulary"
+             + (" and its page's title and digest records" if tagged else
+                "; UNTAGGED: pass --guide (the completed guide, step 2) to rank by each page's title and digest records, "
+                "or the overlap reads shape kinds only") + "; ties on exemplar id."]
     for e, overlap, skeleton_lines in exemplars:
         lines.append(f"exemplar {e['exemplar_id']} family {e['slide_family']} overlap {overlap} slide {e['source_slide_index'] + 1}: "
                      f"{(gallery_dir / e['render_file']).resolve()}")
@@ -1187,8 +1233,9 @@ def main(argv: list[str]) -> int:
         ap = argparse.ArgumentParser(prog="gallery.py pick", description="the top exemplars and crops for a page's composition intent")
         ap.add_argument("gallery_dir")
         ap.add_argument("--intent", required=True, help="the page's composition intent in words")
+        ap.add_argument("--guide", default=None, help="the completed guide: its digest records and titles tag each page")
         args = ap.parse_args(argv[1:])
-        print(pick(Path(args.gallery_dir), args.intent))
+        print(pick(Path(args.gallery_dir), args.intent, json.loads(Path(args.guide).read_text()) if args.guide else None))
         return 0
     if argv[:1] == ["digest"]:
         ap = argparse.ArgumentParser(prog="gallery.py digest", description="the exhibit digest stub: page renders, content and candidate crops, records for the model to complete")
@@ -1204,7 +1251,7 @@ def main(argv: list[str]) -> int:
         out.mkdir(parents=True, exist_ok=True)
         try:
             stub = digest(Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.include_generated,
-                          tuple(int(v) for v in args.pages.split("-", 1)) if args.pages else None)  # type: ignore[arg-type]
+                          cli.page_range(args.pages) if args.pages else None)
         except GalleryRefused as refused:
             print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)
             return 2
@@ -1228,7 +1275,7 @@ def main(argv: list[str]) -> int:
     try:
         manifest = build(
             Path(args.deck).resolve(), out, args.width, Path(args.guide) if args.guide else None, args.pool_max, args.exemplar_max,
-            args.include_generated, tuple(int(v) for v in args.pages.split("-", 1)) if args.pages else None,  # type: ignore[arg-type]
+            args.include_generated, cli.page_range(args.pages) if args.pages else None,
         )
     except GalleryRefused as refused:
         print(json.dumps({"refused": refused.reason, "detail": str(refused)}), file=sys.stderr)

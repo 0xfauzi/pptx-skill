@@ -350,6 +350,7 @@ class Run:
     words: int = 0
     bullet_glyph: str | None = None
     bullet_font: str | None = None
+    bullet_color: str | None = None  # the bullet glyph's own ink (a:buClr, or a PDF bullet glyph's fill); None: it takes the text's
     mar_l_emu: int | None = None  # paragraph left margin as resolved, bullets hang inside it
     indent_emu: int | None = None
     text: str = ""  # the whole run, for the renderer's glyph-coverage check only
@@ -447,6 +448,7 @@ class SlidePrint:
     pdf_fills: list[tuple[tuple[int, int, int, int], str | None]] = field(default_factory=list)  # pdf: every filled area (rects, filled paths, images) as (box EMU, hex); None = colour unreadable (image, pattern, shading)
     generated: bool = False  # carries emit_pptx's origin tag: this skill made it, so it is not reference evidence
     unread_glyphs: int = 0  # pdf: glyphs set at an angle no type size can be read along, left out of the runs
+    pdf_vectors: list[tuple[int, int, int, int]] = field(default_factory=list)  # pdf: drawn-path clusters (a vector wordmark), box EMU; chrome candidates only
 
 
 TYPE_EVIDENCE_CLASSES = ("vector", "vector_with_image")
@@ -835,6 +837,10 @@ class SlideWalker:
             bf = el.find(_a("buFont"))
             return bf.get("typeface") if bf is not None else None
 
+        def g_buclr(el: etree._Element) -> str | None:
+            bc = el.find(_a("buClr"))
+            return self.chain.first_color(bc) if bc is not None else None
+
         def g_bullet(el: etree._Element) -> str | None:
             for child in el:
                 name = _local(child)
@@ -870,6 +876,7 @@ class SlideWalker:
             after = self._resolve_para(ppr, holders, level, g_spc("spcAft")) or 0.0
             bullet = self._resolve_para(ppr, holders, level, g_bullet) or "inherit"
             bufont = self._resolve_para(ppr, holders, level, g_bufont)
+            buclr = self._resolve_para(ppr, holders, level, g_buclr)
             mar_l = self._resolve_para(ppr, holders, level, g_attr_int("marL"))
             indent = self._resolve_para(ppr, holders, level, g_attr_int("indent"))
             captured: dict | None = None
@@ -944,6 +951,7 @@ class SlideWalker:
                     row_class=row_class, text_sample=text.strip()[:40],
                     words=len(text.split()), bullet_glyph=(str(bullet)[5:] if str(bullet).startswith("char:") else None),
                     bullet_font=(str(bufont) if bufont else None),
+                    bullet_color=(str(buclr) if buclr and str(bullet).startswith("char:") else None),
                     mar_l_emu=mar_l if isinstance(mar_l, int) else None, indent_emu=indent if isinstance(indent, int) else None,
                     text=text,
                 ))
@@ -1607,6 +1615,41 @@ def _union_cover(boxes: list[tuple[float, float, float, float]], w: float, h: fl
     return sum(grid) / (n * n)
 
 
+def _path_clusters(boxes: list[tuple[float, float, float, float]]) -> list[tuple[float, float, float, float]]:
+    """Drawn paths joined into marks: two paths join when they overlap down the page and the
+    gap across between them is under the taller one's height (the letters of a vector
+    wordmark, bcg's "THE BOSTON CONSULTING GROUP" at the foot of every page, drawn as 30
+    curves). Single-linkage, so a row of letters is one mark."""
+    parent = list(range(len(boxes)))
+
+    def root(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    order = sorted(range(len(boxes)), key=lambda i: boxes[i][0])
+    for a_pos, i in enumerate(order):
+        _, t0, x1, b0 = boxes[i]
+        for j in order[a_pos + 1:]:
+            u0, t1, _, b1 = boxes[j]
+            reach = max(b0 - t0, b1 - t1)
+            if u0 - x1 > reach * 4:
+                break  # sorted by left edge: every later path starts further right
+            if min(b0, b1) > max(t0, t1) and u0 - x1 <= reach:
+                parent[root(j)] = root(i)
+    groups: dict[int, list[int]] = {}
+    for i in range(len(boxes)):
+        groups.setdefault(root(i), []).append(i)
+    return [(min(boxes[i][0] for i in g), min(boxes[i][1] for i in g), max(boxes[i][2] for i in g), max(boxes[i][3] for i in g)) for g in groups.values()]
+
+
+def vector_shapes(sp: SlidePrint) -> list[Shape]:
+    """A PDF page's drawn-path marks as picture shapes, for the chrome miner only (a vector
+    logo recurs where a pasted one would); content readers never see them."""
+    return [Shape("picture", box, None, None, None, None, False, None, "slide", ref=f"vec{k}") for k, box in enumerate(sp.pdf_vectors)]
+
+
 def _image_regions(boxes: list[tuple[float, float, float, float]], w: float, h: float) -> list[tuple[float, float, float, float]]:
     """Touching images as one picture each: a producer that tiles one picture into strips
     (bain p52 draws 15,554 image objects) paints one element, not thousands. Tiles join
@@ -1826,6 +1869,12 @@ slide: the house name the pptx keeps on its layout is one more block on every PD
 and a table's cells are blocks, slide 19 reads 17 against 3), 1,326 words against 1,263
 (pdfplumber's own word split reads 1,369), 191 paragraphs against 198. Not tuned to that
 deck."""
+PDF_RESIZED_GAP_EM = 0.5
+"""A gap past half the larger em where the type size changes past PDF_BLOCK_SIZE_RATIO
+parts one baseline into two boxes (bain p38: a 16pt lever-tag badge 28pt right of a 32pt
+title line). ASSERTED, then checked over the eleven consulting PDFs and the seven
+reference PDFs against the reader without the rule (2026-10-26): it parts no bullet from
+its item and no superscript one word space after its figure."""
 QUARTER_TURN_TOLERANCE = 0.02
 """A glyph matrix whose off-axis terms are under 2% of its scale is upright or a quarter
 turn; anything else (skewed, arbitrary angle) has no axis to read a size along."""
@@ -1932,13 +1981,12 @@ def _pdf_glyph(ch: dict, w: float, h: float, painted: dict[tuple, int] | None = 
     return None
 
 
-def _pdf_segments(direction: str, glyphs: list[_Glyph]) -> list[_Segment]:
-    """Glyphs sharing a baseline band, in reading order, cut at column gaps. A glyph joins
-    the line whose tallest glyph's band holds its centre, so a superscript or a larger
-    first word stays on its line."""
+def _band_lines(glyphs: list[_Glyph]) -> list[list[_Glyph]]:
+    """Glyphs grouped into lines: a glyph joins the line whose tallest glyph's band holds
+    its centre, so a superscript or a larger first word stays on its line."""
     lines: list[list[_Glyph]] = []
     band: tuple[float, float, float] | None = None  # v0, v1, em of the line's tallest glyph
-    for g in sorted((g for g in glyphs if not g.space), key=lambda g: ((g.v0 + g.v1) / 2, g.u0)):
+    for g in sorted(glyphs, key=lambda g: ((g.v0 + g.v1) / 2, g.u0)):
         mid = (g.v0 + g.v1) / 2
         if band is not None and band[0] <= mid <= band[1]:
             lines[-1].append(g)
@@ -1947,11 +1995,17 @@ def _pdf_segments(direction: str, glyphs: list[_Glyph]) -> list[_Segment]:
         else:
             lines.append([g])
             band = (g.v0, g.v1, g.em)
+    return lines
+
+
+def _pdf_segments(direction: str, glyphs: list[_Glyph]) -> list[_Segment]:
+    """Glyphs sharing a baseline band, in reading order, cut at column gaps. A glyph joins
+    the line whose tallest glyph's band holds its centre, so a superscript or a larger
+    first word stays on its line."""
     spaces = sorted((g for g in glyphs if g.space), key=lambda g: g.u0)
     out: list[_Segment] = []
-    for line in lines:
+    for line in _band_lines([g for g in glyphs if not g.space]):
         line.sort(key=lambda g: g.u0)
-        lv0, lv1 = min(g.v0 for g in line), max(g.v1 for g in line)
         segs: list[list[_Glyph]] = [[line[0]]]
         for k, (prev, g) in enumerate(zip(line, line[1:]), 1):
             seg = segs[-1]
@@ -1962,13 +2016,27 @@ def _pdf_segments(direction: str, glyphs: list[_Glyph]) -> list[_Segment]:
             nxt = line[k + 1] if k + 1 < len(line) else None
             bullet_mid = (g.text in BULLET_GLYPHS and nxt is not None and gap > PDF_WORD_GAP_EM * min(g.em, prev.em)
                           and nxt.u0 - g.u1 > PDF_WORD_GAP_EM * min(g.em, nxt.em) and g.text not in MID_LINE_PUNCTUATION)
-            if gap > PDF_COLUMN_GAP_ADVANCES * max(adv, 2.0) or bullet_mid:
+            # a change of type size past PDF_BLOCK_SIZE_RATIO across a word gap parts two
+            # boxes, as it parts two blocks: bain p38's lever tag badge sits 28pt right of a
+            # 32pt title line, nearer than a column gap at the title's advance
+            # (a bullet glyph set at its own size opens its item, and a superscript one word
+            # space after its figure, "18 th", stays: the gap must pass half the larger em)
+            lead_bullet = len(seg) == 1 and (prev.text in BULLET_GLYPHS or (prev.family or "").lower().startswith(SYMBOL_FACES))
+            resized = (not lead_bullet and gap > PDF_RESIZED_GAP_EM * max(g.em, prev.em)
+                       and max(g.em, prev.em) > PDF_BLOCK_SIZE_RATIO * min(g.em, prev.em))
+            if gap > PDF_COLUMN_GAP_ADVANCES * max(adv, 2.0) or bullet_mid or resized:
                 segs.append([g])
             else:
                 seg.append(g)
+        # a column cut off a tall line holds its own lines: bain p38's lever tag sets two
+        # small lines beside a 32pt title line, both inside the title's band, and read as one
+        # line their letters interleaved ("bNeesgto-ptiraictee"). Each column is banded again
+        # by its own tallest glyph.
+        segs = [sorted(sub, key=lambda g: g.u0) for seg in segs for sub in _band_lines(seg)]
         for seg in segs:
             s0, s1 = seg[0].u0, seg[-1].u1
             # the file's own space glyphs inside the segment mark word breaks too
+            lv0, lv1 = min(g.v0 for g in seg), max(g.v1 for g in seg)
             inner = [sp for sp in spaces if s0 < (sp.u0 + sp.u1) / 2 < s1 and lv0 <= (sp.v0 + sp.v1) / 2 <= lv1]
             glyphs_in = sorted(seg + inner, key=lambda g: g.u0)
             segment = _Segment(direction, glyphs_in)
@@ -2122,7 +2190,7 @@ def _block_paragraphs(blk: list[_Segment]) -> list[dict]:
         mar_l = round((group[0].u0 - block_left) * EMU_PER_PT) if bullet is not None else 0
         indent = round((bullet.u0 - group[0].u0) * EMU_PER_PT) if bullet is not None else None
         paras.append({"level": level, "bullet": f"char:{bullet.text}" if bullet is not None else "none", "align": align, "mar_l_emu": mar_l,
-                      "indent_emu": indent,
+                      "indent_emu": indent, "bullet_color": bullet.color if bullet is not None else None,
                       # a symbol face whose glyph the file maps to a Unicode bullet: the Unicode
                       # is the meaning, and Wingdings has no glyph at U+2022 to draw it with
                       "bullet_font": (None if bullet is None or ((bullet.family or "").lower().startswith(SYMBOL_FACES) and ord(bullet.text) < 0xE000)
@@ -2202,7 +2270,7 @@ def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | No
                                    ref=f"{ref}/p[{pi}]/r[{ri}]", level=para["level"], italic=r["italic"],
                                    bullet="char" if bullet.startswith("char:") else "none", text_sample=r["text"].strip()[:40],
                                    words=len(r["text"].split()), bullet_glyph=bullet[5:] if bullet.startswith("char:") else None,
-                                   bullet_font=para["bullet_font"], text=r["text"],
+                                   bullet_font=para["bullet_font"], bullet_color=para.get("bullet_color"), text=r["text"],
                                    mar_l_emu=para["mar_l_emu"] if bullet.startswith("char:") else None, indent_emu=para["indent_emu"],
                                    box=tuple(int(v * scale) for v in _page_box(blk[0].direction, r["ext"], w, h))))  # type: ignore[arg-type]
         text = " ".join("".join(r["text"] for r in p["runs"]) for p in paras)
@@ -2334,8 +2402,15 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
             for k, line in enumerate(page.lines):
                 lw = float(line.get("linewidth") or 1.0)
                 color = _pdf_color(line.get("stroking_color"))
-                box = (int(float(line["x0"]) * scale), int(float(line["top"]) * scale),
-                       int(max(1.0, float(line["x1"]) - float(line["x0"])) * scale), int(max(lw, float(line["bottom"]) - float(line["top"])) * scale))
+                # the box is the painted stroke: a line's path runs down the middle of its
+                # width, so a horizontal rule's ink starts half its width above the path
+                # (bcg's 2.25pt title rule was mined, and redrawn, 1.1pt low: 2px at 1600px)
+                lx0, lx1, ltop, lbottom = float(line["x0"]), float(line["x1"]), float(line["top"]), float(line["bottom"])
+                if lbottom - ltop < lw:
+                    ltop, lbottom = (ltop + lbottom - lw) / 2, (ltop + lbottom + lw) / 2
+                if lx1 - lx0 < lw:
+                    lx0, lx1 = (lx0 + lx1 - lw) / 2, (lx0 + lx1 + lw) / 2
+                box = (int(lx0 * scale), int(ltop * scale), int((lx1 - lx0) * scale), int((lbottom - ltop) * scale))
                 sp.shapes.append(Shape("line", box, None, color, int(lw * scale), None, False, None, "slide", ref=f"l{k}",
                                        paint_order=painted.get(_pdf_key(line), 0)))
             boxes = []
@@ -2352,6 +2427,9 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 first = min((o for (bx0, bt, bx1, bb), o in zip(boxes, orders) if x0 <= (bx0 + bx1) / 2 <= x1 and t <= (bt + bb) / 2 <= b), default=0)
                 sp.shapes.append(Shape("picture", (int(x0 * scale), int(t * scale), int((x1 - x0) * scale), int((b - t) * scale)),
                                        None, None, None, None, False, None, "slide", ref=f"img{k}", paint_order=first))
+            curves = [(float(c["x0"]), float(c["top"]), float(c["x1"]), float(c["bottom"])) for c in page.curves
+                      if float(c["x1"]) > float(c["x0"]) or float(c["bottom"]) > float(c["top"])]
+            sp.pdf_vectors = [(int(x0 * scale), int(t * scale), int((x1 - x0) * scale), int((b - t) * scale)) for x0, t, x1, b in _path_clusters(curves)]
             if sp.background is None:
                 sp.background = "FFFFFF"
             out.append(sp)

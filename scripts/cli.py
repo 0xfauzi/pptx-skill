@@ -91,6 +91,11 @@ def run(main: Callable[[list[str]], int | None]) -> None:
         # a path a command was given cannot be opened: named, never a traceback
         name = error.filename if error.filename is not None else ""
         raise SystemExit(f"refused: {error.strerror or error}: {name!r}; {UNSET_HINT}") from None
+    except Exception as error:
+        from textfit import RulerUnavailableError
+        if isinstance(error, RulerUnavailableError):
+            raise SystemExit(f"refused: {error}") from None  # the guide's pinned ruler, named
+        raise
     sys.exit(code)
 
 
@@ -100,3 +105,16 @@ def guard_args(args: object, *names: str) -> None:
         value = getattr(args, name, None)
         if value:
             out_path(value, f"--{name.replace('_', '-')} path")
+
+
+def page_range(text: str) -> tuple[int, int]:
+    """`--pages A-B` (or one page `A`): a 1-based inclusive range, refused by name when it
+    is not one. Every command that reads part of a long deck takes it in this one spelling."""
+    first, _, last = text.strip().partition("-")
+    try:
+        lo, hi = int(first), int(last or first)
+    except ValueError:
+        raise SystemExit(f"--pages {text!r}: write a 1-based inclusive range, e.g. 14-61, or one page, e.g. 19") from None
+    if lo < 1 or hi < lo:
+        raise SystemExit(f"--pages {text!r}: the range must start at 1 or later and end at or after its start")
+    return lo, hi

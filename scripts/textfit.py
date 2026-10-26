@@ -446,6 +446,37 @@ class PillowRuler:
 def default_ruler() -> Ruler:
     return HarfBuzzRuler() if hb is not None else PillowRuler()
 
+
+class RulerUnavailableError(LookupError):
+    """The guide pins a ruler this Python cannot run."""
+
+
+def ruler_named(name: str) -> Ruler:
+    if name == HarfBuzzRuler.name:
+        if hb is None:
+            raise RulerUnavailableError("the guide pins the harfbuzz ruler and uharfbuzz is not importable here: install it "
+                                        "(python3 -m pip install uharfbuzz), or work with the machine the guide was extracted on")
+        return HarfBuzzRuler()
+    if name == PillowRuler.name:
+        return PillowRuler()
+    raise RulerUnavailableError(f"the guide pins ruler {name!r}; the rulers are {HarfBuzzRuler.name!r} and {PillowRuler.name!r}")
+
+
+def ruler_pin() -> dict:
+    """What a draft records of its measurement: the ruler this machine runs now. Every
+    later command on that guide measures with it (ruler_for), so a package installed
+    mid-session (a second agent's pip install of uharfbuzz moved every fit budget of a
+    session that had planned on Pillow) never changes the instrument under a deck."""
+    return {"ruler": default_ruler().name,
+            "basis": "pinned when the draft was extracted; every capacity, survey and build on this guide measures with this ruler"}
+
+
+def ruler_for(guide: dict | None) -> Ruler:
+    """The guide's pinned ruler (ruler_pin), or this machine's default for a guide that
+    pins none (one extracted before the pin, or a reference read without a guide)."""
+    name = ((guide or {}).get("measurement") or {}).get("ruler")
+    return ruler_named(name) if name else default_ruler()
+
 def measure_text(
     ruler: Ruler, text: str, width_emu: int, path: str, size_pt: float
 ) -> tuple[MeasuredLine, ...]:

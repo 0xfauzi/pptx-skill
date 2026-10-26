@@ -118,7 +118,23 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
 ## Fonts the machine lacks
 
 `python3 scripts/preflight.py --reference "$REF"` lists every face the reference names with
-what this machine draws it as, and prints the install commands for what is missing.
+what this machine draws it as AND what the solver measures it with, and prints the install
+commands for what is missing. The two differ on a PDF: the page renders draw a face the
+file embeds exactly, while the solver needs an installed file. Bain's Verdana and
+McKinsey's Georgia rendered `exact` from their PDFs and every page was refused at
+capacity; preflight now says `NOT measurable here` for such a face.
+
+**What you may install.** Nothing, on your own. Preflight prints the commands; the user
+runs them, or tells you to. Fonts and Python packages are machine-wide: in one round on a
+shared machine an agent installed Verdana (Microsoft's `verdan32.exe`, unpacked with
+`cabextract` into `/usr/local/share/fonts/verdana`), another Gelasio (into
+`/usr/local/share/fonts/gelasio`), and a third `uharfbuzz` with pip, and every other
+session's renders, fc-match answers and fit budgets moved under it. A proprietary face
+(Verdana, Georgia and the rest of Microsoft's core fonts) is also a licence the user
+accepts, not you. What you may do without asking: name, under
+`/typography/families/substitutes`, the stand-in fc-match already draws (below). Say in
+the final report every face that was substituted and every face or package anyone
+installed during the work, and by whom.
 
 The solver measures with the font files it has (`fc-list`). With no metric alias for the
 reference's face (Arial, Calibri, Cambria, Times New Roman and Courier New have one), the

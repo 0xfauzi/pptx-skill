@@ -38,13 +38,95 @@ import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field, replace
 from pathlib import Path
+from typing import ClassVar
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import plan  # noqa: E402
-from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, visual_extent  # noqa: E402
+import textfit  # noqa: E402
+from ooxml import CHROME_TYPES, EMU_PER_PT, RECURRENCE_FLOOR, TITLE_TYPES, Run, Shape, SlidePrint, fingerprint_deck, is_type_evidence, paragraphs_words, pdf_triage, vector_shapes, visual_extent  # noqa: E402
 
 EMU_PER_INCH = 914400
+#: a PDF's chrome bands and rules are measured on the page as pdftoppm draws it at this
+#: density (0.24pt a pixel): the file's geometry ignores clipping paths and stroke widths
+DRAWN_EXTENT_DPI = 300
+#: how far past its geometry a band's or rule's ink is looked for: a stroke drawn about
+#: its path reaches half its width beyond it
+DRAWN_EXTENT_MARGIN_PT = 6.0
+#: a pixel is the entry's ink when its RGB lies within this L1 distance of it (anti-aliased
+#: edge pixels fall outside, so an extent reads up to one pixel, 0.24pt, short)
+DRAWN_EXTENT_TOLERANCE = 30
+
+
+def drawn_extent_emu(pdf: Path, page_index: int, box: tuple[int, int, int, int], ink_hex: str, cache: dict) -> tuple[int, int, int, int] | None:
+    """The box (EMU) the reference's renderer paints `ink_hex` in, around a chrome entry's
+    geometry `box` on page `page_index`: bain's navy title band is a rect from 12.7pt
+    that a clipping path shows from 16.8pt (an 8px inset at 1600px wide), bcg's title
+    rule a line path whose 2.25pt stroke sits half above it. None when the ink is not
+    found there (a pattern, a picture) or the page cannot be drawn."""
+    import subprocess
+    import tempfile
+
+    from PIL import Image
+    key = (str(pdf), page_index)
+    if key not in cache:
+        with tempfile.TemporaryDirectory(prefix="extract-") as tmp:
+            stem = Path(tmp) / "page"
+            try:
+                subprocess.run(["pdftoppm", "-png", "-r", str(DRAWN_EXTENT_DPI), "-f", str(page_index + 1), "-l", str(page_index + 1), "-singlefile",
+                                str(pdf), str(stem)], capture_output=True, timeout=120, check=True)
+                with Image.open(stem.with_suffix(".png")) as im:
+                    cache[key] = im.convert("RGB")
+            except (OSError, subprocess.SubprocessError):
+                cache[key] = None
+    im = cache[key]
+    if im is None:
+        return None
+    k = DRAWN_EXTENT_DPI / EMU_PER_INCH
+    margin = DRAWN_EXTENT_MARGIN_PT * EMU_PER_PT * k
+    x0, y0 = max(0, int(box[0] * k - margin)), max(0, int(box[1] * k - margin))
+    x1, y1 = min(im.width, int((box[0] + box[2]) * k + margin) + 1), min(im.height, int((box[1] + box[3]) * k + margin) + 1)
+    target = tuple(int(ink_hex[i:i + 2], 16) for i in (0, 2, 4))
+    px = im.load()
+    # a band or rule fills its width: a row counts when the ink runs at least half the
+    # entry's width along it (bcg's green title text, inside the margin above its green
+    # rule, is not the rule); the extent across is read on those rows only
+    need = max(1, int(0.5 * box[2] * k))
+    rows: list[tuple[int, int, int]] = []
+    for y in range(y0, y1):
+        hits = [x for x in range(x0, x1)
+                if abs(px[x, y][0] - target[0]) + abs(px[x, y][1] - target[1]) + abs(px[x, y][2] - target[2]) <= DRAWN_EXTENT_TOLERANCE]
+        if len(hits) >= need:
+            rows.append((y, hits[0], hits[-1]))
+    if not rows:
+        return None
+    top, bottom = rows[0][0], rows[-1][0] + 1
+    left, right = min(r[1] for r in rows), max(r[2] for r in rows) + 1
+    return (round(left / k), round(top / k), round((right - left) / k), round((bottom - top) / k))
+
+def chrome_pictures(guide: dict, reference: str, folder: Path) -> None:
+    """Every logo the PDF chrome miner found (a pasted picture, or a vector wordmark drawn
+    as paths) gets the pixels the reference draws it with, cut from its sample page at 600
+    dpi into `folder`, as the entry's image_path: an entry with no image drew nothing, so
+    bcg's wordmark and its second top-rule strip were lost from every built page. An entry
+    too small to cut (a sliver at the page edge) is left without one and says why."""
+    import images
+    for ch in guide.get("chrome") or []:
+        if ch.get("kind") != "logo" or ch.get("image_path") or not ch.get("sample_page"):
+            continue
+        x, y, w, h = ch["box_in"]
+        bbox = [round(x * 72, 2), round(y * 72, 2), round((x + w) * 72, 2), round((y + h) * 72, 2)]
+        folder.mkdir(parents=True, exist_ok=True)
+        dest = folder / f"{ch['chrome_id']}.png"
+        try:
+            images.extract(reference, str(dest), None, ch["sample_page"], bbox, 600)
+        except images.ImageRefused as error:
+            ch["image_basis"] = f"not cut: {error}"
+            continue
+        ch["image_path"] = str(dest.resolve())
+        ch["image_basis"] = (f"cut from page {ch['sample_page']} of the reference as pdftoppm draws it at 600 dpi (the mark's own pixels, "
+                             "with the page's ground around them)")
+
 
 # --- constants, with where each comes from -------------------------------------------
 SIZE_LEVEL_RATIO = 1.10  # deckgen tokens.py:199; asserted: the smallest classic type step is 1.125
@@ -478,7 +560,7 @@ class Extractor:
                 if c.box:
                     self.chrome_keys.add((c.kind, quant(c.box)))
             seen = set()
-            for sh in s.shapes:
+            for sh in s.shapes + vector_shapes(s):
                 # Only furniture can be chrome: rules, bands, pictures and the date/footer/number
                 # placeholders. A title repeated at one position is composition, not chrome. A PDF
                 # has no placeholders, so a short text line repeated at one position (a footer
@@ -486,7 +568,9 @@ class Extractor:
                 furniture = sh.ph_type in CHROME_TYPES or (sh.text_chars == 0 and sh.kind in ("line", "shape", "picture"))
                 # a rotated line (a copyright up the page edge) is furniture wherever it sits
                 # and however long; recurrence at one position below still decides it
-                pdf_label = self.is_pdf and sh.text is not None and (bool(sh.rotation) or (len(sh.text) <= 48 and sh.box[1] > 0.8 * self.h))  # type: ignore[index]
+                # (no length bound: bcg's 61-character file-name footer recurs on every page and is furniture;
+                # recurrence at one position with the same words decides it, below)
+                pdf_label = self.is_pdf and sh.text is not None and (bool(sh.rotation) or sh.box[1] > 0.8 * self.h)  # type: ignore[index]
                 if sh.box and (furniture or pdf_label):
                     if pdf_label:
                         # a footer line often carries the page number: key on the words and the
@@ -706,8 +790,13 @@ class Extractor:
         for lvl in range(0, 5):
             lvl_runs = [r for r in runs if r.level == lvl and r.bullet == "char"]
             if lvl_runs:
+                # the glyph's own ink, where it has one other than its text's (bcg's green
+                # squares beside black text): a role the emitter writes as a:buClr
+                inks = [r.bullet_color for r in lvl_runs if r.bullet_color and r.bullet_color != r.color]
+                ink = modal(inks) if len(inks) * 2 >= len(lvl_runs) else None
                 bullets[lvl] = {"glyph": modal([r.bullet_glyph for r in lvl_runs if r.bullet_glyph]),
                                 "font": modal([r.bullet_font for r in lvl_runs if r.bullet_font]), "runs": len(lvl_runs),
+                                "ink_hex": ink, "ink_role": None,
                                 "mar_l_emu": modal([r.mar_l_emu for r in lvl_runs if r.mar_l_emu is not None]),
                                 "hanging_emu": modal([-r.indent_emu for r in lvl_runs if r.indent_emu is not None])}
         self._bullets = bullets
@@ -1293,10 +1382,13 @@ class Extractor:
             self.open("/density_bands/table_rows_per_inch", "no table with row heights observed")
 
     # ---- chrome and motifs ----
+    _page_renders: ClassVar[dict] = {}  # one render per (reference, page) for drawn_extent_emu, shared by every run in the process
+
     def chrome_and_motifs(self) -> None:
         chrome = []
         seen: set = set()
         samples: dict[tuple, Shape] = {}
+        first_page: dict[tuple, int] = {}  # the page each entry was first seen on: a PDF's drawn extent is read there
         presence: Counter = Counter()
         text_of: dict[tuple, str] = {}
         # each entry's rank in its page's painting sequence, per page it is on: the drawn
@@ -1312,7 +1404,7 @@ class Extractor:
                     samples.setdefault(k, c)
                     presence[k] += 1
                     on_page.setdefault(k, c.paint_order)
-            for sh in s.shapes:
+            for sh in s.shapes + vector_shapes(s):
                 if not sh.box or not self.is_chrome(sh):
                     continue
                 if self.is_pdf and sh.text is not None:
@@ -1328,6 +1420,7 @@ class Extractor:
                     continue
                 k = (sh.kind, quant(sh.box), "slide")
                 samples.setdefault(k, sh)
+                first_page.setdefault(k, s.index)
                 presence[k] += 1
                 on_page.setdefault(k, sh.paint_order)
                 if sh.text_chars and k not in text_of:
@@ -1386,6 +1479,15 @@ class Extractor:
             anchor = min(dist, key=dist.get)
             if dist[anchor] > 0.15:
                 anchor = "center"
+            box_basis = None
+            ink = sh.fill if kind == "band" else sh.line if kind == "rule" else None
+            if self.is_pdf and ink and k in first_page and ink != self.slides[first_page[k]].background:
+                drawn = drawn_extent_emu(self.path, first_page[k], (x, y, w, h), ink, self._page_renders)
+                if drawn is not None and drawn != (x, y, w, h):
+                    x, y, w, h = drawn
+                    box_basis = ("drawn extent on the reference's own page render (pdftoppm, the renderer that reads the file): "
+                                 f"its geometry in the PDF was {[round(v / EMU_PER_INCH, 3) for v in sh.box]} in, moved by a clipping path "  # type: ignore[union-attr]
+                                 "or a stroke's width")
             entry = {
                 "chrome_id": f"chrome-{len(chrome) + 1}", "kind": kind, "source_layer": sh.layer, "shape_kind": sh.kind,
                 "box_in": [round(v / EMU_PER_INCH, 3) for v in (x, y, w, h)], "anchor": anchor, "span": span,
@@ -1399,6 +1501,10 @@ class Extractor:
                 "paint_rank": statistics.median(paint_ranks.get(k) or [0.0]),
                 "carries_content_on": content_on[k],
             }
+            if box_basis:
+                entry["box_basis"] = box_basis
+            if k in first_page:
+                entry["sample_page"] = first_page[k] + 1
             if sh.rotation:
                 entry["rotation_deg"] = round(sh.rotation / 60000, 2)  # clockwise about the centre of box_in, the pre-rotation box
             if self.is_pdf and sh.text is not None and sh.line_style:
@@ -1644,6 +1750,8 @@ class Extractor:
         # bind role inks and chrome colours to roles (after colour roles exist)
         for role, spec in self._roles.items():
             spec["ink_role"] = self.role_of(spec.get("ink"), "ink") if spec.get("ink") else None
+        for b in self._bullets.values():
+            b["ink_role"] = self.role_of(b.get("ink_hex")) if b.get("ink_hex") else None
         for path, reason in (("/description", "written by the model from the renders and this draft: summary, typography, color, layout, tables, imagery, motifs, never_does, tone"),
                              ("/derivation_rules", "how to extend the palette and the type ladder to roles the reference never showed"),
                              ("/continuation", "header repeat, cont'd mark and takeaway policy when a slide splits")):
@@ -1664,6 +1772,7 @@ class Extractor:
                 self.notes.append(text_layer["reason"])
         self.guide = {
             "schema": "pptx-skill style guide draft v1",
+            "measurement": textfit.ruler_pin(),
             "reference": {"file": str(self.path), "sha256": hashlib.sha256(Path(self.path).read_bytes()).hexdigest(), "slides": len(self.slides),
                           "format": "pdf" if self.is_pdf else "pptx", "text_layer": text_layer,
                           "triage": ({k: self.triage[k] for k in ("deck_class", "counts", "evidence_pages", "raster_pages", "modal_page_pt")} if self.triage else None),
@@ -1726,6 +1835,7 @@ def _raster_run(self: "Extractor") -> dict:
                       "then complete the guide from the page images with raster_inference provenance at confidence <= 0.5.")
     self.guide = {
         "schema": "pptx-skill style guide draft v1",
+        "measurement": textfit.ruler_pin(),
         "reference": {"file": str(self.path), "sha256": hashlib.sha256(Path(self.path).read_bytes()).hexdigest(), "slides": len(self.slides),
                       "format": "pdf", "text_layer": {"status": "raster", "deck_class": tri.get("deck_class"), "counts": tri.get("counts"),
                                                        "raster_pages": tri.get("raster_pages"), "slide_box_pt": tri.get("slide_box_pt"),
@@ -1892,16 +2002,15 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out", "report")
-    pages = None
-    if args.pages:
-        lo, hi = args.pages.split("-")
-        pages = (int(lo), int(hi))
+    import cli
+    pages = cli.page_range(args.pages) if args.pages else None
     ex = Extractor(args.reference, args.max_pages, pages, args.include_generated)
     guide = ex.run()
-    import cli
     out = cli.out_path(Path(args.out) if args.out else Path(args.reference).with_suffix(".style.json"), "guide draft")
     cli.out_path(Path(args.report) if args.report else out.with_suffix(".md"), "report")
     out.parent.mkdir(parents=True, exist_ok=True)
+    if ex.is_pdf:
+        chrome_pictures(guide, args.reference, out.parent / "chrome")
     out.write_text(json.dumps(guide, indent=1, default=str))
     rep = Path(args.report) if args.report else out.with_suffix(".md")
     rep.parent.mkdir(parents=True, exist_ok=True)

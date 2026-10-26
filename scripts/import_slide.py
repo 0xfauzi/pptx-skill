@@ -48,11 +48,12 @@ EMU_PER_INCH = 914400
 CHROME_PH = {"sldNum", "ftr", "dt"}
 
 
-def role_table(guide: dict) -> list[tuple[str, float, int, str | None]]:
+def role_table(guide: dict) -> list[tuple[str, float, int, str | None, str]]:
+    """(role, size, weight, ink role, alignment) per sized type role."""
     out = []
     for name, spec in guide["typography"]["roles"].items():
         if spec.get("size_pt"):
-            out.append((name, float(spec["size_pt"]), int(spec.get("weight") or 400), spec.get("ink_role")))
+            out.append((name, float(spec["size_pt"]), int(spec.get("weight") or 400), spec.get("ink_role"), str(spec.get("alignment") or "left")))
     return out
 
 
@@ -60,12 +61,12 @@ PREFERENCE = ["type.body", "type.h2", "type.h1", "type.emphasis", "type.caption"
               "type.kicker", "type.table_cell", "type.table_header", "type.axis_label", "type.data_label", "type.title", "type.subtitle"]
 
 
-def bind_role(size: float, bold: bool, is_title: bool, roles: list[tuple[str, float, int, str | None]]) -> str:
+def bind_role(size: float, bold: bool, is_title: bool, roles: list[tuple[str, float, int, str | None, str]]) -> str:
     if is_title and any(r[0] == "type.title" for r in roles):
         return "type.title"
     weight = 700 if bold else 400
     best = None
-    for name, rsize, rweight, _ in roles:
+    for name, rsize, rweight, *_ in roles:
         if name == "type.title":
             continue
         cost = abs(rsize - size) * 10 + (0 if rweight == weight else 3) + (PREFERENCE.index(name) if name in PREFERENCE else 20) * 0.01
@@ -119,12 +120,14 @@ def rows_of(shapes: list[Shape]) -> list[list[Shape]]:
     return rows
 
 
-def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str | None]], colours: dict[str, str], styling: dict, notes: list[str],
-                 fill: str | None = None, extra_fills: tuple[str, ...] = ()) -> dict:
+def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str | None, str]], colours: dict[str, str], styling: dict, notes: list[str],
+                 fill: str | None = None, extra_fills: tuple[str, ...] = (), lost: list[str] | None = None) -> dict:
     fill = fill or sh.fill
     paragraphs = []
     para_style: dict[str, dict] = {}
     inverse = None
+    from collections import Counter
+    reweighted: Counter = Counter()
     for i, para in enumerate(sh.paragraphs or []):
         runs: list[dict] = []
         for r in para["runs"]:
@@ -145,17 +148,26 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
         paragraphs.append(p)
         if not all_bold and any(r["bold"] for r in runs):
             para_style[str(len(paragraphs) - 1)] = {"runs": [{"text": r["text"], **({"emphasis": True} if r["bold"] else {})} for r in runs]}
-        if para.get("align") in ("ctr", "r"):
-            para_style.setdefault(str(len(paragraphs) - 1), {})["align"] = {"ctr": "center", "r": "right"}[para["align"]]
+        bound = next(r for r in roles if r[0] == role) if any(r[0] == role for r in roles) else None
+        drawn_align = {"l": "left", "ctr": "center", "r": "right", "just": "justify"}.get(str(para.get("align")))
+        if drawn_align and drawn_align != (bound[4] if bound else "left"):
+            # the paragraph's own alignment wherever it is not its role's (bcg p31's left-set
+            # bullets bound to a centred 14pt role came back centred)
+            para_style.setdefault(str(len(paragraphs) - 1), {})["align"] = drawn_align
+        if bound and (bound[2] >= 700) != all_bold and not (all_bold is False and any(r["bold"] for r in runs)):
+            # the weight a role cannot carry: named once per element, never silently changed
+            reweighted[(f"{lead['size_pt']:g}pt {'bold' if all_bold else 'regular'}", role, f"{bound[1]:g}pt {'bold' if bound[2] >= 700 else 'regular'}")] += 1
         if lead.get("color"):
             name, d = nearest_colour(lead["color"], colours, ("color.ink", "color.accent", "color.rule"))
             # the ink is written whenever it differs from the bound role's own ink: a role
             # bound by size can carry another ink (a white box header) than the run had
-            own = next((r[3] for r in roles if r[0] == role), None) or "color.ink"
+            own = (bound[3] if bound else None) or "color.ink"
             if name and d < 12 and name != own:
                 para_style.setdefault(str(len(paragraphs) - 1), {})["ink_role"] = name
                 if name == "color.ink_inverse":
                     inverse = name
+    if lost is not None:
+        lost += [f"{ident}: {n} paragraph(s) set {drawn}, bound to {role} ({theirs}): the guide has no {drawn} role" for (drawn, role, theirs), n in reweighted.items()]
     el = {"type": "element", "id": ident, "kind": "text", "paragraphs": paragraphs}
     st: dict = {}
     if sh.text_anchor in ("ctr", "b"):
@@ -180,14 +192,16 @@ def text_element(sh: Shape, ident: str, roles: list[tuple[str, float, int, str |
 CHROME_TEXT_KINDS = {"label", "page_number", "footer", "date"}
 
 
-def chrome_boxes(guide: dict) -> list[tuple[int, int, int, int]]:
-    """The guide's text chrome positions in EMU. A PDF page carries its footer and page
-    number as page text, so the slide's own copy is recognised by where the guide found
-    that chrome (a band or a rule is never a text block's position)."""
+def chrome_boxes(guide: dict, kinds: set[str] | frozenset[str] = frozenset(CHROME_TEXT_KINDS)) -> list[tuple[int, int, int, int]]:
+    """The guide's chrome positions of `kinds` in EMU. A PDF page carries its footer and
+    page number as page text and its logos as page pictures, so the slide's own copy is
+    recognised by where the guide found that chrome: text against the text kinds, a
+    picture against the logos (bcg's top-rule strip, drawn by the build, was imported as
+    content and crossed the rule's zone)."""
     out = []
     for c in guide.get("chrome") or []:
         box = c.get("box_in")
-        if c.get("kind") in CHROME_TEXT_KINDS and isinstance(box, list) and len(box) == 4:
+        if c.get("kind") in kinds and isinstance(box, list) and len(box) == 4:
             out.append(tuple(int(v * EMU_PER_INCH) for v in box))  # type: ignore[arg-type]
     return out  # type: ignore[return-value]
 
@@ -304,8 +318,9 @@ def pptx_table(path: str, index: int, ref: str, ident: str, notes: list[str], lo
     return el
 
 
-def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = None) -> dict:
-    slides = fingerprint_deck(path)  # every page: a PDF title is found from the position titles recur at
+def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = None, slides: list[SlidePrint] | None = None) -> dict:
+    if slides is None:
+        slides = fingerprint_deck(path)  # every page: a PDF title is found from the position titles recur at
     if not 0 <= index < len(slides):
         raise SystemExit(f"{path}: slide {index + 1} does not exist ({len(slides)} slides)")
     s = slides[index]
@@ -317,12 +332,14 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
     styling: dict = {}
     images: dict = {}
     chrome = chrome_boxes(guide) if s.source == "pdf" else []
+    logos = chrome_boxes(guide, {"logo"}) if s.source == "pdf" else []
     content = []
     for sh in s.shapes:
         if not sh.box or sh.ph_type in CHROME_PH or sh.kind in ("line",) or not (sh.text_chars or sh.kind in ("picture", "table", "chart")):
             continue
-        if chrome and is_guide_chrome(sh.box, chrome):
-            notes.append(f"{sh.ref}: {sh.text!r} sits at a chrome position of the guide; the build draws chrome, so it is not imported")
+        if (logos if sh.kind == "picture" else chrome) and is_guide_chrome(sh.box, logos if sh.kind == "picture" else chrome):
+            what = "a picture" if sh.kind == "picture" else repr(sh.text)
+            notes.append(f"{sh.ref}: {what} sits at a chrome position of the guide; the build draws chrome, so it is not imported")
             continue
         if sh.rotation:
             notes.append(f"{sh.ref}: text turned {sh.rotation // 60000} degrees ({sh.text!r}); a page spec sets text upright, so it is not imported")
@@ -333,10 +350,11 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
     body = [sh for sh in content if sh is not title]
     children: list[dict] = []
     if title is not None:
-        children.append(text_element(title, "title", roles, colours, styling, notes, fill_under(title, s) if s.source == "pdf" else None, extra))
+        children.append(text_element(title, "title", roles, colours, styling, notes, fill_under(title, s) if s.source == "pdf" else None, extra, lost))
     n = 0
     for row in rows_of(body):
         elems = []
+        dropped: set[int] = set()
         for sh in row:
             n += 1
             ident = f"e{n}"
@@ -353,8 +371,12 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
                     notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, "  # type: ignore[index]
                                  f"{'cut from the page render' if s.source == 'pdf' else 'its own bytes'}: {crop}")
                 else:
-                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, bytes not imported")  # type: ignore[index]
-                    lost.append(f"picture {ident}'s bytes (an empty frame)")
+                    # a frame with no picture is an element the build refuses (it draws
+                    # nothing): it is left out and named, never written to be refused
+                    elems.pop()
+                    dropped.add(id(sh))
+                    notes.append(f"{ident}: picture {sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in, bytes not imported: left out")  # type: ignore[index]
+                    lost.append(f"picture {ident} ({sh.box[2] / EMU_PER_INCH:.2f} x {sh.box[3] / EMU_PER_INCH:.2f} in): its bytes could not be read, so it is left out")  # type: ignore[index]
             elif sh.kind == "table" and s.source != "pdf" and (table := pptx_table(path, index, sh.ref, ident, notes, lost)) is not None:
                 elems.append(table)
             elif sh.kind in ("table", "chart"):
@@ -362,7 +384,10 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
                 notes.append(f"{ident}: {sh.kind} left as a placeholder; rebuild it from the dataset")
                 lost.append(f"{sh.kind} {ident} (a placeholder line; rebuild it from data)")
             else:
-                elems.append(text_element(sh, ident, roles, colours, styling, notes, fill_under(sh, s) if s.source == "pdf" else None, extra))
+                elems.append(text_element(sh, ident, roles, colours, styling, notes, fill_under(sh, s) if s.source == "pdf" else None, extra, lost))
+        row = [sh for sh in row if id(sh) not in dropped]
+        if not elems:
+            continue
         if len(elems) == 1:
             children.append(elems[0])
         else:
@@ -404,7 +429,7 @@ def import_slide(path: str, index: int, guide: dict, image_dir: Path | None = No
     return {"slides": [slide]}
 
 
-def survey(path: str, guide: dict, chrome: str = "auto") -> list[dict]:
+def survey(path: str, guide: dict, chrome: str = "auto", pages: tuple[int, int] | None = None) -> list[dict]:
     """Every page of the reference as the round trip would rebuild it: what it holds, what
     the build cannot draw from it (import_lost), and whether the imported page solves at
     full scale. The page to round-trip is a content page the build can draw: one with a
@@ -413,24 +438,33 @@ def survey(path: str, guide: dict, chrome: str = "auto") -> list[dict]:
 
     import component_api
     import layout as L
-    from build_deck import solve_slide
+    from build_deck import full_scale_cause, solve_slide
     lg = L.load_guide(guide)
-    ruler, index = L.default_ruler(), L.default_index()
+    ruler, index = L.ruler_for(guide), L.default_index()
     api = component_api.make_api(guide, lg, ruler, index)
     content = set((((guide.get("variety") or {}).get("content_pages")) or {}).get("pages") or [])
     triage = {p["slide"]: p.get("triage") for p in (guide.get("variety") or {}).get("pages") or []}
     out = []
+    # the deck is read once: read again for every page, a 205-page PDF survey ran for hours
+    slides = fingerprint_deck(path)
+    if pages is not None and pages[1] > len(slides):
+        raise SystemExit(f"--pages {pages[0]}-{pages[1]}: the reference has {len(slides)} pages")
     with tempfile.TemporaryDirectory() as tmp:
-        for i in range(len(fingerprint_deck(path))):
-            sl = import_slide(path, i, guide, Path(tmp))["slides"][0]
+        for i in range(len(slides)):
+            if pages is not None and not pages[0] <= i + 1 <= pages[1]:
+                continue
+            sl = import_slide(path, i, guide, Path(tmp), slides)["slides"][0]
             kinds: dict[str, int] = {}
             for node in json.dumps(sl["spec"]).split('"kind": "')[1:]:
                 k = node.split('"', 1)[0]
                 if k in ("text", "table", "image", "chart", "rule"):
                     kinds[k] = kinds.get(k, 0) + 1
+            why = None
             try:
-                _, _, outcome = solve_slide(json.loads(json.dumps(sl)), guide, chrome, lg, ruler, index, api, L.Fraction(1))
+                _, ctx, outcome = solve_slide(json.loads(json.dumps(sl)), guide, chrome, lg, ruler, index, api, L.Fraction(1))
                 fits = outcome.status
+                if fits != "fit":
+                    why = full_scale_cause(ctx, outcome)
             except (SystemExit, L.LayoutContractError) as error:
                 fits = f"refused: {error}"[:160]
             has_title = '"id": "title"' in json.dumps(sl["spec"])
@@ -439,7 +473,7 @@ def survey(path: str, guide: dict, chrome: str = "auto") -> list[dict]:
             page = i + 1
             out.append({"slide": page, "layout": sl["layout"], "content": (page in content) if content else triage.get(page) == "content",
                         "title": has_title, "text": kinds.get("text", 0) - int(has_title), "exhibits": exhibit, "fits_full_scale": fits,
-                        "lost": lost})
+                        "why_not_full_scale": why, "lost": lost})
     for p in out:
         p["candidate"] = bool(p["content"] and p["title"] and p["text"] > 0 and p["exhibits"] > 0 and not p["lost"] and p["fits_full_scale"] == "fit")
     return out
@@ -452,6 +486,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--survey", action="store_true", help="list every page: what it holds, what the round trip would lose, whether it fits")
     ap.add_argument("--guide", required=True, help="the completed guide (roles and colours to bind to)")
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="with --survey: as the build will run")
+    ap.add_argument("--pages", default=None, help="with --survey: a 1-based inclusive range, e.g. 14-61 (the deck is still read whole once)")
     ap.add_argument("-o", "--out")
     args = ap.parse_args(argv)
     import cli
@@ -459,7 +494,7 @@ def main(argv: list[str]) -> int:
     guide = json.loads(cli.in_path(args.guide, "--guide").read_text())
     cli.in_path(args.reference, "reference")
     if args.survey:
-        pages = survey(args.reference, guide, args.chrome)
+        pages = survey(args.reference, guide, args.chrome, cli.page_range(args.pages) if args.pages else None)
         layouts: dict[str, int] = {}
         for p in pages:
             if p["content"]:
@@ -468,7 +503,8 @@ def main(argv: list[str]) -> int:
         for p in pages:
             mark = "CANDIDATE" if p["candidate"] and p["layout"] == common else ("candidate" if p["candidate"] else "")
             print(f"slide {p['slide']:>3} {mark:<9} {p['layout']!s:<24} content={p['content']!s:<5} title={p['title']!s:<5} text={p['text']} "
-                  f"exhibits={p['exhibits']} fits={p['fits_full_scale']}" + (f"  loses: {'; '.join(p['lost'])}" if p["lost"] else ""))
+                  f"exhibits={p['exhibits']} fits={p['fits_full_scale']}" + (f" ({'; '.join(p['why_not_full_scale'])})" if p["why_not_full_scale"] else "")
+                  + (f"  loses: {'; '.join(p['lost'])}" if p["lost"] else ""))
         best = [p["slide"] for p in pages if p["candidate"] and p["layout"] == common] or [p["slide"] for p in pages if p["candidate"]]
         print(f"round-trip candidates (content, title, text and an exhibit, nothing lost, fits; on the house's most used layout {common!r} first): "
               f"{best or 'none: pick the content page that loses least and name every loss in the report'}")

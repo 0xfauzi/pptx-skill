@@ -854,7 +854,7 @@ def score(entry: dict, intent: frozenset[str], composition: str | None, exhibit:
 
 
 def pick(intent_text: str, composition: str | None, exhibit: str | None, move_names: list[str], data_shape: str | None, aspect_text: str | None,
-         gallery_dir: Path | None, own: Path | None, external: list[Path], exclude: set[str], top: int) -> str:
+         gallery_dir: Path | None, own: Path | None, external: list[Path], exclude: set[str], top: int, guide: dict | None = None) -> str:
     composition = _vocab(composition, COMPOSITIONS, "--composition")
     exhibit = _vocab(exhibit, EXHIBIT_FAMILIES, "--exhibit")
     moves = [m for m in (_vocab(name, ANNOTATION_MOVES, "--move") for name in move_names) if m]
@@ -889,9 +889,13 @@ def pick(intent_text: str, composition: str | None, exhibit: str | None, move_na
         common = frozenset.intersection(*captions) if len(captions) > 1 else frozenset()
         if intent & common:
             lines.append(f"   words in every gallery caption, left out: {' '.join(sorted(intent & common))}")
-        exemplars, crops = gallery.rank(gallery_dir, " ".join(sorted(intent - common)))
+        # the exhibit, moves and data shape asked are words the digest records carry too
+        asked = " ".join([*sorted(intent - common), *(w.replace("_", " ") for w in [exhibit, *moves] if w), *sorted(shape)])
+        exemplars, crops = gallery.rank(gallery_dir, asked, guide)
         best = max([o for _, o, _ in exemplars] + [o for _, o in crops], default=0)
-        lines.append("1. the reference's own gallery (untagged: word overlap only, which picks weakly; read the crops yourself)")
+        lines.append("1. the reference's own gallery, " + ("tagged by the completed digest (each page's title and records)" if gallery.page_words(guide) else
+                     "UNTAGGED: pass --guide (the completed guide) so each page carries its title and digest records; "
+                     "without it the overlap reads shape kinds only and is 0 for nearly every intent"))
         if best == 0:
             lines.append("   no evidence: overlap 0 on every exemplar and crop; the reference shows nothing for this intent")
         else:
@@ -980,6 +984,7 @@ def main(argv: list[str]) -> int:
     p.add_argument("--data-shape")
     p.add_argument("--aspect", help="the page asked, as W:H (4:3, 16:9, 11:8.5)")
     p.add_argument("--gallery", help="the reference's own gallery.py output")
+    p.add_argument("--guide", help="the completed guide: its digest records and titles tag the gallery's pages")
     p.add_argument("--own", help="the owner's library (the company's own pages)")
     p.add_argument("--library", action="append", help=f"external library (default {EXTERNAL_LIBRARY} when it exists)")
     p.add_argument("--exclude", action="append", default=[], help="entry or deck id to leave out")
@@ -1016,7 +1021,8 @@ def main(argv: list[str]) -> int:
         elif args.cmd == "pick":
             external = [Path(p) for p in args.library] if args.library else ([EXTERNAL_LIBRARY] if (EXTERNAL_LIBRARY / "manifest.json").exists() else [])
             print(pick(args.intent, args.composition, args.exhibit, args.move, args.data_shape, args.aspect, Path(args.gallery) if args.gallery else None,
-                       Path(args.own) if args.own else None, external, set(args.exclude), args.top))
+                       Path(args.own) if args.own else None, external, set(args.exclude), args.top,
+                       json.loads(Path(args.guide).read_text()) if args.guide else None))
         elif args.cmd == "import":
             lib = Library(Path(args.lib), create=True)
             lib.guard_location("external")

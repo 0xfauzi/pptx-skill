@@ -72,13 +72,31 @@ def main(argv: list[str]) -> int:
         import render
         ref = Path(args.reference)
         report = render.pdf_font_report(ref) if ref.suffix.lower() == ".pdf" else render.font_report(render.declared_fonts(ref), ref)
+        import textfit
+        from ooxml import SYMBOL_FACES
+        index = textfit.default_index()
         for face, e in sorted(report.items()):
             fidelity = str(e.get("fidelity"))
             bad = fidelity == "substituted" and not e.get("bullets_only")
-            faces_ok = faces_ok and not bad
+            # the reference's renders and the build's measure are two questions: a PDF draws
+            # its embedded copy of a face exactly while this machine has no file to measure
+            # it with (bain's Verdana, McKinsey's Georgia: preflight said exact, the solver
+            # refused every page)
+            try:
+                measured = index.resolve(face)
+                measures = f"measured with {measured.family} ({measured.provenance})"
+            except LookupError:
+                measured = None
+                measures = (f"NOT measurable here: no installed {face} and no metric-compatible clone; the build refuses text set in it until "
+                            f"the face is installed or fc-match's stand-in ({textfit.fc_match(face)[0]}) is named under typography.families.substitutes")
+            symbol = face.lower().startswith(SYMBOL_FACES)  # bullet and tick glyphs: drawn, never measured as text
+            if measured is None and symbol:
+                measures = "a symbol face: its glyphs are bullets and marks, not measured text"
+            unmeasured = measured is None and not e.get("bullets_only") and not symbol
+            faces_ok = faces_ok and not bad and not unmeasured
             note = ("bullet glyphs only, moves no text" if e.get("bullets_only") else
-                    "an unrelated face: do not read text fit off its renders, and measuring it needs the face or a named stand-in" if bad else fidelity)
-            print(f"{'missing' if bad else 'ok':8} face {face}: drawn as {e.get('rendered_with')} ({note})")
+                    "an unrelated face: do not read text fit off its renders" if bad else fidelity)
+            print(f"{'missing' if bad or unmeasured else 'ok':8} face {face}: drawn as {e.get('rendered_with')} ({note}); {measures}")
     if missing_pip:
         print(f"\ninstall: python3 -m pip install {' '.join(missing_pip)}")
     if optional_pip:
@@ -86,8 +104,12 @@ def main(argv: list[str]) -> int:
     if missing_apt:
         print(f"install: sudo apt-get install -y {' '.join(sorted(missing_apt))}")
     if not faces_ok:
-        print(f"faces: install the named faces, or their metric-compatible stand-ins (sudo apt-get install -y {METRIC_FONTS}),\n"
-              "then fc-cache -f; a face with no stand-in is named under typography.families.substitutes in the completion")
+        print(f"faces: the user installs the named faces from their own licensed copies, or their metric-compatible stand-ins\n"
+              f"(sudo apt-get install -y {METRIC_FONTS}), then fc-cache -f; a face with no stand-in is named under\n"
+              "typography.families.substitutes in the completion (fc-match's answer). Do not install fonts yourself: a face\n"
+              "installed machine-wide changes what fontconfig, LibreOffice and the solver use for every session on this machine,\n"
+              "and a proprietary face (Verdana, Georgia: Microsoft's core fonts) comes under a licence the user accepts, not you.\n"
+              "Ask, and say in the report which faces were installed and by whom (references/intake.md, Fonts the machine lacks)")
     return 0 if ok and not missing_pip and not missing_apt else 1
 
 

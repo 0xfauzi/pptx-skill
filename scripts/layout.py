@@ -95,9 +95,9 @@ from textfit import (  # noqa: E402
     advance_emu,
     break_opportunities,
     default_index,
-    default_ruler,
     measure_text,
     resolve_measured,
+    ruler_for,
 )
 
 EMU_PER_POINT = 12_700
@@ -238,6 +238,7 @@ class Guide:
     bullet_indent_roles: dict[int, str]
     substitutes: dict[str, str] = field(default_factory=dict)
     absent_roles: dict[str, str] = field(default_factory=dict)
+    table_floor_pt: float | None = None
 
 def _unwrap(value: Any) -> Any:
     if isinstance(value, dict) and "value" in value and "provenance" in value:
@@ -249,6 +250,41 @@ def _step_emu(value: Any) -> int | None:
     if isinstance(value, dict):
         value = value.get("emu", value.get("value"))
     return None if value is None else int(value)
+
+TABLE_ROLES = ("type.table_cell", "type.table_header")
+
+
+def table_floor_pt(raw: Mapping[str, Any]) -> float | None:
+    """The one floor every run in a table clears, whatever role it is set in: a written
+    table run carries no role, so `pptx_tools validate --emit` can only read where it sits,
+    and the build applies the same rule. It is the lowest floor of the table roles'
+    families (each max(floor_pt, absolute_floor_pt)), or with no table role the lowest
+    family floor; lowered to the house's own table text where its tables are pasted
+    pictures and the guide holds that size as measured (tables.picture_text, read off the
+    pictures by images.py textsize at completion), never below the absolute floor."""
+    floors = _unwrap(raw.get("floors")) or {}
+    entries = floors.values() if isinstance(floors, dict) else floors
+    by_role: dict[str, float] = {}
+    lowest: list[float] = []
+    absolute = 0.0
+    for entry in entries:
+        entry = _unwrap(entry) or {}
+        if not isinstance(entry, dict):
+            continue
+        absolute = max(absolute, float(entry.get("absolute_floor_pt") or 0.0))
+        floor = max(float(entry.get("floor_pt") or 0.0), float(entry.get("absolute_floor_pt") or 0.0))
+        if floor <= 0:
+            continue
+        lowest.append(floor)
+        for role in entry.get("roles") or []:
+            by_role[role] = floor
+    table = min([by_role[r] for r in TABLE_ROLES if r in by_role] or lowest or [0.0])
+    pictures = ((_unwrap(raw.get("tables")) or {}).get("picture_text") or {}).get("floor_pt")
+    if pictures is not None:
+        measured = max(float(pictures), absolute)
+        table = min(table, measured) if table else measured
+    return table or None
+
 
 def load_guide(raw: Mapping[str, Any]) -> Guide:
     typography = raw.get("typography") or {}
@@ -304,6 +340,7 @@ def load_guide(raw: Mapping[str, Any]) -> Guide:
         cell_padding_emu=None if tables.get("cell_padding_emu") is None else int(tables["cell_padding_emu"]),
         bullet_indent_roles=bullet_roles,
         absent_roles={k: str((v or {}).get("why", "")) for k, v in (raw.get("absent_roles") or {}).items()},
+        table_floor_pt=table_floor_pt(raw),
     )
 
 # --- the slide spec --------------------------------------------------------------
@@ -366,6 +403,47 @@ class Column:
     value_kind: str
     width_share: Fraction | None = None  # the spec's share of the table width, taken exactly
     min_width_role: str | None = None  # a spacing role the column never narrows below
+    labels: tuple[str, ...] = ()  # one per header row, top row first (header_labels)
+
+
+def header_labels(column: Mapping[str, Any], header_rows: int, where: str) -> tuple[str, ...]:
+    """A column's text in each header row, top row first. One header row takes `label` as
+    a string; header_rows N > 1 takes a list of N strings, so a grouped header (an
+    "Operating metrics" spanner over two columns) is written, never left blank or repeated."""
+    label = column.get("label", column.get("key"))
+    if isinstance(label, list):
+        if len(label) != max(header_rows, 1) or not all(isinstance(x, str) for x in label):
+            raise LayoutContractError(f"{where}: column {column.get('key')!r}: label {label!r} must be {max(header_rows, 1)} string(s), one per header row, top row first")
+        return tuple(label)
+    if header_rows > 1:
+        raise LayoutContractError(f"{where}: column {column.get('key')!r}: header_rows {header_rows} takes each column's label as a list of {header_rows} "
+                                  f"strings, top row first (\"label\": [\"Operating metrics\", \"Revenue growth\"]); the same text in adjacent columns "
+                                  f"of an upper row is one cell spanning them, and \"\" leaves a cell empty")
+    return (str(label),)
+
+
+def header_texts(columns: Sequence[Mapping[str, Any]], header_rows: int) -> list[str]:
+    """The text of every header cell as drawn, a spanner once: what the page says above
+    its data (counted as words, read for leakage and for what a mark encloses)."""
+    labels = [header_labels(c, header_rows, "table") for c in columns]
+    return [labels[c0][r] for r, row in enumerate(header_spans(labels, header_rows)) for c0, _ in row if labels[c0][r]]
+
+
+def header_spans(labels: Sequence[Sequence[str]], header_rows: int) -> list[list[tuple[int, int]]]:
+    """Per header row, its cells as (first, last) column: in every row above the last,
+    adjacent columns with the same non-empty text are one cell spanning them (a spanner);
+    the last header row, next to the data, keeps one cell per column."""
+    out = []
+    for r in range(header_rows):
+        spans: list[tuple[int, int]] = []
+        for c in range(len(labels)):
+            text = labels[c][r]
+            if r < header_rows - 1 and spans and text and labels[spans[-1][0]][r] == text and spans[-1][1] == c - 1:
+                spans[-1] = (spans[-1][0], c)
+            else:
+                spans.append((c, c))
+        out.append(spans)
+    return out
 
 @dataclass(frozen=True)
 class Table:
@@ -484,8 +562,10 @@ def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
             raise LayoutContractError(f"text element {node_id!r} needs non-blank paragraphs")
     elif kind == "table":
         t = raw.get("table") or {}
-        columns = tuple(Column(c["key"], str(c.get("label", c["key"])), str(c.get("value_kind", "text")),
-                               None if c.get("width_share") is None else decimal_fraction(c["width_share"]), c.get("min_width_role")) for c in t.get("columns", []))
+        n_header = int(t.get("header_rows", 1))
+        columns = tuple(Column(c["key"], (labels := header_labels(c, n_header, f"table {node_id!r}"))[-1], str(c.get("value_kind", "text")),
+                               None if c.get("width_share") is None else decimal_fraction(c["width_share"]), c.get("min_width_role"), labels)
+                        for c in t.get("columns", []))
         shares = [c.width_share for c in columns if c.width_share is not None]
         if any(not 0 < share <= 1 for share in shares) or sum(shares, Fraction(0)) > 1 or (len(shares) == len(columns) and sum(shares, Fraction(0)) != 1):
             total = sum(shares, Fraction(0))
@@ -612,9 +692,26 @@ def element_roles(element: Element) -> tuple[str, ...]:
         return (element.table.header_role, element.table.cell_role) if element.table.header_rows else (element.table.cell_role,)
     return ()
 
-def roles_in_use(spec: Spec) -> frozenset[str]:
-    """Every role a SCALING element sets text in: the set the floor must clear."""
-    return frozenset(r for n, _ in walk(spec.root) if isinstance(n, Element) and n.scale_class != "fixed" for r in element_roles(n))
+def roles_in_use(spec: Spec, tables: bool | None = None) -> frozenset[str]:
+    """Every role a SCALING element sets text in: the set the floor must clear. tables=True
+    keeps the roles tables set their cells and header in (these clear the table floor),
+    False the roles text elements set (these clear their own family's floor)."""
+    return frozenset(r for n, _ in walk(spec.root) if isinstance(n, Element) and n.scale_class != "fixed"
+                     and (tables is None or (n.table is not None) == tables) for r in element_roles(n))
+
+def table_floor_breaches(guide: Guide, spec: Spec, scale: Fraction = Fraction(1)) -> list[str]:
+    """Each table whose cells or header sit below the table floor at `scale`, in words."""
+    floor = guide.table_floor_pt
+    if floor is None:
+        return []
+    out = []
+    for n, _ in walk(spec.root):
+        if isinstance(n, Element) and n.table is not None:
+            for role in dict.fromkeys(element_roles(n)):
+                size = snap_sz(type_role(guide, role).size_pt, Fraction(1) if n.scale_class == "fixed" else scale) / 100
+                if size < floor:
+                    out.append(f"table {n.id!r} sets {role} at {size:g}pt, below the table floor {floor:g}pt")
+    return out
 
 def hierarchy_levels(guide: Guide) -> tuple[tuple[Fraction, tuple[str, ...]], ...]:
     by_size: dict[Fraction, list[str]] = {}
@@ -637,9 +734,16 @@ def admit_scale_candidates(guide: Guide, candidates: Sequence[Fraction]) -> tupl
         (excluded if collision else admitted).append(collision or scale)
     return tuple(admitted), tuple(excluded)
 
-def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction) -> bool:
+def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction, table_roles: frozenset[str] = frozenset()) -> bool:
+    """Every role a text element sets (`roles`) clears its own family's floor at `scale`;
+    every role a table sets (`table_roles`) clears the table floor (table_floor_pt), the
+    one rule the package validator reads off a table run."""
     for role in roles:
         floor = guide.floor_by_role.get(role)
+        if floor is not None and snap_sz(type_role(guide, role).size_pt, scale) / 100 < floor:
+            return False
+    for role in table_roles:
+        floor = guide.table_floor_pt if guide.table_floor_pt is not None else guide.floor_by_role.get(role)
         if floor is not None and snap_sz(type_role(guide, role).size_pt, scale) / 100 < floor:
             return False
     return True
@@ -647,11 +751,11 @@ def scale_clears_floors(guide: Guide, roles: frozenset[str], scale: Fraction) ->
 def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
     """1.00 then the admitted ladder, truncated at the first scale that undercuts
     an in-use role's floor (snap is monotone, so every lower scale fails too)."""
-    roles = roles_in_use(spec)
+    roles, table_roles = roles_in_use(spec, tables=False), roles_in_use(spec, tables=True)
     admitted, _ = admit_scale_candidates(guide, (Fraction(1), *SCALE_LADDER))
     allowed: list[Fraction] = []
     for candidate in admitted:
-        if not scale_clears_floors(guide, roles, candidate):
+        if not scale_clears_floors(guide, roles, candidate, table_roles):
             break
         allowed.append(candidate)
     return tuple(allowed)
@@ -903,6 +1007,21 @@ def apply_case(text: str, case: str) -> str:
     if case == "sentence" and text:
         return text[:1].upper() + text[1:]
     return text
+
+def apply_case_runs(texts: Sequence[str], case: str | None) -> list[str]:
+    """apply_case over a paragraph written as runs: the joined text is cased once (title
+    case reads a run boundary inside a word as inside the word) and cut back at the runs'
+    own boundaries. The solver measures apply_case(paragraph) and the emitter writes this,
+    so the file draws the measured text."""
+    full = "".join(texts)
+    cased = apply_case(full, case or "as_typed")
+    if len(cased) != len(full):
+        raise LayoutContractError(f"case {case!r} changes the length of {full!r} (to {cased!r}); write the paragraph already cased")
+    out, at = [], 0
+    for t in texts:
+        out.append(cased[at:at + len(t)])
+        at += len(t)
+    return out
 
 def tracked_width_emu(width_emu: int, text: str, tracking_pt: float) -> int:
     """What a measured line DRAWS once OOXML spc adds tracking per character:
@@ -1168,15 +1287,19 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
     if table.header_rows:
         h = ctx.entry(element, table.header_role, scale)
         header = DrawnRole(h, ctx.face(h, bold=True).path if table.header_bold else ctx.face(h).path)
-    labels = [apply_case(c.label, header.entry.case) if header else c.label for c in table.columns]
-    grid: list[list[str]] = [labels if i == 0 else [""] * len(table.columns) for i in range(table.header_rows)]
-    grid.extend(list(row) for row in table.rows)
+    case = header.entry.case if header else "as_typed"
+    header_text = [[apply_case(c.labels[r] if r < len(c.labels) else "", case) for c in table.columns] for r in range(table.header_rows)]
+    spans = header_spans([[header_text[r][ci] for r in range(table.header_rows)] for ci in range(len(table.columns))], table.header_rows)
+    # a header cell narrows only its own column; a spanner is measured across its span below
+    own = [[header_text[r][ci] for r in range(table.header_rows) if (ci, ci) in spans[r]] for ci in range(len(table.columns))]
+    grid: list[list[str]] = [list(row) for row in header_text]
+    grid.extend([apply_case(v, cell.entry.case) for v in row] for row in table.rows)
     keys = [c.key for c in table.columns]
     charge = 2 * padding + ctx.ruler.fit_epsilon_emu
     natural, minimum = {}, {}
     last = len(table.rows) - 1
     for ci, column in enumerate(table.columns):
-        texts = ([(labels[ci], header, False)] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows or ci in table.emphasis_columns) else cell, True) for ri, row in enumerate(table.rows)]
+        texts = ([(label, header, False) for label in own[ci]] if header else []) + [(row[ci], cell_bold if ((table.totals_last_row and ri == last) or ri in table.emphasis_rows or ci in table.emphasis_columns) else cell, True) for ri, row in enumerate(grid[table.header_rows:])]
         widest = widest_segment = widest_value = 0
         for text, kind, is_value in texts:
             if not text.strip():
@@ -1211,6 +1334,13 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
         widths = {k: fixed.get(k, free_widths.get(k)) for k in keys}
     if shortfall:
         column_deficits["unshared columns"] = shortfall
+    for r in range(table.header_rows if header else 0):
+        for c0, c1 in spans[r]:
+            if c1 > c0 and grid[r][c0].strip():
+                # a spanner's widest word must fit across the columns it spans
+                need = min_content_width(ctx, grid[r][c0], header) + charge - sum(widths[keys[c]] for c in range(c0, c1 + 1))
+                if need > 0:
+                    column_deficits[f"header row {r} span {keys[c0]}..{keys[c1]}"] = need
     deficit = sum(column_deficits.values())
     cell_lines: dict[tuple[int, str], tuple[str, ...]] = {}
     row_heights: list[int] = []
@@ -1218,10 +1348,16 @@ def fit_table(ctx: Context, element: Element, box: Box, scale: Fraction) -> Tabl
         data_ri = ri - table.header_rows
         row_kind = header if (ri < table.header_rows and header) else (cell_bold if ((table.totals_last_row and ri == len(grid) - 1) or data_ri in table.emphasis_rows) else cell)
         counts = []
-        for ci, (key, text) in enumerate(zip(keys, texts)):
-            kind = cell_bold if (row_kind is cell and ci in table.emphasis_columns) else row_kind
-            lines = wrapped_lines(ctx, text, max(1, widths[key] - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
+        cells = spans[ri] if ri < table.header_rows else [(ci, ci) for ci in range(len(keys))]
+        for c0, c1 in cells:
+            key, text = keys[c0], texts[c0]
+            kind = cell_bold if (row_kind is cell and c0 in table.emphasis_columns) else row_kind
+            # a spanner wraps across the columns it spans (their widths, less one inset pair)
+            width = sum(widths[keys[c]] for c in range(c0, c1 + 1))
+            lines = wrapped_lines(ctx, text, max(1, width - 2 * padding - ctx.ruler.fit_epsilon_emu), kind)
             cell_lines[(ri, key)] = lines
+            for c in range(c0 + 1, c1 + 1):
+                cell_lines[(ri, keys[c])] = ()
             counts.append(len(lines))
         row_heights.append(required_row_height_emu(counts, hundredths(row_kind.entry.size_pt), hundredths(row_kind.entry.line_spacing * row_kind.entry.size_pt), padding, padding))
     total, budget = sum(row_heights), box.height + EMIT_SLACK_EMU
@@ -1295,7 +1431,9 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
     for element in elements:
         if element.kind == "text":
             measurements[element.id] = measure_element(ctx, element, probe[element.id], s)
-            heights[element.id] = element_height_emu(measurements[element.id])
+            # a declared height is the box (the title band above a top rule); text taller
+            # than it is refused as overflow, never given more room
+            heights[element.id] = element.height_emu if element.height_emu is not None else element_height_emu(measurements[element.id])
         elif element.table is not None:
             fits[element.id] = fit_table(ctx, element, probe[element.id], s)
             heights[element.id] = fits[element.id].total_height_emu
@@ -1356,7 +1494,10 @@ def descend(ctx: Context) -> Outcome:
     candidates down to the floor (fit is monotone in s, E21); else Unfittable."""
     candidates = floor_admitted_candidates(ctx.guide, ctx.spec)
     if not candidates:
-        return Outcome("unfittable", None, [], "no scale clears the legibility floor for the roles in use")
+        breaches = table_floor_breaches(ctx.guide, ctx.spec)
+        return Outcome("unfittable", None, [], "no scale clears the legibility floor for the roles in use"
+                       + (f": {'; '.join(breaches)} (validate --emit refuses the same runs). A house that sets its tables smaller "
+                          "inside pasted pictures states that size measured: /tables/picture_text in the completion" if breaches else ""))
     first = _attempt(ctx, candidates[0])
     attempts = [first]
     if first.fits:
@@ -1461,7 +1602,7 @@ def build_context(spec_path: str, guide_path: str) -> Context:
     prepare_page(raw, raw_guide)
     spec = parse_spec(raw)
     guide = load_guide(raw_guide)
-    return Context(guide, default_ruler(), default_index(), spec)
+    return Context(guide, ruler_for(raw_guide), default_index(), spec)
 
 
 def _components_as_boxes(node: dict) -> dict:
@@ -1535,7 +1676,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             outcome = descend(ctx)
         else:
             scale = checked_scale(args.scale)
-            if not scale_clears_floors(ctx.guide, roles_in_use(ctx.spec), scale):
+            if not scale_clears_floors(ctx.guide, roles_in_use(ctx.spec, tables=False), scale, roles_in_use(ctx.spec, tables=True)):
                 print(f"refused: scale {scale} undercuts the legibility floor of an in-use role")
                 return 2
             attempt = _attempt(ctx, scale)

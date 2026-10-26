@@ -434,7 +434,10 @@ def _guide_floors(guide: dict | None) -> dict:
         for role in f.get("roles") or []:
             by_role[role] = floor
     any_floor = min(by_family.values()) if by_family else absolute
-    table = min([by_role[r] for r in ("type.table_cell", "type.table_header") if r in by_role] or [any_floor])
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    # the build's own table floor: one rule for both gates
+    from layout import table_floor_pt
+    table = (table_floor_pt(guide) if guide else None) or any_floor
     chart = min([by_role[r] for r in ("type.axis_label", "type.data_label") if r in by_role] or [by_family.get("chart", any_floor)])
     return {"slide": any_floor, "table": table, "chart": chart, "source": "guide floors" if by_family else f"no guide: {absolute}pt product safety floor (deckgen E45)"}
 

@@ -48,7 +48,9 @@ HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: TARGET_SPEC Appendix A as closed sets: the title register, the title companions and the exhibit digest fields.
 VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
 # the extractor never observes these, so they are always the model's to write
-ALWAYS_WRITABLE = {"/description", "/derivation_rules", "/continuation", "/typography/families/substitutes"}
+#: the size a house sets its table text at inside pasted pictures, measured (picture_text)
+PICTURE_TEXT = "/tables/picture_text"
+ALWAYS_WRITABLE = {"/description", "/derivation_rules", "/continuation", "/typography/families/substitutes", PICTURE_TEXT}
 SETTLED = {"observed", "deterministic_inference"}
 CORE_ROLES = ("/typography/roles/type.title", "/typography/roles/type.body", "/color/roles/color.surface",
               "/color/roles/color.ink", "/color/roles/color.accent1")
@@ -725,12 +727,47 @@ def composition_answer(value) -> dict:
             "provenance": model_prov(value.get("why") or "completion of /composition")}
 
 
+def picture_text(guide: dict, value) -> dict:
+    """The size a house sets its table text at inside pasted pictures, MEASURED: the model
+    names which pictures are tables and the face it reads in them; images.text_size reads
+    each one's size off its pixels at the scale the house draws it. The table floor
+    (layout.table_floor_pt) is lowered to the smallest, so a native table may be set as
+    small as the house's own picture tables, in the build and in validate --emit alike."""
+    shape = ('{"pictures": [{"id": "image42.png", "slide": 13, "face": "Calibri"}, ...], "why": "..."} for a .pptx '
+             '(ids from images.py list), or [{"page": N, "bbox": [x0, y0, x1, y1], "face": ...}] in PDF points for a PDF')
+    if not isinstance(value, dict) or not isinstance(value.get("pictures"), list) or not value["pictures"]:
+        raise PatchError(f"{PICTURE_TEXT}: expected {shape}")
+    ref = (guide.get("reference") or {}).get("file")
+    if not ref or not Path(ref).is_file():
+        raise PatchError(f"{PICTURE_TEXT}: the reference the draft was read from ({ref!r}) is not on this machine; its pictures are measured here")
+    import images
+    records = []
+    for i, pic in enumerate(value["pictures"]):
+        if not isinstance(pic, dict) or not isinstance(pic.get("face"), str) or set(pic) - {"id", "slide", "page", "bbox", "face"}:
+            raise PatchError(f"{PICTURE_TEXT}: pictures[{i}] is {pic!r}; expected {shape}")
+        try:
+            measured = images.text_size(ref, images.face_file(pic["face"]), pic["face"], pic.get("id"), pic.get("slide"), pic.get("page"), pic.get("bbox"))
+        except images.ImageRefused as error:
+            raise PatchError(f"{PICTURE_TEXT}: pictures[{i}]: {error}") from None
+        records.append({**{k: pic[k] for k in pic}, "size_pt": measured["size_pt"], "band_pt": measured["band_pt"], "source": measured["source"]})
+    floor = min(round(r["size_pt"] * 2) / 2 for r in records)
+    return {"records": records, "floor_pt": floor,
+            "provenance": {"value_provenance": "measured", "role_provenance": "inferred",
+                           "evidence": [r["source"] for r in records] + ([value["why"]] if value.get("why") else []),
+                           "frequency": len(records), "master_membership": False, "confidence": 0.8},
+            "basis": "images.py textsize on each picture the completion names (the model reads which pictures are tables and their face; "
+                     "the size is measured); floor_pt is the smallest, to the half point"}
+
+
 def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict | None) -> None:
     check_writable(guide, path, value, open_paths)
     err = shape_error(path, value)
     if err:
         raise PatchError(err)
     parts = [p for p in path.split("/") if p]
+    if path == PICTURE_TEXT:
+        guide.setdefault("tables", {})["picture_text"] = picture_text(guide, value)
+        return
     if parts[0] == "color" and parts[1] == "roles" and value is None:
         guide["color"]["roles"].pop(parts[2], None)
         record_absent(guide, path, parts[2], "answered null: the house shows no such colour")

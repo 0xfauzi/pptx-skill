@@ -64,7 +64,7 @@ KIND_KEYS = {
     "callout": {"line_role", "line_width_pt", "fill_role", "label", "position", "gap_role", "pad_role", "head"},
     "bracket": {"line_role", "line_width_pt", "style", "side", "gap_role", "depth_role", "label", "explained_by"},
     "badge": {"fill_role", "label", "position", "gap_role", "pad_role"},
-    "category_row": {"cells", "role", "ink_role", "position", "gap_role", "gap_lines", "after", "shape", "cell_width", "label"},
+    "category_row": {"cells", "role", "ink_role", "position", "gap_role", "gap_lines", "after", "shape", "cell_width", "label", "align"},
 }
 REQUIRED = {
     "outline_box": ("line_role", "line_width_pt"),
@@ -97,9 +97,14 @@ DEFAULTS = {
     "label.position.band": "inside_top_left",
     "cell_width": "uniform: every cell of the row as wide as its widest (one oval or box size along the row)",
     "label.align.category_row": "right on a row (the label ends at the plot's edge), center on a column",
+    "align.category_row": "center: each cell's text centred in its cell",
 }
 ROW_SHAPE_KEYS = {"prst", "line_role", "line_width_pt", "fill_role", "pad_role"}
 ROW_CELL_KEYS = {"text", "image"}
+#: what one text cell of a category row may set for itself, over the row's own: a group
+#: header among the categories (a football field's "Precedent transactions:") in a bold
+#: or coloured role, the categories under it in the row's
+ROW_CELL_STYLE_KEYS = {"role", "ink_role", "emphasis"}
 #: a cell's text box inside an ellipse: the ellipse through the box's corners, sqrt(2) wider
 #: and taller than the box (an ellipse x^2/a^2 + y^2/b^2 = 1 with a = w/sqrt2 holds the corner)
 SQRT2 = 2 ** 0.5
@@ -309,7 +314,7 @@ class Labeller:
 
     def measure(self, label: dict, max_width: float | None, where: str) -> tuple[list[str], int, int, dict]:
         text = label["text"]
-        el = L.Element(where, "text", None, "scaling", (L.Paragraph(label["role"], text, None),), None, None, None)
+        el = L.Element(where, "text", None, "scaling", (L.Paragraph(label["role"], text, None, bool(label.get("emphasis"))),), None, None, None)
         try:
             width = int(max_width) if max_width else self.ctx.spec.page_width * 4
             rows = L.measure_element(self.ctx, el, L.Box(0, 0, width, 1), self.scale)
@@ -330,7 +335,7 @@ class Labeller:
     def text_element(self, eid: str, label: dict, box: tuple, lines: list[str], fit: dict, align: str, anchor: str = "t") -> dict:
         return {"id": eid, "kind": "text", "box": [round(v) for v in box], "anchor": anchor,
                 "paragraphs": [{"role": label["role"], "bullet_level": None, "lines": lines, "indent_emu": 0, "fit": fit,
-                                "runs": [{"text": label["text"]}], "ink_role": label["ink_role"], "align": align}]}
+                                "runs": [{"text": label["text"], "emphasis": bool(label.get("emphasis"))}], "ink_role": label["ink_role"], "align": align}]}
 
 
 def _placed(position: str, target: tuple, w: float, h: float, gap: float) -> tuple[float, float, float, float]:
@@ -714,6 +719,11 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
         for k in ("line_role", "fill_role"):
             if shape.get(k):
                 eg.hex(shape[k], where=f"{where} shape")
+    align = ann.get("align", "center")
+    if align not in ("left", "center", "right"):
+        raise AnnotationRefused(f"{where}: align {align!r} not in left, center, right")
+    if "align" not in ann and any(c is not None for c in cells):
+        default("align", "align.category_row")
     width_mode = ann.get("cell_width", "uniform")
     if width_mode not in ("uniform", "own"):
         raise AnnotationRefused(f"{where}: cell_width is \"uniform\" or \"own\"")
@@ -729,16 +739,23 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
             continue
         if isinstance(cell, str):
             cell = {"text": cell}
-        if not isinstance(cell, dict) or len(cell) != 1 or not set(cell) <= ROW_CELL_KEYS:
-            raise AnnotationRefused(f"{cw}: a cell is a string, {{\"text\": ...}}, {{\"image\": {{\"path\" | \"svg\", \"height_role\" | \"width_role\", ...}}}} or null")
+        kinds = set(cell) & ROW_CELL_KEYS if isinstance(cell, dict) else set()
+        if (not isinstance(cell, dict) or len(kinds) != 1 or set(cell) - ROW_CELL_KEYS - ROW_CELL_STYLE_KEYS
+                or ("image" in cell and set(cell) & ROW_CELL_STYLE_KEYS)):
+            raise AnnotationRefused(f"{cw}: a cell is a string, {{\"text\": ...}} (with its own role, ink_role or emphasis over the row's), "
+                                    f"{{\"image\": {{\"path\" | \"svg\", \"height_role\" | \"width_role\", ...}}}} or null")
         if "text" in cell:
             if not isinstance(cell["text"], str) or not cell["text"].strip():
                 raise AnnotationRefused(f"{cw}: text must be non-blank (null leaves the category empty)")
-            missing = [k2 for k2 in ("role", "ink_role") if k2 not in text_style]
+            style = {**text_style, **{k2: cell[k2] for k2 in ROW_CELL_STYLE_KEYS if k2 in cell}}
+            missing = [k2 for k2 in ("role", "ink_role") if k2 not in style]
             if missing:
-                raise AnnotationRefused(f"{where}: a row of text cells needs {missing} (nothing picks a type or an ink for you)")
-            lines, w, h, fit = lab.measure({"text": cell["text"], **text_style}, None, cw)
-            measured.append(("text", cell["text"], lines, w, h, fit))
+                raise AnnotationRefused(f"{cw}: a text cell needs {missing}, on the row or on the cell (nothing picks a type or an ink for you)")
+            if "emphasis" in style and not isinstance(style["emphasis"], bool):
+                raise AnnotationRefused(f"{cw}: emphasis is true (the cell set bold) or false")
+            eg.hex(style["ink_role"], where=cw)
+            lines, w, h, fit = lab.measure({"text": cell["text"], **style}, None, cw)
+            measured.append(("text", cell["text"], lines, w, h, fit, style))
         else:
             try:
                 pic = images.picture(cell["image"], cw, eg.g)
@@ -747,7 +764,7 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
                 raise AnnotationRefused(str(error)) from None
             if size is None:
                 raise AnnotationRefused(f"{cw}: a picture in a row is sized by its role: give it height_role or width_role")
-            measured.append(("image", pic, None, size["width_emu"], size["height_emu"], None))
+            measured.append(("image", pic, None, size["width_emu"], size["height_emu"], None, None))
     present = [m for m in measured if m is not None]
     if not present:
         raise AnnotationRefused(f"{where}: every cell is null")
@@ -798,9 +815,10 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
                           "prst": SHAPES[shape["prst"]]})
             lw = round(float(shape.get("line_width_pt", 0)) * EMU_PER_PT)
             footprint.append({"rect": box} if shape.get("fill_role") else {"outline": box, "width": lw})
-        _, text, lines, w, h, fit = m
-        tb = (box[0] + (box[2] - w) / 2, box[1] + (box[3] - h) / 2, w, h)
-        drawn.append(lab.text_element(f"{cid}-text", {"text": text, **text_style}, tb, lines, fit, "center", anchor="m"))
+        _, text, lines, w, h, fit, style = m
+        dx = {"left": 0, "center": (box[2] - w) / 2, "right": box[2] - w}[align]
+        tb = (box[0] + dx, box[1] + (box[3] - h) / 2, w, h)
+        drawn.append(lab.text_element(f"{cid}-text", {"text": text, **style}, tb, lines, fit, align, anchor="m"))
         footprint.append({"rect": tb, "text": True, "tokens": text.split()})
     if across:
         row_rect = (p.left, start, p.width, depth)
@@ -862,7 +880,8 @@ EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words na
 FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
 #: a word runs on through letters and digits ("CET1" is one word, not "CET" and a "1")
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9'&]*|\d[\d,]*(?:\.\d+)?")
-_STOP = {"the", "and", "for", "with", "from", "that", "this", "are", "was", "its", "per", "than", "into", "over", "all", "but", "not", "has", "have"}
+#: function words, never evidence of what a text says (a mark's quote, a page's intent)
+STOP_WORDS = {"the", "and", "for", "with", "from", "that", "this", "are", "was", "its", "per", "than", "into", "over", "all", "but", "not", "has", "have"}
 
 
 class AnnotationUnexplained(AnnotationRefused):
@@ -878,7 +897,7 @@ def _words(text: str) -> tuple[set[str], list[tuple[float, int]]]:
         if tok[0].isdigit():
             plain = tok.replace(",", "")
             numbers.append((float(plain), len(plain.split(".")[1]) if "." in plain else 0))
-        elif len(tok) >= 3 and tok.lower() not in _STOP:
+        elif len(tok) >= 3 and tok.lower() not in STOP_WORDS:
             words.add(tok.lower())
     return words, numbers
 
@@ -902,7 +921,7 @@ def anchor_content(host: dict, anchor: dict, where: str) -> tuple[list[str], lis
         every_column = c0 <= 1 and c1 == len(cols) - 1
         every_row = r0 <= h and r1 == h + n_body - 1
         if r0 < h or not every_column:
-            texts += [str(cols[c].get("label") or "") for c in range(c0, c1 + 1)]
+            texts += [t for c in range(c0, c1 + 1) for t in L.header_labels(cols[c], h, "table") if t]
         for r in range(max(r0, h), r1 + 1):
             row = host["rows"][r - h]
             if c0 > 0 and not every_row:

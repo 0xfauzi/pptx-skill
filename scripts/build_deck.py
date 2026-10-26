@@ -130,23 +130,53 @@ def chrome_zones(guide: dict, mode: str = "auto") -> list[dict]:
 
 
 def top_rules(guide: dict) -> list[dict]:
-    """The guide's top rules: rules anchored to the top edge on at least half the
-    reference's slides. The title band is everything above them."""
-    n = max(1, guide.get("reference", {}).get("slides", 1))
-    return [ch for ch in guide.get("chrome", []) if ch["kind"] == "rule" and ch.get("anchor") == "slide_top" and ch.get("slides_present", 0) >= 0.5 * n]
+    """The guide's top rules: rules on at least half the reference's slides, across at
+    least half the page's width, in the upper half of the page and not anchored to its
+    bottom edge: the rule under the title. The title band is everything above them. The
+    miner's edge anchor is not the test: bain's yellow rule sits 1.42 in down an 8.5 in
+    page, past the miner's edge distance, and is still the rule its titles sit on."""
+    ref = guide.get("reference", {})
+    n = max(1, ref.get("slides", 1))
+    page = ref.get("page") or {}
+    page_w, page_h = page.get("width_emu"), page.get("height_emu")
+    if not page_w or not page_h:
+        return []
+    return [ch for ch in guide.get("chrome", []) if ch["kind"] == "rule" and ch.get("slides_present", 0) >= 0.5 * n
+            and ch.get("anchor") != "slide_bottom" and ch["box_in"][2] * EMU_PER_INCH >= 0.5 * page_w
+            and (ch["box_in"][1] + ch["box_in"][3]) * EMU_PER_INCH <= 0.5 * page_h]
 
 
-def title_band_emu(guide: dict) -> int | None:
-    """Height of the band above the top rule, measured from the reference's own top
-    margin: the title must fit there, as every reference title does."""
+def ruler_basis(guide: dict) -> str:
+    """Why this ruler measured: the guide's pin, or this machine's default for a guide that
+    pins none. Printed on every build's brief, so a ruler that changed is seen."""
+    pinned = (guide.get("measurement") or {}).get("ruler")
+    if pinned:
+        return "pinned by the guide when its draft was extracted; every build on this guide measures with it"
+    return ("NOT pinned: the guide predates the pin, so this machine's default measured; it changes when uharfbuzz is "
+            "installed or removed. Pin it: extract the draft again (extract_style.py pins this machine's ruler) and fold the completion again")
+
+
+def title_rule_top_emu(guide: dict) -> int | None:
+    """The top edge of the highest top rule: the title's box ends there."""
     rules = top_rules(guide)
-    if not rules:
+    return int(min(ch["box_in"][1] for ch in rules) * EMU_PER_INCH) if rules else None
+
+
+def title_band_emu(guide: dict, spec_raw: dict | None = None) -> int | None:
+    """Height of the band the title sits in: from the root's content top (its top padding
+    at full scale; space.margin when no spec is given) down to the top rule. The title
+    must fit there, as every reference title does."""
+    rule_top = title_rule_top_emu(guide)
+    if rule_top is None:
         return None
-    rule_top = min(ch["box_in"][1] for ch in rules) * EMU_PER_INCH
-    top_margin = (guide.get("spacing", {}).get("margins", {}).get("top") or {}).get("emu")
-    if top_margin is None or rule_top <= top_margin:
-        return None
-    return int(rule_top - top_margin)
+    pad_top = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 0)
+    root = (spec_raw or {}).get("root") or {}
+    if root.get("layout"):
+        try:
+            pad_top = L.pad_emu(L._parse_layout(root["layout"], "root"), L.load_guide(guide), L.Fraction(1))[1]
+        except (L.LayoutContractError, KeyError, TypeError, ValueError):
+            pass  # a malformed root layout is refused by name when the page is solved
+    return rule_top - pad_top if rule_top > pad_top else None
 
 
 FIT_KEYS = L.FIT_KEYS
@@ -221,6 +251,24 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
         table["header_bold"] = table_header_bold(st, EmitGuide(guide))
 
 
+def spanned_tables(node: dict) -> dict[str, int]:
+    """{table id: header_rows} for every table whose header has a spanner (layout.header_spans)."""
+    out: dict[str, int] = {}
+    if node.get("type") == "region":
+        for c in node.get("children", []):
+            out.update(spanned_tables(c))
+    elif node.get("kind") == "table":
+        t = node.get("table") or {}
+        n = int(t.get("header_rows", 1))
+        try:
+            labels = [L.header_labels(c, n, "table") for c in t.get("columns") or []]
+        except L.LayoutContractError:
+            return out  # refused by name when the page is solved
+        if any(c1 > c0 for row in L.header_spans(labels, n) for c0, c1 in row):
+            out[node["id"]] = n
+    return out
+
+
 def slide_picture(slide: dict, nid: str, guide: dict) -> images.Picture:
     """slide.images[nid] validated once per build (images.picture: the source read and
     refused at the boundary by name)."""
@@ -280,6 +328,11 @@ def check_node_keys(node: dict) -> None:
                                  + (". Runs go under styling: \"styling\": {\"" + str(node.get("id")) + "\": {\"paragraphs\": {\"" + str(i)
                                     + "\": {\"runs\": [{\"text\": ...}, {\"text\": ..., \"emphasis\": true}]}}}}, and the paragraph keeps the whole text"
                                     if isinstance(p, dict) and "runs" in p else ""))
+        if node.get("size") is not None:
+            # a literal height on text would be a coordinate; the title's band is the build's
+            raise SystemExit(f"text {node.get('id')!r}: size is not read on text; a text box is as tall as its measured lines, or takes a "
+                             "share of a column by weight (inside a region with a weight). Space above or below it is a gap_role or "
+                             "a region's pad_roles; the title's height above a top rule is the build's own band")
     if kind not in NODE_KIND_KEYS or kind == "table":
         return  # an unknown kind is layout's to refuse; a table's keys are lift_table_style's
     stray = sorted(set(node) - NODE_KEYS - NODE_KIND_KEYS[kind] - set(PRESENTATION_KEYS))
@@ -376,7 +429,7 @@ def density_of(elements: list[dict], resolved: dict, guide: dict, spec_raw: dict
             for p in el.get("paragraphs", []):
                 words += sum(len(r.get("text", "").split()) for r in p.get("runs", []))
         elif el.get("kind") == "table":
-            words += sum(len(str(c).split()) for row in el.get("rows", []) for c in row) + sum(len(c.get("label", "").split()) for c in el.get("columns", []))
+            words += sum(len(str(c).split()) for row in el.get("rows", []) for c in row) + sum(len(t.split()) for t in L.header_texts(el.get("columns", []), int(el.get("header_rows", 1))))
     n_elements = sum(1 for el in elements if el.get("kind") not in ("rule",) and not el.get("_spacer"))
     page = spec_raw.get("page", {})
     pw, ph = page.get("width_emu", 1), page.get("height_emu", 1)
@@ -967,7 +1020,7 @@ def tieouts_of(elements: list[dict]) -> list[dict]:
                 continue
             total_text = str(el["rows"][-1][ci])
             total = parse_figure(total_text)
-            rec = {"table": el["id"], "column": col.get("label", col.get("key")), "total": total_text}
+            rec = {"table": el["id"], "column": " ".join(t for t in L.header_labels(col, int(el.get("header_rows", 1)), "table") if t) or col.get("key"), "total": total_text}
             if total is None:
                 out.append({**rec, "status": "skipped", "note": "the totals cell is blank or not a figure"})
                 continue
@@ -1409,14 +1462,14 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto") -> None
         # a reference with no bullets (a PDF, a deck of prose) gets the indent progression
         # of the spacing scale: sm, md, lg (deckgen 4b row 1: continue the indent progression)
         spec_raw["bullet_indent_roles"] = {"0": "space.sm", "1": "space.md", "2": "space.lg", "3": "space.xl"}
-    band = title_band_emu(guide)
+    band = title_band_emu(guide, spec_raw)
     root_children = spec_raw.get("root", {}).get("children", [])
-    if band and banded_title(spec_raw) is not None and "size" not in root_children[0]:
-        # the reference keeps its titles above the top rule: a title that needs more
-        # lines than the band holds is refused, never pushed under the rule
-        pad_top = (guide.get("spacing", {}).get("steps", {}).get("space.margin") or {}).get("emu", 0)
-        top_margin = (guide.get("spacing", {}).get("margins", {}).get("top") or {}).get("emu") or pad_top
-        root_children[0]["size"] = {"width_emu": None, "height_emu": max(1, band - max(0, pad_top - top_margin))}
+    if band and banded_title(spec_raw) is not None:
+        # the reference keeps its titles above the top rule: the title's box is the band
+        # from the root's content top down to the rule, so whatever follows it starts
+        # below the rule; a title that needs more lines than the band holds is refused
+        # as overflow, never pushed under the rule
+        root_children[0]["size"] = {"width_emu": None, "height_emu": band}
         root_children[0]["scale_class"] = "fixed"
 
 
@@ -1642,7 +1695,7 @@ def full_scale_cause(ctx, outcome) -> list[str]:
     if resolved is None:
         return [outcome.reason or "the page does not solve at full scale"]
     causes = [f"{v.code}: {v.node_id}{' and ' + v.related_node_id if v.related_node_id else ''}"
-              f"{f' short by {v.shortfall_emu / EMU_PER_INCH:.2f} in' if v.shortfall_emu else ''}: {v.detail}" for v in resolved.violations]
+              f"{f' short by {v.shortfall_emu / EMU_PER_INCH:.3f} in ({v.shortfall_emu} EMU)' if v.shortfall_emu else ''}: {v.detail}" for v in resolved.violations]
     over = (L.outcome_json(ctx, outcome).get("unfittable") or {}).get("overshoot_emu") or 0
     for t in table_budgets(ctx, outcome):
         if t["rows_to_fit"] < t["body_rows"]:
@@ -1668,12 +1721,12 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     that does not fit at full scale has no budget: the build would descend the scale."""
     import copy
     lg = L.load_guide(guide)
-    ruler, index = L.default_ruler(), L.default_index()
+    ruler, index = L.ruler_for(guide), L.default_index()
     api = component_api.make_api(guide, lg, ruler, index)
     one = L.Fraction(1)
     base_slide = copy.deepcopy(slide)
     base_raw, _, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index, api)
-    out: dict = {"id": slide.get("id"), "ruler": ruler.name, "status": outcome.status,
+    out: dict = {"id": slide.get("id"), "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "status": outcome.status,
                  "scale": None if outcome.resolved is None else float(outcome.resolved.scale),
                  "reserved_zones_in": {z.get("source"): [round(z[k] / EMU_PER_INCH, 2) for k in ("left", "top", "width", "height")]
                                        for z in base_raw["page"].get("reserved_zones") or []}, "elements": []}
@@ -1905,11 +1958,11 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     outputs.start()  # before the solve: a missing -o directory otherwise fails only at the save
     out = str(outputs.stage_out)
     lg = L.load_guide(guide)
-    ruler = L.default_ruler()
+    ruler = L.ruler_for(guide)
     index = L.default_index()
     api = component_api.make_api(guide, lg, ruler, index)
     emit_spec: dict = {"slides": [], **({"firm_chrome": deck["firm_chrome"]} if "firm_chrome" in deck else {})}
-    report = {"out": out, "ruler": ruler.name, "slides": []}
+    report = {"out": out, "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "slides": []}
     ref_slides = None
     precedent = None
     if reference:
@@ -1929,6 +1982,10 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
             taken = {tid: [f"emphasis[{i}].bold: true (left out, emphasised cells are bold)" for i, g in enumerate(st["emphasis"])
                            if isinstance(g, dict) and "bold" not in g]
                      for tid, st in (slide.get("styling") or {}).items() if isinstance(st, dict) and isinstance(st.get("emphasis"), list)}
+            for tid in spanned_tables(slide["spec"]["root"]):
+                st = (slide.get("styling") or {}).get(tid) or {}
+                if not st.get("spanner_align") and not st.get("header_align"):
+                    taken.setdefault(tid, []).append("spanner_align: each spanner takes its first column's alignment (left out)")
             if any(taken.values()):
                 entry["table_defaults_taken"] = {k: v for k, v in taken.items() if v}
             if outcome.resolved is None:
@@ -1937,11 +1994,18 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 report["slides"].append(entry)
                 continue
             banded = banded_title(spec_raw)
-            title_lines = sum(len(m.lines) for m in outcome.resolved.measurements.get(banded.get("id") or "", [])) if banded else 0
-            if outcome.status != "fit" and title_lines > 1 and title_band_emu(guide):
-                # the first cause named first: every other violation on the page follows from a
-                # title that pushed the content down
-                entry["reason"] = f"title needs {title_lines} lines; the band above the top rule holds 1. Shorten the title before anything else."
+            title_rows = outcome.resolved.measurements.get(banded.get("id") or "", []) if banded else []
+            title_over = banded is not None and any(v.code == "overflow" and v.node_id == banded.get("id") for v in outcome.resolved.violations)
+            if outcome.status != "fit" and title_over and title_rows:
+                # the first cause named first: the title's box is the band above the top rule
+                band = title_band_emu(guide, spec_raw) or 0
+                pitch = max(1, title_rows[0].entry.pitch_emu)
+                entry["reason"] = (f"title needs {sum(len(m.lines) for m in title_rows)} lines; the band above the top rule "
+                                   f"({band / EMU_PER_INCH:.2f} in) holds {band // pitch} at {title_rows[0].entry.size_pt}pt. Shorten the title before anything else.")
+            elif outcome.status != "fit":
+                # the brief names the cause on the page's own line, not only in the JSON
+                causes = full_scale_cause(ctx, outcome)
+                entry["reason"] = causes[0] + (f" (and {len(causes) - 1} more under slides[].violations)" if len(causes) > 1 else "")
             resolved = L.resolved_json(ctx, outcome.resolved)
             entry["scale"] = resolved["scale_float"]
             entry["violations"] = resolved["violations"]
@@ -2197,6 +2261,7 @@ def brief_text(report: dict, outputs: Outputs) -> str:
     if written.get("note"):
         lines.append(f"note: {written['note']}")
     lines += [f"moved aside: {m}" for m in written.get("moved_aside") or []]
+    lines.append(f"ruler: {report.get('ruler')} ({report.get('ruler_basis')})")
     for s in slides:
         problems = s.get("problems") or []
         refusals = [p for p in problems if p.get("severity") == "refusal"]
