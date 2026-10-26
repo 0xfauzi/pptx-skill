@@ -86,7 +86,7 @@ sits on, whether it carries text, and whether it sits on a shape-built structure
   each chart by its form (plot type, bar direction, grouping; not its series count). A
   table beside a column chart and two tables beside a column chart are one kind of page; a
   table beside a scatter and a table beside a stacked-column bridge are two. Three or more
-  charts drawn at one size (a sparkline per tile) are one small multiple: one panel, one
+  charts of one form drawn at one size (a column sparkline per tile) are one small multiple: one panel, one
   brief;
 - distinct compositions per page; the longest run; every run of two or more.
 

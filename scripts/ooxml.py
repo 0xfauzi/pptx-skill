@@ -624,13 +624,13 @@ STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as on
 #: process, a matrix of boxes); fewer are a band, a callout or a frame. Keybank's shape-built
 #: pages draw 13 to 21; a banner over a chart's title is 1
 DRAWN_STRUCTURE_MIN = 3
-#: definition, unmeasured: this many charts drawn at one size are one small multiple (one
+#: definition, unmeasured: this many charts of one form drawn at one size are one small multiple (one
 #: panel, one brief); two are left as two, since a pair of same-size charts is
 #: as often two exhibits with a brief each (round 7: investor's six sparklines under one brief)
 SMALL_MULTIPLE_MIN = 3
 #: which reading of a page made a guide's exhibit facts: a guide whose pages carry another
 #: (or none) was read under a different definition, and plan.py refuses it by name
-EXHIBIT_FACTS_READER = "exhibit_facts 3: kinds read each chart's form; three or more charts of one size are one small multiple"
+EXHIBIT_FACTS_READER = "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple"
 
 
 def shares_area(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
@@ -687,8 +687,8 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
       pages that each set a table beside a chart hold different kinds when one chart is a
       scatter and the other a bridge of stacked columns, and the same kinds when both are
       column charts, however many tables sit beside them;
-    - a small multiple: SMALL_MULTIPLE_MIN or more charts drawn at one size (a sparkline per
-      tile, whatever each plots) are one panel, read "small multiple of N charts: ...", so
+    - a small multiple: SMALL_MULTIPLE_MIN or more charts of one form (chart_form) drawn at
+      one size (a column sparkline per tile) are one panel, read "small multiple of N charts: ...", so
       its one brief agrees;
     - drawn: the fills, outlines and brackets that sit on no chart, table or picture, and
       what they were read as: a structure, or decoration (a band, a frame or a callout:
@@ -709,14 +709,16 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
     signature: list[str] = []
     forms: list[str] = []
     charts: list[dict] = []
-    # SMALL_MULTIPLE_MIN or more charts drawn at one size are one small multiple (a sparkline
-    # per tile): one panel and one brief, however many charts it repeats
+    # SMALL_MULTIPLE_MIN or more charts of one form drawn at one size are one small multiple
+    # (a column sparkline per tile): one panel and one brief, however many charts it repeats.
+    # Same-size charts of different forms are different exhibits (round 8 verifier: a column,
+    # a bar and a line chart in three equal slots were read as one)
     multiples: dict[tuple, list] = {}
     for sh in content:
         if sh.kind == "chart":
             got = plots.get(sh.ref)
             charts.append({"ref": sh.ref, "plots": got})
-            multiples.setdefault((sh.box[2], sh.box[3]), []).append((sh, got))  # type: ignore[index]
+            multiples.setdefault((sh.box[2], sh.box[3], chart_form(got)), []).append((sh, got))  # type: ignore[index]
         elif sh.kind in ("table", "picture"):
             signature.append(sh.kind)
             forms.append(sh.kind)
