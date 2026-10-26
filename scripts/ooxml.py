@@ -617,6 +617,14 @@ BRACKET_PRESETS = frozenset({"leftBrace", "rightBrace", "leftBracket", "rightBra
 #: the element kinds that hold an exhibit whole: a mark drawn on one sits on an exhibit
 HOST_KINDS = frozenset({"chart", "table", "picture"})
 STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as one count
+#: definition, unmeasured: on a page that holds no chart, table or picture, this many fills,
+#: outlines or brackets or more are a structure built from shapes (a shape-built table, a
+#: process, a matrix of boxes); fewer are a band, a callout or a frame. Keybank's shape-built
+#: pages draw 13 to 21; a banner over a chart's title is 1
+DRAWN_STRUCTURE_MIN = 3
+#: which reading of a page made a guide's exhibit facts: a guide whose pages carry another
+#: (or none) was read under a different definition, and plan.py refuses it by name
+EXHIBIT_FACTS_READER = "exhibit_facts 2: decoration on a page holding a native exhibit is not drawn shapes"
 
 
 def shares_area(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
@@ -649,9 +657,10 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
 
     - signature: the distinct kinds of exhibit the page holds: a native chart by its plot
       groups as the chart XML states them (type, barDir, grouping, series count), a table,
-      a picture, and "drawn shapes" when the page draws fills, outlines or brackets that sit
-      on no chart, table or picture; ["text only"] when it holds none of these;
-    - panels: how many there are (each chart, table and picture, and the drawn shapes as
+      a picture, and "drawn shapes" when the page holds none of those and draws at least
+      DRAWN_STRUCTURE_MIN fills, outlines or brackets of its own (a structure built from
+      shapes); ["text only"] when it holds none of these;
+    - panels: how many there are (each chart, table and picture, and the drawn structure as
       one); 0 on a text-only page;
     - structure: the signature and the panels read as 1, 2 or 3+ (a definition, unmeasured:
       a logo wall of 48 pictures and one of 50 are one structure), in one string. Two pages
@@ -660,9 +669,16 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
     - kinds: the same with every chart read as "chart", whatever its plot groups: two pages
       that each set a table beside a chart hold the same kinds though one chart is a line
       and the other columns (the sameness a reader of a section sees first);
+    - drawn: the fills, outlines and brackets that sit on no chart, table or picture, and
+      what they were read as: a structure, or decoration (a band, a frame or a callout:
+      fewer than DRAWN_STRUCTURE_MIN of them, or any number beside a native exhibit, where
+      they head, frame or ground it). Decoration is neither a panel nor a kind, so adding
+      or removing a banner's fill cannot move the variety;
     - elements: content shapes counted by kind;
     - marks: every line, bracket, outline or fill that shares area with another content
-      shape, with its geometry, what it sits on, and whether it carries text of its own.
+      shape, with its geometry, what it sits on, whether it carries text of its own, and
+      whether the page's exhibit is a structure built from shapes, so that what the mark
+      sits on (its words and boxes) is part of that structure (on_drawn_structure).
 
     What this cannot see: anything inside a picture (a pasted chart's ring is pixels), a
     PDF's charts (a PDF states rectangles and paths, never a chart), and what a mark means."""
@@ -679,26 +695,30 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
                                                     for p in got) if got else "(plots unread)"))
         elif sh.kind in ("table", "picture"):
             signature.append(sh.kind)
+    under_of = {id(sh): [o for o in content if o is not sh and shares_area(extent[id(sh)], extent[id(o)])] for sh in content}
+    # the fills, outlines and brackets a page draws of its own, on no native exhibit
+    units = [sh for sh in content if mark_geometry(sh) not in (None, "line") and not any(o.kind in HOST_KINDS for o in under_of[id(sh)])]
+    structure = not signature and len(units) >= DRAWN_STRUCTURE_MIN
+    if structure:
+        signature.append("drawn shapes")
     marks: list[dict] = []
-    drawn = False
     for sh in content:
         geometry = mark_geometry(sh)
-        if geometry is None:
+        under = under_of[id(sh)]
+        if geometry is None or not under:
             continue
-        under = [o for o in content if o is not sh and shares_area(extent[id(sh)], extent[id(o)])]
-        if under:
-            marks.append({"ref": sh.ref, "geometry": geometry, "prst": sh.prst, "over": sorted({_fact_kind(o) for o in under}),
-                          "carries_text": bool(sh.text_chars)})
-        if geometry != "line" and not any(o.kind in HOST_KINDS for o in under):
-            drawn = True
-    if drawn:
-        signature.append("drawn shapes")
+        marks.append({"ref": sh.ref, "geometry": geometry, "prst": sh.prst, "over": sorted({_fact_kind(o) for o in under}),
+                      "carries_text": bool(sh.text_chars), "on_drawn_structure": structure})
     distinct = sorted(set(signature)) or ["text only"]
     panels = len(signature)
     counted = str(panels) if panels < STRUCTURE_PANELS_MAX else f"{STRUCTURE_PANELS_MAX}+"
     count = f" ({counted} panel{'' if panels == 1 else 's'})" if panels else ""
-    return {"signature": distinct, "panels": panels, "structure": "; ".join(distinct) + count,
+    read_as = ("structure" if structure else "none" if not units
+               else "decoration: beside a native exhibit" if any(s != "drawn shapes" for s in signature)
+               else f"decoration: fewer than {DRAWN_STRUCTURE_MIN}")
+    return {"reader": EXHIBIT_FACTS_READER, "signature": distinct, "panels": panels, "structure": "; ".join(distinct) + count,
             "kinds": "; ".join(sorted({"chart" if s.startswith("chart ") else s for s in distinct})) + count,
+            "drawn": {"count": len(units), "read_as": read_as},
             "elements": dict(sorted(Counter(sh.kind for sh in content).items())), "charts": charts, "marks": marks}
 
 

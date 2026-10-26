@@ -150,8 +150,8 @@
    "check": "Read the final report."
   },
   {
-   "statement": "No two adjacent pages share an exhibit structure unless declared a deliberate parallel.",
-   "check": "deck.build.json repetition.measure.structures: structure V (read from the written file) >= the house's p10 deck (against_house.structures_V), or the repeat is declared; renaming an exhibit in the plan does not move it."
+   "statement": "Adjacent pages do not repeat one kind of exhibit (a table beside a chart, page after page) unless the repeat is declared a deliberate parallel or answered in the report.",
+   "check": "deck.build.json repetition.measure.kinds: kinds V (read from the written file, any chart read as chart) >= the house's p10 deck (against_house.kinds_V), or each repeat is declared or answered; structure V alone does not pass this, since it reads 1.0 on a section of chart-beside-table pages whose charts plot different things. Renaming an exhibit in the plan does not move either, and neither does adding or removing a banner's fill (decoration beside a native exhibit is no kind)."
   },
   {
    "statement": "Each composition name in the plan is honest: two pages that set a table beside a chart carry the same name.",

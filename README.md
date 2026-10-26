@@ -36,8 +36,10 @@ page-sized one for a PDF (`pptx_tools.py`). Round-trip one of the house's pages
 (`import_slide.py`). Plan the section, with a brief for every exhibit written while
 looking at the house's nearest exhibits and the data (what the reader must see, what is
 compared, at least two forms weighed, the form chosen and why, the marks), and check the
-plan (`plan.py check`: briefs complete, variety against the house's). There is no list of
-chart types anywhere in the skill. Write page specs that name roles and weights, never sizes or
+plan (`plan.py check`: briefs complete, variety against the house's). Nothing asks the
+model to pick a chart type or an annotation from a list; the corpus counts in the
+references are evidence, and the lists left in code name what the emitter and the
+annotation solver can draw. Write page specs that name roles and weights, never sizes or
 coordinates, after looking at the house's nearest pages and the page library. Build
 (`build_deck.py --plan`): solve, emit, read back, validate, render, judge, and report the
 realised variety, measured from the written file (composition, and exhibit structure read

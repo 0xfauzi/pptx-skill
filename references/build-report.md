@@ -87,8 +87,12 @@ deltas); `chart label breaks mid-word`; `emitted text overflows`; `annotation re
 `explained_by`: chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
 `picture not drawn as written`, `picture too small to check`, `picture render check failed`;
-`font refused`; `no source line` where the house carries source lines as a rule (below).
-Warnings never refuse: `tieout` (a totals cell that does not equal its column), `no
+`font refused`; `no source line` where the house carries source lines as a rule (below);
+`exhibit without a brief` (with `--plan`: the written page holds a chart, a table, a
+picture or a structure built from shapes, and its plan page briefs none; `slides[].briefs`
+gives both counts). Warnings never refuse: `briefs differ from the file's exhibits` (the
+plan's brief count and the written page's exhibit count differ; say which brief covers
+which exhibit), `tieout` (a totals cell that does not equal its column), `no
 source line` where the habit is common or unmeasured, `source line the house rarely
 carries`, and `plan figure not on the page` (a figure the plan's message
 for the page states that the page does not carry: the plan was written before the

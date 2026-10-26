@@ -14,9 +14,14 @@ build writes a named neutral value and lists it, so you see every choice you did
 
 The house wins. Its habits (title register and length, where claims sit, how it draws and
 marks its exhibits, emphasis, source lines, variety, density) are in the guide you
-complete in step 2. No list of chart types or annotation moves exists anywhere in this
-skill: every exhibit is reasoned out from what the reader must see, the data and the
-house's own exhibits, and written down as a brief before its spec. The reference files on design offer questions plus counts from 578
+complete in step 2. Nothing in this skill asks you to pick a chart type or an annotation
+move from a list, and nothing refuses one for its name: every exhibit is reasoned out
+from what the reader must see, the data and the house's own exhibits, and written down
+as a brief before its spec. The tables of corpus counts in the references (emphasis,
+table and composition families by house type) are coders' labels for what they saw,
+evidence beside a choice and never a set to choose from; the lists that remain in code
+name what the code can draw (the emitter's chart kinds, the annotation drawing kinds),
+not what to show. The reference files on design offer questions plus counts from 578
 coded pages of 24 professional decks; where the house has evidence, the house's habit
 decides.
 
@@ -196,9 +201,11 @@ departs from, or why none is near); and what will be marked, where the claim liv
 form you cannot argue for against another is not chosen yet. Questions and evidence:
 [references/charts.md](references/charts.md).
 
-It refuses a malformed plan, an incomplete brief (a field missing or a word or two, one
-form considered, a nearest page that is not a page of the reference), an archetype the
-guide does not hold, and an undeclared repeat longer than the house's longest run; it
+It refuses a guide made before the current readings (re-extract and complete it again),
+a malformed plan, an incomplete brief (a field missing or a word or two, a placeholder
+such as TBD or n/a, one form considered, a chosen form that is none of those weighed, a
+nearest page that is not a content page of the reference, one brief pasted for two
+exhibits), an archetype the guide does not hold, and an undeclared repeat longer than the house's longest run; it
 reads a brief for being there, never for what it says. It warns when the plan's
 composition variety falls below the house's. Fix every refusal; answer every warning in the plan or the
 report. Name compositions honestly: the same name whenever two pages share an arrangement.
@@ -316,8 +323,11 @@ From `repetition` in the build report: realised composition V, exhibit structure
 exhibit kinds V against the house's (`against_house`), runs over the house's longest,
 `warnings`, and every page in `plan.pages_differing_from_plan`. All are read from what was
 built, never from names: structure is each page's exhibits as the written file states them
-(chart plot types and series counts, tables, pictures, drawn shapes, panels), kinds the
-same with any chart a chart, each held against the same reading of the house's own pages.
+(chart plot types and series counts, tables, pictures, a structure built from shapes,
+panels; a banner, frame or callout beside a native exhibit is decoration and counts as
+neither), kinds the same with any chart a chart, each held against the same reading of the
+house's own pages. Each page's briefs are held to its file (`slides[].briefs`): an
+exhibit on a page whose plan briefs none is refused.
 Explain each warning and each disagreement: a deliberate parallel, or a fix you made.
 Composition V cannot see a table beside a chart mirrored; kinds V can, even when each
 page's chart plots something else.

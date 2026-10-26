@@ -29,7 +29,11 @@ Counts are pages carrying each device, of 578 coded content pages (bank 231, con
 - Can the absence of a mark carry meaning (one panel left unboxed to prove "except this
   one")?
 
-## Emphasis devices by house type
+## What coders counted, by house type
+
+The rows are the coders' own labels for what they saw on 578 pages: evidence of what
+houses did, not a set of devices to choose from. A page may use none of them, or
+something no row names.
 
 | Device | Total | Bank | Consulting | Chart book |
 |---|---|---|---|---|

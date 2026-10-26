@@ -30,7 +30,11 @@ pages decide. Counts are from 578 coded content pages (bank 231, consulting 317,
 - Is every edge on an axis the page already has? Is empty space a decision you can name?
 - Which house page is nearest to this intent, and what does it do that this page does not?
 
-## Composition families by house type
+## What coders counted, by house type
+
+The rows are the corpus coders' composition families with counts: evidence of how houses
+arrange pages, never a set to choose from. (`library.py pick --composition` still filters
+the page library by these families; that filter is a search over coded examples.)
 
 | Family | Total | Bank | Consulting | Chart book |
 |---|---|---|---|---|

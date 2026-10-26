@@ -28,7 +28,10 @@ plus or minus 2 to 3.
 - If it will not fit: which rows split to the next page under the house's continuation
   convention? Never drop rows.
 
-## Table families by house type
+## What coders counted, by house type
+
+The rows are the coders' own labels for the tables they saw, with counts: evidence of what
+houses did, never a set of table types to pick from.
 
 | Family | Total | Bank | Consulting | Chart book |
 |---|---|---|---|---|
@@ -44,7 +47,7 @@ In the bank decks tables outnumber charts (117 to 109). Harvey balls: 0 in the b
 0 in the chart book, 2 Harvey-style tables in 317 consulting pages; check, status and
 red-amber-green matrices are the measured equivalent (16 exhibits, 41 glyph moves).
 
-## Moves on tables
+## What coders saw marked on tables
 
 Over 192 tables: circled or boxed mark 50; column spanners 45; shaded or bold total row 47;
 footnote markers 36; highlight one item 34; italic ratio rows 16; statistic or median row

@@ -191,7 +191,9 @@ Each stub page also carries `file_facts`: what the file itself states (the exhib
 structure and every mark drawn on content, with its geometry, what it sits on and whether
 it carries text), read by the extractor. That, not your words, is what a house precedent
 for an unlabelled mark is checked against (`explained_by: {"house_precedent": {"slide":
-N}}`: slide N's file draws a mark of the same geometry with no text of its own). A ring
+N}}`: slide N's file draws a mark of the same geometry with no text of its own, on the
+same kind of host: a native chart for a mark on a chart, a native table or a structure
+the house built from shapes for a mark on a table). A ring
 inside a pasted picture is pixels: describe it in `marks`; it is no precedent. On every
 page holding a chart or a table, answer
 the page's `source_line`: `true` when it carries a source or note line naming where its

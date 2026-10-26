@@ -869,12 +869,25 @@ def _band_visible_on_table(host: dict, box: tuple, eg: EmitGuide, where: str) ->
 #: states it (ooxml.mark_geometry): a house precedent is a reference page whose file draws
 #: a mark of that geometry, carrying no text of its own, on other content
 MARK_GEOMETRY: dict[str, str] = {"outline_box": "outline", "band": "fill", "reference_line": "line", "bracket": "bracket"}
+#: what a cited reference mark must sit on to stand for a mark on each kind of host, as the
+#: file states it (exhibit_facts marks' `over` and `on_drawn_structure`): a mark on a chart
+#: needs a mark on a native chart; a mark on a table needs one on a native table or on the
+#: units of a structure the house built from shapes (keybank's slide 10 sets its estimates
+#: as rows of filled text shapes). A picture's content is pixels, so a mark on one is
+#: precedent for neither: the file cannot say it was a chart or a table
+PRECEDENT_HOSTS: dict[str, str] = {"chart": "a native chart", "table": "a native table or a structure built from shapes"}
+
+
+def _sits_on(mark: dict, host_kind: str) -> bool:
+    over = mark.get("over") or []
+    return host_kind in over or (host_kind == "table" and mark.get("on_drawn_structure") is True)
 EXPLAINED_BY = ("text", "annotation", "legend", "footnote", "house_precedent")
 EXPLAINED_EXAMPLE = ('{"text": "<page text element id>", "quote": "<its words naming what the mark encloses>"}, '
                      '{"annotation": "<a labelled annotation on the same host and anchor: a callout or arrow saying what it marks>"}, '
                      '{"legend": "<series name the host chart\'s legend shows in the mark\'s ink>"}, '
                      '{"footnote": {"marker": "*", "note": "<text element id whose paragraph starts with the marker>"}} or '
-                     '{"house_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on its content: '
+                     '{"house_precedent": {"slide": N}} (reference slide N draws a mark of the same geometry, carrying no text, on the same '
+                     'kind of host: a native chart for a chart, a native table or a shape-built structure for a table; '
                      'the guide\'s variety.pages[].exhibit_facts.marks)')
 FOOTNOTE_MARKER = re.compile(r"^(\*{1,3}|†|‡|§|\(\w{1,2}\)|\[\w{1,2}\])$")
 #: a word runs on through letters and digits ("CET1" is one word, not "CET" and a "1")
@@ -1010,8 +1023,8 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
     label (a callout or arrow saying what the band or box marks); a legend entry of
     the host chart drawn in the mark's own ink; a footnote marker that ends a text the
     mark encloses and starts a paragraph of the named note; or a page of the reference
-    whose file draws a mark of the same geometry carrying no text of its own on its content
-    (ooxml.exhibit_facts, read by the extractor). The model decides which; this only
+    whose file draws a mark of the same geometry carrying no text of its own on the same kind
+    of host (PRECEDENT_HOSTS; ooxml.exhibit_facts, read by the extractor). The model decides which; this only
     checks that what it names is there."""
     if kind not in MARK_GEOMETRY:
         return None
@@ -1108,8 +1121,14 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         if m.get("carries_text") is not False:
             seen.append(f"{m.get('ref')}: a {geometry} on {'+'.join(m.get('over') or [])} carrying its own text, precedent for a labelled mark only")
             continue
-        return {"by": "house_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over")}
-    raise AnnotationUnexplained(f"{where}: reference slide {slide} draws no {geometry} without text on its content"
+        if not _sits_on(m, host["kind"]):
+            seen.append(f"{m.get('ref')}: {'an' if geometry[0] in 'aeiou' else 'a'} {geometry} on {'+'.join(m.get('over') or [])}"
+                        f"{' (a structure built from shapes)' if m.get('on_drawn_structure') else ''}, and the host {host['id']!r} is a {host['kind']}: "
+                        f"a mark on a {host['kind']} takes its precedent from one on {PRECEDENT_HOSTS[host['kind']]}")
+            continue
+        return {"by": "house_precedent", "slide": slide, "geometry": geometry, "shape": m.get("ref"), "over": m.get("over"),
+                "on_drawn_structure": m.get("on_drawn_structure")}
+    raise AnnotationUnexplained(f"{where}: reference slide {slide} draws no {geometry} without text on {PRECEDENT_HOSTS[host['kind']]}"
                                 + (f" ({'; '.join(seen)})" if seen else " (its file holds no such mark; one inside a pasted picture is pixels the file cannot show)"))
 
 

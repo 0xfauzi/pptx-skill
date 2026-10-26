@@ -967,7 +967,46 @@ def emitted_structures(path: Path, numbers: list[int], guide: dict, slides: list
     if len(written) != len(numbers):
         return {n: None for n in numbers}, f"the file holds {len(written)} generated slides for {len(numbers)} solved pages"
     facts = {n: ooxml.exhibit_facts(p, left_out(role_sized(slides[n - 1]))) for n, p in zip(numbers, written, strict=True)}
-    return {n: {key: f[key] for _, key in plan.FACT_MEASURES} for n, f in facts.items()}, None
+    return {n: {**{key: f[key] for _, key in plan.FACT_MEASURES}, "panels": f["panels"], "drawn": f["drawn"]} for n, f in facts.items()}, None
+
+
+def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict], slide_ids: dict[int, str],
+                        plan_pages: list[dict] | None, structures: dict[int, dict | None], unread_why: str | None) -> None:
+    """Each built page's exhibit briefs against the exhibits its written file holds
+    (emitted_structures' panels: charts, tables, pictures and a structure built from shapes;
+    decoration is no panel). A page whose file holds an exhibit while its plan page briefs
+    none is refused by name: the brief is how an exhibit is reasoned out before its spec,
+    and an empty list states the page holds none. Other differences in count are warned
+    with both counts (one brief may cover a chart and the table set under it as one
+    exhibit; a logo wall is many pictures and one brief), and a page whose file was not
+    read says so in entry["briefs"], never as agreement."""
+    if plan_pages is None:
+        return
+    planned = {p["id"]: p for p in plan_pages}
+    for (number, _), entry in zip(pages, emitted, strict=True):
+        page = planned.get(slide_ids.get(number))
+        if page is None:
+            continue
+        briefs = len(page["exhibits"])
+        facts = structures.get(number)
+        if facts is None:
+            entry["briefs"] = {"plan": briefs, "file": None, "verdict": f"not compared: {unread_why or 'the written file was not read'}"}
+            continue
+        panels = facts["panels"]
+        entry["briefs"] = {"plan": briefs, "file": panels, "file_structure": facts["structure"],
+                           "verdict": "agree" if panels == briefs else "differ"}
+        if panels and not briefs:
+            entry["problems"].append({"kind": "exhibit without a brief", "severity": "refusal",
+                                      "detail": f"the written page holds {facts['structure']} and its plan page {page['id']!r} briefs no exhibit "
+                                                "(exhibits: []): write the brief for each exhibit (what the reader must see, the comparison, "
+                                                "the data, the forms weighed, the chosen form and why, the nearest house exhibit, the marks) "
+                                                "and plan.py check it before the spec"})
+            if entry["status"] == "fit":
+                entry["status"], entry["reason"] = "unfittable", "exhibit without a brief"
+        elif panels != briefs:
+            entry["problems"].append({"kind": "briefs differ from the file's exhibits", "severity": "warning",
+                                      "detail": f"the plan briefs {briefs} exhibit(s) for {page['id']!r} and the written page holds {panels} "
+                                                f"({facts['structure']}): say in the report which brief covers which exhibit, or brief the one left out"})
 
 
 #: Unmeasured: a pair of pages whose box similarity lies this close to the archetype
@@ -2199,6 +2238,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     structures, structures_unread = emitted_structures(out, [n for n, _ in pages], guide, deck["slides"])
     report["repetition"] = repetition_of(pages, guide, plan_pages, house_decks, {n: deck["slides"][n - 1].get("id") for n, _ in pages},
                                          structures, house_names, plan_check, structures_unread or BUILD_UNREAD)
+    briefs_against_file(pages, emitted, {n: deck["slides"][n - 1].get("id") for n, _ in pages}, plan_pages, structures, structures_unread)
     report["emitted_slides"] = len(emit_report["slides"])
     # the file as written, measured against the boxes it was solved for
     for entry, found in zip(emitted, emitted_fit(out, emitted, emit_spec["slides"], guide, L.Context(lg, ruler, index))):

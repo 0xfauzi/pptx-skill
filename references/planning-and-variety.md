@@ -22,8 +22,8 @@ will not fit, and the title in the HOUSE's register and length (`guide.titles`).
 
 Every exhibit on a planned page carries a brief, written before its spec while looking at
 the house's nearest exhibits (the digest's crops and records, the gallery, the renders)
-and at the data. Nothing in it is chosen from a list: there is no list of chart types,
-moves or devices in this skill. It is where the visual is thought through:
+and at the data. Nothing in it is chosen from a list, and nothing checks a form by its
+name. It is where the visual is thought through:
 
 ```json
 {"reader_must_see": "where 1.33x tangible book falls in the ranking of precedents",
@@ -42,8 +42,13 @@ moves or devices in this skill. It is where the visual is thought through:
 `{"none": "why no page is near, because ..."}`. A form you cannot argue for against
 another is not chosen yet; a brief whose reader cannot see `reader_must_see` on the render
 is a review finding (review.md). `plan.py check` reads a brief for completeness only:
-every field there, each a phrase of at least three words (a form's name at least one), at
-least two distinct forms, a real page or a reason. It never reads what the brief says.
+every field there; each a phrase of at least three distinct words (a form's name at least
+one), where a repeated word, a lone letter and a placeholder (TBD, n/a, TODO, ...) do not
+count; at least two distinct forms, telling forms apart after case, punctuation,
+fullwidth letters, a leading article and a plural s, and refusing a form spelt in two
+scripts; a `chosen_form` that is one of the forms considered; a nearest page that is a
+content page of the reference, or a reason; and no brief given twice in the plan
+(identical after the same folding). It never reads what the brief says.
 
 ## Figures: computed, never invented
 
@@ -60,9 +65,10 @@ floor sat below one of them. The build cannot catch a false sentence.
 Per content page: its composition archetype (leader clustering of content boxes at box
 IoU 0.5), and its exhibit facts as the file states them (`exhibit_facts`, read by the
 extractor: each native chart by the plot groups its chart XML declares, with their bar
-direction, grouping and series count; tables; pictures; drawn shapes; the panel count, 1,
-2 or 3+; and every mark drawn on content, with its geometry, what it sits on and whether
-it carries text). Over adjacent pairs of content pages the reader sees in a row:
+direction, grouping and series count; tables; pictures; drawn shapes, a structure the page
+builds from three or more fills, outlines or brackets where it holds no native exhibit;
+the panel count, 1, 2 or 3+; and every mark drawn on content, with its geometry, what it
+sits on, whether it carries text, and whether it sits on a shape-built structure). Over adjacent pairs of content pages the reader sees in a row:
 
 - V (composition): pairs whose composition differs / pairs;
 - V (structures): pairs whose exhibit structure differs / pairs (a page with no exhibit
@@ -113,9 +119,13 @@ pool sister decks with `--house-deck` where you have them. A plan declares no ex
 structure (its exhibits are briefs), so the check reports the house's structure V for
 reference and leaves the measure to the build.
 
-Refused (exit 1), each by name: a plan not of this shape; an incomplete exhibit brief (a field
-missing, a phrase under three words, fewer than two distinct forms, a nearest page that is
-not a page of the reference); a title register outside the title vocabulary
+Refused (exit 1), each by name: a guide made before the current readings (its pages' exhibit
+facts read under another definition, or none, or a digest still in the closed lists:
+`plan.old_guide_error`; the build and every `--house-deck` refuse it the same way); a plan
+not of this shape; an incomplete exhibit brief (a field missing, a phrase under three
+distinct words, fewer than two distinct forms, a chosen form none of those considered, a
+nearest page that is not a content page of the reference, one brief pasted for two
+exhibits); a title register outside the title vocabulary
 (`references/page_craft_vocabulary.json`), including a non-string register; an archetype the
 guide does not hold, or a `new:` name that is not lowercase letters, digits, `-` and `_`; a
 reason on a page that repeats nothing; a plan for another reference; an UNDECLARED repeat
@@ -142,7 +152,18 @@ it is however the plan describes them (measured: the round-2 netflix section a r
 called samey builds at structure V 1.0, since each of its charts plots something else,
 and kinds V 0.25 against the pooled house's 10th percentile deck 0.494, warned; its
 revision builds at kinds V 0.75, not warned; the class V that came before this read 0.25
-and 0.75 on the same decks, from class names the model chose).
+and 0.75 on the same decks, from class names the model chose). Decoration cannot move it
+either: a fill, outline or bracket beside a native chart, table or picture (a banner over
+a chart's title, a frame round a panel) is no panel and no kind, and on a page with no
+native exhibit fewer than three of them are a band or a callout, not a structure
+(`ooxml.DRAWN_STRUCTURE_MIN`, a definition). Each page's `drawn` entry says how many it
+drew and what they were read as.
+
+Each built page's briefs are also held to its file (`slides[].briefs`): a page whose file
+holds an exhibit (a chart, a table, a picture, a structure built from shapes) while its
+plan page briefs none (`exhibits: []`) is refused, `exhibit without a brief`; another
+difference in count is warned with both counts, since one brief may cover a chart and the
+table under it, and a logo wall is many pictures under one brief.
 
 ## Where the measure is weak
 
@@ -160,6 +181,10 @@ and 0.75 on the same decks, from class names the model chose).
   line. What a picture shows is the digest's reading, never measured.
 - A PDF states rectangles, paths and text, never a chart or a table: a PDF house's
   structure reads pictures, drawn shapes and text only, coarser than a native build's.
+- Decoration is read by position, not meaning: fills beside a native exhibit are never a
+  structure, so a page that sets a drawn diagram beside a native chart reads as the chart
+  alone (the stricter count: pages read more alike, never less); on a page without one,
+  two boxes read as decoration and three as a structure.
 - Structure is kind and count, not form: two column charts of three series are one
   structure whatever they compare.
 - V counts adjacent pairs only: A B A C A reads 1.0; distinct compositions per page shows it.

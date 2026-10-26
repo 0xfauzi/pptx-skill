@@ -56,12 +56,16 @@ An exhibit brief, every field in the model's own words (nothing is chosen from a
  "marks": "what will be marked, where the claim lives, and why"}
 
 `check` reads a brief for completeness only, never for what it says: every field present,
-each text field a phrase of at least BRIEF_MIN_WORDS words (a form's name at least one),
-at least two distinct forms considered, and a nearest page that is a page of the reference
-(1 to reference.slides) or a reason why none is near.
+each text field a phrase of at least BRIEF_MIN_WORDS distinct words (a form's name at least
+one; placeholders such as TBD or n/a and a lone letter do not count), at least two
+distinct forms considered (_form_key: case, punctuation, fullwidth letters, a leading
+article and a plural s folded; a form spelt in two scripts refused), a chosen form that
+is one of them, a nearest page that is a content page of the reference (1 to
+reference.slides, and not a cover, divider or disclaimer where the guide says which pages
+are content) or a reason why none is near, and no brief given twice across the plan.
 
-`check` refuses (exit 1), by name: a plan that is not this shape, a brief that is not
-complete, a title register outside the title vocabulary, an archetype the guide does not
+`check` refuses (exit 1), by name: a guide made before the current readings
+(old_guide_error), a plan that is not this shape, a brief that is not complete, a title register outside the title vocabulary, an archetype the guide does not
 hold, a reason on a page that repeats nothing,
 and an UNDECLARED repeat that makes a run longer than the house's longest (with no house
 evidence for the longest run, every undeclared repeat is refused: there is nothing to hold
@@ -78,6 +82,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from itertools import pairwise
 from pathlib import Path
 
@@ -297,10 +302,14 @@ def read_house_guide(guide, where: str) -> dict:
     """A guide given as the house's evidence, proven at the boundary: a style guide (a
     reference with its sha256), whose variety, when it carries pages, lists each page once
     with its number, composition and triage, names its content pages among them, and gives
-    each page's exhibit facts, when it carries them, a structure string. Anything else is refused by name: a plan, a list or a guide from before the variety
-    measure is not evidence about the house's pages."""
+    each page's exhibit facts a structure string. Anything else is refused by name: a plan,
+    a list, a guide from before the variety measure, and a guide made before the current
+    readings (old_guide_error) are not evidence about the house's pages."""
     if not isinstance(guide, dict) or not isinstance(guide.get("reference"), dict) or not (isinstance(guide["reference"].get("sha256"), str) and guide["reference"]["sha256"]):
         raise Refused(f"{where}: not a style guide (no reference.sha256): a house deck is a guide or draft from extract_style.py")
+    stale = old_guide_error(guide, where)
+    if stale:
+        raise Refused(stale)
     variety = guide.get("variety")
     if variety is None:
         return guide
@@ -325,6 +334,37 @@ def read_house_guide(guide, where: str) -> dict:
     if bad:
         raise Refused(f"{where}: variety.pages on slides {bad} carry exhibit_facts without structure and kinds strings (re-run extract_style.py)")
     return guide
+
+
+#: the keys complete_guide.exhibit_habits writes: the digest in words, and the source-line count
+EXHIBIT_HABIT_KEYS = ("source_lines", "sample", "records", "provenance")
+
+
+def old_guide_error(guide: dict, where: str) -> str | None:
+    """Why a guide was made before the current readings, or None. Two ways, each by name:
+    its pages' exhibit facts were read under another definition than ooxml.exhibit_facts'
+    (EXHIBIT_FACTS_READER; none at all on a guide from before the facts were read), so its
+    structure and its marks are not this build's reading of a page; or its digest
+    (exhibit_habits) carries keys the digest in words no longer writes (the closed lists:
+    types, classes, annotation moves ...). Either is refused wherever a guide is read (plan
+    check, build, house decks), not only where a house precedent is looked up."""
+    from ooxml import EXHIBIT_FACTS_READER
+    pages = (guide.get("variety") or {}).get("pages") if isinstance(guide.get("variety"), dict) else None
+    if isinstance(pages, list) and pages:
+        stale = [p.get("slide") for p in pages if not (isinstance(p, dict) and isinstance(p.get("exhibit_facts"), dict)
+                                                         and p["exhibit_facts"].get("reader") == EXHIBIT_FACTS_READER)]
+        if stale:
+            return (f"{where}: extracted before the current exhibit reading ({EXHIBIT_FACTS_READER!r}): {len(stale)} of {len(pages)} pages "
+                    f"carry {'no exhibit facts' if all(not isinstance(p.get('exhibit_facts'), dict) for p in pages if isinstance(p, dict)) else 'facts read another way'} "
+                    f"(slides {stale[:8]}{' ...' if len(stale) > 8 else ''}). Re-run extract_style.py on the reference, then complete_guide.py with the completion "
+                    "and a digest answered in words")
+    habits = guide.get("exhibit_habits")
+    if isinstance(habits, dict):
+        stray = sorted(set(habits) - set(EXHIBIT_HABIT_KEYS))
+        if stray:
+            return (f"{where}: exhibit_habits carries {stray}, written from the closed lists the digest no longer has. Re-run gallery.py "
+                    "digest, answer each exhibit in words (what, message, how_drawn, marks) and complete the guide again")
+    return None
 
 
 def house_deck(guide: dict) -> dict:
@@ -375,6 +415,7 @@ def read_plan(plan, guide: dict) -> list[dict]:
     archetypes = {a["archetype_id"] for a in raw_archetypes}
     registers = VOCABULARY["title_register"]
     ids: list[str] = []
+    briefed: dict[str, list[str]] = {}
     for i, page in enumerate(plan["pages"]):
         where = f"pages[{i}]"
         if not isinstance(page, dict):
@@ -404,11 +445,15 @@ def read_plan(plan, guide: dict) -> list[dict]:
             else:
                 for j, brief in enumerate(page["exhibits"]):
                     errors += brief_errors(brief, f"{where} exhibits[{j}]", guide)
+                    if isinstance(brief, dict):
+                        briefed.setdefault(_brief_key(brief), []).append(f"{where} exhibits[{j}]")
         if "title_register" in page and not (isinstance(page["title_register"], str) and page["title_register"] in registers):
             errors.append(f"{where} title_register: {page['title_register']!r}{nearest(page['title_register'], registers)} not in {'|'.join(registers)}")
         reason = page.get("deliberate_parallel")
         if "deliberate_parallel" in page and reason is not None and not (isinstance(reason, str) and reason.strip()):
             errors.append(f"{where} deliberate_parallel: null, or the reason in words")
+    errors += [f"{', '.join(at)}: one brief given {len(at)} times (identical after case, punctuation and plurals); each exhibit is "
+               "briefed for itself" for at in briefed.values() if len(at) > 1]
     pages = plan["pages"]
     for prev, page in pairwise(pages):
         if isinstance(prev, dict) and isinstance(page, dict) and isinstance(page.get("deliberate_parallel"), str) and page.get("composition") != prev.get("composition"):
@@ -421,19 +466,67 @@ def read_plan(plan, guide: dict) -> list[dict]:
     return pages
 
 
+#: words that stand in for an answer not given; with a lone letter other than "a" and "I"
+#: ("x y z"), they never count toward a phrase's words. A refusal of non-answers, not a
+#: list of anything to choose
+PLACEHOLDERS = frozenset({"tbd", "tbc", "tba", "todo", "na", "n/a", "n.a", "n.a.", "nil", "null", "xx", "xxx", "placeholder",
+                          "lorem", "ipsum", "etc", "etc.", "...", "same", "ditto"})
+
+
+def _counted(token: str) -> bool:
+    t = token.lower().rstrip(".,")
+    return t not in PLACEHOLDERS and not (len(t) == 1 and t.isalpha() and t not in ("a", "i"))
+
+
 def _words(text) -> int:
-    return len(_WORD.findall(text)) if isinstance(text, str) else 0
+    """The distinct words of a phrase that answer something: a word given twice counts once,
+    and placeholders (PLACEHOLDERS, a lone letter) not at all, so "TBD TBD TBD" is no phrase."""
+    if not isinstance(text, str):
+        return 0
+    return len({t.lower() for t in _WORD.findall(unicodedata.normalize("NFKC", text)) if _counted(t)})
 
 
 def _phrase_error(value, where: str, least: int) -> str | None:
     if not isinstance(value, str) or _words(value) < least:
-        return f"{where}: {'a phrase of at least ' + str(least) + ' words' if least > 1 else 'words'}, not {value!r}"
+        return (f"{where}: {'a phrase of at least ' + str(least) + ' distinct words' if least > 1 else 'words'} "
+                f"(placeholders such as TBD or n/a, and a word repeated, do not count), not {value!r}")
     return None
 
 
+def _mixed_scripts(text: str) -> list[str]:
+    """The words of a text that mix letters of two scripts (a Cyrillic "а" inside a Latin
+    word reads the same and is another word to a comparison)."""
+    out = []
+    for word in re.findall(r"[^\W\d_]+", unicodedata.normalize("NFKC", text)):
+        scripts = {unicodedata.name(ch, "?").split(" ")[0] for ch in word}
+        if len(scripts) > 1:
+            out.append(word)
+    return out
+
+
 def _form_key(form: str) -> str:
-    """A form's name for telling two apart: case, spacing and punctuation left out."""
-    return " ".join(re.findall(r"[^\W_]+", form.lower()))
+    """A form's name for telling two apart: compatibility forms folded (fullwidth letters),
+    case, spacing and punctuation left out, a leading article dropped, and each word's
+    plural s (on words of four letters or more, not "ss") dropped: "Bar charts" and "the
+    BAR CHART." are one form."""
+    words = re.findall(r"[^\W_]+", unicodedata.normalize("NFKC", form).casefold())
+    if words and words[0] in ("a", "an", "the"):
+        words = words[1:]
+    return " ".join(w[:-1] if len(w) >= 4 and w.endswith("s") and not w.endswith("ss") else w for w in words)
+
+
+def _brief_key(brief: dict) -> str:
+    """A brief with every phrase keyed as forms are: two exhibits whose briefs key the same
+    were briefed once and pasted."""
+    def key(v):
+        if isinstance(v, str):
+            return _form_key(v)
+        if isinstance(v, list):
+            return [key(x) for x in v]
+        if isinstance(v, dict):
+            return {k: key(x) for k, x in v.items()}
+        return v
+    return json.dumps(key(brief), sort_keys=True)
 
 
 def reference_pages(guide: dict) -> int | None:
@@ -480,6 +573,14 @@ def brief_errors(brief, where: str, guide: dict) -> list[str]:
             if len(distinct) < 2:
                 out.append(f"{where} forms_considered: {len(distinct)} distinct form{'' if len(distinct) == 1 else 's'} ({distinct}); "
                            "weigh at least two forms for what the reader must see, each with why not or why")
+            mixed = [w for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str) for w in _mixed_scripts(f["form"])]
+            if mixed:
+                out.append(f"{where} forms_considered: {mixed} mix{'es' if len(mixed) == 1 else ''} letters of two scripts; spell each form in one")
+            chosen = brief.get("chosen_form")
+            if isinstance(chosen, str) and distinct and _form_key(chosen) not in distinct:
+                weighed = [f["form"] for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str)]
+                out.append(f"{where} chosen_form: {chosen!r} is none of the forms considered ({weighed}); the chosen form is one of those "
+                           "weighed, named the same way (case, punctuation and plurals aside)")
     near = brief.get("nearest_house_exhibit")
     if "nearest_house_exhibit" in brief:
         n = reference_pages(guide)
@@ -487,6 +588,13 @@ def brief_errors(brief, where: str, guide: dict) -> list[str]:
             if not _is_int(near["page"]) or n is None or not 1 <= near["page"] <= n:
                 out.append(f"{where} nearest_house_exhibit: page {near['page']!r} is not a page of the reference "
                            f"({'1 to ' + str(n) if n else 'the guide states no page count (reference.slides)'})")
+            else:
+                variety = guide.get("variety") if isinstance(guide.get("variety"), dict) else {}
+                listed = {p.get("slide"): p for p in variety.get("pages") or [] if isinstance(p, dict)}
+                content = (variety.get("content_pages") or {}).get("pages") if isinstance(variety.get("content_pages"), dict) else None
+                if near["page"] in listed and isinstance(content, list) and near["page"] not in content:
+                    out.append(f"{where} nearest_house_exhibit: page {near['page']} is not a content page of the reference "
+                               f"(variety reads it as {listed[near['page']].get('triage')!r}); cite a content page, or say why none is near")
             e = _phrase_error(near["what"], f"{where} nearest_house_exhibit what", BRIEF_MIN_WORDS)
             if e:
                 out.append(e)

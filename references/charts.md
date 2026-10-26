@@ -1,6 +1,9 @@
 # Charts and other visuals: questions, and the evidence that changes the answer
 
-There is no menu of chart types here, and none anywhere in this skill. Every exhibit is
+There is no menu of chart types here, and nothing in this skill asks you to choose from
+one: the counts below and in the other references are coders' labels for what houses did,
+evidence beside your choice, and the chart kinds the spec names are what the emitter can
+write, not what to show. Every exhibit is
 reasoned out from three things: what the reader must see, the data, and how this house
 draws its own exhibits. Write that reasoning down before the spec, as the plan's exhibit
 brief (planning-and-variety.md): what the reader must see, what is compared against what,

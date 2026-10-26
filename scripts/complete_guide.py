@@ -476,17 +476,18 @@ def exhibit_habits(guide: dict, value, stub) -> dict:
     pages = answered
     data_pages = [p for p in pages if p.get("source_line") is not None]
     sourced = [p["slide"] for p in data_pages if p["source_line"]]
-    return {
-        "source_lines": {"data_pages": len(data_pages), "with_source_line": len(sourced), "pages_with": sourced,
-                         "pages_without": [p["slide"] for p in data_pages if not p["source_line"]],
-                         "share": round(len(sourced) / len(data_pages), 3) if data_pages else None,
-                         "definition": "pages holding a chart or a table, native or pictured (chart_or_table), and how many of them carry a source or note line"},
-        "sample": {"pages_read": len(pages), "pages_with_exhibits": sum(1 for p in pages if p["exhibits"]),
-                   "pages_without": [p["slide"] for p in pages if not p["exhibits"]], "exhibits": len(records),
-                   "policy": stub.get("sample_policy") or "every evidence page the digest cut"},
-        "records": records,
-        "provenance": model_prov(f"exhibit digest of {len(pages)} pages, {len(records)} exhibits"),
-    }
+    # the keys plan.old_guide_error holds a guide's digest to, in that order
+    return dict(zip(plan.EXHIBIT_HABIT_KEYS, (
+        {"data_pages": len(data_pages), "with_source_line": len(sourced), "pages_with": sourced,
+         "pages_without": [p["slide"] for p in data_pages if not p["source_line"]],
+         "share": round(len(sourced) / len(data_pages), 3) if data_pages else None,
+         "definition": "pages holding a chart or a table, native or pictured (chart_or_table), and how many of them carry a source or note line"},
+        {"pages_read": len(pages), "pages_with_exhibits": sum(1 for p in pages if p["exhibits"]),
+         "pages_without": [p["slide"] for p in pages if not p["exhibits"]], "exhibits": len(records),
+         "policy": stub.get("sample_policy") or "every evidence page the digest cut"},
+        records,
+        model_prov(f"exhibit digest of {len(pages)} pages, {len(records)} exhibits"),
+    ), strict=True))
 
 
 def content_pages(guide: dict, value) -> dict:

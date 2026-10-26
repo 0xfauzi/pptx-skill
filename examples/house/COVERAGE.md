@@ -6,15 +6,16 @@ Fourteen pages converted from a default house specimen of the predecessor system
 intent), `spec.root`, and `styling` / `charts` / `rules` where the page has them. Every
 value is a token role; nothing here carries a colour, a size or a coordinate.
 
-Use them as SEEDS BY FAMILY: find the family the page you need belongs to in the table,
-copy that file's `spec.root` arrangement, replace the content, and build against the
-reference you are matching. They were authored for a 16:9 house page with house type
+Each page is named for what it shows, which is not a menu of page types to pick from:
+your page starts from its brief and the house's nearest pages. Read a specimen for how its
+spec is built (regions, weights, roles, a chart's techniques) when your brief needs the
+same construction, and build against the reference you are matching. They were authored for a 16:9 house page with house type
 sizes; on another reference they are a starting arrangement, not a page that fits (see
 "On keybank" below).
 
 ## Pages
 
-| File | Family it proves (the specimen's coverage record) | Elements |
+| File | What it shows (the specimen's coverage record) | Elements |
 |---|---|---|
 | `01-section-opener.deck.json` | Section divider | el-section-number (kicker), el-section-title (title), el-divider-rule (rule), el-section-frame (body), five contents groups: grp-content-N-title (emphasis), -head-rule (rule), -body (caption) |
 | `02-agenda.deck.json` | Agenda / tracker; takeaway band | title, el-kicker, five entries el-section-N (body; the live one h2) with el-section-summary-N (caption), the live entry in a filled band, col-live-title (h1) + rule + body, three decisions grp-decide-N (h2 + rule + body) |
