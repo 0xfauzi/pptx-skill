@@ -95,7 +95,8 @@ refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `cont
 deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
 or says no chart on the page declares one; a zero step that draws no bar ties, and is
 a warning, `bridge zero step unlabelled`, only when no series labels it); `chart label breaks mid-word`; `emitted text overflows`;
-`renderer divergence: text wrapped`; `annotation refused`,
+`renderer divergence: text wrapped`; `renderer divergence: chart text`;
+`chart labels taller than their band`; `annotation refused`,
 `annotation explanation not found` (what a mark's `explained_by` names is not there:
 chart-recipes.md, "A mark says what it means"), `annotation collides`,
 `annotation covers chart text`, `annotation render check failed`;
@@ -156,6 +157,17 @@ page as `renderer divergence: text wrapped`, naming the lines as drawn: the rend
 measured line wider than the ruler did, and the box runs below its measured height. Shorten
 the text or widen the box so the line that wrapped has room. Without a render
 (`--no-render`) nothing is checked, and `drawn_lines` says why.
+
+Each chart's text is read the same way (`slides[].chart_text_drawn`: per chart, how many of
+its category and data labels the render draws as written). The words the file writes are
+found in the render's lines inside the chart's frame; a label the render does not hold
+refuses the page as `renderer divergence: chart text` (LibreOffice drops category labels
+that do not fit their band and breaks a label it squeezes), and so does a data label of
+several words drawn on more than one line (LibreOffice wrapped it in its bar). Each says
+what to change. Before the render, a horizontal bar chart whose category band is shorter
+than one line of its labels is refused as `chart labels taller than their band`, with the
+plot height that holds every name, and a centred column label wider than its bar is warned
+as `chart label wider than its bar`.
 
 ## Contrast
 

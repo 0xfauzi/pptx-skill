@@ -964,8 +964,10 @@ def _category_row(ann: dict, aid: str, host: dict, geo: ChartGeometry, lab: Labe
         cw_, ch_ = (uni_w, uni_h) if width_mode == "uniform" else outer(m[3], m[4], m[0])
         a_ext = cw_ if across else ch_
         if a_ext > hi - lo + 1:
-            raise AnnotationRefused(f"{where} cells[{k}] ({cname!r}): {round(a_ext)} EMU wide, wider than its category's {round(hi - lo)} EMU band; "
-                                    "shorten it, use a smaller role, or give the chart more width")
+            raise AnnotationRefused(f"{where} cells[{k}] ({cname!r}): {round(a_ext)} EMU {'wide, wider' if across else 'tall, taller'} than its category's "
+                                    f"{round(hi - lo)} EMU band, so it would overlap its neighbour; shorten it, use a smaller role, or give the plot more "
+                                    + ("width" if across else f"height ({round(a_ext * len(geo.categories))} EMU holds every category at this size; "
+                                                              "the axis's own labels need the same, or LibreOffice drops them)"))
         if across:
             box = (c - cw_ / 2, start + (depth - ch_) / 2, cw_, ch_)
         else:

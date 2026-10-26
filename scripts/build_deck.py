@@ -65,6 +65,7 @@ from __future__ import annotations
 import argparse
 import functools
 import json
+import math
 import re
 import sys
 from collections import Counter
@@ -1431,6 +1432,133 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
 # --- measured fit of what the file carries --------------------------------------------------
 
 
+#: the chart types whose categories the render check reads off a category axis
+CATEGORY_AXIS_TYPES = ("COLUMN_", "BAR_", "LINE", "AREA")
+
+
+def chart_texts(el: dict) -> tuple[list[tuple[str, str]], list[str]]:
+    """The words a chart's file asks the renderer to draw: each category label on a shown
+    category axis (when the spec writes no label_interval) and each shown data label, as
+    (part, text); and the parts whose text is not known here (a number format label_text
+    does not read)."""
+    out: list[tuple[str, str]] = []
+    unknown: list[str] = []
+    cat_axis = (el.get("axes") or {}).get("category") or {}
+    if (str(el.get("type", "")).startswith(CATEGORY_AXIS_TYPES) and cat_axis.get("visible", True)
+            and (cat_axis.get("labels") or {}).get("show", True) and "label_interval" not in cat_axis):
+        out += [(f"category {c!r}", str(c)) for c in el.get("categories") or [] if str(c).strip()]
+    for si, s in enumerate(el.get("series") or []):
+        labels = s.get("labels") or {}
+        points = {p["index"]: p for p in s.get("points") or []}
+        for pi, value in enumerate(s.get("values") or []):
+            own = points.get(pi, {}).get("label")
+            merged = {**labels, **(own or {})}
+            shown = merged.get("show", True) if own is not None else bool(labels) and labels.get("show", True)
+            if not shown or value is None or isinstance(value, list):
+                continue
+            text = merged.get("text")
+            if text is None:
+                text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
+            part = f"series[{si}] {s.get('name')!r} point {pi} label"
+            if text is None:
+                unknown.append(part)
+            elif str(text).strip():
+                out.append((part, str(text)))
+    return out, unknown
+
+
+def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]]) -> list[dict]:
+    """Each chart's text as the renderer drew it, read off the render's words inside the
+    chart's frame (pdftotext -bbox), against chart_texts. The words are set in lines (a
+    word belongs to a line when its centre lies within half its height of the line's), and
+    a label is found where consecutive words of one line spell it, spaces aside (pdftotext
+    splits a letterspaced 'Shore' into 'S' and 'hore'). A data label not found on one line
+    whose words are all drawn was wrapped by the renderer (round 7: 'First-lien / TLB'
+    inside a stacked segment); a category label may wrap, so its words are found one by
+    one; anything else is not drawn as written: LibreOffice drops category labels that do
+    not fit their band (round 8: a 14-name horizontal bar ranking drew every third name)
+    and breaks a label it squeezes. Each word is matched once."""
+    out = []
+    for i, page in enumerate(emit_pages):
+        page_words = words[i] if i < len(words) else []
+        found: list[str] = []
+        checked: dict[str, str] = {}
+        for el in page["elements"]:
+            if el["kind"] != "chart":
+                continue
+            x, y, w, h = el["box"]
+            pad = annotate.EMU_PER_PT
+            inside = [(box, t) for box, t in page_words
+                      if x - pad <= box[0] + box[2] / 2 <= x + w + pad and y - pad <= box[1] + box[3] / 2 <= y + h + pad]
+            lines = _word_lines(inside)
+            used: set[tuple[int, int]] = set()
+            expected, unknown = chart_texts(el)
+            missing, wrapped = [], []
+            # longest first, so a short label never takes the words of a longer one
+            for part, text in sorted(expected, key=lambda pt: -len(pt[1])):
+                if _match_on_line(lines, "".join(text.split()), used):
+                    continue
+                if part.startswith("category") or "\n" in text:
+                    if all(_match_on_line(lines, tok, used) for tok in text.split()):
+                        continue  # a category label wraps in its slot; a written break is two lines
+                    missing.append((part, text))
+                elif len(text.split()) > 1 and all(_match_on_line(lines, tok, used) for tok in text.split()):
+                    wrapped.append((part, text))
+                else:
+                    missing.append((part, text))
+            for part, text in missing:
+                found.append(f"{el['id']} {part}: {text!r} is not drawn as written in the render"
+                             + ("; LibreOffice drops category labels that do not fit their band and breaks squeezed ones: give the chart more extent "
+                                "along its category axis (a line of the label role per category on a horizontal bar), a smaller label role, fewer "
+                                "categories, or turn column labels (rotation_deg)" if part.startswith("category") else
+                                "; LibreOffice broke or dropped it: a smaller label role, a shorter label, or room for it (gap_width, plot_area)"))
+            for part, text in wrapped:
+                found.append(f"{el['id']} {part}: {text!r} is drawn on more than one line: LibreOffice wrapped it where the file "
+                             "writes one; shorten it, set it in a smaller role, widen the bar (gap_width), or set it outside the bar "
+                             "(outside_end, or a category_row beside the plot)")
+            checked[el["id"]] = (f"{len(expected) - len(missing) - len(wrapped)} of {len(expected)} chart labels drawn as written"
+                                 + (f"; not read here: {unknown}" if unknown else ""))
+        out.append({"checked": checked, "found": found})
+    return out
+
+
+def _word_lines(words: list[tuple]) -> list[list[tuple]]:
+    """The words set in lines, top to bottom, each line left to right: a word joins a line
+    when its centre lies within half its height of the line's first word's centre."""
+    lines: list[list[tuple]] = []
+    for word in sorted(words, key=lambda wd: (wd[0][1] + wd[0][3] / 2, wd[0][0])):
+        cy, hh = word[0][1] + word[0][3] / 2, word[0][3]
+        for line in lines:
+            first = line[0][0]
+            if abs(first[1] + first[3] / 2 - cy) < min(hh, first[3]) / 2:
+                line.append(word)
+                break
+        else:
+            lines.append([word])
+    return [sorted(line, key=lambda wd: wd[0][0]) for line in lines]
+
+
+def _match_on_line(lines: list[list[tuple]], target: str, used: set[tuple[int, int]]) -> bool:
+    """Consecutive unused words of one line that spell `target` (spaces aside); marks them
+    used and returns True, else False."""
+    if not target:
+        return True
+    for li, line in enumerate(lines):
+        for k in range(len(line)):
+            spelled, taken = "", []
+            for j in range(k, len(line)):
+                if (li, j) in used:
+                    break
+                spelled += line[j][1]
+                taken.append((li, j))
+                if spelled == target:
+                    used.update(taken)
+                    return True
+                if not target.startswith(spelled):
+                    break
+    return False
+
+
 def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: list[list[tuple]]) -> list[dict]:
     """Each solved text box as the renderer drew it: its words found in the render's word
     list (pdftotext -bbox, in the order drawn) as one unbroken run, and the lines they sit
@@ -1593,6 +1721,35 @@ def label_overflows_bar(el: dict, item: dict, spec: dict) -> list[int]:
         return []
 
 
+def bar_category_bands(elements: list[dict], ctx: L.Context) -> list[str]:
+    """Each horizontal bar chart whose category band is shorter than one line of its
+    category labels: LibreOffice then drops labels to keep the rest apart (measured, round
+    8, LibreOffice 24.2.7, 14 names at 8pt: a band 0.99 of a line drew 7 of 14 names, 1.11
+    of a line drew all 14, over six heights). The band is the plot's height over the
+    category count (the chart frame's when no plot_area is fixed: an upper bound, so a
+    band under a line there is short for certain)."""
+    out = []
+    for el in elements:
+        if el["kind"] != "chart" or not str(el.get("type", "")).startswith("BAR_"):
+            continue
+        cats = el.get("categories") or []
+        cat_axis = (el.get("axes") or {}).get("category") or {}
+        if not cats or not cat_axis.get("visible", True) or not (cat_axis.get("labels") or {}).get("show", True) or "label_interval" in cat_axis:
+            continue
+        role = (cat_axis.get("labels") or {}).get("role") or (el.get("text") or {}).get("role")
+        if not role:
+            continue
+        entry = L.resolve_type_entry(ctx.guide, role, L.Fraction(1))
+        pr = plot_rect(el, el["box"])
+        band = (pr[3] if pr is not None else el["box"][3]) / len(cats)
+        line = entry.size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
+        if band < line:
+            out.append(f"{el['id']}: {len(cats)} category labels at {entry.size_pt:g}pt need a line of {round(line)} EMU each and the band is "
+                       f"{round(band)} EMU: LibreOffice drops labels to keep the rest apart. Give the plot {round(line * len(cats))} EMU of height "
+                       "or more, a smaller label role, or fewer categories")
+    return out
+
+
 def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict], list[dict], list[dict]]:
     """Chart text a renderer must break between characters, measured with the solver's
     ruler and faces at the size the emitter writes (the guide role, scale 1). A bar or
@@ -1636,7 +1793,8 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
         except GeometryRefused:
             marks = {}
 
-        def words_over(text: str, role: str | None, limit: float, part: str, mark: tuple | None = None, el: dict = el, horizontal: bool = horizontal) -> None:
+        def words_over(text: str, role: str | None, limit: float, part: str, mark: tuple | None = None, el: dict = el, horizontal: bool = horizontal,
+                       turn: float = 0.0) -> None:
             role = role or (el.get("text") or {}).get("role")
             if not role:
                 unmeasured.append({"chart": el["id"], "part": part, "why": "no type role: the theme sets the size"})
@@ -1648,15 +1806,31 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
                 if mark is not None and width > mark[2]:
                     spills.append({"chart": el["id"], "part": part, "text": str(text), "width_emu": width, "bar_emu": round(mark[2]), "size_pt": entry.size_pt})
                 return
+            # a turned label takes its slot along the category axis by its footprint there, one
+            # line of the word turned by `turn`: at 90 degrees its line height, not its width
+            # (round 8: 'Neighbourhood' turned -90 was refused as level and drew on one line)
+            line = entry.size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
+            if mark is None and part.startswith("series"):
+                # a centred label on a column: LibreOffice wraps it at spaces or keeps it on one
+                # line past the bar's sides, unpredictably (round 7 and 8: 'First-lien / TLB 3.75x'
+                # wrapped, 'Senior notes 1.25x' beside it ran over both sides); the render
+                # check reads which, and a line wider than the bar is warned before it
+                whole = max(L.advance_emu(ctx.ruler, ln, face.path, entry.size_pt) for ln in str(text).split("\n"))
+                if whole > limit:
+                    spills.append({"chart": el["id"], "part": part, "text": str(text), "width_emu": whole, "bar_emu": round(limit), "size_pt": entry.size_pt})
+            cos, sin = abs(math.cos(math.radians(turn))), abs(math.sin(math.radians(turn)))
             for word in str(text).split():
                 width = L.advance_emu(ctx.ruler, word, face.path, entry.size_pt)
-                if width > limit:
-                    findings.append({"chart": el["id"], "part": part, "word": word, "width_emu": width, "limit_emu": round(limit), "size_pt": entry.size_pt})
+                footprint = width * cos + line * sin
+                if footprint > limit:
+                    findings.append({"chart": el["id"], "part": part, "word": word, "width_emu": round(footprint), "limit_emu": round(limit), "size_pt": entry.size_pt,
+                                     **({"turned_deg": turn} if turn else {})})
 
         cat_axis = (el.get("axes") or {}).get("category") or {}
         if not horizontal and cat_axis.get("visible", True) and (cat_axis.get("labels") or {}).get("show", True):
+            turn = float((cat_axis.get("labels") or {}).get("rotation_deg") or 0)
             for c in cats:
-                words_over(c, (cat_axis.get("labels") or {}).get("role"), slot, f"category {c!r}")
+                words_over(c, (cat_axis.get("labels") or {}).get("role"), slot, f"category {c!r}", turn=turn)
         for si, s in enumerate(el["series"]):
             if s.get("plot_type", el["type"]) != el["type"]:
                 continue  # a combo's line or area series: its labels are not in a bar
@@ -2521,12 +2695,16 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 entry["chart_label_breaks"] = {"findings": breaks, "unmeasured": unread, "spills": spills}
             entry["problems"] = page_problems(entry, elements, resolved, guide, unmeasured_presets(elements) + label_interval_divergence(elements) + annotation_problems + [
                 {"kind": "chart label breaks mid-word", "severity": "refusal",
-                 "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU, wider than the {b['limit_emu']} EMU it wraps to at most"}
+                 "detail": f"{b['chart']} {b['part']}: {b['word']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU"
+                           + (f" along the category axis turned {b['turned_deg']:g} degrees" if b.get("turned_deg") else "")
+                           + f", wider than the {b['limit_emu']} EMU it wraps to at most"}
                 for b in breaks] + [
                 {"kind": "chart label wider than its bar", "severity": "warning",
                  "detail": f"{b['chart']} {b['part']}: {b['text']!r} at {b['size_pt']}pt measures {b['width_emu']} EMU on one line, past its "
                            f"{b['bar_emu']} EMU bar: it is drawn over the bar's ends and what lies beyond them"}
-                for b in spills], chrome, precedent, slide_chrome(slide, guide, chrome))
+                for b in spills] + [
+                {"kind": "chart labels taller than their band", "severity": "refusal", "detail": d} for d in bar_category_bands(elements, ctx)],
+                chrome, precedent, slide_chrome(slide, guide, chrome))
             entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
             entry["problems"][:0] = title_warnings + plan_message_figures(slide, elements, plan_pages)  # warnings first, as the tie-outs are
         except L.FaceRefused as error:
@@ -2612,6 +2790,14 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                     entry["problems"].append({"kind": "renderer divergence: text wrapped", "severity": "refusal", "detail": f})
                 if found["wrapped"] and entry["status"] == "fit":
                     entry["status"], entry["reason"] = "unfittable", "renderer divergence: text wrapped"
+            # every chart's categories and data labels against the words the renderer drew
+            for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:]), strict=True):
+                if found["checked"]:
+                    entry["chart_text_drawn"] = found["checked"]
+                for f in found["found"]:
+                    entry["problems"].append({"kind": "renderer divergence: chart text", "severity": "refusal", "detail": f})
+                if found["found"] and entry["status"] == "fit":
+                    entry["status"], entry["reason"] = "unfittable", "renderer divergence: chart text"
         else:
             for entry in emitted:
                 entry["drawn_lines"] = f"not checked: the render's words were not read ({unread})"

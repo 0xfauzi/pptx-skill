@@ -8,6 +8,14 @@
   was wrapped, its box drawn in 3 lines where 2 were written. How often, at which sizes
   and faces, is unmeasured; the build reads the render's lines per box and refuses the
   page (`renderer divergence: text wrapped`, build-report.md).
+- LibreOffice 24.2.7 drops category labels on a horizontal bar chart whose band is
+  shorter than one line of the label: 14 names at 8pt drew 7 at a band 0.99 of a line and
+  all 14 at 1.11, over six heights (round 8). It wraps a centred column label at its
+  spaces or runs it past the bar's sides, unpredictably ('First-lien / TLB 3.75x' wrapped,
+  'Senior notes 1.25x' beside it ran over). A category label turned -90 degrees draws on
+  one line in a slot narrower than its word. The build reads each chart's words off the
+  render (`renderer divergence: chart text`, build-report.md); a written break (`\n` in a
+  point label's text) is two lines in both renderers.
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus

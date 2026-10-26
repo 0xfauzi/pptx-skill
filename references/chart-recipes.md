@@ -174,7 +174,9 @@ keybank (the pages named under "Proven on") and read from the render.
   labels (`labels.show: false`) and draw a `category_row` annotation with a cell per
   category, `null` where none is drawn (section "Rows aligned to categories").
 - `axes.<name>.labels.rotation_deg`: -90 to 90, written on the tick labels' text
-  body. 0 keeps category labels level where LibreOffice would turn them to fit (it
+  body. The mid-word check measures a turned label by its footprint along the axis (at 90
+  degrees its line height), so a long word turned -90 in a narrow slot passes; the render
+  check confirms it was drawn whole. 0 keeps category labels level where LibreOffice would turn them to fit (it
   turned 12pt labels in 1.0 in slots to 45 degrees on a BCG page); -45 is the dated-axis
   look.
 - `series[].dash`: one of the line dashes (`dash`, `sysDash`, `lgDash`, ...) on the
