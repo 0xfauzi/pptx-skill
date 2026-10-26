@@ -1479,9 +1479,14 @@ def chart_texts(el: dict) -> tuple[list[tuple[str, str]], list[str]]:
             own = points.get(pi, {}).get("label")
             merged = {**labels, **(own or {})}
             shown = merged.get("show", True) if own is not None else bool(labels) and labels.get("show", True)
-            if not shown or value is None or isinstance(value, list):
+            if not shown or value is None:
                 continue
             text = merged.get("text")
+            if text is None and isinstance(value, list):
+                # an XY point labels its y value
+                value = value[1] if len(value) > 1 and isinstance(value[1], int | float) else None
+                if value is None:
+                    continue
             if text is None:
                 text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
             part = f"series[{si}] {s.get('name')!r} point {pi} label"
