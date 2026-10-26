@@ -191,7 +191,7 @@ EVIDENCE_CAP = 8
 # units-line (below) position when its gap to the title is within one title line pitch.
 TITLE_COMPANION_GAP_PITCHES = 1.0
 #: The title vocabulary the model reads titles in (an exhibit is described in words, never classified).
-VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
+VOCABULARY = plan.VOCABULARY
 MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
 # Product safety floor per family: layout.PRODUCT_SAFETY_FLOOR_PT (deckgen E45, 7.0pt for
 # display, body, annotation and chart alike). Never generate below it.
@@ -1247,7 +1247,8 @@ class Extractor:
                   {"titles": {str(r["slide"]): r["text"] for r in pages}, "companions": companions,
                    "shape": {"per_title": {"<slide>": "|".join(t for t in VOCABULARY["title_register"] if t != "other")
                                            + ' | {"other": "<the register in words>"}'},
-                             "companions": {"<slide>": {"above": "|".join(VOCABULARY["title_companion_above"]), "below": "|".join(VOCABULARY["title_companion_below"])}},
+                             "companions": {"<slide>": {pos: "|".join(t for t in VOCABULARY[f"title_companion_{pos}"] if t != "other")
+                                                        + ' | {"other": "<the block in words>"}' for pos in ("above", "below")}},
                              "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null when it states none"},
                              "why": "..."}})
 

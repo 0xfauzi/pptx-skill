@@ -817,8 +817,10 @@ shape ids, guideline page and quote, counts), `frequency`, `master_membership`,
 - `extra_roles`: model-added roles with hex and why.
 - `derivation_rules`: how the palette and type ladder extend to roles never shown.
 - `description`: the model's written description (summary, typography, colour, layout,
-  tables, imagery, motifs, `never_does`, tone). Written after looking; read back while
-  designing.
+  tables, imagery, motifs, `not_seen`, tone). Written after looking; read back while
+  designing. `not_seen` lists what the reference was not seen doing, stored with the pages
+  read, as evidence of a tendency and never a rule; the old key `never_does` is refused by
+  name.
 - `unresolved`: the open addresses with the reason each is open.
 - `notes`.
 

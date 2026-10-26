@@ -73,12 +73,21 @@ keybank (the pages named under "Proven on") and read from the render.
   `RADAR`, `RADAR_FILLED`, `RADAR_MARKERS`. A 3-D, cone, stock or surface member is
   refused with python-pptx's own reason.
 - XY and bubble series take `values` as `[[x, y], ...]` or `[[x, y, size], ...]` and no
-  `categories`.
+  `categories`. Their two axes are both value axes placed by `min` and `max` alone: they
+  take no `cross_between` (refused on either), and an annotation on them needs only
+  `plot_area` with each named axis's `min` and `max`.
+- A `null` value is a gap: no bar or point is drawn there (the file writes
+  `dispBlanksAs gap`), a line breaks, and annotations elsewhere on the chart are placed as
+  usual; an anchor on the gap itself is refused (there is no mark to anchor on).
 - Colours are roles from the guide or `"none"`. A literal hex anywhere in a chart spec is
   refused; so is an unknown key (a typo never silently becomes a default).
 - `fill_role` applies to bars, slices, areas and bubbles; a line, scatter or radar
   series draws its `line_role` and `line_width_pt` (markers take `marker`:
-  `{"style": "circle", "size": 6, "fill_role": ..., "line_role": ...}`).
+  `{"style": "circle", "size": 6, "fill_role": ..., "line_role": ...}`). A marker is one
+  colour: LibreOffice draws it solid and never its outline (the series line's colour when
+  the series draws one, else the marker fill; measured), so a hollow ring or a marker in two
+  roles is refused as a renderer divergence. Ring a point with an `outline_box` (shape
+  `ellipse`, anchor `{"point": ...}`), which both renderers draw.
 - `labels.position` must be one PowerPoint offers for the type: clustered bar and column
   `center`, `inside_end`, `inside_base`, `outside_end`; stacked bar and column the same
   without `outside_end`; line, scatter and bubble `center`, `left`, `right`, `above`,
@@ -92,7 +101,9 @@ keybank (the pages named under "Proven on") and read from the render.
   lists categories top-down in the order you gave them, and the value axis moves to the
   far edge (its tick labels then sit above the plot, where a vertical line's label
   would go). A hidden axis (`visible: false`) still writes its `min`, `max`, `reverse`
-  and `cross_between`: the plot keeps the scale you gave it.
+  and `cross_between`: the plot keeps the scale you gave it. A hidden `secondary_value`
+  is written present and drawn as nothing (no line, ticks or labels): LibreOffice drops the
+  scale of a deleted secondary axis and plots its series on the primary one (measured).
 - `axes.value.cross_between`: `"between"` (categories are bands; bars and line points
   sit mid-band) or `"midpoint"` (line points on the band edges, the first and last on
   the plot's edges). Written as `c:crossBetween`; left out, each renderer picks.
@@ -114,8 +125,10 @@ keybank (the pages named under "Proven on") and read from the render.
   "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
   `hide_entries` is refused on BAR_* charts: LibreOffice counts a horizontal bar chart's
   legend entries from the other end, so `[0]` hid the last series ("Wave 3") instead of
-  the first (measured, round 6, nycha); give that series no legend by leaving its name
-  empty, or draw the key as text.
+  the first (measured, round 6, nycha); draw the key as text there. A series with an
+  empty name has no legend entry (LibreOffice would draw "Series2" for it, measured, so
+  the build hides its entry), except on a BAR_* chart with a legend, where it is refused
+  for the same reason as `hide_entries`.
 - An axis with no title is `"title": "none"` on that axis (`axes.category.title:
   "none"`), which clears its `chart_defaults_taken` line; an object draws a title.
 - `labels.number_format` is not asked for when every point of the series carries its own
@@ -126,7 +139,7 @@ keybank (the pages named under "Proven on") and read from the render.
   same role on every series unless the difference is the point.
 - A line, box, band, arrow, bracket, callout or badge at a data position is an
   annotation on the slide, not a chart key (section "Marks at data positions" below). It needs
-  `plot_area` and the axis's `min`, `max` and `cross_between`.
+  `plot_area` and the axis's `min`, `max` and (category charts only) `cross_between`.
 - `bridge: {"deltas": [...], "totals": [...]}` on a stacked chart declares it a bridge
   for the build's tie-out (below); it draws nothing.
 - A combo chart: a series takes its own `plot_type` (an `XL_CHART_TYPE` name) and
@@ -554,7 +567,8 @@ Anchors, in the host's own data:
 | any | `{"box": [x0, y0, x1, y1]}` | fractions of the host's solved box (0 its left or top edge, 1 its right or bottom; beyond 0..1 reaches past them: a mark beside a text). On a chart or table, the marks or cells it overlaps are what it encloses |
 
 A chart anchor needs the chart's `plot_area` and, for the axis it names, `min`, `max`
-and `cross_between`; without them the annotation is refused by name (an auto-scaled
+and, on a category chart, the value axis's `cross_between` (an XY chart has none);
+without them the annotation is refused by name (an auto-scaled
 axis has no computable position). Bar, column, line and XY charts only; a pie, area,
 radar, bubble or stacked line is refused. A table anchor uses the fitted column widths
 and row heights.

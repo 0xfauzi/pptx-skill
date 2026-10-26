@@ -78,7 +78,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gallery
 import ooxml
 import render
-from complete_guide import VOCABULARY
+from complete_guide import VOCABULARY, term_error
 from extract_style import quant
 from lxml import etree
 from PIL import Image
@@ -608,7 +608,8 @@ def check_entry(entry: dict) -> list[str]:
     one_of("composition_family", entry.get("composition_family"), COMPOSITIONS)
     if entry.get("composition_family") == "other" and not entry.get("composition_as_recorded"):
         problems.append("composition_family 'other' needs composition_as_recorded (the composition in words)")
-    one_of("title_register", entry.get("title_register"), TITLE_REGISTERS)
+    if entry.get("title_register") is not None:
+        problems += [e for e in [term_error("title_register", entry["title_register"], "title_register")] if e]
     for field in ("composition_as_recorded", "title", "why_instructive"):
         value = entry.get(field)
         if value is not None and (not isinstance(value, str) or not value.strip() or "\n" in value):
@@ -879,6 +880,11 @@ def pick(intent_text: str, composition: str | None, data_shape: str | None, aspe
     libraries: list[tuple[str, Library]] = []
     if gallery_dir is not None and not (gallery_dir / "manifest.json").is_file():
         raise Refused("no_gallery", f"--gallery {gallery_dir} holds no gallery.py manifest.json")
+    if gallery_dir is not None and not gallery.page_words(guide):
+        # an untagged gallery ranks shape kinds only, and answered "no evidence" for every
+        # intent (round 7): a silence that is the missing guide's, not the reference's
+        raise Refused("untagged_gallery", "--gallery needs --guide, the completed guide (step 2): its titles and digest records tag each page; "
+                      "without them the overlap reads shape kinds only and reports no evidence for nearly every intent")
     if own is not None:
         lib = Library(own)
         if lib.manifest["owner"] in (None, "external"):
@@ -911,9 +917,7 @@ def pick(intent_text: str, composition: str | None, data_shape: str | None, aspe
         asked = " ".join([*sorted(intent - common), *sorted(shape)])
         exemplars, crops = gallery.rank(gallery_dir, asked, guide)
         best = max([o for _, o, _ in exemplars] + [o for _, o in crops], default=0)
-        lines.append("1. the reference's own gallery, " + ("tagged by the completed digest (each page's title and records)" if gallery.page_words(guide) else
-                     "UNTAGGED: pass --guide (the completed guide) so each page carries its title and digest records; "
-                     "without it the overlap reads shape kinds only and is 0 for nearly every intent"))
+        lines.append("1. the reference's own gallery, tagged by the completed digest (each page's title and records)")
         if best == 0:
             lines.append("   no evidence: overlap 0 on every exemplar and crop; the reference shows nothing for this intent")
         else:

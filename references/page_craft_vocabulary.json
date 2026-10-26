@@ -1,22 +1,22 @@
 {
- "about": "The terms a reference's titles are coded in when its guide is completed: the register of each title, and the block above or below it. Each list ends in other, with the words of what it is, so no title has to be bent to fit a term. complete_guide.py refuses a title coding outside these terms (other with no words included), and counts the reference's titles in them; the counts are evidence shown beside a plan's and a page's titles, never a rule. A plan states each page's register in its own words: when they name one of these terms it is compared with the reference's count of that term, otherwise it is reported as no count. Nothing about an exhibit or a visual is chosen from a list: the digest, the plan briefs and the page library describe every exhibit in the model's own words, and what the code needs of an exhibit (its structure, its marks) it reads from the file (ooxml.exhibit_facts).",
+ "about": "The terms a reference's titles are coded in when its guide is completed: the register of each title, and the block above or below it. Each list ends in other, with the words of what it is, so no title has to be bent to fit a term. complete_guide.py and library.py refuse a coding outside these terms, and a bare other with no words, and counts the reference's titles in them; the counts are evidence shown beside a plan's and a page's titles, never a rule. A plan states each page's register in its own words: when they name one of these terms it is compared with the reference's count of that term, otherwise it is reported as no count. Nothing about an exhibit or a visual is chosen from a list: the digest, the plan briefs and the page library describe every exhibit in the model's own words, and what the code needs of an exhibit (its structure, its marks) it reads from the file (ooxml.exhibit_facts).",
  "title_register": {
   "topic": "Topic phrase",
   "claim": "Claim sentence",
   "question": "Question",
-  "other": "Something else (a label and a figure, \"Topic: claim\", a counter); give the register in words"
+  "other": "Something else (a label and a figure, \"Topic: claim\", a counter); give the register in words: {\"other\": \"<the register in words>\"}"
  },
  "title_companion_above": {
   "kicker": "Kicker or eyebrow label above the title",
   "section_tag": "Section tag or tracker",
   "exhibit_label": "\"Exhibit n:\" label",
   "status_tag": "Status or caveat tag",
-  "other": "Something else; say what in why"
+  "other": "Something else; give it in words: {\"other\": \"<the block in words>\"}"
  },
  "title_companion_below": {
   "subtitle": "Subtitle",
   "units_line": "Units line",
   "lead_in": "Lead-in sentence or claim under a topic title",
-  "other": "Something else; say what in why"
+  "other": "Something else; give it in words: {\"other\": \"<the block in words>\"}"
  }
 }

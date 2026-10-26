@@ -1241,7 +1241,12 @@ def main(argv: list[str]) -> int:
         ap.add_argument("--intent", required=True, help="the page's composition intent in words")
         ap.add_argument("--guide", default=None, help="the completed guide: its digest records and titles tag each page")
         args = ap.parse_args(argv[1:])
-        print(pick(Path(args.gallery_dir), args.intent, json.loads(Path(args.guide).read_text()) if args.guide else None))
+        guide = json.loads(Path(args.guide).read_text()) if args.guide else None
+        if not page_words(guide):
+            # untagged, the overlap reads shape kinds only and is 0 for nearly every intent
+            raise SystemExit("gallery.py pick: --guide, the completed guide (step 2), whose titles and digest records tag each page; "
+                             "without them the ranking reads shape kinds only and answers no evidence for nearly every intent")
+        print(pick(Path(args.gallery_dir), args.intent, guide))
         return 0
     if argv[:1] == ["digest"]:
         ap = argparse.ArgumentParser(prog="gallery.py digest", description="the exhibit digest stub: page renders, content and candidate crops, records for the model to complete")

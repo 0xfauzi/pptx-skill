@@ -178,17 +178,19 @@ render and answer:
 ```json
 {"/titles/register": {
   "per_title": {"<slide>": "topic|claim|question" or {"other": "<the register in words>"}},
-  "companions": {"<slide>": {"above": "kicker|section_tag|exhibit_label|status_tag|other",
-                             "below": "subtitle|units_line|lead_in|other"}},
+  "companions": {"<slide>": {"above": "kicker|section_tag|exhibit_label|status_tag" or {"other": "<the block in words>"},
+                             "below": "subtitle|units_line|lead_in" or {"other": "<the block in words>"}}},
   "claims_elsewhere": {"<slide of a topic title>": "where the page states its claim, or null"},
   "why": "..."}}
 ```
 
 Every listed title and every listed companion is named; a block the reader found below a
-title that is really the first cell of a table is `other`. A title none of the registers
-names (a label and a figure, "Topic: claim") is `{"other": "..."}` in your words; a bare
-`"other"` is refused. The finalizer counts the registers, `other` among them, and lists
-the words under `other_in_words`; the plan check and the build report your titles against
+title that is really the first cell of a table is `{"other": "first cell of the table"}`. A
+title none of the registers names (a label and a figure, "Topic: claim") is
+`{"other": "..."}` in your words, and so is a block none of the companion terms names; a
+bare `"other"` is refused in both (and in a page library's `title_register`, the same
+rule). The finalizer counts the registers and companions, `other` among them, and lists
+the words under `other_in_words` and `companions_other_in_words`; the plan check and the build report your titles against
 those counts and lengths.
 
 ## Exhibit habits: the digest

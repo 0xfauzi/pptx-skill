@@ -22,9 +22,13 @@ is refused by name. The full grammar with a worked example is the docstring of
 `examples/keybank-section.deck.json`, two bridge pages `examples/keybank-bridge.deck.json`.
 
 A slide carries `id`, `layout` (one of the template's layout names), optional `notes`,
-`spec` (`{"root": ...}`), optional `styling`, `charts`, `annotations`, and
-`"title": {"register": "topic|claim|question|other", "element": "<id>"}` (the element is
-optional; without it the first text whose first paragraph is `type.title` is the title).
+`spec` (`{"root": ...}`), optional `styling`, `charts`, `annotations`, `chrome`,
+`answered` (warnings the page means, each with its why: build-report.md), and
+`"title": {"register": "<the title's register in words>", "element": "<id>"}`: any words,
+as the plan states it; words naming a term the reference's titles are coded in (topic,
+claim, question) are compared with the reference's count of that term, others are reported
+as no count. The element is optional; without it the first text whose first paragraph is
+`type.title` is the title.
 
 A node in the tree carries `type`, `id`, `kind`, `weight`, `scale_class`, `size` and its
 own content (`paragraphs` for text, `table` for a table) plus the styling keys the build
@@ -197,7 +201,9 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   full width; put the words in a region that carries them.
 - A paragraph is `{"role", "text"}` plus `bullet_level`, `ink_role`, `align`. Bold or
   coloured words go under `styling.<id>.paragraphs.<n>.runs`, the paragraph keeping the
-  whole text; `runs` on the paragraph itself is refused by name. A run is `{"text"}` plus
+  whole text; `runs` on the paragraph itself is refused by name. The runs, joined, are the
+  paragraph's text exactly, spaces included (`"Revenue rose from "`, `"$142.0m"`,
+  `" in 2021"`); a mismatch is refused with the character where they part. A run is `{"text"}` plus
   `emphasis` (bold) and `ink_role` (its own colour, scored by the contrast gate against
   the run's backing); any other key on a run is refused by name.
 - A region outline (`line_role` on a region) that marks something on the page is a mark
@@ -209,7 +215,8 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
   in its own element in a column with a `gap_role`.
 - Height: a region is as tall as its content unless it is flexible (it holds a chart, image
   or rule with no height, or carries a `weight` inside a column); flexible regions share
-  the spare height by weight. A text element with a `weight` inside a column is flexible
+  the spare height by weight. An empty region is as tall as its padding (a clearance
+  under a tab); with a `weight` inside a column it is a spacer and takes its share. A text element with a `weight` inside a column is flexible
   too: it takes its share (never less than its lines) and its words sit at its `anchor`,
   so a filled sidebar or a row of label cells runs to the foot of its column. A row's `align` does not make it flexible: to fill the page,
   give the region a weight in its column.
@@ -226,7 +233,8 @@ Logos and icons placed along a chart's categories are a `category_row` annotatio
 ## Looking before writing: the reference's gallery
 
 ```bash
-python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "two column comparison table beside commentary"
+python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "two column comparison table beside commentary" \
+  --guide "$DECK_WORK/ref/guide.json"
 ```
 
 Prints the two exemplars and three crops whose words overlap the intent most, with their
@@ -240,7 +248,7 @@ stronger evidence.
 ```bash
 python3 scripts/library.py pick --intent "each valuation method's range against the offer" \
   [--composition "words"] [--data-shape "seven low and high pairs and one offer value"] \
-  [--aspect 4:3] --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
+  [--aspect 4:3] --gallery "$DECK_WORK/ref/gallery" --guide "$DECK_WORK/ref/guide.json" [--own COMPANY_LIBRARY]
 python3 scripts/library.py vocab        # the tag fields, and the few tags that are slugs
 ```
 

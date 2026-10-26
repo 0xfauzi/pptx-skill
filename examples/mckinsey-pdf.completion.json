@@ -217,13 +217,13 @@
   },
   "companions": {
    "4": {
-    "below": "other"
+    "below": {"other": "the timeline's first label"}
    },
    "6": {
-    "below": "other"
+    "below": {"other": "the first big number"}
    },
    "7": {
-    "below": "other"
+    "below": {"other": "a 'Not Exhaustive' tag"}
    }
   },
   "claims_elsewhere": {

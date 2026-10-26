@@ -172,6 +172,9 @@ def drawn_marks(geo: ChartGeometry) -> list[tuple[int, int, tuple]]:
             continue
         n = len(s["values"]) if geo.family == "xy" else len(geo.categories)
         for i in range(n):
+            v = s["values"][i] if i < len(s["values"]) else None
+            if not (all(_num(c) for c in v[:2]) if geo.family == "xy" and isinstance(v, list) else _num(v)):
+                continue  # a gap (no number) draws no mark: the file writes dispBlanksAs gap
             m = geo.mark_rect(j, i)
             if m[2] > 0 and m[3] > 0:
                 out.append((j, i, m))

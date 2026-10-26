@@ -250,10 +250,15 @@ def mark_measured_weights(node: dict, slide: dict, guide: dict) -> None:
             if ps.get("runs"):
                 # each run measured whole in the face the emitter writes it in (run_style)
                 runs = [(r["text"], *run_style(r, f"text {node.get('id')!r} paragraph {i} run {ri}")) for ri, r in enumerate(ps["runs"])]
-                joined = "".join(r[0] for r in runs)
-                if joined.replace(" ", "") != str(p.get("text", "")).replace(" ", ""):
-                    raise SystemExit(f"text {node.get('id')!r} paragraph {i}: its runs spell {joined!r} and the paragraph's text is {p.get('text')!r}; "
-                                     "the runs are the paragraph's words, cut where the setting changes")
+                joined, text = "".join(r[0] for r in runs), str(p.get("text", ""))
+                if joined != text:
+                    # exact, spaces included: the emitter writes the runs, so a space left out
+                    # of a run is a space left out of the page ("from$142.0m")
+                    at = next((k for k, (x, y) in enumerate(zip(joined, text)) if x != y), min(len(joined), len(text)))
+                    raise SystemExit(f"text {node.get('id')!r} paragraph {i}: its runs spell {joined!r} and the paragraph's text is {text!r}; they part at "
+                                     f"character {at} (runs ...{joined[max(0, at - 12):at + 12]!r}, text ...{text[max(0, at - 12):at + 12]!r}). The runs, "
+                                     "joined, are the paragraph's text exactly, spaces included, cut where the setting changes: "
+                                     "[{\"text\": \"Revenue rose from \"}, {\"text\": \"$142.0m\", \"emphasis\": true}, {\"text\": \" in 2021\"}]")
                 p["runs"] = [list(r) for r in runs]
     elif node.get("kind") == "table":
         table = node.setdefault("table", {})
@@ -2260,6 +2265,48 @@ class Outputs:
         return json.loads(text)
 
 
+def read_answers(slide: dict) -> list[dict]:
+    """A page's answers to warnings it means (slide.answered), proven at the boundary: a list
+    of {"kind": <a warning's kind>, "why": words} plus an optional "detail" (words the
+    warning's detail holds, when the page has two warnings of one kind)."""
+    raw = slide.get("answered")
+    if raw is None:
+        return []
+    where = f"slide {slide.get('id')!r} answered"
+    if not isinstance(raw, list):
+        raise SystemExit(f"{where}: a list of {{\"kind\": <the warning's kind>, \"why\": ...}}, not {type(raw).__name__}")
+    for i, a in enumerate(raw):
+        if not isinstance(a, dict) or set(a) - {"kind", "why", "detail"} or not isinstance(a.get("kind"), str) or not a["kind"].strip():
+            raise SystemExit(f"{where}[{i}]: {{\"kind\": <the warning's kind, as the report names it>, \"why\": ..., \"detail\": <optional words of its detail>}}, not {a!r}")
+        if plan._words(a.get("why") or "") < 3:
+            raise SystemExit(f"{where}[{i}]: why, in words: the reason the page does what the warning names")
+        if "detail" in a and not (isinstance(a["detail"], str) and a["detail"].strip()):
+            raise SystemExit(f"{where}[{i}]: detail is words the warning's detail holds")
+    return raw
+
+
+def answer_warnings(slide: dict, entry: dict) -> None:
+    """Mark each warning the page answers (read_answers) as answered, with its why: it stays
+    in the report and the brief, read as answered rather than open. A refusal is never
+    answered (it is fixed), and an answer that names no warning on the page is itself a
+    warning: the page changed and the answer is stale."""
+    problems = entry.setdefault("problems", [])
+    for a in read_answers(slide):
+        hits = [p for p in problems if p.get("kind") == a["kind"] and a.get("detail", "") in str(p.get("detail", ""))]
+        if any(p.get("severity") == "refusal" for p in hits):
+            problems.append({"kind": "answer to a refusal", "severity": "refusal",
+                             "detail": f"answered names {a['kind']!r}, a refusal on this page: a refusal is fixed, never answered"})
+            continue
+        if not hits:
+            kinds = sorted({str(p.get("kind")) for p in problems if p.get("severity") != "refusal"})
+            problems.append({"kind": "answer names no warning", "severity": "warning",
+                             "detail": f"answered {a['kind']!r}{' (' + repr(a['detail']) + ')' if 'detail' in a else ''} matches no warning on this page "
+                                       f"(its warnings: {kinds or 'none'}): remove the answer, or name the warning as the report does"})
+            continue
+        for p in hits:
+            p["answered"] = a["why"]
+
+
 def build(deck: dict, guide: dict, template: str, out: str, reference: str | None, others: list[str], renders: str | None, do_render: bool, chrome: str = "auto",
           plan_pages: list[dict] | None = None, plan_check: dict | None = None, briefs: list[str] | None = None, outputs: Outputs | None = None, computed: list[str] | None = None) -> dict:
     outputs = outputs or Outputs(out, renders, do_render)
@@ -2284,6 +2331,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     pages: list[tuple[int, list[dict]]] = []  # (deck page number, flattened elements) of every emitted page
     emitted: list[dict] = []  # the report entry of every emitted page, in emit order
     annotation_pages: dict[int, list[dict]] = {}  # emitted page index -> its annotations as resolved
+    for slide in deck["slides"]:
+        read_answers(slide)  # a malformed answer refuses before anything is solved
     for number, slide in enumerate(deck["slides"], 1):
         try:
             spec_raw, ctx, outcome = solve_slide(slide, guide, chrome, lg, ruler, index, api)
@@ -2502,6 +2551,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         report["judge"] = {"verdict": plan.NO_REFERENCE, "why": "the judge measures a deck's distance to its reference; this guide was made with none"}
     for entry, page in zip(emitted, emit_spec["slides"], strict=True):
         entry["problems"].extend(off_ladder_problems(page["elements"], guide, report.get("judge")))
+    for slide, entry in zip(deck["slides"], report["slides"], strict=True):
+        answer_warnings(slide, entry)
     written = outputs.finish(passed(report))
     report = outputs.rewrite(report, written)
     report["out"] = written["deck"]
@@ -2598,12 +2649,15 @@ def brief_text(report: dict, outputs: Outputs) -> str:
     for s in slides:
         problems = s.get("problems") or []
         refusals = [p for p in problems if p.get("severity") == "refusal"]
-        warns = [p for p in problems if p.get("severity") != "refusal"]
+        warns = [p for p in problems if p.get("severity") != "refusal" and "answered" not in p]
+        answered = [p for p in problems if p.get("severity") != "refusal" and "answered" in p]
         scale = f" scale {s['scale']:.2f}" if isinstance(s.get("scale"), float) else ""
         lines.append(f"page {s.get('id')}: {s.get('status')}{scale}" + (f" ({s['reason']})" if s.get("reason") else "")
-                     + (f"; {len(refusals)} refusal(s), {len(warns)} warning(s)" if problems else ""))
+                     + (f"; {len(refusals)} refusal(s), {len(warns)} open warning(s)" + (f", {len(answered)} answered" if answered else "") if problems else ""))
         for p in (refusals + warns)[:4]:
             lines.append(f"  {p.get('severity', 'note')}: {p.get('kind')}: {str(p.get('detail', ''))[:240]}")
+        for p in answered[:max(0, 4 - len(refusals + warns))]:
+            lines.append(f"  answered: {p.get('kind')}: {str(p['answered'])[:200]}")
         if len(problems) > 4:
             lines.append(f"  ... {len(problems) - 4} more in the report (slides[].problems)")
         counts = {name: sum(len(v) for v in (s.get(f"{name}_defaults_taken") or {}).values()) for name in ("chart", "table", "emit")}

@@ -246,7 +246,7 @@
   },
   "companions": {
    "3": {
-    "below": "other"
+    "below": {"other": "first label cell of the assumptions column"}
    },
    "4": {
     "below": "units_line"
@@ -258,7 +258,7 @@
     "below": "units_line"
    },
    "10": {
-    "below": "other"
+    "below": {"other": "a column header of the table"}
    }
   },
   "claims_elsewhere": {

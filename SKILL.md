@@ -249,7 +249,10 @@ reference's, and when a coded title register is one the reference never writes: 
 departure to answer in one line in the report. Name compositions honestly: the same name
 whenever two pages share an arrangement, and a reason in `deliberate_parallel` when a page
 repeats the one before it. Compute every figure a title or lead-in states from the data,
-with a script that asserts it, before writing the sentence.
+with a script that asserts it, before writing the sentence; have the same script print
+every figure it asserted (`python3 "$DECK_WORK/figures.py" > "$DECK_WORK/figures.txt"`,
+as `examples/no-reference.figures.py` does), so the file you pass to the build's
+`--computed` is the arithmetic's own output and never a copy typed by hand.
 
 ### 6. Page specs
 
@@ -260,9 +263,9 @@ For each page, gather its context before writing anything (see "Designing a page
 then budget the text:
 
 ```bash
-python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "WHAT THE PAGE DOES"
+python3 scripts/gallery.py pick "$DECK_WORK/ref/gallery" --intent "WHAT THE PAGE DOES" --guide "$DECK_WORK/ref/guide.json"
 python3 scripts/library.py pick --intent "WHAT THE PAGE DOES" --data-shape "THE DATA IN WORDS" --aspect W:H \
-        --gallery "$DECK_WORK/ref/gallery" [--own COMPANY_LIBRARY]
+        --gallery "$DECK_WORK/ref/gallery" --guide "$DECK_WORK/ref/guide.json" [--own COMPANY_LIBRARY]
 python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide ID --guide "$DECK_WORK/ref/guide.json" [--chrome draw]
 ```
 
@@ -385,8 +388,8 @@ Read `leakage` in the build report: every name, figure and phrase of the past de
 in the new deck, with the reference's chrome left out, ranked by rarity. `pages` lists the
 distinctive ones (on no public deck of another firm), rarest first: remove each, or
 confirm the user supplied it (pass the brief and data as text with `--brief` and their
-words are not listed; pass the output of your own arithmetic with `--computed` and a past
-figure it also produces is listed under `declared_computed` instead). `low_findings` lists terms of the trade (senior notes, debt /
+words are not listed; pass the output of your own arithmetic with `--computed` (the figures script's printed
+output, regenerated before each build) and a past figure it also produces is listed under `declared_computed` instead). `low_findings` lists terms of the trade (senior notes, debt /
 EBITDA), round figures and years once each: keep every one your own data or brief
 produces, and check any figure among them you did not compute. The firm's own name in
 the chrome is not leakage; it is the `firm_chrome` choice in step 3. With no reference

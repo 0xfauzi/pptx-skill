@@ -50,7 +50,7 @@ from layout import PRODUCT_SAFETY_FLOOR_PT
 
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 #: the title register and the title companions (references/page_craft_vocabulary.json); an exhibit is never read in a list
-VOCABULARY = json.loads((Path(__file__).resolve().parent.parent / "references" / "page_craft_vocabulary.json").read_text())
+VOCABULARY = plan.VOCABULARY
 # the extractor never observes these, so they are always the model's to write
 #: the size a reference sets its table text at inside pasted pictures, measured (picture_text)
 PICTURE_TEXT = "/tables/picture_text"
@@ -406,24 +406,26 @@ def _vocab_error(name: str, value, where: str) -> str | None:
     return None if isinstance(value, str) and value in allowed else f"{where}: {value!r}{plan.nearest(value, allowed)} is not in {name} ({'|'.join(allowed)})"
 
 
-#: the register a title outside the coded terms is filed under; its words are the model's
+#: the term a title or a block beside it is filed under when no coded term names it; its words are the model's
 OTHER = "other"
 
 
-def _register_error(value, where: str) -> str | None:
-    """One title's register: a coded term, or {"other": "<the register in words>"} for a title
-    none of them names (a label and a figure, "Topic: claim"); a bare "other" says nothing."""
+def term_error(name: str, value, where: str) -> str | None:
+    """One coding in a title vocabulary (page_craft_vocabulary.json: title_register,
+    title_companion_above, title_companion_below): a coded term, or {"other": "<it in words>"}
+    for what none of them names; a bare "other" says nothing. The one rule for every reader of
+    these lists (the guide's /titles/register, the page library's title_register)."""
     if isinstance(value, dict):
         if set(value) != {OTHER}:
-            return f"{where}: {{\"other\": \"<the register in words>\"}} for a title the terms do not name, not {value!r}"
+            return f"{where}: {{\"other\": \"<what it is, in words>\"}} for what the terms do not name, not {value!r}"
         return plan._phrase_error(value[OTHER], f"{where} other", 1)
     if value == OTHER:
-        return f"{where}: say what the register is: {{\"other\": \"<the register in words>\"}}"
-    return _vocab_error("title_register", value, where)
+        return f"{where}: say what it is: {{\"other\": \"<what it is, in words>\"}}"
+    return _vocab_error(name, value, where)
 
 
-def register_of(value) -> str:
-    """The coded term a per_title answer counts under."""
+def term_of(value) -> str:
+    """The coded term an answer counts under."""
     return OTHER if isinstance(value, dict) else value
 
 
@@ -453,7 +455,7 @@ def title_register(guide: dict, value) -> dict:
     per = value["per_title"]
     errors += [f"per_title: slide {k} ({want[k]['text']!r}) is not classified" for k in want if k not in per]
     errors += [f"per_title: slide {k} has no title found by position" for k in per if k not in want]
-    errors += [e for k, v in per.items() if k in want for e in [_register_error(v, f"per_title/{k}")] if e]
+    errors += [e for k, v in per.items() if k in want for e in [term_error("title_register", v, f"per_title/{k}")] if e]
     found = {(str(r["slide"]), pos): r[pos]["text"] for r in records for pos in ("above", "below") if r.get(pos)}
     for (slide, pos), text in found.items():
         if pos not in (given.get(slide) or {}):
@@ -463,7 +465,7 @@ def title_register(guide: dict, value) -> dict:
             if (slide, pos) not in found:
                 errors.append(f"companions: slide {slide} has no block {pos} its title")
             else:
-                e = _vocab_error(f"title_companion_{pos}", kind, f"companions/{slide}/{pos}")
+                e = term_error(f"title_companion_{pos}", kind, f"companions/{slide}/{pos}")
                 if e:
                     errors.append(e)
     claims = value.get("claims_elsewhere") if isinstance(value.get("claims_elsewhere"), dict) else {}
@@ -474,10 +476,11 @@ def title_register(guide: dict, value) -> dict:
             errors.append(f"claims_elsewhere/{slide}: a place in words, or null when the page states no claim")
     if errors:
         raise PatchError("/titles/register: " + "; ".join(errors))
-    counts = {k: sum(1 for v in per.values() if register_of(v) == k) for k in VOCABULARY["title_register"]}
+    counts = {k: sum(1 for v in per.values() if term_of(v) == k) for k in VOCABULARY["title_register"]}
     return {"counts": counts, "n": len(per), "per_title": dict(sorted(per.items(), key=lambda kv: int(kv[0]))),
             "other_in_words": {k: v[OTHER] for k, v in sorted(per.items(), key=lambda kv: int(kv[0])) if isinstance(v, dict)},
-            "companions": given, "companion_counts": {pos: dict(Counter(e[pos] for e in given.values() if pos in e)) for pos in ("above", "below")},
+            "companions": given, "companion_counts": {pos: dict(Counter(term_of(e[pos]) for e in given.values() if pos in e)) for pos in ("above", "below")},
+            "companions_other_in_words": {f"{k}/{pos}": e[pos][OTHER] for k, e in given.items() for pos in ("above", "below") if isinstance(e.get(pos), dict)},
             "claims_elsewhere": claims, "why": value.get("why"), "provenance": model_prov(value.get("why") or "")}
 
 

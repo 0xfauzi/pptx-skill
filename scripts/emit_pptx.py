@@ -1235,6 +1235,33 @@ def _colour(guide: Guide, role, where: str):
     return guide.hex(role, where=where)
 
 
+def unnamed_series(el: dict) -> list[int]:
+    """The series a chart spec leaves without a name ("" or blank): no legend entry is drawn
+    for them (LibreOffice writes "Series<n>" in its place)."""
+    return [i for i, s in enumerate(el.get("series") or []) if isinstance(s, dict) and isinstance(s.get("name"), str) and not s["name"].strip()]
+
+
+def marker_divergence(guide: Guide, s: dict, m: dict, where: str) -> None:
+    """A marker the two renderers draw differently is refused. LibreOffice draws a marker as
+    one solid colour and never its outline (measured, round 7, on an XY_SCATTER at 9pt
+    markers): the series line's colour when the series draws a line, else the marker's fill,
+    else the marker's line. A hollow ring (a surface fill and a coloured outline) drew
+    nothing at all; PowerPoint draws it as written. So a marker is one colour: every role it
+    and its series' line name is the same, and a hollow marker is an annotation (an
+    outline_box with shape ellipse on the point), which both draw."""
+    inks = {k: _colour(guide, r, f"{where} marker") for k, r in (("marker fill_role", m.get("fill_role")), ("marker line_role", m.get("line_role")),
+                                                                ("series line_role", s.get("line_role"))) if r is not None}
+    drawn = {k: v for k, v in inks.items() if v != NONE}
+    hollow = inks.get("marker fill_role") == NONE and "marker line_role" in drawn
+    if hollow or len(set(drawn.values())) > 1:
+        named = ", ".join(f"{k} {m.get(k.split()[1]) if k.startswith('marker') else s.get('line_role')}" for k in inks)
+        raise SpecError(f"{where} marker: renderer divergence: LibreOffice draws a marker as one solid colour, never its outline (the series line's "
+                        f"colour when the series draws one, else the marker fill, else the marker line), so this marker ({named}) renders "
+                        "differently in PowerPoint" + (" and not at all in LibreOffice" if hollow or inks.get("marker fill_role") == guide.colors.get("color.surface", {}).get("hex") else "")
+                        + ". Give the marker one colour role (fill and line, and the series line when it draws one), or ring the point with an "
+                        "annotation (outline_box, shape ellipse, anchor {\"point\": ...}), which both renderers draw")
+
+
 def _text_style(guide: Guide, style: dict | None, where: str) -> tuple[dict | None, str | None]:
     """A text part's (type spec, ink hex) from its role and ink_role; None where omitted."""
     style = style or {}
@@ -1360,6 +1387,8 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             for k in ("fill_role", "line_role"):
                 if k in m:
                     _colour(guide, m[k], f"{sw} marker")
+            if m.get("style") != "none":
+                marker_divergence(guide, s, m, sw)
         elif stroked and ("MARKERS" in s_type or s_type in ("XY_SCATTER", "XY_SCATTER_LINES", "XY_SCATTER_SMOOTH")):
             took(f"series[{si}].marker", "series.marker")
         labels = s.get("labels")
@@ -1427,7 +1456,9 @@ def chart_parse(el: dict, guide: Guide) -> dict:
                 took(f"axes.{name}.title", "axis.title")
             if "cross_between" in ax:
                 if name not in ("value", "secondary_value") or family in ("xy", "bubble"):
-                    raise SpecError(f"{aw}: cross_between belongs to the value axis of a category chart")
+                    raise SpecError(f"{aw}: cross_between belongs to the value axis of a category chart" + (
+                        "; an XY chart's two value axes are placed by min and max alone, and an annotation on it needs only those: remove it"
+                        if family in ("xy", "bubble") else ""))
                 _enum(aw, "cross_between", ax["cross_between"], CROSS_BETWEEN)
             if ax.get("visible") is False:
                 # a hidden axis still scales the plot: its min, max and reverse are written
@@ -1502,6 +1533,11 @@ def chart_parse(el: dict, guide: Guide) -> dict:
         _keys(f"{where} legend", legend, LEGEND_KEYS)
         _enum(f"{where} legend", "position", legend.get("position"), LEGEND_POSITIONS)
         _text_style(guide, legend, f"{where} legend")
+        unnamed = unnamed_series(el)
+        if unnamed and str(type_name).startswith("BAR_"):
+            raise SpecError(f"{where} legend: series {unnamed} {'has' if len(unnamed) == 1 else 'have'} no name, and LibreOffice draws an unnamed "
+                            "series' legend entry as 'Series<n>' (measured); on a horizontal bar chart no entry can be hidden alike in both renderers "
+                            "(hide_entries below), so write \"legend\": \"none\" and name the series where they are drawn, or name every series")
         if legend.get("hide_entries") and str(type_name).startswith("BAR_"):
             # c:legendEntry/c:idx names an entry by position, and on a horizontal bar chart
             # LibreOffice 24.2 counts from the other end of the series (measured: [0] on
@@ -1808,7 +1844,8 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
         _font(chart.legend.font, guide, tspec, ink)
         legend_el = chart._chartSpace.find(".//" + qn("c:legend"))
         pos = legend_el.find(qn("c:legendPos"))
-        for idx in sorted((int(i) for i in legend.get("hide_entries") or []), reverse=True):
+        # an unnamed series has no entry: LibreOffice would draw it as "Series<n>" (measured)
+        for idx in sorted({int(i) for i in legend.get("hide_entries") or []} | set(unnamed_series(el)), reverse=True):
             entry = etree.Element(qn("c:legendEntry"))
             etree.SubElement(entry, qn("c:idx")).set("val", str(idx))
             etree.SubElement(entry, qn("c:delete")).set("val", "1")
@@ -1898,6 +1935,20 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                 # the same categories on both pairs of axes: the secondary places them as the primary does
                 ax = {**ax, "cross_between": axes["value"]["cross_between"]}
             aw = f"{where} axes.{name}"
+            if ax.get("visible") is False and name == "secondary_value":
+                # LibreOffice drops the min and max of a DELETED secondary axis and plots its
+                # series on the primary scale (measured, round 7: a 0..30 margin line drawn
+                # flat along a 0..250 baseline); a deleted primary axis keeps its scale. So
+                # the secondary is written present and drawn as nothing: no line, no tick
+                # marks, no labels
+                axis.has_major_gridlines = False
+                axis.has_minor_gridlines = False
+                _stroke(axis.format, NONE, None)
+                axis.major_tick_mark = TICK_MARKS["none"]
+                axis.minor_tick_mark = TICK_MARKS["none"]
+                axis.tick_label_position = XL_TICK_LABEL_POSITION.NONE
+                _write_scale(axis, ax)
+                continue
             if ax.get("visible") is False:
                 axis.visible = False
                 axis.has_major_gridlines = False
@@ -2212,37 +2263,67 @@ def guide_chrome(guide_data: dict, mode: str) -> list[dict]:
 #: words that make a chrome line a legal or confidentiality mark: never left off a page
 LEGAL_MARK = re.compile(r"confidential|proprietary|privileged|copyright|\u00a9|\(c\)|all rights reserved|strictly|not for (?:distribution|circulation)|"
                         r"do not (?:distribute|circulate|copy)|draft|disclaimer|for discussion purposes", re.IGNORECASE)
-PAGE_CHROME_KEYS = {"omit", "text", "why"}
+PAGE_CHROME_KEYS = {"omit", "text", "add", "why"}
+
+
+def minority_chrome(guide_data: dict) -> dict[str, dict]:
+    """The reference's chrome entries on fewer than half its pages (recurring_chrome leaves them
+    off): a page may add one, as the reference's own minority pages do."""
+    drawn = {ch["chrome_id"] for ch in recurring_chrome(guide_data)}
+    return {ch["chrome_id"]: ch for ch in guide_data.get("chrome") or [] if ch["chrome_id"] not in drawn}
+
+
+def added_chrome(spec: dict) -> set[str]:
+    """The minority entries some page of the deck adds (its chrome {id: {"add": true}})."""
+    return {cid for sd in spec.get("slides") or [] if isinstance(sd.get("chrome"), dict)
+            for cid, choice in sd["chrome"].items() if isinstance(choice, dict) and choice.get("add") is True}
 
 
 def page_chrome(guide_data: dict, mode: str, raw, where: str) -> dict[str, dict]:
     """A page's own chrome choices, proven at the boundary: {chrome_id: {"omit": true,
     "why": words}} leaves a reference entry off this page, {chrome_id: {"text": words, "why":
-    words}} sets another line in a text entry's place. Only an entry the page would draw
-    (guide_chrome) can be chosen for; never the firm's chrome (decided for the whole deck in
+    words}} sets another line in a text entry's place, {chrome_id: {"add": true, "why": words}}
+    draws on this page an entry the reference carries on fewer than half its pages
+    (minority_chrome; the deck's firm_chrome choice applies to it as to any other). Only an
+    entry the page would draw (guide_chrome) can be left off or reworded; never the firm's chrome (decided for the whole deck in
     firm_chrome) or a legal or confidentiality mark; under --chrome auto, never an entry the
     page inherits from its layout or master (a page cannot leave out what its layout draws:
     use a layout without it)."""
     if raw is None:
         return {}
     given = {ch["chrome_id"]: ch for ch in guide_chrome(guide_data, mode)}
+    minority = minority_chrome(guide_data)
     listing = ", ".join(f"{cid} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''}, "
                         + (f"on {ch.get('slides_present')} of {(guide_data.get('reference') or {}).get('slides')} reference pages)"
                            if ch.get("slides_present") is not None else "chosen for every page)") for cid, ch in given.items()) or "none"
+    if minority:
+        listing += "; on fewer than half its pages, which a page may add: " + ", ".join(
+            f"{cid} ({ch['kind']}{': ' + repr(chrome_text(ch)) if chrome_text(ch) else ''}, on {ch.get('slides_present')} pages)" for cid, ch in minority.items())
     if not isinstance(raw, dict):
         raise SpecError(f"{where} chrome: an object {{chrome_id: {{\"omit\": true, \"why\": ...}} | {{\"text\": ..., \"why\": ...}}}}; the reference's chrome here: {listing}")
     firm = {ch["chrome_id"] for ch in firm_chrome(guide_data, mode)}
     out = {}
     for cid, choice in raw.items():
-        ch = given.get(cid)
+        ch = given.get(cid) or minority.get(cid)
         at = f"{where} chrome {cid}"
         if ch is None:
-            raise SpecError(f"{at}: not chrome this page draws; the reference's chrome here: {listing}")
-        if not isinstance(choice, dict) or set(choice) - PAGE_CHROME_KEYS or ("omit" in choice) == ("text" in choice):
-            raise SpecError(f"{at}: {{\"omit\": true, \"why\": ...}} or {{\"text\": ..., \"why\": ...}}, not {choice!r}")
+            raise SpecError(f"{at}: not chrome of this guide; the reference's chrome here: {listing}")
+        if not isinstance(choice, dict) or set(choice) - PAGE_CHROME_KEYS or sum(k in choice for k in ("omit", "text", "add")) != 1:
+            raise SpecError(f"{at}: {{\"omit\": true, \"why\": ...}}, {{\"text\": ..., \"why\": ...}} or {{\"add\": true, \"why\": ...}}, not {choice!r}")
         why = choice.get("why")
         if not (isinstance(why, str) and len(why.split()) >= 3):
             raise SpecError(f"{at}: why, in words: what this page does that the reference's {ch.get('slides_present')} pages with it do not")
+        if "add" in choice:
+            if choice["add"] is not True:
+                raise SpecError(f"{at}: add is true")
+            if cid in given:
+                raise SpecError(f"{at}: already drawn on every page; add takes an entry on fewer than half the reference's pages: {listing}")
+            if _layers(ch) != ["slide"] and mode != "draw":
+                raise SpecError(f"{at}: the reference draws it on its {'/'.join(_layers(ch))}; choose that layout, or build with --chrome draw")
+            out[cid] = {"add": True, "why": why}
+            continue
+        if cid not in given:
+            raise SpecError(f"{at}: not chrome this page draws (on {ch.get('slides_present')} reference pages); add it with {{\"add\": true, \"why\": ...}}")
         if cid in firm:
             raise SpecError(f"{at}: the firm's own chrome is kept, dropped or replaced for the whole deck in firm_chrome, never page by page")
         if LEGAL_MARK.search(chrome_text(ch) or ""):
@@ -2275,6 +2356,10 @@ def chrome_on_page(guide_data: dict, mode: str, page: dict | None = None) -> lis
             out.append(ch)
         elif "text" in choice:
             out.append({**ch, "text": choice["text"] + (" <page number>" if "<page number>" in (ch.get("text") or "") else "")})
+    added = [ch for ch in minority_chrome(guide_data).values() if ((page or {}).get(ch["chrome_id"]) or {}).get("add")]
+    if added:
+        order = {ch["chrome_id"]: i for i, ch in enumerate(guide_data.get("chrome") or [])}
+        out = sorted(out + added, key=lambda ch: (ch.get("paint_order", order[ch["chrome_id"]]), order[ch["chrome_id"]]))
     return out
 
 
@@ -2473,7 +2558,7 @@ def _layers(ch: dict) -> list[str]:
 FIRM_DECISIONS = ("keep", "drop", "replace")
 
 
-def firm_chrome(guide_data: dict, mode: str) -> list[dict]:
+def firm_chrome(guide_data: dict, mode: str, added: set[str] = frozenset()) -> list[dict]:
     """The chrome a generated page carries that can name the reference's firm: every entry
     chrome_on_page draws on the page that holds words (a label, or a footer the page
     actually draws, with two letters in a row; page numbers excluded) or a picture (kind
@@ -2486,7 +2571,7 @@ def firm_chrome(guide_data: dict, mode: str) -> list[dict]:
     page = (guide_data.get("reference") or {}).get("page") or {}
     pw, ph = page.get("width_in"), page.get("height_in")
     out = []
-    for ch in guide_chrome(guide_data, mode):
+    for ch in guide_chrome(guide_data, mode) + [ch for cid, ch in minority_chrome(guide_data).items() if cid in added]:
         x, y, w, h = ch["box_in"]
         if pw is not None and ph is not None and not (x < pw and y < ph and x + w > 0 and y + h > 0):
             continue  # off the page: a note on the master's pasteboard, never seen
@@ -2630,7 +2715,7 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
                     own.append(ch)
         return wanted, firm_entries(own, choices)
 
-    candidates = firm_chrome(guide_data, chrome)
+    candidates = firm_chrome(guide_data, chrome, added_chrome(spec))
     choices = firm_choices(spec, candidates)
     wanted_chrome, slide_only = furniture(None)
     chrome_report: dict = {"mode": chrome, "placeholders_copied": sorted(wanted_chrome), "slide_layer_entries": [ch["chrome_id"] for ch in slide_only], "notes": [],

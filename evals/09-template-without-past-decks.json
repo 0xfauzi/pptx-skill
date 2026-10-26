@@ -82,7 +82,7 @@
   },
   {
    "statement": "With no run evidence in the reference, no run is judged and nothing from the corpus stands in.",
-   "check": "plan.check.json: no refusal; repeats[].reference_longest_run reads 'not judged'; any repeat carries a deliberate_parallel reason or is answered in the report."
+   "check": "plan.check.json: no refusal; repeats[].reference_longest_run reads 'not judged'; an undeclared repeat is a warning ('was the repeat meant?'), never a refusal, and the agent either gives it a deliberate_parallel reason or answers it in the report."
   },
   {
    "statement": "Every page fits on the template's own layouts and the package validates.",

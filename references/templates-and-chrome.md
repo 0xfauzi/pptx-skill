@@ -89,8 +89,15 @@ left to the default.
   entry off, or set other words in a text entry's place, with a reason:
   `"chrome": {"chrome-7": {"omit": true, "why": "a full-bleed divider page, as the reference's
   own section openers carry no number"}}` or `{"chrome-4": {"text": "Appendix", "why":
-  "..."}}`. The zones, the contrast gate and the emitter read the same per-page list, so
-  an entry left off frees its zone and a replaced line is scored in its new words. Never
+  "..."}}`. A page may also add an entry the reference carries on fewer than half its
+  pages (a "Draft" stamp, a section tracker), as the reference's own minority pages do:
+  `{"chrome-1": {"add": true, "why": "the board pre-read pages carry the draft stamp"}}`;
+  the refusal for an id the page does not draw lists those entries. An entry the reference
+  draws on a layout is added by choosing that layout under `--chrome auto`, or with
+  `--chrome draw`. The zones, the contrast gate and the emitter read the same per-page
+  list, so an entry left off frees its zone, an added one reserves its zone and is scored,
+  and a replaced line is scored in its new words. An added entry that names the firm is
+  decided in `firm_chrome` like any other. Never
   page by page: the firm's own chrome (decided for the whole deck in `firm_chrome`), a
   legal or confidentiality mark, or, under `--chrome auto`, an entry the page inherits
   from its layout (choose a layout without it). The build reports each page's choices

@@ -13,7 +13,8 @@ grid, spacing and tracking to hundredth-points); probe solve for widths; measure
 every paragraph at width - indent - FIT_EPSILON as whole strings; fit every table;
 region heights bottom-up (column = sum + gaps + 2 pad, row = max + 2 pad; flexible:
 the root, a grid, an ancestor of a flexible child, a region with a weight inside a
-column, each floored at its content height; a row's align never makes it flexible);
+column, each floored at its content height; a row's align never makes it flexible; an
+empty region is its padding, or a spacer with a weight in a column);
 final solve with the measured intrinsics; re-measure and REFUSE the candidate if any
 line text moved; validate (containment, overlap, exceeds_page, overcommit,
 zero_dimension, reserved_zone, and per measured element against its own box:
@@ -1518,10 +1519,19 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
         return height, height or 0
     is_column = isinstance(node.layout, Flex) and node.layout.direction == "column"
     child = [_region_heights(c, guide, scale, heights, floors, False, is_column) for c in node.children]
-    if isinstance(node.layout, Grid) or not node.children:
+    if isinstance(node.layout, Grid):
         return None, 0
     _, pad_top, _, pad_bottom = pad_emu(node.layout, guide, scale)
     pad = pad_top + pad_bottom
+    if not node.children:
+        # an empty region is as tall as its padding, like any region of its content; only a
+        # weight in a column (or the root) makes it a spacer that takes a share (an empty
+        # region with top padding took the page's spare height in silence: round 7)
+        if root or (in_column and node.weight is not None):
+            floors[node.id] = pad
+            return None, pad
+        heights[node.id] = pad
+        return pad, pad
     if is_column:
         floor = sum(f for _, f in child) + gap_emu(guide, node.layout.gap_role, scale, "y") * (len(child) - 1) + pad
     else:

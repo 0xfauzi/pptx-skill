@@ -304,7 +304,9 @@ class ChartGeometry:
         def value(s: dict) -> float:
             v = s["values"][i]
             if not _num(v):
-                raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number")
+                if s is not self.series[j]:
+                    return 0.0  # a blank in another member of the stack adds nothing to it
+                raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number: a gap draws no mark to anchor on")
             return float(v)
 
         if self.series_family(j) == "bar":
@@ -337,7 +339,7 @@ class ChartGeometry:
             i = self._category_index(index)
             v = s["values"][i]
             if not _num(v):
-                raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number")
+                raise GeometryRefused(f"{self.where}: series {s.get('name')!r} category {i} has no number: a gap draws no point to anchor on")
             _, c = self.category_centre(i)
             return c, self.value_coord(v, axis)[1]
         # a bar's anchor point: the centre of its value end

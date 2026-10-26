@@ -112,6 +112,15 @@ figure the plan's message for the page states that the page does not carry: the 
 written before the numbers moved, or the page lost its claim). Answer every warning in the
 report: what you kept and why, or what you changed.
 
+A warning you mean is answered once, in the deck JSON, so it stops reading as open on every
+build: `"answered": [{"kind": "annotation unexplained", "why": "the trigger line is named
+in the commentary beside the chart"}]` on the slide (add `"detail": "<words of its
+detail>"` when the page has two warnings of one kind). The warning stays in `problems` with
+`answered` set to your reason, and the brief lists it as answered, not open; carry the
+reason into the final report. A refusal is never answered (`answer to a refusal`
+refuses), and an answer that matches no warning on the page warns `answer names no
+warning`: the page changed and the answer is stale.
+
 The reference's source-line habit is the digest's count of data pages that carry a source
 or note line (`exhibit_habits.source_lines`), over three or more data pages: `most` where
 at least half do, `few` below (the half is a definition of the reference's majority, not a
