@@ -1,0 +1,24 @@
+# The machine this release was built and measured on (round 8, 2026-10-27), as INSTALL.md cites it
+
+$ python3 -I scripts/preflight.py
+ok       python 3.13.16 (3.11 or later)
+ok       lxml 6.1.3: reads and writes OOXML
+ok       Pillow 12.3.0: images, crops and the fallback text ruler
+ok       python-pptx 1.0.2: writes the deck
+ok       pdfplumber 0.11.10: reads PDF references
+ok       uharfbuzz 0.57.0: the better text ruler; without it the Pillow ruler measures (the build report names the ruler)
+ok       soffice LibreOffice 24.2.7.2 420(Build:2): renders .pptx to PDF
+ok       pdftoppm : rasterises PDF pages
+ok       pdftotext : reads the words a render drew (annotation check, leakage on PDFs)
+ok       pdffonts : lists a PDF's fonts
+ok       fc-match : finds the installed face for each named face
+ok       fc-query : reads a face's character coverage
+
+$ pdftoppm -v
+pdftoppm version 24.02.0
+$ fc-match --version
+fontconfig version 2.15.0
+$ python3 -I -c 'import pdfminer; print(pdfminer.__version__)'
+20260107
+$ uname -sm
+Linux x86_64

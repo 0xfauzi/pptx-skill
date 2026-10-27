@@ -1,14 +1,16 @@
 # Installing designing-presentations
 
-The skill is the folder `plugins/designing-presentations/skills/designing-presentations/`. It runs Python scripts and
-LibreOffice on the machine where Claude works, so that machine needs the requirements
-below. The skill installs nothing itself: `scripts/preflight.py` checks every requirement
+The skill is the folder `plugins/designing-presentations/skills/designing-presentations/`
+(`SKILL_DIR` below). It runs Python scripts and LibreOffice on the machine where Claude
+works, so that machine needs the requirements below. The skill installs nothing itself: `scripts/preflight.py` checks every requirement
 and prints the install command for whatever is missing, for you to run.
 
 ## Requirements
 
 What the skill needs, and the versions this release was built and measured on (Linux,
-round 8; `python3 scripts/preflight.py` printed them):
+round 8; `python3 scripts/preflight.py` printed the Python packages and LibreOffice, and
+`pdftoppm -v`, `fc-match --version` and pdfminer's `__version__` the rest:
+[dev/proofs/environment.txt](dev/proofs/environment.txt)):
 
 | Requirement | Needed for | Measured on |
 |---|---|---|
@@ -44,7 +46,8 @@ brew install poppler fontconfig && brew install --cask libreoffice         # mac
 Check a machine, and a reference's faces:
 
 ```bash
-python3 plugins/designing-presentations/skills/designing-presentations/scripts/preflight.py --reference /path/to/reference.pptx
+python3 plugins/designing-presentations/skills/designing-presentations/scripts/preflight.py \
+  --reference /path/to/reference.pptx
 ```
 
 ## Claude Code
@@ -58,9 +61,26 @@ As a plugin, from this repository's marketplace:
 
 or from a shell, `claude plugin marketplace add 0xfauzi/pptx-skill` and
 `claude plugin install designing-presentations@pptx-skill` (add `--scope project` to share it
-through the project's settings). Claude Code copies the plugin into its plugin cache; the
-skill loads as `/designing-presentations:designing-presentations` and is used on its own
-when a request matches its description.
+through the project's settings). One command does both: in a session
+`/plugin install designing-presentations --marketplace 0xfauzi/pptx-skill` (Claude Code
+2.1.275 or later), and from a shell `claude plugin install designing-presentations
+--marketplace 0xfauzi/pptx-skill` (2.1.292 or later), per code.claude.com/docs/en/discover-plugins.md
+("Add a marketplace and install in one command"). The skill loads as
+`/designing-presentations:designing-presentations` and is used on its own when a request
+matches its description.
+
+The marketplace lists one plugin whose source is `./plugins/designing-presentations`, so an
+install copies that folder only (its manifest and the skill), never `dev/`. Claude Code
+keeps the copy in its plugin cache, `~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/`
+(the plugins root is `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` names another,
+per code.claude.com/docs/en/plugins/loading.md, "Find plugins on disk"; with
+`CLAUDE_CONFIG_DIR` set it was `$CLAUDE_CONFIG_DIR/plugins` on Claude Code 2.1.311), so the
+skill sits at
+`~/.claude/plugins/cache/pptx-skill/designing-presentations/0.8.0/skills/designing-presentations/`
+for this release. `claude plugin list` shows what is installed. An update installs the new
+version into a new directory and removes the old one 14 days later (loading.md, "Cleanup of
+previous versions"). A marketplace added from a local folder is read in place instead of
+copied (`claude plugin list` shows "Read from:").
 
 By hand: copy or symlink `plugins/designing-presentations/skills/designing-presentations/` to
 `~/.claude/skills/designing-presentations/` (every project) or to a project's
@@ -72,22 +92,27 @@ By hand: copy or symlink `plugins/designing-presentations/skills/designing-prese
 python3 dev/tools/package_skill.py     # writes dist/designing-presentations.zip
 ```
 
-The packager refuses a skill an upload would reject (a frontmatter key outside the six the
-Agent Skills specification defines, a name that is not the folder's, a description over
-1,024 characters, a total over 30 MB) and leaves out the reference decks. Upload the zip in
+The packager zips the files git tracks in the skill, as committed, and refuses by name an
+untracked or ignored file there, a tracked file changed since the last commit, and a skill
+an upload would reject: a frontmatter key outside the six the Agent Skills specification
+defines; a name that is not the folder's, holds "anthropic" or "claude" or an XML tag; a
+description over 200 characters (support.claude.com article 12512198) or with an XML tag; a total over
+30 MB (platform.claude.com skills guide, "Limits and constraints"). The reference decks (`refs/files`, git-ignored) are left out. Upload the zip in
 claude.ai under Customize > Skills and turn the skill on; code execution must be enabled.
 Whether the sandbox there has LibreOffice and the packages above depends on the
 environment: ask Claude to run `scripts/preflight.py` first.
 
 ## Claude API
 
-Upload the folder with the Skills API, every file named under `designing-presentations/`
-(the files the packager puts in the zip):
+Upload the folder with the Skills API, every file named under `designing-presentations/`:
+the files the packager put in the zip, unpacked, so nothing outside git reaches the upload
+(a bash snippet):
 
 ```bash
-python3 dev/tools/package_skill.py && cd skills
+python3 dev/tools/package_skill.py
+rm -rf dist/upload && mkdir -p dist/upload && cd dist/upload && unzip -q ../designing-presentations.zip
 args=(); while IFS= read -r f; do args+=(-F "files[]=@$f;filename=$f"); done \
-  < <(unzip -Z1 ../dist/designing-presentations.zip | grep -v '/$')
+  < <(find designing-presentations -type f | sort)
 curl -X POST https://api.anthropic.com/v1/skills \
   -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" "${args[@]}"
 ```
@@ -101,17 +126,28 @@ the skill runs there only as far as the pre-installed packages reach; preflight 
 
 The build compares a new deck against a panel of public decks of other firms (the judge's
 rarity basis and the leakage check's background). They are third-party files and are never
-shipped; fetch them once, into the skill's git-ignored `refs/files/`:
+shipped; fetch them once, into the skill's git-ignored `refs/files/`. `fetch.sh` is POSIX
+sh (run under dash, bash and bash --posix), needs curl and `sha256sum` or `shasum`, and checks every file
+against the sha256 in `refs/MANIFEST.md`:
 
-```bash
-sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh     # checks every sha256 in refs/MANIFEST.md
+```sh
+sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh
 ```
 
 Without them the build still runs and says the panel is empty. In a plugin install the
-skill folder sits in Claude Code's plugin cache and is replaced on update; fetch again after
-an update.
+skill is the cache copy above, so the panel goes there, and an update starts a new version
+directory without it. Fetch it again after every update, in the new version's folder:
+
+```sh
+sh ~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/skills/designing-presentations/refs/fetch.sh
+```
+
+(`claude plugin list` names the installed version; the panel in the old directory goes when
+Claude Code removes that directory, 14 days after the update.)
 
 ## Where outputs go
 
 No command writes inside the skill folder: every output path goes under a work directory
-of your own (`DECK_WORK` in SKILL.md), and a path inside the skill is refused by name.
+of your own (`DECK_WORK` in SKILL.md), and a path inside the skill is refused by name. Your
+own components, and the admission records `component.py admit` writes, go in a components
+directory of yours, passed as `--components DIR` (`references/components.md`).
