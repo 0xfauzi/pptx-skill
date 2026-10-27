@@ -62,4 +62,4 @@ one-column image of all its pages at the render's own width. Copy `WORK/out/deck
 The committed images and decks were made this way from four rebuilds on the skill at the
 commit that added them. Each rebuild passed (every page fit, package valid, no warning),
 and both validations reported no problems. Against the previous round's rebuild, every
-render of a page no change touched was pixel-identical (dev/PORT_AUDIT.md, docs round 2).
+render of a page no change touched was pixel-identical (dev/PORT_AUDIT.md, docs round 3).

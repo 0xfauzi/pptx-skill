@@ -1064,3 +1064,48 @@ master's bullets (item J) besides the pages named.
 (2.1.311). The packager: 93 files, 665,890 bytes zipped, the entries the skill's `git
 ls-files`, no machine path. ruff 0.16.9: plugins/ 120 findings against 121 on 9ebf506 (the
 validate subprocess call left with it); dev/ 34 against 34.
+
+## Docs round 3: the bypasses next to round 2's fixes, and the showcase pages
+
+A reviewer worked from a fresh clone of 6d935ff and reproduced ten items. Each code fix
+below was reproduced on 6d935ff first, fixed at its cause, broken again to watch the defect
+return, and restored. Proofs: `mf/r3/` in the session scratchpad (`A` the offline render,
+`B` duplicate names, `E` headline figures, `F` --computed, `L` the capital stack, `K` chart
+text spacing, `G7` the grocery figure, `V` the showcase pages), `mf/r3rb` the rebuilds,
+`mf/r3inst` the install, `mf/r3zip` the package.
+
+| Item | Found | Fix | With the fix broken | Commit |
+|---|---|---|---|---|
+| 1 offline render | a local HTTP logger (`mf/r3/A/results.txt`): 3 requests (OPTIONS, HEAD, GET) for a picture under `TargetMode="external"`, under " EXTERNAL ", for the same deck as .potx and as .pptm (to_pdf copied only a `.pptx`), and for a picture whose relationship is typed hyperlink; 0 for .pptx, .PPTX and no TargetMode. validate --render on the lower-case deck ended in a python-pptx KeyError traceback | `render.offline_copy` runs on every package LibreOffice is handed, whatever its extension, and keeps a relationship only when it is Internal (TargetMode read without regard to case) and its target, compared case-insensitively, is a member of the zip, whatever its Type; it opens the package through `ooxml.Package` first. `ooxml.Package` refuses a TargetMode other than the schema's `Internal` and `External` by name (python-pptx reads "external" as Internal, LibreOffice as External). 0 requests for every deck in render and validate --render; the two decks with a bad TargetMode refused by name, no traceback | the `.pptx`-only copy: 3 requests each for .potx and .pptm; the hyperlink Type kept: 3 for it; the refusal removed: 0 requests (the membership rule cuts them) but the validate traceback back; the refusal removed and the 6d935ff rule: 3 each | e0a91e7, 0dc9055 |
+| 2 a duplicate name | a second, broken copy of slide1.xml, slide1.xml.rels or theme1.xml appended to the zip: 14 commands ended in XMLSyntaxError (`mf/r3/B/pre.txt`): `Package` read the first copy whole, `zip.read` returns the last | `ooxml.Package` refuses a member name the zip holds twice, compared case-insensitively as OPC compares part names, when it opens; a case-only duplicate (`PPT/SLIDES/SLIDE1.XML`) refused too. Every command over the four packages refused by name (`fix.txt`; import_slide stops earlier, at its required `--guide`, before and after). Of the 118 packages on this machine outside the scratchpad, only billion_laughs is refused, as in round 2 (`census-fix.txt`) | the check off: 14 tracebacks again (`brk.txt`) | 0dc9055 |
+| 3 step numbers as headline figures | `headline_figure_rows` returned `[['step0','step1','step2']]` for three 18pt "1", "2", "3" over 10pt text, and the same with "2024" to "2026" (`mf/r3/E/pre.txt`); a plan briefing one exhibit more than the page holds read "agree" | `ooxml.is_headline_figure`: a figure needs a currency, a unit, a decimal point or a thousands group. Both probe decks: no row, the verdict "differ" with its warning (`verdict.py`); the committee book and earnings tile rows still read (`fix.txt`) | the old test: "agree" for both again | 7e6d18b |
+| 4 --computed after a flag | `leakage.py --past P --computed c.txt NEW` and `build_deck.py --computed c.txt deck.json`: "the following arguments are required" (rc 2, `mf/r3/F/pre.txt`) | `--computed` takes one file a flag again (`action="append"`), as on main, so the positional after it parses; a second file after one flag is refused with the repeated form named (`cli.parse_args`); build-report.md says so | `nargs="+"` back: rc 2 again (`brk.txt`) | ff1dd08 |
+| 5 version | plugin.json 0.8.0 on main and here | 0.9.0; INSTALL.md's cache path. A marketplace from a scratch clone, its git-subdir URL pointed at that clone, installed into `.../designing-presentations/0.9.0/` (`mf/r3inst`; with the github.com URL the session's git proxy served main, 0.8.0) | | 98817bf |
+| 6 the notes label | the label overflow check held every column label to one line | `label_overflows_bar` counts a column label's lines (each line break starts one; LibreOffice may wrap further, so it is the fewest) and returns the span the label covers; on a stacked column `overflow_neighbours` adds the segments that span reaches to the backings scored, and the refusal names the stacked remedies. The 6d935ff spec of page 2 is refused: color.ink over the TLB's navy, 1.5:1 (`mf/r3/L/gate.log`). Page 2 now labels the notes beside the stack with a leader and keeps $157.5m; the column is 0.6 of the plot | lines held to one: PASS; neighbours left out: PASS, scored 4.84:1 on its own fill (`brk-lines.log`, `brk-nb.log`) | 4c806b8, 5d38c55 |
+| 7 the half gap | £1.1bn and 28%, the percentage from the rounded £1.1bn | `figures.py` from the unrounded shares of wallet: £1.045bn, 26.87%, stated £1.0bn and 27% (`mf/r3/G7`), asserted there; make_deck reads them | | a493e94 |
+| 8 bars not from zero | earnings p4 from 8%, committee book p6 from 6.0x | both from zero, the subtitles' axis notes removed, the briefs' marks say so | | 5d38c55, a493e94 |
+| 9 weaker pages | as listed | earnings p2: the growth lines over Q2'25 to Q3'26 (the five quarters behind and the crossing), quarters under the axis, each line named with its value at the start, asserted against figures.py; grocery p1: 92% of Brindle's sales in its 154 superstores and supermarkets against the market's 40%, one definition; committee book p4: LibreOffice set the bridge's Arial chart labels with glyph gaps or overlaps up to 0.42 of a space, and a probe of the same labels at 7, 7.5, 8, 8.5 and 9pt bold and 7pt regular gave 0.25 to 0.42 at every size (`mf/r3/K/r1.txt`), so the figures are a `category_row` of text above the plot (0.06 at most, `K/fix2-chars.txt`) and the README's gaps say so; earnings p5: Q4 FY26 guidance against Q4 FY25, briefed, its figures asserted; parks p4: hours per volunteer as a sentence (a five-row table fitted only at scale 0.87) | | 5d38c55, a493e94, 2d3fe1c |
+| 10 URLs | 404 while the repository is private | nothing to change here | | |
+
+Found and not fixed: with `gap_role` space.sm (45,720 EMU) the arrow's head drew over the
+first glyph of its label and the build passed (`mf/r3/L/sm-crop.png`); page 2 uses space.lg.
+
+Rebuilt from fresh clones (`mf/r3rb/driver.sh`; the panel checked by `dash refs/fetch.sh`,
+13 of 13) of 6d935ff and a493e94, whose skill is the final one (`git diff a493e94 HEAD --
+plugins` is empty): the 46 result lines identical; the worked examples and fidelity pages
+0 report fields differing and 106 of 106 renders pixel-identical; the genre sections 27 of
+27 renders identical and one field: consulting page 5's nearest pass, a bridge label on a
+zero-height label series, now carries `overflows_stack` (its ratio, 4.76, unchanged). The
+four showcase decks rebuilt again at 2d3fe1c (`show.sh`): every page fits at scale 1.0
+(parks page 2 at 0.98, as before), no warning, both validations clean; 12 of 21 renders
+identical, and the 9 that differ are the pages named above (committee book 2, 4 and 6,
+grocery 1 and 3, earnings 2, 4 and 5, parks 4). Their report fields differ only on those
+pages, plus the repetition similarities and a briefs count each for earnings page 5 and the
+plan check (3 to 4). The proofs in `dev/proofs/` are unchanged. The images and .pptx files in
+`docs/showcase/` are from the 2d3fe1c rebuild; hero.png is byte-identical (its page did not
+change).
+
+`claude plugin validate . --strict` and of the plugin folder pass with nothing to report
+(2.1.311). The packager: 93 files, 668,150 bytes zipped, the entries the skill's `git
+ls-files`, no machine path. ruff 0.16.9: plugins/ 120 findings, the same 120 as 6d935ff;
+dev/ 34, the same 34.
