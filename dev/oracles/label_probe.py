@@ -45,8 +45,8 @@ from pptx.util import Emu
 
 SKILL = Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 sys.path.insert(0, str(SKILL / "scripts"))
-import emit_pptx as E  # noqa: E402
-from chart_geometry import ChartGeometry  # noqa: E402
+import emit_pptx as E
+from chart_geometry import ChartGeometry
 
 PAGE_W, PAGE_H = 12_192_000, 6_858_000
 EMU_PER_PT = 12_700
