@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -577,6 +577,9 @@
      "written": 2,
      "drawn": 2
     }
+   },
+   "chart_text_drawn": {
+    "w": "19 of 19 chart labels drawn as written"
    }
   }
  ],
@@ -603,7 +606,7 @@
     "page": 1,
     "composition": "b1",
     "structure": "chart bar col stacked x3 (1 panel)",
-    "kinds": "chart (1 panel)",
+    "kinds": "chart bar col stacked",
     "panels": 1,
     "drawn": {
      "count": 0,
@@ -639,8 +642,8 @@
     "pages_unread": []
    },
    "kinds": {
-    "V": 0.467,
-    "changed": 14,
+    "V": 0.433,
+    "changed": 13,
     "pairs": 30,
     "pages_unread": []
    },
@@ -699,7 +702,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/deck.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -711,14 +714,24 @@
   "briefs": [],
   "computed": [],
   "declared_computed": [],
-  "findings": 77,
-  "distinctive": 77,
-  "low": 7,
+  "findings": 81,
+  "distinctive": 81,
+  "low": 8,
   "pages": [
    {
     "page": 1,
     "id": "p24",
     "findings": [
+     {
+      "kind": "name",
+      "text": "total nys private sector",
+      "past": [
+       "bcg-nystate-covid-impact-2020.pdf p24",
+       "bcg-nystate-covid-impact-2020.pdf p25"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
      {
       "kind": "phrase",
       "text": "claims from the unclassified category",
@@ -785,6 +798,24 @@
      },
      {
       "kind": "figure",
+      "text": "140",
+      "past": [
+       "bcg-nystate-covid-impact-2020.pdf p24"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "265",
+      "past": [
+       "bcg-nystate-covid-impact-2020.pdf p24"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
       "text": "269",
       "past": [
        "bcg-nystate-covid-impact-2020.pdf p24"
@@ -840,6 +871,15 @@
      {
       "kind": "figure",
       "text": "888",
+      "past": [
+       "bcg-nystate-covid-impact-2020.pdf p24"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "967",
       "past": [
        "bcg-nystate-covid-impact-2020.pdf p24"
       ],
@@ -1533,6 +1573,14 @@
     ]
    },
    {
+    "kind": "phrase",
+    "text": "health care and social assistance",
+    "why": "a term of the trade: also in 1 public deck(s) of other firms (mckinsey_uf_road_ahead_2023.pdf)",
+    "pages": [
+     1
+    ]
+   },
+   {
     "kind": "name",
     "text": "incremental ui",
     "why": "a term of the trade: every word of it is in the public decks of other firms",
@@ -1561,7 +1609,7 @@
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "13 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/round7/refs/files",
+  "rarity_basis": "13 public decks of other firms in /tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files",
   "chrome_excluded": {
    "bcg-nystate-covid-impact-2020.pdf": {
     "phrase": 5,
@@ -1571,10 +1619,10 @@
   },
   "images_checked": "pptx media by sha256; a PDF's pictures are not checked",
   "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
-  "verdict": "possible carry-over: 77 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
+  "verdict": "possible carry-over: 81 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -1606,7 +1654,7 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/renders/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/renders/slide-01.png"
   ]
  },
  "judge": {
@@ -1659,23 +1707,23 @@
    "max": 0.395
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/45541_Header.pptx": 0.584,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.634,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.467,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.363,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.462,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_netflix_financing_pitchbook.pptx": 0.457,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/themes.pptx": 0.577
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/45541_Header.pptx": 0.584,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.634,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.467,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.363,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_keybank_first_niagara_fig_ma.pptx": 0.462,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_netflix_financing_pitchbook.pptx": 0.457,
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/themes.pptx": 0.577
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/perella_weinberg_pitch.pdf"
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/bmo_fairness_opinion_board.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/clone/plugins/designing-presentations/skills/designing-presentations/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_style_on_panel": {},
@@ -1689,7 +1737,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/fid-bcg-p24/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/fid-bcg-p24/renders"
  }
 }

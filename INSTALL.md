@@ -70,7 +70,12 @@ through the project's settings). One command does both: in a session
 matches its description.
 
 The marketplace lists one plugin whose source is `./plugins/designing-presentations`, so an
-install copies that folder only (its manifest and the skill), never `dev/`. Claude Code
+install copies that folder only (its manifest and the skill), never `dev/`. Adding the
+marketplace clones this repository into `~/.claude/plugins/marketplaces/pptx-skill/`, `dev/`
+included; to keep `dev/` out of that checkout too, add it with a sparse checkout:
+`claude plugin marketplace add 0xfauzi/pptx-skill --sparse .claude-plugin plugins`
+(marketplace-reference.md, `sparsePaths`; git still holds the other files' objects in the
+clone's `.git`). Claude Code
 keeps the copy in its plugin cache, `~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/`
 (the plugins root is `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` names another,
 per code.claude.com/docs/en/plugins/loading.md, "Find plugins on disk"; with

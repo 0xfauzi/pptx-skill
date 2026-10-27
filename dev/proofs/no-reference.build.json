@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -52,9 +52,9 @@
     "text_boxes_mostly_empty": [
      {
       "id": "left",
-      "text_ends_in": 2.56,
+      "text_ends_in": 2.73,
       "box_ends_in": 6.37,
-      "empty_share": 0.79
+      "empty_share": 0.78
      }
     ],
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous"
@@ -175,6 +175,11 @@
      "written": 5,
      "drawn": 5
     },
+    "kpis": {
+     "cells": 12,
+     "drawn as written": 12,
+     "not found": 0
+    },
     "source": {
      "written": 1,
      "drawn": 1
@@ -213,11 +218,11 @@
    "density": {
     "words": 35,
     "elements": 5,
-    "covered_area_fraction": 0.395,
+    "covered_area_fraction": 0.383,
     "text_boxes_mostly_empty": [
      {
       "id": "note",
-      "text_ends_in": 2.14,
+      "text_ends_in": 2.31,
       "box_ends_in": 6.37,
       "empty_share": 0.87
      }
@@ -350,6 +355,9 @@
      "written": 1,
      "drawn": 1
     }
+   },
+   "chart_text_drawn": {
+    "chart": "10 of 10 chart labels drawn as written"
    }
   },
   {
@@ -535,6 +543,11 @@
      "written": 1,
      "drawn": 1
     },
+    "routes": {
+     "cells": 18,
+     "drawn as written": 18,
+     "not found": 0
+    },
     "source": {
      "written": 1,
      "drawn": 1
@@ -567,9 +580,9 @@
    "top_in": [
     6.77,
     6.77,
-    4.08
+    4.24
    ],
-   "drift_in": 2.69
+   "drift_in": 2.53
   }
  },
  "repetition": {
@@ -593,7 +606,7 @@
      2,
      3
     ],
-    "similarity": 0.152,
+    "similarity": 0.156,
     "similar": false
    }
   ],
@@ -602,7 +615,7 @@
     "page": 1,
     "composition": "b1",
     "structure": "table (1 panel)",
-    "kinds": "table (1 panel)",
+    "kinds": "table",
     "panels": 1,
     "drawn": {
      "count": 0,
@@ -613,7 +626,7 @@
     "page": 2,
     "composition": "b1",
     "structure": "chart bar col clustered x1 (1 panel)",
-    "kinds": "chart (1 panel)",
+    "kinds": "chart bar col clustered",
     "panels": 1,
     "drawn": {
      "count": 0,
@@ -624,7 +637,7 @@
     "page": 3,
     "composition": "b2",
     "structure": "table (1 panel)",
-    "kinds": "table (1 panel)",
+    "kinds": "table",
     "panels": 1,
     "drawn": {
      "count": 0,
@@ -831,7 +844,7 @@
   "reference": "no reference"
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/deck.pptx",
   "slides": 3,
   "problems": [],
   "ok": true
@@ -840,7 +853,7 @@
   "verdict": "no reference: no past deck, so no past content can be found in this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -872,9 +885,9 @@
   },
   "pages": 3,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-01.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-02.png",
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders/slide-03.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/renders/slide-01.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/renders/slide-02.png",
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/renders/slide-03.png"
   ]
  },
  "judge": {
@@ -884,7 +897,7 @@
  "outputs": {
   "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/deck.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/noref/deck/renders"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/rb/out/r8q/no-reference/deck/renders"
  }
 }

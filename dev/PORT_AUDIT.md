@@ -913,3 +913,51 @@ validator `skills-ref` was not run: installing it was refused in this session; i
 (validator.py) are what the packager checks.
 
 ruff 0.16.9: 143 findings here, 144 on main; the two new findings in the packager fixed.
+
+## Round 8, part 6: the packaging verifier's defects
+
+The packaging verifier on 284b5e8 reproduced nine defects (its reproductions:
+`r8p/bin`, `r8p/bomb`, `r8p/leak.zip` in the session scratchpad). Each was reproduced again
+here first, fixed at its cause, broken again to watch it return, and restored. Proofs:
+`r8q/` in the session scratchpad.
+
+| Item | Reproduced | Fix | With the fix broken | Commit |
+|---|---|---|---|---|
+| 1 fetch.sh is bash | `sh refs/fetch.sh` under dash (Debian's /bin/sh): "Syntax error: redirection unexpected", rc 2; bash rc 0 (`r8q/i1/pre-*.txt`) | POSIX sh: rows reach the loop through a here-document, so the failure flag survives the loop; `sha256sum` or `shasum -a 256`; the count of manifest rows checked is printed and a row it cannot read fails the run | process substitution back: dash rc 2 again; a pipe instead of the here-document: a tampered file reports MISMATCH and the run exits 0 (`r8q/i1/fix.txt`) | 1eafefa |
+| 2 element cap by file name | `bomb/dat.pptx` (slide1.dat, 5,000,000 elements, named by the presentation's relationship): extract_style rc 0 at 692 MB; preflight --reference on xml.pptx parsed it at 698 MB through render.declared_fonts, which opened the zip itself | `ooxml.Package` counts every member whose first byte past a byte order mark and whitespace is '<' (`xml_parts`), and `root()` reads nothing else (a member that is not counted raises XMLSyntaxError, so callers that skip a malformed part still do); `render.declared_fonts` reads through Package. dat.pptx refused by name in 0.6 s at 60 MB; the same with 200 KB of leading spaces, and in UTF-16; on the 39 measured packages the counted set and totals are identical to the old suffix rule (largest 24,263); jazz validate output byte-identical | suffix filter back: dat.pptx rc 0, 692 MB again (`r8q/i2/brk.txt`) | 5591386 |
+| 3 dev/ in the installed plugin | marketplace source `./`: the cache copy held 42 files under dev/ (evals with their expected behaviours, spec, audit, proofs) | the plugin root is `plugins/designing-presentations/` (`.claude-plugin/plugin.json`, `skills/designing-presentations/`); `marketplace.json` at the repository root names it as `./plugins/designing-presentations` (plugin-marketplaces.md, "Write relative paths from the marketplace root"; plugins/loading.md: "Files outside the plugin directory aren't copied"). Installed from a git server (smart HTTP on 127.0.0.1) into a scratch config: the cache holds `.claude-plugin` and `skills` only, 94 files, 0 under dev/, skills byte-identical to the clone | source back to `./` on a clone: 42 dev/ files in the cache again (`r8q/i3`) | 8186ecd |
+| 4 packager zips the working tree | an untracked `examples/client.pptx` and an ignored `scratch.build.json` went into the zip; a name with "claude" was refused only because it was not the folder's; a description with `<example>` passed | the file list is `git ls-files` of the skill; untracked or ignored files there (but refs/files and refs/library), a tracked file changed since the last commit, a tracked symlink, and a non-git tree are refused by name; reserved words, XML tags in name or description, description over 200 characters | file list from rglob with the untracked check off: client.pptx back in the zip (`r8q/i4/brk.txt`) | 400b960 |
+| 5 admit writes inside the skill | `component.py admit kpi_row` rewrote `components/kpi_row/admitted.json` with `/tmp/...` and `/home/user/...` paths; references/components.md said to create `components/<kind>/` | `--components DIR` on build_deck.py, layout.py capacity and component.py, a work directory refused by name inside the skill; a kind is read there and in the shipped components/; the user's admission record comes first; a user component with a shipped name is refused; admit writes `DIR/<kind>/admitted.json` with file names only. The four shipped records regenerated on the keybank guide: boxes, variants and judge totals unchanged, only the two path fields. A grep of the shipped tree for /tmp, /home, /Users, /root, scratchpad and session ids finds nothing (one scratchpad citation in ooxml.py now names its oracle) | admit target back to the component directory: the skill's admitted.json rewritten again (`r8q/i5/brk.txt`) | d93a337 |
+| 6 README numbers | keybank 0.090 against 0.083 in the proof, McKinsey 0.313 against 0.321; the search found the page-13 round trip quoted with no proof (re-measured 0.100, gradient now drawn), the raster body from "a 14.4pt pitch" (modal 14pt), "other sides within 0.08 in" (top 0.083), the McKinsey "flat navy" (the renders draw the gradient), "19 public decks" (16 decks and 20 taste-spike pages), and INSTALL's versions "printed by preflight" (poppler, fontconfig and pdfminer are not) | a proof column in the measured table; `dev/proofs/mckinsey-p13-roundtrip.md`, the raster oracle's "Against the file" table and `dev/proofs/environment.txt` hold the figures no file held | `r8q/i6/check_readme.py` (each judge and raster figure against its proof): the README of 284b5e8 fails 5 of 8, this one passes | a9029ad |
+| 7 verbatim KeyBank runs | the round-trip example held 15 runs of the deck verbatim (12 characters or more), its report 8 | every run paraphrased, same roles, weights and figures, within a few characters, title 7 words; found on the way: the example named color.accent1 for the navy label cells, a binding from an older guide (the current guide observes accent1 as CCD1D7), so it drew white on grey and was refused on contrast (1.54:1). It is now a fresh `import_slide.py` on the keybank guide with the same paraphrase: PASS, fit, 0.056, filed, the render as the original page; leakage distinctive 70 to 13 (the figures). No run of the deck is left in the example or its report | the verbatim example back: 15 runs found again (`r8q/i7/overlap-fix.txt`) | f75780b, 6b99406 |
+| 8 INSTALL | no cache location, no re-fetch after an update; README gave 2.1.292 for the in-session one-liner | the cache path from plugins/loading.md ("Find plugins on disk"; 14-day cleanup), the re-fetch command into the new version's folder, 2.1.275 in a session and 2.1.292 from a shell (discover-plugins.md, "Add a marketplace and install in one command"); `--sparse .claude-plugin plugins` keeps dev/ out of the marketplace checkout too (tested: 0 dev/ files on disk under the plugins root; the checkout's .git still holds their objects) | | da3dd40 and this commit |
+| 9 description 842 characters | the claude.ai help article (support.claude.com/en/articles/12512198, fetched round 8: "200 characters maximum") | 190 characters: what (native, editable PowerPoint decks), from what (a .pptx or PDF reference, or none), when (create, extend or edit slides, a pitch book or a board deck); the packager holds 200 | the 842-character description: the packager refuses it (`r8q/i4/fix.txt`). Triggering on the installed plugin, five headless prompts: a pptx reference, a PDF reference and no reference each invoked `designing-presentations:designing-presentations` first; "summarise this PDF" and a CSV function did not (`r8q/i9/trigger.txt`) | b3c9c24 |
+
+Rebuilt from a fresh clone of a9029ad (`r8q/rb/driver.sh`: the panel copied in and checked
+by `dash refs/fetch.sh`, 13 of 13; every worked example, the four fidelity pages and the
+five genre sections from a fresh extraction) and compared with the previous round-8 rebuild
+(`r8x/pub/rb/out/r8`, `r8x/pub/genre/r8`; `r8q/rb/cmp4.py`): every report, plan check and
+guide identical but two. The round trip differs as item 7 says (REFUSED to PASS, filed
+False to True, 489 report fields); the McKinsey section's component note names the
+keybank reference by file name instead of a machine path (item 5). 105 of 106 example
+renders pixel-identical, the 106th the round trip's, now written as a passing render; 27
+of 27 genre renders identical. The 10 proofs in `dev/proofs/*.build.json` that the rebuild
+makes are its reports.
+
+From the fresh clone: `claude plugin validate . --strict` and of the plugin folder pass
+(2.1.311; the plugin-directory check warns that no icon is set, which does not change the
+result); marketplace add from the git server and install into a scratch config: 0.8.0,
+cache as item 3; the packager: 93 files, 2,094,388 bytes, the zip's entries exactly the
+skill's `git ls-files`, no absolute path in any file. A cold headless session on that
+config, given only the Harrow Valley Water brief: the skill invoked from the plugin, PASS,
+2 of 2 pages fit, package valid, judge and leakage "no reference"; it read nothing outside
+its work directory and the plugin cache, touched no dev/ path, and the cache is
+byte-identical to the clone afterwards. It found the brief's senior debt over the 75% net
+debt to RAB covenant and titled page 2 with it.
+
+Open, not fixed here: a marketplace added without `--sparse` checks the whole repository
+out under `~/.claude/plugins/marketplaces/pptx-skill/`, dev/ included (44 files), outside
+the plugin root but on disk; and a member that relationship names but that is not XML now
+reaches extract_style as an XMLSyntaxError traceback, as a malformed XML part did before.
+
+ruff 0.16.9: 143 findings, the same 143 as 284b5e8 (paths normalised).
