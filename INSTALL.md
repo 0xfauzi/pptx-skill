@@ -101,8 +101,10 @@ The packager zips the files git tracks in the skill, as committed, and refuses b
 untracked or ignored file there, a tracked file changed since the last commit, and a skill
 an upload would reject: a frontmatter key outside the six the Agent Skills specification
 defines; a name that is not the folder's, holds "anthropic" or "claude" or an XML tag; a
-description over 200 characters (support.claude.com article 12512198) or with an XML tag; a total over
-30 MB (platform.claude.com skills guide, "Limits and constraints"). The reference decks (`refs/files`, git-ignored) are left out. Upload the zip in
+description over 200 characters (support.claude.com article 12512198) or with an XML tag; a
+frontmatter line that is not a one-line plain `key: value`; a compatibility over 500
+characters; a symbolic link; a `LICENSE.txt` that differs from the repository's `LICENSE`;
+a total over 30 MB (platform.claude.com skills guide, "Limits and constraints"). The reference decks (`refs/files`, git-ignored) are left out. Upload the zip in
 claude.ai under Customize > Skills and turn the skill on; code execution must be enabled.
 Whether the sandbox there has LibreOffice and the packages above depends on the
 environment: ask Claude to run `scripts/preflight.py` first.

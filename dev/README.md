@@ -13,6 +13,7 @@ that start with `dev/` name files here, in the source repository only.
 | `evals/` | ten end-to-end scenarios, the blind-round and fresh-agent protocol, and `holdout.py` (a copy of the skill with the worked examples of the decks under test held out; no `--reference` for a run with no reference) |
 | `oracles/` | the scripts behind every "Checked by" in `PORT_AUDIT.md` |
 | `proofs/` | the build reports and notes of the worked examples in `plugins/designing-presentations/skills/designing-presentations/examples/` (filed by `tools/file_proofs.py`: machine paths read `$WORK`, `$SKILL`, `$DECKGEN`, `$INPUTS`) |
+| `showcase/` | the sources of the four gallery decks in the top-level README (figures script, plan, completion, and page specs or the script that writes them), `rebuild.sh` (one deck from its sources to a validated .pptx and renders) and `sheet.py` (the README's images from the renders) |
 | `tools/file_proofs.py` | files a rebuild's build reports into `proofs/`, each machine path named by a placeholder; a report with an unmapped home or temporary path is refused |
 | `tools/package_skill.py` | the claude.ai and API upload zip, checked against the upload rules |
 
