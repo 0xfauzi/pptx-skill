@@ -16,10 +16,14 @@
   one line in a slot narrower than its word. The build reads each chart's words off the
   render (`renderer divergence: chart text`, build-report.md); a written break (`\n` in a
   point label's text) is two lines in both renderers.
-- LibreOffice sets a line chart's `above` label 37,411 to 38,050 EMU over its point and a
-  `below` label 38,908 to 39,379 EMU under it (no markers, 9pt, 12 points each, round 8);
-  on a steep line the neighbouring segment then runs through it. The build predicts that
-  before the render and reads it off the render (`chart label covered`).
+- LibreOffice sets a line chart's `above` and `below` labels (no markers) a gap from their
+  point that depends on the face and the size and does not grow with the size: 24,800 to
+  41,900 EMU above and -18,900 to 43,100 EMU below over Liberation Sans, Carlito, Gelasio
+  and Inter at 6 to 14pt (dev/oracles/label_probe.py; Gelasio's tall word box overlaps its
+  point). On a steep line the neighbouring segment then runs through the label. The build
+  predicts that with the gap measured for the face and size (`LINE_LABEL_GAP_EMU`) and reads
+  it off the render, holding the line to each face's measured ink band
+  (`chart label covered`).
 - LibreOffice sets an `inside_base` label on a horizontal bar 35,801 EMU past the bar's base,
   at every face and size measured, and never wraps or moves it: a label longer than the bar
   less that runs past the bar's end onto the plot. The build measures it and scores its ink

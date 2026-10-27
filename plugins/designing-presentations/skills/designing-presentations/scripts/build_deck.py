@@ -1533,7 +1533,27 @@ def label_on_fill(el: dict, part: str) -> bool:
     return position is None or position in ON_FILL.get(family, set())
 
 
-def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: list[list[tuple]] | None = None) -> list[dict]:
+def chart_label_faces(emit_pages: list[dict], ctx: L.Context) -> dict[str, str]:
+    """Each chart's data-label face as the renderer draws it (the first shown series label
+    role, else the chart's text role), for the ink band of its drawn labels (ink_band)."""
+    out: dict[str, str] = {}
+    for page in emit_pages:
+        for el in page["elements"]:
+            if el["kind"] != "chart":
+                continue
+            roles = [(s.get("labels") or {}).get("role") for s in el.get("series") or [] if (s.get("labels") or {}).get("show", False)]
+            role = next((r for r in roles if r), None) or (el.get("text") or {}).get("role")
+            if not role:
+                continue
+            try:
+                out[el["id"]] = ctx.face(L.resolve_type_entry(ctx.guide, role, L.Fraction(1))).family
+            except (L.FaceRefused, L.LayoutContractError, KeyError):
+                continue
+    return out
+
+
+def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: list[list[tuple]] | None = None,
+                     faces: dict[str, str] | None = None) -> list[dict]:
     """Each chart's text as the renderer drew it, read off the render's words inside the
     chart's frame (pdftotext -bbox), against chart_texts. The words are set in lines (a
     word belongs to a line when its centre lies within half its height of the line's), and
@@ -1577,7 +1597,7 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
                     if not part.startswith("category"):
                         drawn_at[part] = ink_band((min(b[0] for b in got), min(b[1] for b in got),
                                                    max(b[0] + b[2] for b in got) - min(b[0] for b in got),
-                                                   max(b[1] + b[3] for b in got) - min(b[1] for b in got)), text)
+                                                   max(b[1] + b[3] for b in got) - min(b[1] for b in got)), text, (faces or {}).get(el["id"]))
                     continue
                 whole = "".join(text.split())
                 run = next((k for k, (_, t) in enumerate(runs) if t == whole), None)
@@ -1599,7 +1619,7 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
                         # a line per word, no wider than the words side by side): words found
                         # apart are not claimed to cover anything between them
                         if box[3] <= sum(b[3] for b in got) and box[2] <= sum(b[2] for b in got) * 1.5:
-                            drawn_at[part] = ink_band(box, text)
+                            drawn_at[part] = ink_band(box, text, (faces or {}).get(el["id"]))
                         open_wraps += 1
                 else:
                     missing.append((part, text))
@@ -1634,11 +1654,38 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
     return out
 
 
-#: Measured, round 8, LibreOffice 24.2.7, a line series with no markers, 9pt labels: an
-#: `above` label's box (pdftotext's word box) ends 37,411 to 38,050 EMU over its point and a
-#: `below` label's starts 38,908 to 39,379 EMU under it, over 12 points each, and the word
-#: box is 1.21 times the size tall. With a marker the offset is unmeasured.
-LINE_LABEL_GAP_EMU = {"above": 37_700, "below": 39_100}
+#: Measured, docs round, LibreOffice 24.2.7, a line series with no markers, 12 points a
+#: chart (dev/oracles/label_probe.py): per face the renderer draws and per size, the gap from
+#: an `above` label's word box (pdftotext's) to its point and from its point to a `below`
+#: label's box, the middle of the 12 points' range (each range is 560 EMU or less). The gap
+#: does not grow with the size; it moves by up to 12,000 EMU between neighbouring sizes. At a
+#: size not measured the face's smallest gap is taken (the label nearest its point, which a
+#: neighbouring segment crosses first), and on a face not measured the smallest of all. With
+#: a marker the gap is unmeasured. Round 8's Inter 9pt (37,411 to 38,050 and 38,908 to
+#: 39,379) is reproduced here (37,489 to 38,048, 38,816 to 39,375).
+LINE_LABEL_GAP_EMU: dict[str, dict[float, tuple[int, int]]] = {
+    "Liberation Sans": {6: (39_900, 33_000), 7: (37_200, 31_300), 8: (34_600, 39_000), 9: (41_200, 36_600), 10: (38_500, 34_900),
+                        11: (36_200, 42_200), 12: (33_600, 30_800), 14: (37_600, 36_500)},
+    "Carlito": {6: (35_500, 39_100), 7: (32_200, 36_500), 8: (38_100, 34_200), 9: (34_700, 31_200), 10: (31_300, 28_900),
+                11: (37_600, 35_700), 12: (34_300, 33_400), 14: (37_100, 37_500)},
+    "Gelasio": {6: (35_900, 5_200), 7: (30_700, -1_100), 8: (35_500, 2_000), 9: (30_400, -5_100), 10: (25_500, -11_300),
+                11: (30_300, -8_600), 12: (25_000, -14_900), 14: (24_800, -18_900)},
+    "Inter": {6: (37_600, 37_900), 7: (34_600, 35_000), 8: (40_900, 41_900), 9: (37_800, 39_100), 10: (34_700, 36_300),
+              11: (41_400, 43_100), 12: (38_400, 40_300), 14: (41_900, 34_600)},
+}
+LINE_LABEL_POSITIONS = ("above", "below")
+#: Measured with the gaps: pdftotext's word box over the size, per face (0.003 between sizes)
+LABEL_BOX_OVER_SIZE = {"Liberation Sans": 1.116, "Carlito": 1.22, "Gelasio": 1.659, "Inter": 1.21}
+
+
+def line_label_gap(family: str | None, size_pt: float, position: str) -> int:
+    """LINE_LABEL_GAP_EMU for the face and size, else the face's smallest, else the smallest."""
+    k = LINE_LABEL_POSITIONS.index(position)
+    sizes = LINE_LABEL_GAP_EMU.get(family or "")
+    if sizes and size_pt in sizes:
+        return sizes[size_pt][k]
+    pool = sizes.values() if sizes else [g for s in LINE_LABEL_GAP_EMU.values() for g in s.values()]
+    return min(g[k] for g in pool)
 
 
 def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
@@ -1661,37 +1708,44 @@ def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
                 merged = {**labels, **(own or {})}
                 shown = merged.get("show", True) if own is not None else bool(labels) and labels.get("show", True)
                 pos = merged.get("position")
-                if not shown or value is None or pos not in LINE_LABEL_GAP_EMU or not merged.get("role"):
+                if not shown or value is None or pos not in LINE_LABEL_POSITIONS or not merged.get("role"):
                     continue
                 text = merged.get("text") or label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
                 if not text or "\n" in str(text):
                     continue
                 entry = L.resolve_type_entry(ctx.guide, merged["role"], L.Fraction(1))
-                w = L.advance_emu(ctx.ruler, str(text), ctx.face(entry).path, entry.size_pt)
-                h = entry.size_pt * 1.21 * L.EMU_PER_POINT
+                face = ctx.face(entry)
+                w = L.advance_emu(ctx.ruler, str(text), face.path, entry.size_pt)
+                h = entry.size_pt * LABEL_BOX_OVER_SIZE.get(face.family, max(LABEL_BOX_OVER_SIZE.values())) * L.EMU_PER_POINT
                 x, y = geo.point(si, pi)
-                top = y - LINE_LABEL_GAP_EMU["above"] - h if pos == "above" else y + LINE_LABEL_GAP_EMU["below"]
-                out[f"series[{si}] {s.get('name')!r} point {pi} label"] = ink_band((x - w / 2, top, w, h), str(text))
+                gap = line_label_gap(face.family, entry.size_pt, pos)
+                top = y - gap - h if pos == "above" else y + gap
+                out[f"series[{si}] {s.get('name')!r} point {pi} label"] = ink_band((x - w / 2, top, w, h), str(text), face.family)
     except GeometryRefused:
         return {}
     return out
 
 
-#: A word box runs the face's ascent to descent; the ink sits inside it. Measured, round 8,
-#: on LibreOffice's render of Inter labels at 9pt (10 words, 16 to 19 px boxes): ink starts
-#: 0.17 to 0.38 of the box below its top and ends 0.21 to 0.31 above its bottom, or 0.06
-#: with a descender ('Aug'). A line is held to the ink band, never to the empty ascent and
-#: descent (investor p3: a cohort line ran under '1.47x' through its box's descent). Other
-#: faces are unmeasured; the insets are the smallest measured.
-INK_TOP_INSET = 0.17
-INK_BOTTOM_INSET = {"descender": 0.06, "none": 0.21}
+#: A word box runs the face's ascent to descent; the ink sits inside it. Measured, docs
+#: round, on LibreOffice's render of chart labels rasterised at 600 dpi (dev/oracles/
+#: label_probe.py, 6 to 14pt, 254 to 256 words a face): per face the renderer draws, the
+#: smallest share of the box above the ink (top), and below it for words with no descender
+#: and with one ('Aug'), over every size; the shares move by 0.03 or less between sizes.
+#: Liberation Sans's descender reaches 0.002 past the box's bottom (under a pixel), kept.
+#: Round 8's Inter at 9pt and about 110 dpi read 0.17, 0.21 and 0.06; at 600 dpi Inter's
+#: descender inset is 0.018, so the old band left the descender's bottom out. A line is held
+#: to the ink band, never to the empty ascent and descent (investor p3: a cohort line ran
+#: under '1.47x' through its box's descent). A face not measured takes the smallest of each.
+INK_INSETS = {"Liberation Sans": (0.166, 0.173, -0.002), "Carlito": (0.224, 0.206, 0.072), "Gelasio": (0.331, 0.118, 0.091),
+              "Inter": (0.173, 0.184, 0.018)}
 DESCENDERS = set("gjpqy,;()[]{}|/")
 
 
-def ink_band(box: tuple, text: str) -> tuple:
-    """The part of a word box its ink can occupy (INK_TOP_INSET, INK_BOTTOM_INSET)."""
-    bottom = INK_BOTTOM_INSET["descender" if set(text) & DESCENDERS else "none"]
-    return (box[0], box[1] + INK_TOP_INSET * box[3], box[2], box[3] * (1 - INK_TOP_INSET - bottom))
+def ink_band(box: tuple, text: str, family: str | None = None) -> tuple:
+    """The part of a word box its ink can occupy, by the face that draws it (INK_INSETS)."""
+    top, plain, descender = INK_INSETS.get(family or "") or tuple(min(v[k] for v in INK_INSETS.values()) for k in range(3))
+    bottom = descender if set(text) & DESCENDERS else plain
+    return (box[0], box[1] + top * box[3], box[2], box[3] * (1 - top - bottom))
 
 
 def lines_through_labels(el: dict, boxes: dict[str, tuple]) -> list[tuple[str, str]]:
@@ -3202,7 +3256,8 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 if (found["wrapped"] or found["not_drawn"]) and entry["status"] == "fit":
                     entry["status"], entry["reason"] = "unfittable", ("renderer divergence: text wrapped" if found["wrapped"] else "renderer divergence: table cell")
             # every chart's categories and data labels against the words the renderer drew
-            for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:], turned[len(turned) - len(emitted):]), strict=True):
+            faces = chart_label_faces(emit_spec["slides"], L.Context(lg, ruler, index))
+            for entry, found in zip(emitted, chart_text_drawn(emit_spec["slides"], words[offset:], turned[len(turned) - len(emitted):], faces), strict=True):
                 if found["checked"]:
                     entry["chart_text_drawn"] = found["checked"]
                 for f in found["found"]:
