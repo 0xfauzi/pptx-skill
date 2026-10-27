@@ -20,7 +20,10 @@ collapsed or split word spaces at the sizes the deck could use: measured on this
 labels, the narrowest word space was 0.51 of a space at 7pt ("Water andwastewater"), and gaps
 inside words reached 0.35 to 0.41 of a space at 7.5 and 8pt ("Wat er"), where Arial at 7pt
 drew every space at 0.69 or more and no gap inside a word over 0.15; `kern` 0 or 1200 on
-the chart text changed nothing (PORT_AUDIT.md, docs round 2).
+the chart text changed nothing (PORT_AUDIT.md, docs round 2). Arial chart labels are not
+even either: on the committee book's bridge, figures such as "(30.0)" drew with gaps and
+overlaps between glyphs of up to 0.42 of a space at 7 to 9pt in half-point steps, so the
+bridge sets its figures as a row of text above the plot (PORT_AUDIT.md, docs round 3).
 
 ## Rebuild a deck
 

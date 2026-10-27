@@ -1490,54 +1490,9 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Each volunteer gave about 40 hours a year in all five years, so the 63% rise in hours came from the 61% rise in volunteers."
+             "text": "Each volunteer gave about 40 hours a year in all five years, between 39.6 and 40.8 hours, so the 63% rise in hours came from the 61% rise in volunteers."
             }
            ]
-          },
-          {
-           "type": "element",
-           "id": "per-t",
-           "kind": "table",
-           "table": {
-            "columns": [
-             {
-              "key": "y",
-              "label": "Year",
-              "value_kind": "text",
-              "width_share": 0.5
-             },
-             {
-              "key": "h",
-              "label": "Hours per volunteer",
-              "value_kind": "number",
-              "width_share": 0.5
-             }
-            ],
-            "rows": [
-             [
-              "2021-22",
-              "40.0"
-             ],
-             [
-              "2022-23",
-              "40.8"
-             ],
-             [
-              "2023-24",
-              "40.7"
-             ],
-             [
-              "2024-25",
-              "39.6"
-             ],
-             [
-              "2025-26",
-              "40.3"
-             ]
-            ],
-            "header_rows": 1,
-            "totals_last_row": false
-           }
           }
          ],
          "weight": 1.0
