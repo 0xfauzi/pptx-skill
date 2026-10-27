@@ -1959,7 +1959,7 @@ def _pdf_family(fontname: str | None) -> tuple[str | None, bool]:
 
 PDF_TRIAGE_IMAGE_COVER = 0.4
 """A page whose images cover at least this share is a candidate scan. Measured on the 8
-public reference PDFs (scratchpad/probe_pdf/triage.json, 2026-10-20): EDGAR browser prints
+public reference PDFs (dev/oracles/triage_probe.py, 2026-10-20): EDGAR browser prints
 embed the slide as one image at 0.47 to 0.69 of a letter page; Citi and the UF McKinsey
 scans sit at 1.0; vector decks with a photo or chart image reach 0.61 to 0.66 on single
 pages (jazz p5, p6) and the calstrs deck paints full-bleed background images under vector

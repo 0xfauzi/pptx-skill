@@ -2327,19 +2327,61 @@ def slide_chrome(slide: dict, guide: dict, mode: str) -> dict:
         raise SystemExit(str(error.code)) from None
 
 
+#: the components that ship with the skill, read-only; a user's own components, and a user's
+#: admission of a shipped one under another guide, live in a work directory passed as
+#: --components (use_components), never in the skill
+SHIPPED_COMPONENTS = Path(__file__).resolve().parent.parent / "components"
+_user_components: Path | None = None
+
+
+def use_components(directory: str | None) -> None:
+    """Read a user's components directory beside the shipped ones (`--components DIR`). It
+    is a work directory: a path inside the skill is refused by name, as an output is."""
+    global _user_components
+    if directory is None:
+        _user_components = None
+        return
+    import cli
+    _user_components = Path(cli.out_path(directory, "--components directory")).resolve()
+
+
+def user_components() -> Path | None:
+    return _user_components
+
+
 def component_root(kind: str) -> Path:
-    """A component's directory: `components/<kind>` in the repo, or the directory itself
-    when `kind` is a path (a component under development outside the library)."""
+    """A component's code directory: the directory itself when `kind` is a path (a
+    component under development), else `<kind>` in the user's components directory when it
+    holds an expand.py there, else the shipped `components/<kind>`. A user component may not
+    take a shipped component's name: a fork that silently replaced the shipped one would make
+    one name draw two ways."""
     if "/" in kind or kind.startswith("."):
         return Path(kind).resolve()
-    return Path(__file__).resolve().parent.parent / "components" / kind
+    shipped = SHIPPED_COMPONENTS / kind
+    if _user_components is not None and (_user_components / kind / "expand.py").exists():
+        if (shipped / "expand.py").exists():
+            raise SystemExit(f"component {kind!r}: {_user_components / kind} has an expand.py and the skill ships a component of that name; "
+                             "give the fork its own name")
+        return _user_components / kind
+    return shipped
+
+
+def admission_path(kind: str) -> Path:
+    """Where a component's admission record is read: beside a component given by path; for a
+    name, the user's record (`<components>/<kind>/admitted.json`, written by component.py
+    admit) before the shipped one."""
+    if "/" in kind or kind.startswith("."):
+        return component_root(kind) / "admitted.json"
+    if _user_components is not None and (_user_components / kind / "admitted.json").exists():
+        return _user_components / kind / "admitted.json"
+    return component_root(kind) / "admitted.json"
 
 
 def admission_note(kind: str, guide: dict) -> str | None:
     """Admission is bound to the guide it was checked with: a component admitted on keybank
     overflowed its band on netflix (12pt floor, different padding). Say so when the guide
     differs, and point at the check."""
-    rec_path = component_root(kind) / "admitted.json"
+    rec_path = admission_path(kind)
     if not rec_path.exists():
         return f"component {kind!r} is not admitted; run component.py check and admit"
     rec = json.loads(rec_path.read_text())
@@ -2354,7 +2396,9 @@ def load_component(kind: str):
     root = component_root(kind)
     spec_file = root / "expand.py"
     if not spec_file.exists():
-        raise SystemExit(f"component {kind!r}: no {spec_file}")
+        mine = "" if "/" in kind or kind.startswith(".") else (
+            f" nor {_user_components / kind / 'expand.py'}" if _user_components else "; a component of your own is read from build_deck.py --components DIR")
+        raise SystemExit(f"component {kind!r}: no {spec_file}{mine}")
     module_spec = importlib.util.spec_from_file_location(f"component_{root.name}", spec_file)
     module = importlib.util.module_from_spec(module_spec)  # type: ignore[arg-type]
     module_spec.loader.exec_module(module)  # type: ignore[union-attr]
@@ -3216,9 +3260,12 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
     ap.add_argument("--computed", action="append", default=[], help="figures your own arithmetic produced from the user's data, as text; "
                     "a past deck's figure that matches one is listed under leakage.declared_computed instead of as distinctive")
+    ap.add_argument("--components", default=None, help="your components directory (a work directory): components a page names are read "
+                    "there and in the skill's components/, and your admissions there come first")
     args = ap.parse_args(argv)
     import cli
     cli.guard_args(args, "out", "renders")
+    use_components(args.components)
     outputs = Outputs(args.out, args.renders, not args.no_render)
     try:
         report = _run(args, outputs)

@@ -1837,12 +1837,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     p.add_argument("--slide", default=None, help="the slide id in a deck JSON")
     p.add_argument("--guide", required=True)
     p.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="as the build will run")
+    p.add_argument("--components", default=None, help="your components directory, as the build will read it")
     p.add_argument("-o", "--out", default=None)
     args = parser.parse_args(argv)
     import cli
     cli.guard_args(args, "out")
     if args.command == "capacity":
-        from build_deck import capacity
+        from build_deck import capacity, use_components
+        use_components(args.components)
         payload = capacity(capacity_slide(args.spec, args.slide), json.loads(Path(args.guide).read_text(encoding="utf-8")), args.chrome)
         if args.out:
             # written before anything is printed: a reader piping the listing into `head`

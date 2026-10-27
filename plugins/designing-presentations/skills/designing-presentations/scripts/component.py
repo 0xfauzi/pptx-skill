@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Check and admit a component against the contract in components/README.md.
 
-    component.py check <kind> --guide guide.json --template tpl.pptx --out DIR [--reference ref.pptx]
-    component.py admit <kind> --out DIR        # records the passing check in components/<kind>/admitted.json
-    component.py list
+    component.py check <kind> --guide guide.json --template tpl.pptx --out DIR [--reference ref.pptx] [--components MINE]
+    component.py admit <kind> --out DIR --components MINE   # records the passing check in MINE/<kind>/admitted.json
+    component.py list [--components MINE]
+
+MINE is your components directory, a work directory outside the skill (the build reads it
+with `build_deck.py --components MINE`): your own components live there as MINE/<kind>/,
+and an admission, of yours or of a shipped component under your guide, is written there.
+Nothing here writes inside the skill; a <kind> given as a path is admitted beside itself,
+and refused when that path is inside the skill.
 
 `check` runs expand at every test box in spec.json (three shown, one held out with other
 data), solves each with the guide, refuses any violation, emits each onto the template,
@@ -38,9 +44,9 @@ sys.dont_write_bytecode = True  # the skill directory is never written, not even
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import component_api  # noqa: E402
 import layout as L  # noqa: E402
-from build_deck import EMU_PER_INCH, build, chrome_zones, component_root, load_component, top_rules  # noqa: E402
+from build_deck import (EMU_PER_INCH, SHIPPED_COMPONENTS, build, chrome_zones, component_root, load_component, top_rules,  # noqa: E402
+                        use_components, user_components)
 
-ROOT = Path(__file__).resolve().parent.parent / "components"
 #: deckgen expansion_checks.py HASH_SEEDS: two seeds are enough, since one differing
 #: iteration order between them is the whole finding.
 HASH_SEEDS = ("0", "1")
@@ -88,7 +94,9 @@ def determinism(kind: str, tests: list[dict], guide_path: str) -> list[dict]:
     for t in tests:
         runs = []
         for seed in HASH_SEEDS:
-            args = [sys.executable, str(Path(__file__).resolve()), "expand-once", kind, str(component_root(kind) / t["data"]), str(t["box"]["width_emu"]), str(t["box"]["height_emu"]), "--guide", guide_path]
+            mine = user_components()
+            args = [sys.executable, str(Path(__file__).resolve()), "expand-once", kind, str(component_root(kind) / t["data"]), str(t["box"]["width_emu"]), str(t["box"]["height_emu"]), "--guide", guide_path,
+                    *(["--components", str(mine)] if mine else [])]
             completed = subprocess.run(args, capture_output=True, text=True, env={**os.environ, "PYTHONHASHSEED": seed}, timeout=300)
             if completed.returncode != 0:
                 out.append({"test": t["name"], "deterministic": False, "first_difference": None, "error": f"PYTHONHASHSEED={seed}: {completed.stderr.strip()[-400:]}"})
@@ -204,22 +212,38 @@ def admit(kind: str, out: str) -> dict:
     if not result["all_pass"]:
         raise SystemExit(f"{kind}: the last check did not pass every box, or a declared variant drew at none ({result.get('variants_unreached')}); "
                          "fix and re-check before admitting")
-    record = {"kind": kind, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True,
-              "variants_fit": {v: r["fits"] for v, r in result["variants"].items()}, "sheet": result["sheet"], "judge_total": (result.get("judge") or {}).get("total"),
+    if "/" in kind or kind.startswith("."):
+        target = component_root(kind) / "admitted.json"
+    elif user_components() is None:
+        raise SystemExit(f"{kind}: admit writes to your components directory, never into the skill: pass --components DIR (a work directory)")
+    else:
+        target = user_components() / name / "admitted.json"
+    import cli
+    cli.out_path(target, "admission record")
+    # file names only: a record is read on other machines, where this one's paths mean nothing
+    record = {"kind": name, "checked_boxes": [t["box"] for t in result["tests"]], "held_out_passed": True,
+              "variants_fit": {v: r["fits"] for v, r in result["variants"].items()},
+              "sheet": Path(result["sheet"]).name if result.get("sheet") else None, "judge_total": (result.get("judge") or {}).get("total"),
               # admission is bound to the guide it passed under; build_deck says so when the guide differs
-              "guide_reference": result.get("guide_reference"), "guide_reference_sha256": result.get("guide_reference_sha256")}
-    (component_root(kind) / "admitted.json").write_text(json.dumps(record, indent=1))
-    return record
+              "guide_reference": Path(result["guide_reference"]).name if result.get("guide_reference") else None,
+              "guide_reference_sha256": result.get("guide_reference_sha256")}
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(record, indent=1) + "\n")
+    return {**record, "written": str(target)}
 
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    mine = "your components directory (a work directory outside the skill)"
     c = sub.add_parser("check"); c.add_argument("kind"); c.add_argument("--guide", required=True); c.add_argument("--template", required=True); c.add_argument("--out", required=True); c.add_argument("--reference", default=None)
-    a = sub.add_parser("admit"); a.add_argument("kind"); a.add_argument("--out", required=True)
+    c.add_argument("--components", default=None, help=mine)
+    a = sub.add_parser("admit"); a.add_argument("kind"); a.add_argument("--out", required=True); a.add_argument("--components", default=None, help=mine + "; the record is written there")
     e = sub.add_parser("expand-once", help="print one canonical expansion (the determinism driver)"); e.add_argument("kind"); e.add_argument("data"); e.add_argument("width_emu", type=int); e.add_argument("height_emu", type=int); e.add_argument("--guide", required=True)
-    sub.add_parser("list")
+    e.add_argument("--components", default=None, help=mine)
+    ls = sub.add_parser("list"); ls.add_argument("--components", default=None, help=mine)
     args = ap.parse_args(argv)
+    use_components(args.components)
     if args.cmd == "check":
         import cli
         cli.guard_args(args, "out")
@@ -227,10 +251,13 @@ def main(argv: list[str]) -> int:
         print(canonical_expansion(args.kind, args.data, args.width_emu, args.height_emu, args.guide))
         return 0
     if args.cmd == "list":
-        for d in sorted(ROOT.iterdir()):
-            if (d / "spec.json").exists():
-                spec = json.loads((d / "spec.json").read_text())
-                print(f"{d.name}: {spec.get('description', '')[:100]} {'[admitted]' if (d / 'admitted.json').exists() else '[not admitted]'}")
+        from build_deck import admission_path
+        roots = [("shipped", SHIPPED_COMPONENTS)] + ([("yours", user_components())] if user_components() and user_components().is_dir() else [])
+        for where, root in roots:
+            for d in sorted(root.iterdir()):
+                if (d / "spec.json").exists() and (d / "expand.py").exists():
+                    spec = json.loads((d / "spec.json").read_text())
+                    print(f"{d.name} ({where}): {spec.get('description', '')[:100]} {'[admitted]' if admission_path(d.name).exists() else '[not admitted]'}")
         return 0
     if args.cmd == "check":
         result = check(args.kind, args.guide, args.template, args.out, args.reference)

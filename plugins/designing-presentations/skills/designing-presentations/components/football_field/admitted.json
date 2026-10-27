@@ -32,8 +32,8 @@
    "narrow-seven-rows"
   ]
  },
- "sheet": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/fr4/comp/football_field/football_field.sheet.png",
+ "sheet": "football_field.sheet.png",
  "judge_total": 0.175,
- "guide_reference": "/home/user/deckgen/fixtures/corpus/keybank.pptx",
+ "guide_reference": "mi_keybank_first_niagara_fig_ma.pptx",
  "guide_reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad"
 }

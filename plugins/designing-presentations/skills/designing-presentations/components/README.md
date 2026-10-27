@@ -10,7 +10,12 @@ consulting deck and on a white banking deck.
 
 ## Layout of a component
 
-    components/<kind>/
+The components here ship with the skill and are read-only. A new component, or a fork of
+one of these under a new name, lives in your components directory, a work directory
+outside the skill passed as `--components DIR` to `build_deck.py`, `layout.py capacity`
+and `component.py`; `component.py admit` writes every admission record there.
+
+    <kind>/
       spec.json      what it needs: data schema, size domain, variants, tests
       expand.py      def expand(data: dict, box: dict, guide: dict) -> dict
 
@@ -56,7 +61,11 @@ being a name nothing can reach.
 3. `expand`: proportions from the data (a bar's length is a weight, never an EMU),
    roles from the guide, nothing else; every constant open through `data` and reported
    when left in place.
-4. `component.py check`, look, fix, repeat; then `component.py admit`.
+4. `component.py check`, look, fix, repeat; then `component.py admit --components DIR`.
+
+The `admitted.json` files shipped here were written by `component.py admit` into a work
+directory (keybank guide, round 8) and copied in by the maintainer; they name the sheet and
+the reference by file name only.
 
 ## Merit case
 

@@ -8,9 +8,10 @@
 
 ## The contract
 
-When nothing in `components/` draws what a page needs (a football field, a bridge, a
-league table with tombstones, a tracker), write one: `components/<kind>/expand.py`
-exposes `expand(data, box, guide)` and returns a region tree in the page grammar with roles
+When nothing in the skill's `components/` draws what a page needs (a football field, a
+bridge, a league table with tombstones, a tracker), write one in your own components
+directory, a work directory outside the skill (`"$DECK_WORK/components"`; nothing is ever
+written inside the skill): `"$DECK_WORK/components/<kind>/expand.py"` exposes `expand(data, box, guide)` and returns a region tree in the page grammar with roles
 only. Proportions are flex weights from the data (a bar's length is a weight, never an
 EMU); fixed heights are spacing steps from the guide. Every declared variant can be asked
 for by `data["variant"]`; with none asked, the component picks one by what the box holds
@@ -22,15 +23,23 @@ shown and one held out with different data. `spec.json` may name `single_line_id
 fragments of figures, ticks and marker labels that must never wrap. A component's ids
 carry `data["_id"]` as prefix; paragraph `ink_role` and `align` reach the file. A component
 the page leaves no room for is refused by name. Use one in a page as
-`{"type": "component", "id": "ff", "kind": "football_field", "data": {...}}`.
+`{"type": "component", "id": "ff", "kind": "football_field", "data": {...}}`; a kind is
+looked up in the skill's `components/` and in the directory `build_deck.py` and
+`layout.py capacity` are given as `--components "$DECK_WORK/components"`. Your component
+takes its own name: one named as a shipped component is refused (fork under a new name).
 
 ## Checking and admitting
 
 ```bash
 python3 scripts/component.py check KIND_OR_DIR --guide "$DECK_WORK/ref/guide.json" --template "$DECK_WORK/tpl.pptx" \
-  --out "$DECK_WORK/components" --reference "$REF"
-python3 scripts/component.py admit KIND_OR_DIR --out "$DECK_WORK/components"
+  --out "$DECK_WORK/checks/KIND" --reference "$REF" --components "$DECK_WORK/components"
+python3 scripts/component.py admit KIND_OR_DIR --out "$DECK_WORK/checks/KIND" --components "$DECK_WORK/components"
 ```
+
+`admit` writes `"$DECK_WORK/components/<kind>/admitted.json"`, whether the component is
+yours or a shipped one re-checked under your guide; the build reads that record before the
+shipped one. A KIND_OR_DIR given as a path is admitted beside itself, and refused when the
+path is inside the skill.
 
 `check` asks for every declared variant at all four boxes (`variant_data` in spec.json
 gives what a variant needs that the test data cannot, such as a panel's fill) and admits

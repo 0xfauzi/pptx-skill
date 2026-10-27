@@ -401,7 +401,7 @@ around a refusal by changing the guide.
 | `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
-| `components/` | admitted components and their contract (`components/README.md`) |
+| `components/` | the shipped components, read-only, and their contract (`components/README.md`); yours go in `"$DECK_WORK/components"` |
 | `examples/` | worked deck specs, plans, completions, digests (with a reference and with none) |
 | `refs/` | `fetch.sh` and `MANIFEST.md`: the judge's panel of public decks, fetched into the git-ignored `refs/files` |
 
