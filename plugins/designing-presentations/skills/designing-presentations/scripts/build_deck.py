@@ -662,7 +662,7 @@ def bar_legend_order(elements: list[dict]) -> list[dict]:
                                   f"({', '.join(repr(n) for n in reversed(names))}; measured), "
                                   + ("against the bars, which sit first series on top in each group with the category axis reversed"
                                      if ((el.get("axes") or {}).get("category") or {}).get("reverse") else "the order its bars sit in each group from the top")
-                                  + "; if the key should read in another order, name the series in text beside the chart"})
+                                  + "; PowerPoint's order is unmeasured. If the key should read in a given order, name the series in text beside the chart"})
     return out
 
 
