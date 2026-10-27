@@ -85,6 +85,9 @@ prog = spend["Volunteer programme"]; assert round(value / prog, 2) == 1.18
 fte = hours[-1] * 1000 / 1650; assert round(fte) == 116
 say("4,760", "192,000", "2,950", "63%", "$4.70m", "$24.50", "$4.0m", "$1.18", "116", "74,000", "48,000", "39,000", "21,000", "10,000")
 for v in vols: say(f"{v:,}")
+per_vol = [round(h * 1000 / v, 1) for h, v in zip(hours, vols)]
+assert per_vol == [40.0, 40.8, 40.7, 39.6, 40.3], per_vol
+say("40", "61%", *[f"{x:.1f}" for x in per_vol])
 
 # Page 5: priorities for 2026-27, $m
 prio = {"Rivers": 3.4, "Getting here": 2.6, "Step-free trails": 1.9, "Repairs": 4.8, "Volunteers": 0.9}

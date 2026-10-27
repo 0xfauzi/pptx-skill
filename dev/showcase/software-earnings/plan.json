@@ -186,8 +186,8 @@
     },
     {
      "reader_must_see": "that ARR growth has just moved ahead of revenue growth after five quarters behind it, the lead indicator turning first",
-     "comparison": "ARR growth against revenue growth, quarter by quarter over nine quarters",
-     "data": "two growth rates in percent over nine quarters, close together and crossing three times",
+     "comparison": "ARR growth against revenue growth, quarter by quarter over the six quarters from Q2'25",
+     "data": "two growth rates in percent over six quarters: five with ARR behind, then the crossing",
      "forms_considered": [
       {
        "form": "two growth lines on one axis",
@@ -204,7 +204,7 @@
      ],
      "chosen_form": "two growth lines on one axis",
      "why": "the reader asks whether faster ARR growth will carry revenue growth with it; two lines show where ARR fell behind and where it crossed back",
-     "marks": "ARR in indigo and revenue in slate, each labelled at its first and last quarter; the caption names the crossing"
+     "marks": "ARR in indigo and revenue in slate, each named with its value at the first quarter and valued at the last; quarters under the axis; the caption names the crossing"
     }
    ]
   },
@@ -308,7 +308,7 @@
      ],
      "chosen_form": "margin bridge in points of revenue",
      "why": "the question is what moved the margin; a bridge sizes each driver and ties to both margins",
-     "marks": "start in slate, end in indigo, each widening step in green with its signed value above it; the sales and marketing step labelled with its 57% share of the gain"
+     "marks": "start in slate, end in indigo, each widening step in green with its signed value above it; bars from zero, so the start and end compare by length; the sales and marketing step labelled with its 57% share of the gain"
     },
     {
      "reader_must_see": "the cost ratios behind the bridge for each of the last five quarters",
@@ -431,6 +431,24 @@
      "chosen_form": "two-column target model table",
      "why": "targets are quoted ranges; a table keeps them exact and leaves the gap to the reader",
      "marks": "targets in amber, the forward-looking colour; the current column in indigo; the operating margin gap stated in a note"
+    },
+    {
+     "reader_must_see": "what the fourth-quarter guidance asks of the business against the same quarter a year before",
+     "comparison": "Q4 FY26 guidance against Q4 FY25 actuals for revenue, operating income and margin",
+     "data": "three measures, each a Q4 FY25 actual, a guided range and the change",
+     "forms_considered": [
+      {
+       "form": "three-row table of actual, guide and change",
+       "reason": "chosen: ranges stay exact and the change sits beside them"
+      },
+      {
+       "form": "range bars against last year's marks",
+       "reason": "three measures on different units would need three scales in a narrow column"
+      }
+     ],
+     "chosen_form": "three-row table of actual, guide and change",
+     "why": "the full-year raise rests on the fourth quarter; the reader checks what it implies against last year",
+     "marks": "the guided column in amber, the forward-looking colour, bold"
     }
    ]
   }

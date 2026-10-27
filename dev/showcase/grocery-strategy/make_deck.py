@@ -136,7 +136,7 @@ large_gain = round(D["large_spend"]["2028F"] - D["large_spend"]["2019"], 1)
 assert large_gain == 0.4
 panel1 = col("panel", [
     txt("panel-h", [P("type.h1", "What it means for Brindle")]),
-    ticket("t1", f"{D['super_share']}%", f"of Brindle's store sales come from its 58 superstores, against a {sh['2025'][0]}% large-store share of the market"),
+    ticket("t1", f"{D['large_share']}%", f"of Brindle's store sales come from its {F['Superstore']['stores'] + F['Supermarket']['stores']} superstores and supermarkets, against a {sh['2025'][0]}% large-store share of the market"),
     ticket("t2", f"£{D['basket']['2025'][0]}", f"average main-shop basket in 2025, up from £{D['basket']['2019'][0]} in 2019: fewer big shops, each larger, and more small ones between them"),
     ticket("t3", f"{D['small_online_2028']}%", f"of 2028 spend goes to discounters, convenience and online; Brindle's neighbourhood and express stores carry {small_share}% of its sales"),
     ticket("t4", f"£{large_gain}bn", f"of the £{D['market_add']}bn the market adds from 2019 to 2028 reaches large stores, whose spend moves from £{D['large_spend']['2019']}bn to £{D['large_spend']['2028F']}bn"),
@@ -286,9 +286,7 @@ ann3 = [
     {"id": "mkt-growth", "host": "scat", "kind": "reference_line", "anchor": {"value": D["mkt_growth"], "axis": "category"}, "line_role": "color.ink_muted", "line_width_pt": 0.75, "dash": "dash", "gap_role": "space.xs",
      "label": {"text": f"Market growth {D['mkt_growth']}%", "role": "type.data_label", "ink_role": "color.ink_muted", "position": "end_right", "align": "left"}},
 ]
-half_gap = round((D["slow_sow"] - D["fast_sow"]) / 2 / 100 * D["fast_spend"], 1)
-half_gap_pct = round(half_gap * 1000 / T["sales"] * 100)
-assert (half_gap, half_gap_pct) == (1.1, 28), (half_gap, half_gap_pct)
+half_gap, half_gap_pct = D["half_gap"], D["half_gap_pct"]  # figures.py, from the unrounded shares of wallet
 side3 = col("side", [
     txt("side-h", [P("type.h1", "What it means for Brindle")]),
     txt("side-t", [

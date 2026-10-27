@@ -1977,7 +1977,7 @@
            "paragraphs": [
             {
              "role": "type.caption",
-             "text": "Y/Y (%), Q3'24 to Q3'26; ARR ahead after five quarters behind"
+             "text": "Y/Y (%), Q2'25 to Q3'26; ARR ahead after five quarters behind"
             }
            ]
           },
@@ -2183,9 +2183,6 @@
     "gx": {
      "type": "LINE",
      "categories": [
-      "Q3'24",
-      "Q4'24",
-      "Q1'25",
       "Q2'25",
       "Q3'25",
       "Q4'25",
@@ -2202,9 +2199,6 @@
       {
        "name": "ARR",
        "values": [
-        26.5,
-        26.2,
-        24.3,
         21.4,
         21.1,
         21.0,
@@ -2229,15 +2223,15 @@
          "index": 0,
          "label": {
           "show": true,
-          "text": "26.5",
+          "text": "ARR 21.4",
           "position": "below"
          }
         },
         {
-         "index": 8,
+         "index": 5,
          "label": {
           "show": true,
-          "text": "ARR 22.2",
+          "text": "22.2",
           "position": "above"
          }
         }
@@ -2246,9 +2240,6 @@
       {
        "name": "Revenue",
        "values": [
-        27.0,
-        25.0,
-        24.0,
         23.0,
         21.7,
         21.4,
@@ -2273,15 +2264,15 @@
          "index": 0,
          "label": {
           "show": true,
-          "text": "27.0",
+          "text": "Revenue 23.0",
           "position": "above"
          }
         },
         {
-         "index": 8,
+         "index": 5,
          "label": {
           "show": true,
-          "text": "Revenue 21.3",
+          "text": "21.3",
           "position": "below"
          }
         }
@@ -2298,7 +2289,7 @@
        "gridlines": "none",
        "title": "none",
        "labels": {
-        "show": false,
+        "show": true,
         "role": "type.axis_label",
         "ink_role": "color.ink_muted",
         "rotation_deg": 0
@@ -2306,8 +2297,8 @@
       },
       "value": {
        "visible": false,
-       "min": 19.0,
-       "max": 28.5,
+       "min": 20.4,
+       "max": 23.8,
        "cross_between": "midpoint"
       }
      },
@@ -2315,10 +2306,10 @@
      "plot_fill_role": "none",
      "title": "none",
      "plot_area": {
-      "x": 0.06,
-      "y": 0.06,
-      "w": 0.7,
-      "h": 0.78
+      "x": 0.17,
+      "y": 0.1,
+      "w": 0.76,
+      "h": 0.66
      }
     }
    },
@@ -3331,7 +3322,7 @@
            "paragraphs": [
             {
              "role": "type.caption",
-             "text": "% of revenue; each step is the fall in that cost line's share of revenue (gross margin: its rise); axis from 8%"
+             "text": "% of revenue; each step is the fall in that cost line's share of revenue (gross margin: its rise)"
             }
            ]
           },
@@ -3912,7 +3903,7 @@
       },
       "value": {
        "visible": false,
-       "min": 8.0,
+       "min": 0,
        "max": 17.6,
        "cross_between": "between"
       }
@@ -4363,6 +4354,90 @@
              "text": "Operating margin is 8.4 points below the low end of its target."
             }
            ]
+          },
+          {
+           "type": "element",
+           "id": "q_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Q4 FY26 guidance against Q4 FY25"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "q_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "non-GAAP; guidance in amber"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "q4",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "Metric",
+              "value_kind": "text"
+             },
+             {
+              "key": "a",
+              "label": "Q4 FY25",
+              "value_kind": "number"
+             },
+             {
+              "key": "g",
+              "label": "Q4 FY26 guide",
+              "value_kind": "number"
+             },
+             {
+              "key": "c",
+              "label": "Change",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Revenue ($M)",
+              "311.4",
+              "372.0-376.0",
+              "+19.5-20.7%"
+             ],
+             [
+              "Operating income ($M)",
+              "39.9",
+              "61.0-63.0",
+              "+52.9-57.9%"
+             ],
+             [
+              "Operating margin (%)",
+              "12.8",
+              "16.4-16.8",
+              "+3.6-4.0 pts"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "columns": [
+               "g"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent2",
+              "bold": true
+             }
+            ]
+           }
           },
           {
            "type": "element",

@@ -129,6 +129,11 @@ assert (prior_record, nn[-1]-prior_record) == (66, 17)
 assert min(yoy[4:]) == 21.3 and max(yoy[4:]) == 21.7
 aug = (1379.0, 1389.0)
 put("fy26_aug_guide_yoy", (r1((aug[0]/fy25-1)*100), r1((aug[1]/fy25-1)*100)))
+q4_vs = {"oi_q4fy25": ng_oi[1], "margin_q4fy25": opm[1], "rev_q4fy25": q4fy25,
+         "oi_growth": (r1((q4oi[0]/ng_oi[1]-1)*100), r1((q4oi[1]/ng_oi[1]-1)*100)),
+         "margin_change_pts": (r1(r1(q4oi[0]/q4g[0]*100) - opm[1]), r1(r1(q4oi[1]/q4g[1]*100) - opm[1]))}
+assert q4_vs == {"oi_q4fy25": 39.9, "margin_q4fy25": 12.8, "rev_q4fy25": 311.4, "oi_growth": (52.9, 57.9), "margin_change_pts": (3.6, 4.0)}, q4_vs
+put("q4_guide_against_q4fy25", q4_vs)
 put("fy26_aug_guide_op_margin", (r1(214.0/aug[0]*100), r1(218.0/aug[1]*100)))
 put("nrr_rising_quarters", sum(1 for i in range(6,9) if nrr[i] > nrr[i-1]))
 assert all(nrr[i] > nrr[i-1] for i in range(6,9)) and nrr[5] == 116
@@ -154,4 +159,9 @@ below = [i for i in range(4, 8) if arr_yoy9[i] < yoy[i]]
 assert below == [4, 5, 6, 7] and arr_yoy9[3] < yoy[3] and arr_yoy9[8] > yoy[8]
 put("quarters_arr_growth_under_revenue_growth_before_q3fy26", 5)  # Q2 FY25 to Q2 FY26
 assert all(arr_yoy9[i] < yoy[i] for i in range(3, 8)) and arr_yoy9[2] > yoy[2]
+# page 2's growth lines run Q2'25 to Q3'26: the five quarters behind and the crossing, the end labels on them
+gx = json.load(open("deck.json"))["slides"][1]["charts"]["gx"] if __import__("os").path.exists("deck.json") else None
+if gx is not None:
+    assert gx["categories"] == QS[3:] and gx["series"][0]["values"] == arr_yoy9[3:] and gx["series"][1]["values"] == yoy[3:]
+put("growth_lines_arr", arr_yoy9[3:]); put("growth_lines_revenue", yoy[3:])
 json.dump(OUT, open(sys.argv[1], "w"), indent=1) if len(sys.argv) > 1 else None

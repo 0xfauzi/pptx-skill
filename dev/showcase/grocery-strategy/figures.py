@@ -103,6 +103,10 @@ tot = {"stores": 214, "sales": round(tot_sales), "ebitda": R1(tot_eb), "capital"
 # displayed totals tie to displayed rows within rounding: recompute from rounded rows
 assert abs(sum(r["sales"] for r in fmt_rows.values()) - tot["sales"]) <= 2
 super_share = round(fmt_rows["Superstore"]["sales"] / tot["sales"] * 100)
+# large stores as the market's channel counts them (superstores and large supermarkets) and as
+# page 4 groups Brindle's (superstore or supermarket): one definition on both sides of page 1's figure
+large_share = round((fmt_rows["Superstore"]["sales"] + fmt_rows["Supermarket"]["sales"]) / tot["sales"] * 100)
+assert large_share == 92, large_share
 super_cap_share = round(fmt_rows["Superstore"]["capital"] / tot["capital"] * 100)
 super_eb_share = round(fmt_rows["Superstore"]["ebitda"] / tot["ebitda"] * 100)
 below_total = sum(1 for s in stores if s["ret"] < HURDLE)
@@ -133,6 +137,12 @@ mkt2022 = sum(s / (1 + g / 100) ** 3 for s, g in zip(seg_spend, seg_growth))
 mkt_growth = R1(((market["2025"] / mkt2022) ** (1 / 3) - 1) * 100)
 # one point of share in the fast segments is worth
 pt_fast = round(fast_spend * 1000 / 100)
+# lifting the growth segments' share of wallet halfway to the core's, from the unrounded shares
+# (the rounded 12.9% and 5.0% give £1.051bn; rounding that to £1.1bn first gave 28%)
+half_gap_bn = (sum(brindle_seg[i] for i in slow) / sum(seg_spend[i] for i in slow) - sum(brindle_seg[i] for i in fast) / fast_spend) / 2 * fast_spend
+half_gap = R1(half_gap_bn)
+half_gap_pct = round(half_gap_bn * 1000 / tot["sales"] * 100)
+assert (half_gap, half_gap_pct) == (1.0, 27), (half_gap_bn, half_gap_pct)
 
 # ---------------- page 4: network ----------------
 ACTIONS = ["Invest", "Keep", "Reformat", "Right-size", "Exit"]
@@ -225,8 +235,8 @@ data = {
     "stores_2028": stores_2028, "hurdle": HURDLE, "growth_cut": GROWTH_CUT, "exit_cut": EXIT_CUT,
     "points": [[s["growth"], s["ret"], s["action"], s["format"]] for s in stores],
     "brindle_sow": brindle_sow, "fast_spend": fast_spend, "fast_share_mkt": fast_share_mkt, "fast_sow": fast_sow,
-    "slow_sow": slow_sow, "slow_of_brindle": slow_of_brindle, "mkt_growth": mkt_growth, "pt_fast": pt_fast,
-    "super_share": super_share, "super_cap_share": super_cap_share, "super_eb_share": super_eb_share,
+    "slow_sow": slow_sow, "slow_of_brindle": slow_of_brindle, "mkt_growth": mkt_growth, "pt_fast": pt_fast, "half_gap": half_gap, "half_gap_pct": half_gap_pct,
+    "super_share": super_share, "large_share": large_share, "super_cap_share": super_cap_share, "super_eb_share": super_eb_share,
     "below_total": below_total, "large_below": large_below, "eb_growth_pct": eb_growth_pct, "payback": payback,
     "new_eb_store": round(new_eb_store, 2), "large_pts": large_pts, "disc_pts": disc_pts,
     "market_add": market_add, "topup_change": topup_change, "reformat_share_gain": reformat_share_gain, "nb_sales_share": nb_sales_share, "ret2028": ret2028, "exit_capital": exit_capital, "margin2028": margin2028, "transfer": TRANSFER, "small_online_2028": small_online_2028, "main_change": main_change, "tot_trips": tot_trips,
@@ -242,9 +252,11 @@ P(f"trips {tot_trips} main change {main_change}%")
 for k, r in fmt_rows.items():
     P(f"{k}: {r}")
 P(f"total {tot}")
+P(f"large-store share of sales {large_share}%")
 P(f"superstore share sales {super_share}% capital {super_cap_share}% ebitda {super_eb_share}%")
 P(f"below hurdle {below_total} large below {large_below}")
 P(f"segments sow {seg_sow} brindle {brindle_sow}% fast spend {fast_spend} ({fast_share_mkt}%) fast sow {fast_sow}% slow sow {slow_sow}% slow of brindle {slow_of_brindle}% mkt growth {mkt_growth}% pt fast {pt_fast}")
+P(f"half the share gap {half_gap}bn, {half_gap_pct}% of store sales")
 for k, a in act.items():
     P(f"{k}: {a}")
 for k, v in lev.items():
