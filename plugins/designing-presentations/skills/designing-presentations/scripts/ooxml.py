@@ -178,6 +178,41 @@ class Package:
         self._roots: dict[str, etree._Element] = {}
         self._rels: dict[str, dict[str, tuple[str, str]]] = {}
         self._parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
+        self._refuse_malformed_named_parts()
+
+    def _refuse_malformed_named_parts(self) -> None:
+        """Refuse by name a relationship part, or an XML part a relationship names, that lxml
+        did not read whole: every reader (this one, python-pptx) parses such a part when it
+        follows the relationship, and a traceback is not a refusal. A member nothing names is
+        left to root(), whose XMLSyntaxError the callers that skip a malformed part catch."""
+        path = self.path
+        ct = "[Content_Types].xml"
+        if ct not in self.xml_parts:
+            raise PackageRefused(f"{path}: {ct} is missing or not well-formed XML; the parts' types cannot be read")
+        defaults: dict[str, str] = {}
+        overrides: dict[str, str] = {}
+        for el in self.root(ct):
+            name = etree.QName(el).localname if isinstance(el.tag, str) else ""
+            if name == "Default":
+                defaults[(el.get("Extension") or "").lower()] = el.get("ContentType") or ""
+            elif name == "Override":
+                overrides[(el.get("PartName") or "").lstrip("/")] = el.get("ContentType") or ""
+
+        def is_xml(part: str) -> bool:
+            kind = overrides.get(part) or defaults.get(part.rpartition(".")[2].lower(), "")
+            return kind.endswith("xml")
+
+        for rels_part in sorted(n for n in self.names if n.endswith(".rels") and (n.startswith("_rels/") or "/_rels/" in n)):
+            if rels_part not in self.xml_parts:
+                raise PackageRefused(f"{path}: {rels_part} is not well-formed XML; the relationships it holds cannot be read")
+            folder = rels_part.rpartition("/_rels/")[0] if "/_rels/" in rels_part else ""
+            for rel in self.root(rels_part):
+                if rel.get("TargetMode") == "External":
+                    continue
+                target = resolve_target(folder, rel.get("Target") or "")
+                if target in self.names and target not in self.xml_parts and is_xml(target):
+                    kind = (rel.get("Type") or "").rpartition("/")[2] or "a relationship"
+                    raise PackageRefused(f"{path}: {target}, which {rels_part} names ({kind}), is not well-formed XML; it is not read")
 
     def root(self, part: str) -> etree._Element:
         if part not in self._roots:
