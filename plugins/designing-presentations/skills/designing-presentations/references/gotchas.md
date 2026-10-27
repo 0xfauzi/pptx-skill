@@ -20,6 +20,11 @@
   `below` label 38,908 to 39,379 EMU under it (no markers, 9pt, 12 points each, round 8);
   on a steep line the neighbouring segment then runs through it. The build predicts that
   before the render and reads it off the render (`chart label covered`).
+- LibreOffice sets an `inside_base` label on a horizontal bar 35,801 EMU past the bar's base,
+  at every face and size measured, and never wraps or moves it: a label longer than the bar
+  less that runs past the bar's end onto the plot. The build measures it and scores its ink
+  there (`contrast`); an `inside_end` label ends 29,303 to 47,136 EMU short of the bar's end
+  (dev/oracles/label_probe.py).
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus

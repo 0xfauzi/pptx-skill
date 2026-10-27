@@ -1139,7 +1139,10 @@ moic_chart = {
     "type": "BAR_CLUSTERED", "categories": [s[0] for s in SCEN], "number_format": "0.00", "text": AXT,
     "series": [{"name": "Sponsor MOIC (x)", "values": [round(s[2]["moic"], 2) for s in SCEN], "fill_role": "color.accent1", "line_role": "none",
                 "labels": {"show": True, "position": "inside_base", "role": "type.data_label", "ink_role": "color.ink_inverse"},
-                "points": [{"index": j, "label": {"text": f"{xx(s[2]['moic'])}  |  {pc(s[2]['irr'])}"},
+                # a bar under 2.0x is shorter than its white label, which would run off the bar onto
+                # the page (the build refuses it): that label sits past the bar's end, in ink
+                "points": [{"index": j, "label": {"text": f"{xx(s[2]['moic'])}  |  {pc(s[2]['irr'])}",
+                                                  **({"position": "outside_end", "ink_role": "color.ink"} if s[2]["moic"] < 2.0 else {})},
                             **({"fill_role": "color.negative"} if s[2]["moic"] < m.HURDLE_MOIC else {})} for j, s in enumerate(SCEN)]}],
     "axes": {"category": cat_axis(reverse=True), "value": {"visible": False, "min": 0, "max": 2.9, "cross_between": "between"}},
     "gap_width": 40, "overlap": 0, "legend": "none", "plot_fill_role": "none", "title": "none",

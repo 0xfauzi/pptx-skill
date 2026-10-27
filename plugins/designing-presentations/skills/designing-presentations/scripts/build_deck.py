@@ -823,7 +823,7 @@ def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dic
 
 
 def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: str = "auto", precedent: dict | None = None,
-                page_chrome_choices: dict | None = None) -> dict:
+                page_chrome_choices: dict | None = None, ctx: L.Context | None = None) -> dict:
     """WCAG 2.2 contrast of every text run, every table row class, every chart text and
     every chrome text line against the fill the page draws behind it. A text run's backing: the element's own
     fill, else the chain under it. A table's: the row's own fill as the emitter writes it
@@ -943,9 +943,10 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
                             unknown.append("an image lies under the chart; contrast needs pixels")
                         backings.extend(plot)
                 spec = item["spec"] or {}
-                over = label_overflows_bar(el, item, spec) if backings and "series" in item else []
+                over = label_overflows_bar(el, item, spec, ctx) if backings and "series" in item else []
                 if over:
-                    # a label taller than its bar spills onto the plot: scored there too
+                    # a label taller than its column, or longer than its horizontal bar, runs
+                    # off the bar onto the plot: scored there too
                     backings.extend(plot)
                     where["overflows_bar_at_points"] = over
                 if unknown or not backings:
@@ -1425,13 +1426,13 @@ def source_line_problem(elements: list[dict], guide: dict) -> dict | None:
 
 
 def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict, measured: list[dict] | None = None, chrome_mode: str = "auto",
-                  precedent: dict | None = None, page_chrome_choices: dict | None = None) -> list[dict]:
+                  precedent: dict | None = None, page_chrome_choices: dict | None = None, ctx: L.Context | None = None) -> list[dict]:
     """The ordered problem list: tie-out warnings first (a totals row can be a subtotal
     the agent meant), then the refusals (contrast, bridge ties, the measured checks), then
     the source-line problem (source_line_habit). A refusal turns a fit
     page unfittable with the refusal's name as the reason; a page the solver already
     refused keeps the solver's reason, the first cause."""
-    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent, page_chrome_choices)
+    entry["contrast"] = contrast_of(elements, resolved, guide, chrome_mode, precedent, page_chrome_choices, ctx)
     entry["register"] = register_of(elements, guide)
     entry["tieouts"] = tieouts_of(elements)
     problems = [{"kind": "tieout", "severity": "warning", "detail": f"{t['table']} column {t['column']!r}: body rows' {'mean' if 'mean' in t else 'sum'} is {t.get('mean', t.get('sum'))}, the totals cell reads {t['total']}; a totals cell that is no simple aggregate takes total \"none\" on its column"} for t in entry["tieouts"] if t["status"] == "mismatch"]
@@ -1442,7 +1443,9 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
             where = f"{v['element']} {v['part']}" + (f" (points {v['points']})" if v.get("points") else "")
         else:
             where = f"{v['element']} {v['row_class']} rows"
-        problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})"})
+        off_bar = (f"; the label runs past its bar at points {v['overflows_bar_at_points']} onto {v['backing']}: set it outside the bar "
+                   "(position outside_end) in an ink that reads on that ground, or shorten it, or lengthen the bar" if v.get("overflows_bar_at_points") else "")
+        problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})" + off_bar})
     found = bridge_ties(elements)
     failures = [b for b in found if b.get("severity", "refusal") == "refusal"]
     problems.extend({"kind": "bridge does not tie", "severity": "refusal", "detail": f"{b['chart']}: {b['detail']}"} for b in failures)
@@ -1998,22 +2001,58 @@ def general_text(value: float) -> str | None:
     return None
 
 
-def label_overflows_bar(el: dict, item: dict, spec: dict) -> list[int]:
-    """The points whose label, set on its column's fill, is taller than the column's
-    segment along the value axis (horizontal bars are not measured here): one line of the
-    label's role at its size (1.2 x size, PowerPoint's single line) against the segment
-    chart_geometry computes. Empty when the chart's geometry is not computable (no
-    plot_area or no axis range): nothing is claimed then."""
+#: Measured, docs round, LibreOffice 24.2.7, a horizontal clustered bar chart, labels on one
+#: line (dev/oracles/label_probe.py; Liberation Sans, Carlito, Gelasio and Inter at 6, 7, 8,
+#: 9, 10, 11, 12 and 14pt, 4 bars each): an `inside_base` label's word box starts 35,801 EMU
+#: past the bar's base at every face and size; an `inside_end` label's ends 29,303 to 47,136
+#: EMU short of the bar's end, varying with face and size. The smallest is kept, the
+#: placement that leaves a label most room on its bar, so a label held to run off it does.
+BAR_LABEL_INSET_EMU = {"inside_base": 35_801, "inside_end": 29_303, "center": 0}
+
+
+def label_overflows_bar(el: dict, item: dict, spec: dict, ctx: L.Context | None = None) -> list[int]:
+    """The points whose label, set on its bar's fill, runs off the bar along the value
+    axis. On a column: one line of the label's role at its size (1.2 x size, PowerPoint's
+    single line) taller than the column's segment. On a horizontal bar (with `ctx`, whose
+    ruler measures the label in the face the renderer draws): the label's one line
+    (LibreOffice does not wrap a label on a horizontal bar, round 8) plus where it starts
+    on the bar (BAR_LABEL_INSET_EMU) longer than the bar, for inside_base, inside_end and
+    center; the rest of the label then sits on the plot. Empty when the chart's geometry is
+    not computable (no plot_area or no axis range): nothing is claimed then."""
     from chart_geometry import ChartGeometry, GeometryRefused
     size_pt = float(spec.get("size_pt") or 0)
-    if not size_pt or not str(el.get("type", "")).startswith("COLUMN_"):
+    kind = str(el.get("type", ""))
+    if not size_pt or not kind.startswith(("COLUMN_", "BAR_")) or (kind.startswith("BAR_") and ctx is None):
         return []
     try:
         geo = ChartGeometry(el, el["box"])
-        if geo.series_family(item["series"]) not in ("bar", "bar_stacked"):
+        si = item["series"]
+        if geo.series_family(si) not in ("bar", "bar_stacked"):
             return []
-        line = size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
-        return [i for i in item["points"] if geo.bar_rect(item["series"], i)[3] < line]
+        if kind.startswith("COLUMN_"):
+            line = size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
+            return [i for i in item["points"] if geo.bar_rect(si, i)[3] < line]
+        s = el["series"][si]
+        labels = s.get("labels") or {}
+        points = {p["index"]: p for p in s.get("points") or []}
+        over = []
+        for i in item["points"]:
+            merged = {**labels, **(points.get(i, {}).get("label") or {})}
+            inset = BAR_LABEL_INSET_EMU.get(merged.get("position"))
+            value = s["values"][i]
+            if inset is None or value is None:
+                continue
+            text = merged.get("text")
+            if text is None:
+                text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
+            role = merged.get("role") or (el.get("text") or {}).get("role")
+            if not text or not role:
+                continue
+            entry = L.resolve_type_entry(ctx.guide, role, L.Fraction(1))
+            width = max(L.advance_emu(ctx.ruler, line, ctx.face(entry).path, entry.size_pt) for line in str(text).split("\n"))
+            if inset + width > geo.bar_rect(si, i)[2]:
+                over.append(i)
+        return over
     except GeometryRefused:
         return []
 
@@ -3073,7 +3112,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                  "detail": f"{el['id']} {part}: set where LibreOffice sets such a label (LINE_LABEL_GAP_EMU, measured), it lies under {crossed}; "
                            "the render check refuses it if drawn so: set it on the other side of its point, label fewer points, or name the series at the line's end"}
                 for el in elements for part, crossed in lines_through_labels(el, predicted_line_labels(el, ctx))],
-                chrome, precedent, slide_chrome(slide, guide, chrome))
+                chrome, precedent, slide_chrome(slide, guide, chrome), ctx)
             entry["title"], title_warnings = title_report(slide, spec_raw, elements, entry, guide)
             entry["problems"][:0] = title_warnings + plan_message_figures(slide, elements, plan_pages)  # warnings first, as the tie-outs are
         except L.FaceRefused as error:

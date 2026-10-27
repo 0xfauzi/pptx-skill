@@ -91,7 +91,10 @@ its pages show it). Then build again.
 ## Refusals and warnings (`problems`)
 
 Listed per page before the figures. A refusal turns a fit page `unfittable` with the
-refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast`;
+refusal as `reason`; `solver_status` keeps the geometry verdict. Refusals: `contrast` (also a
+data label on a bar's fill that runs past the bar, scored against the ground it runs onto:
+a white label longer than its short bar is refused, and the detail says to set it outside
+the bar in an ink that reads there);
 `bridge does not tie` (a chart declaring `bridge` whose totals or spans do not tie to its
 deltas; `slides[].bridge_ties` names every declared bridge with "ties: ..." or its failures,
 or says no chart on the page declares one; a zero step that draws no bar ties, and is
