@@ -6,8 +6,10 @@
 #   WORK  an absolute path to an empty work directory outside the skill
 #   REF   for a deck with a reference.json (transit-outlook, wildfire-plan) only: an absolute
 #         path to the public reference deck that reference.json names; its sha256 must match
-# Writes WORK/out/deck.pptx, WORK/out/renders/slide-NN.png, WORK/out/deck.build.json and
-# the two validation reports; exits non-zero on the first step that fails.
+# Writes WORK/ref/fonts.md (the font report), WORK/out/deck.pptx,
+# WORK/out/renders/slide-NN.png, WORK/out/deck.build.json and the two validation reports;
+# exits non-zero on the first step that fails. Font files you license go in WORK/fonts
+# (or the folder DECK_FONTS names); nothing is downloaded or installed.
 set -eu
 
 deck=${1:?usage: rebuild.sh DECK WORK [REF]}
@@ -21,6 +23,8 @@ skill=$(cd "$here/../plugins/designing-presentations/skills/designing-presentati
 [ -d "$src" ] || { echo "no showcase deck named $deck" >&2; exit 2; }
 
 mkdir -p "$work/ref" "$work/deck" "$work/out"
+export DECK_FONTS="${DECK_FONTS:-$work/fonts}"
+mkdir -p "$DECK_FONTS"
 cp "$src"/*.py "$src"/*.json "$work"/
 for f in "$src"/*.sh; do [ -f "$f" ] && cp "$f" "$work"/; done
 [ -d "$src/img" ] && cp -R "$src/img" "$work/img"
@@ -50,6 +54,10 @@ else
   chrome=draw
   ref=
 fi
+
+# 1a. The font report on the guide (and the reference): it stops the rebuild when a face the guide sets is missing.
+python3 scripts/fonts.py report ${ref:+"$ref"} --guide "$work/ref/guide.json" -o "$work/ref/fonts.json" > /dev/null || {
+  echo "fonts: the guide sets a face this machine cannot measure; read $work/ref/fonts.md" >&2; exit 3; }
 
 # 2. The template: the deck's own template script, or a blank package at the guide's page size.
 if [ -f "$work/template.sh" ]; then

@@ -123,21 +123,24 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
 ## Fonts the machine lacks
 
 `python3 scripts/preflight.py --reference "$REF"` lists every face the reference names with
-what this machine draws it as AND what the solver measures it with, and prints the install
-commands for what is missing. The two differ on a PDF: the page renders draw a face the
-file embeds exactly, while the solver needs an installed file. Bain's Verdana and
+what this machine draws it as AND what the solver measures it with. The two differ on a
+PDF: the page renders draw a face the file embeds exactly, while the solver needs a font
+file. Bain's Verdana and
 McKinsey's Georgia rendered `exact` from their PDFs and every page was refused at
 capacity; preflight now says `NOT measurable here` for such a face, on a line that reads
-`needs`: the workflow runs, and text set in that face is refused until it is installed or a
-stand-in is named (the exit code stays 0; `missing` is kept for what stops the workflow).
+`needs`: the workflow runs, and text set in that face is refused until the user supplies
+its file or a stand-in is named (the exit code stays 0; `missing` is kept for what stops
+the workflow). The font report (`scripts/fonts.py report`, [fonts.md](fonts.md)) says
+what to do for each such face.
 
-**What you may install.** Nothing, on your own. Preflight prints the commands; the user
-runs them, or tells you to. Fonts and Python packages are machine-wide. A proprietary face
-(Verdana, Georgia and the rest of Microsoft's core fonts) is also a licence the user
-accepts, not you. What you may do without asking: name, under
+**What you may install.** Nothing, on your own. Preflight prints the commands for missing
+packages; the user runs them, or tells you to. Python packages are machine-wide. A font is
+never downloaded or installed, by you or by any command, even when the user asks: the user
+puts font files they license in the fonts folder (`$DECK_FONTS`). What you may do without
+asking: name, under
 `/typography/families/substitutes`, the stand-in fc-match already draws (below). Say in
-the final report every face that was substituted and every face or package anyone
-installed during the work, and by whom.
+the final report every face that was substituted, supplied or extracted, and every package
+anyone installed during the work, and by whom.
 
 The solver measures with the font files it has (`fc-list`). With no metric alias for the
 reference's face (Arial, Calibri, Cambria, Times New Roman and Courier New have one), the
@@ -158,4 +161,4 @@ Carlito (same metrics, other letterforms), not from Wingdings, and the gallery's
 names each face and what it means. `fonts.json` lists
 per face `uncovered_count` and an `uncovered_sample`; the gallery refuses with
 `uncoverable_characters` when any face has one, because a crop in a fallback face teaches
-the wrong letterforms. Install a face that covers the script first.
+the wrong letterforms. Ask the user for a face that covers the script, in the fonts folder.

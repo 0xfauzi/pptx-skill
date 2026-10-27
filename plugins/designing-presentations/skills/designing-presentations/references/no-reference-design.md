@@ -146,6 +146,11 @@ The look is mostly what you leave out.
   side by side over time (34 of 85). The corpus counts say nothing about gradients and
   shadows (unmeasured); the job test of section 2 applies to them. Each plain choice is a choice: say it in `rejected` or
   in the description's `not_seen`.
+- Faces the recipient has. The built deck embeds no font (fonts.md), so a recipient's
+  PowerPoint draws each face only if their machine has it. Where the look allows, which
+  face will the reader's machine already have? When you choose one they may lack, the
+  choice is still yours: say so to the user, with the face, before the build, and again in
+  the final report.
 
 ## The look brief
 

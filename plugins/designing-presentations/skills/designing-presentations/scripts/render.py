@@ -19,7 +19,9 @@ A .pdf is rasterized as it is, and its fonts.json lists the families the file na
 only names is matched through fontconfig as above.
 
 The renderer runs one conversion at a time in a fresh profile directory, because
-a shared LibreOffice profile hangs on the second call in sandboxes.
+a shared LibreOffice profile hangs on the second call in sandboxes. It sees the fonts
+in the work folder's fonts directory (DECK_FONTS) through a fontconfig configuration of
+that one conversion (textfit.font_env); nothing is installed.
 """
 
 from __future__ import annotations
@@ -41,7 +43,7 @@ from lxml import etree
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ooxml  # noqa: E402
-from textfit import fc_match, metric_alias  # noqa: E402
+from textfit import fc_match, font_env, metric_alias  # noqa: E402
 
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 UNCOVERED_SAMPLE_MAX = 10
@@ -259,7 +261,7 @@ def to_pdf(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
     links to outside itself is fetched; `blocked` collects the targets left out."""
     profile = workdir / "profile"
     profile.mkdir(parents=True, exist_ok=True)
-    env = dict(os.environ)
+    env = {**os.environ, **font_env()}  # the work folder's fonts, for this conversion only
     env.setdefault("HOME", str(workdir))
     src = offline_copy(src, workdir, blocked)
     cmd = [

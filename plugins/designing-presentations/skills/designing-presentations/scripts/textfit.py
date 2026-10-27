@@ -15,13 +15,24 @@ Roman -> Liberation Serif, Courier New -> Liberation Mono). An unknown family is
 REFUSED unless the guide names a stand-in, and the stand-in must be the face fc-match
 returns, the one LibreOffice draws (resolve_measured); bold is never synthesised
 (measured cost of a wrong face: 52/120 break agreement, lines off by three).
+
+Font files: the installed folders (fontconfig's defaults and the standard macOS and Windows
+folders, STANDARD_FONT_ROOTS) and the work folder's fonts directory named by DECK_FONTS
+(work_fonts). Work-folder files are checked by fontfiles.py first and copied to a folder of
+this process; fontconfig reads that copy through a FONTCONFIG_FILE of this process only
+(font_env), so fc-match, LibreOffice and the rulers see the same faces and nothing is
+installed. A file whose fsType is restricted is never used. Nothing here downloads a font.
 """
 
 from __future__ import annotations
 
+import atexit
 import os
 import re
+import shutil
 import subprocess
+import sys
+import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
@@ -29,6 +40,9 @@ from pathlib import Path
 from typing import Protocol
 
 from PIL import ImageFont
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fontfiles  # noqa: E402
 
 try:
     import uharfbuzz as hb
@@ -50,7 +64,22 @@ PILLOW_SCALE = 128
 MAX_WRAPPED_LINES = 2_000
 
 DEFAULT_FONT_ROOTS = ("/usr/share/fonts", "/usr/local/share/fonts")
-FONT_SUFFIXES = frozenset({".ttf", ".otf", ".ttc"})
+#: Installed fonts outside fontconfig's system folders: the user's own folders on Linux
+#: (fontconfig reads both), and the system and user folders of macOS and Windows. A folder
+#: that does not exist on this machine is skipped.
+STANDARD_FONT_ROOTS = (
+    *DEFAULT_FONT_ROOTS,
+    str(Path.home() / ".local/share/fonts"), str(Path.home() / ".fonts"),
+    "/System/Library/Fonts", "/Library/Fonts", str(Path.home() / "Library/Fonts"),
+    os.environ.get("WINDIR", "C:/Windows").replace("\\", "/") + "/Fonts",
+    *((os.environ["LOCALAPPDATA"].replace("\\", "/") + "/Microsoft/Windows/Fonts",) if os.environ.get("LOCALAPPDATA") else ()),
+)
+FONT_SUFFIXES = fontfiles.FONT_SUFFIXES
+#: The environment variable that names the work folder's fonts directory (SKILL.md).
+WORK_FONTS_ENV = "DECK_FONTS"
+#: fontconfig's own configuration, included by the per-process one: the variable the user
+#: set, else the Linux path, else the Homebrew paths on macOS.
+SYSTEM_FONTCONFIG = ("/etc/fonts/fonts.conf", "/opt/homebrew/etc/fonts/fonts.conf", "/usr/local/etc/fonts/fonts.conf")
 
 #: fontconfig's own `binding="same"` metric aliases, normalized with normalize_family:
 #: the 17 classes (84 family-to-family edges) read from the 72 binding="same"
@@ -149,26 +178,124 @@ class FaceIndex:
             "measuring another typeface under this name is unbounded error"
         )
 
+class WorkFontsError(LookupError):
+    """DECK_FONTS names something that is not a usable fonts folder; the message says what."""
+
+
+@dataclass(frozen=True)
+class WorkFonts:
+    folder: Path                         # the user's folder, as DECK_FONTS names it
+    copies: dict[str, str]               # this process's copy -> the user's file
+    faces: tuple[fontfiles.FaceInfo, ...]  # every face accepted, with the user's path
+    rejected: tuple[tuple[str, str], ...]  # (the user's file, why it is not used)
+    config: str | None                   # the FONTCONFIG_FILE of this process, None with no file accepted
+
+
+#: the record fonts.py extract keeps in the fonts folder; not a font, never read as one
+LICENCE_RECORD = "licence-confirmations.json"
+
+
+def _system_fontconfig() -> str:
+    for candidate in (os.environ.get("FONTCONFIG_FILE"), *SYSTEM_FONTCONFIG):
+        if candidate and Path(candidate).is_file():
+            return candidate
+    raise WorkFontsError(f"no fontconfig configuration found (FONTCONFIG_FILE, {', '.join(SYSTEM_FONTCONFIG)}): "
+                         "the renderer cannot be shown the work folder's fonts")
+
+
+@lru_cache(maxsize=1)
+def work_fonts() -> WorkFonts | None:
+    """The fonts the user supplied (or fonts.py extract wrote) in the folder DECK_FONTS
+    names, each read by fontfiles.py first; None when DECK_FONTS is unset. Accepted files
+    are copied to a folder of this process (removed at exit), and a fonts.conf there adds
+    that folder to fontconfig's own configuration, with its cache in the same folder: the
+    user's folder is never scanned by fontconfig, and nothing outside this process
+    changes."""
+    value = os.environ.get(WORK_FONTS_ENV)
+    if not value:
+        return None
+    folder = Path(value).expanduser()
+    if not folder.is_absolute():
+        raise WorkFontsError(f"{WORK_FONTS_ENV}={value!r} is not an absolute path: export {WORK_FONTS_ENV}=\"$DECK_WORK/fonts\"")
+    if not folder.is_dir():
+        raise WorkFontsError(f"{WORK_FONTS_ENV}={value} is not a folder: create it (mkdir -p \"{value}\") or unset {WORK_FONTS_ENV}")
+    accepted: list[tuple[Path, list[fontfiles.FaceInfo]]] = []
+    rejected: list[tuple[str, str]] = []
+    for path in sorted(folder.rglob("*")):
+        if path.name == LICENCE_RECORD or path.name.startswith(".") or (path.is_dir() and not path.is_symlink()):
+            continue
+        if path.suffix.lower() not in FONT_SUFFIXES:
+            rejected.append((str(path), "not a .ttf, .otf or .ttc file"))
+            continue
+        try:
+            faces = fontfiles.read_faces(path)
+        except fontfiles.FontFileError as error:
+            rejected.append((str(path), str(error)))
+            continue
+        locked = [f.family for f in faces if not f.permits("measure")]
+        if locked:
+            rejected.append((str(path), f"fsType {faces[0].fs_type} ({faces[0].embedding}): the font's licence bits forbid its use here"))
+            continue
+        accepted.append((path, faces))
+    if not accepted:
+        return WorkFonts(folder, {}, (), tuple(rejected), None)
+    runtime = Path(tempfile.mkdtemp(prefix="deck-fonts-"))
+    atexit.register(shutil.rmtree, runtime, True)
+    (runtime / "fonts").mkdir()
+    copies: dict[str, str] = {}
+    for n, (path, _) in enumerate(accepted):
+        copy = runtime / "fonts" / f"{n:03d}{path.suffix.lower()}"
+        shutil.copyfile(path, copy)
+        copies[str(copy)] = str(path)
+    from xml.sax.saxutils import escape
+    config = runtime / "fonts.conf"
+    config.write_text('<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">\n<fontconfig>\n'
+                      f'  <cachedir>{escape(str(runtime / "cache"))}</cachedir>\n'
+                      f'  <include ignore_missing="no">{escape(_system_fontconfig())}</include>\n'
+                      f'  <dir>{escape(str(runtime / "fonts"))}</dir>\n</fontconfig>\n', encoding="utf-8")
+    faces = tuple(face for _, found in accepted for face in found)
+    return WorkFonts(folder, copies, faces, tuple(rejected), str(config))
+
+
+def font_env() -> dict[str, str]:
+    """What a fontconfig or LibreOffice subprocess needs in its environment to see the work
+    folder's fonts: FONTCONFIG_FILE of this process, or nothing."""
+    work = work_fonts()
+    return {"FONTCONFIG_FILE": work.config} if work and work.config else {}
+
+
+def _usable(path: Path) -> bool:
+    """An installed file whose every face fontfiles reads as restricted is never measured;
+    a file fontfiles cannot read is left to Pillow, as before (a system file is not
+    untrusted input, and an unread table is no evidence of a restriction)."""
+    try:
+        return any(f.permits("measure") for f in fontfiles.read_faces(path))
+    except fontfiles.FontFileError:
+        return True
+
+
 def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
+    """Every measurable face: the work folder's (first, so a face the user supplied is the
+    one measured) and the installed folders' (STANDARD_FONT_ROOTS, or LAYOUT_FONT_ROOTS)."""
     if roots is None:
         override = os.environ.get("LAYOUT_FONT_ROOTS")
-        roots = tuple(p for p in override.split(os.pathsep) if p) if override else DEFAULT_FONT_ROOTS
-    faces: dict[tuple[str, str], Face] = {}
+        roots = tuple(p for p in override.split(os.pathsep) if p) if override else STANDARD_FONT_ROOTS
+    work = work_fonts()
+    files: list[Path] = [Path(copy) for copy in (work.copies if work else {})]
     for root in roots:
         base = Path(root)
-        if not base.is_dir():
+        if base.is_dir():
+            files += [p for p in sorted(base.rglob("*")) if p.suffix.lower() in FONT_SUFFIXES and p.is_file() and _usable(p)]
+    faces: dict[tuple[str, str], Face] = {}
+    for path in files:
+        try:
+            family, style = ImageFont.truetype(str(path), 16).getname()
+        except (OSError, ValueError):
             continue
-        for path in sorted(base.rglob("*")):
-            if path.suffix.lower() not in FONT_SUFFIXES or not path.is_file():
-                continue
-            try:
-                family, style = ImageFont.truetype(str(path), 16).getname()
-            except (OSError, ValueError):
-                continue
-            if not family:
-                continue
-            key = (normalize_family(family), style or "Regular")
-            faces.setdefault(key, Face(family, family, style or "Regular", str(path), "exact"))
+        if not family:
+            continue
+        key = (normalize_family(family), style or "Regular")
+        faces.setdefault(key, Face(family, family, style or "Regular", str(path), "exact"))
     return FaceIndex(faces)
 
 @lru_cache(maxsize=1)
@@ -187,7 +314,8 @@ def fc_match(family: str, bold: bool = False, italic: bool = False) -> tuple[str
     face the sandbox lacks with. render.py reports it; resolve_measured measures with it."""
     pattern = family + (":bold" if bold else "") + (":italic" if italic else "")
     try:
-        out = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{index}", pattern], capture_output=True, text=True, timeout=20).stdout
+        out = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{index}", pattern], capture_output=True, text=True, timeout=20,
+                             env={**os.environ, **font_env()}).stdout
     except (OSError, subprocess.TimeoutExpired):
         out = ""
     name, _, rest = out.partition("\t")
@@ -207,7 +335,10 @@ def resolve_measured(index: FaceIndex, family: str, *, bold: bool = False, itali
         drawn = fc_match(family)[0]
         if substitute is None and not renderer_ok:
             raise UnknownFamilyError(f"no face for family {family!r} here and no metric-compatible clone; the renderer draws it as {drawn!r} (fc-match): "
-                                     f"name {drawn!r} under typography.families.substitutes to measure what the render shows") from None
+                                     f"name {drawn!r} under typography.families.substitutes to measure what the render shows, or have the user "
+                                     f"put a licensed file of {family!r} in the fonts folder ({WORK_FONTS_ENV}"
+                                     + (f"={os.environ[WORK_FONTS_ENV]}" if os.environ.get(WORK_FONTS_ENV) else " is not set in this shell")
+                                     + "; scripts/fonts.py report)") from None
         if substitute is not None and normalize_family(substitute) != normalize_family(drawn):
             raise SubstituteMismatchError(f"the guide substitutes {substitute!r} for {family!r}, but the renderer draws {family!r} as {drawn!r} (fc-match); "
                                           f"measuring {substitute!r} would fit text the render does not show: name {drawn!r}") from None

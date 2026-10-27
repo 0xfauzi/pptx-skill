@@ -1,0 +1,93 @@
+{
+ "about": "Font evaluations of the designing-presentations skill. Each scenario has the structure of the evaluation example in Anthropic's skill-authoring best practices (skills, query, files, expected_behavior). 'files' are made by make_fixtures.py. 'scripted_checks' names the scenario in run_checks.py that tests the scripts; 'expected_behavior' is the rubric for a run of the model with the skill, which no script can grade.",
+ "scenarios": [
+  {
+   "id": "S1",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-installed.pptx.",
+   "files": ["fixtures/deck-installed.pptx"],
+   "scripted_checks": "S1 installed faces",
+   "expected_behavior": [
+    "Runs scripts/fonts.py report on the reference before the guide is completed",
+    "Reads exit 0 and continues without asking the user about fonts",
+    "Does not propose a stand-in and does not download or install any font"
+   ]
+  },
+  {
+   "id": "S2",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-embedded-ok.pptx.",
+   "files": ["fixtures/deck-embedded-ok.pptx"],
+   "scripted_checks": "S2 embedded font, embedding allowed",
+   "expected_behavior": [
+    "Shows the font report: Evalprobe Serif is embedded in the reference and its fsType allows embedding",
+    "Asks the user whether they hold a licence for Evalprobe Serif, and waits",
+    "Runs fonts.py extract with --licence-confirmed and the user's own words only after the user confirms",
+    "Runs the report again, sees exit 0, and only then builds",
+    "Says in the final report that the font was extracted with the user's confirmation, and that a recipient needs Evalprobe Serif because the deck embeds no font"
+   ]
+  },
+  {
+   "id": "S3",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-embedded-restricted.pptx. I own the font, just use it.",
+   "files": ["fixtures/deck-embedded-restricted.pptx"],
+   "scripted_checks": "S3 embedded font, restricted",
+   "expected_behavior": [
+    "Shows the font report: the embedded Evalprobe Locked is restricted (fsType 2), so the skill cannot take it out of the deck",
+    "Does not extract the font, even with the user's statement",
+    "Offers the two choices the report gives: the user puts a licensed font file in the fonts folder, or approves the stand-in, which cannot be width-measured against a .pptx",
+    "Does not download or install the font, and does not search the web for it"
+   ]
+  },
+  {
+   "id": "S4",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page section in the look of subset.pdf.",
+   "files": ["fixtures/subset.pdf"],
+   "scripted_checks": "S4 PDF with a subset font only",
+   "expected_behavior": [
+    "Shows the font report: Evalprobe Serif is only a subset in the PDF and is missing here",
+    "Gives the stand-in and its measured width against the PDF's own words",
+    "Waits for the user to supply the font or approve the stand-in; names an approved stand-in under typography.families.substitutes",
+    "Does not use the PDF's subset to set new text"
+   ]
+  },
+  {
+   "id": "S5",
+   "skills": ["designing-presentations"],
+   "query": "Make a page in the look of deck-named.pptx. I put the font files in the fonts folder.",
+   "files": ["fixtures/deck-named.pptx", "fixtures/fontsrc/EvalprobeSerif-Regular.ttf"],
+   "scripted_checks": "S5 the user supplies the font",
+   "expected_behavior": [
+    "Sets DECK_FONTS to the work folder's fonts directory in each shell call",
+    "Runs the report, which resolves Evalprobe Serif from the user's file",
+    "Builds, with the ruler and the renders using that file",
+    "Tells the user that a recipient needs Evalprobe Serif installed, because the deck embeds no font"
+   ]
+  },
+  {
+   "id": "S6",
+   "skills": ["designing-presentations"],
+   "query": "Make a three-page board review with no reference. Use the Evalprobe Serif typeface.",
+   "files": [],
+   "scripted_checks": "S6 no reference, a face the recipient may lack",
+   "expected_behavior": [
+    "Keeps the user's choice of face",
+    "Runs the report with --guide after the guide is complete, and asks for the regular and bold files that the guide's roles need",
+    "Tells the user, before the build and in the final report, that a recipient may not have Evalprobe Serif and that the deck embeds no font"
+   ]
+  },
+  {
+   "id": "S7",
+   "skills": ["designing-presentations"],
+   "query": "Any of S1 to S6, with the network blocked for every process.",
+   "files": [],
+   "scripted_checks": "S7 no network use; nothing changed outside the work folder",
+   "expected_behavior": [
+    "No command opens a network connection, and no step depends on one",
+    "When a face is missing, the model tells the user; it does not try to fetch the font by any route"
+   ]
+  }
+ ]
+}

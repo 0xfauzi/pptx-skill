@@ -63,21 +63,28 @@ python3 plugins/designing-presentations/skills/designing-presentations/scripts/p
 
 ## Fonts
 
-The build measures text with the fonts that the deck names. Preflight reports a font
-that the machine does not have (`needs face ...`). Do these steps for each missing font:
+The skill measures text with the fonts that the deck names. The skill never downloads or
+installs a font. Do these steps for each font that the font report or preflight shows as
+missing (`needs face ...`):
 
-1. Install your own licensed copy of the font, or its metric-compatible stand-in.
-2. Run `fc-cache -f`.
+1. Get the font files from a source that gives you a licence for them.
+2. Put the files (.ttf, .otf or .ttc) in the fonts folder of your work folder. The path
+   of this folder is in `DECK_FONTS`, for example `$DECK_WORK/fonts`.
+3. Run `scripts/fonts.py report` again.
 
-These are the stand-ins for the Microsoft core fonts:
+The skill uses the files in the fonts folder for one run at a time. It does not install
+them, and it does not change the fonts of your computer.
+
+If you prefer, you can install fonts on your computer yourself. These are the
+metric-compatible stand-ins for the Microsoft core fonts:
 
 - Liberation: Arial, Times New Roman, Courier New.
 - Carlito: Calibri.
 - Caladea: Cambria.
 
-To install them on Debian and Ubuntu, install the packages
-`fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea`. On macOS, run
-`brew install --cask font-liberation font-carlito font-caladea`.
+On Debian and Ubuntu, the packages are
+`fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea`. On macOS, the Homebrew
+casks are `font-liberation font-carlito font-caladea`. Then run `fc-cache -f`.
 
 ## Claude Code
 

@@ -8,8 +8,8 @@ Each line is ok, missing (the workflow cannot run; the install command follows),
 optional (the workflow runs, and says what it does without it) or, for a face, needs.
 With --reference, every face the reference names is looked up with fc-match: a face drawn
 by an unrelated substitute, or with no file to measure it, reads needs: the workflow runs,
-and the build refuses text set in that face until it is installed or a metric-compatible
-stand-in is named in the guide. A symbol face (bullet and tick glyphs) is never measured
+and the build refuses text set in that face until the user supplies its file (fonts.py
+report) or a stand-in is named in the guide. A symbol face (bullet and tick glyphs) is never measured
 as text and reads ok. Exit 0 when nothing missing; a needs line does not change the exit.
 """
 
@@ -40,10 +40,8 @@ TOOLS = (  # (binary, apt package, required, what it does)
     ("fc-match", "fontconfig", True, "finds the installed face for each named face"),
     ("fc-query", "fontconfig", True, "reads a face's character coverage"),
 )
-METRIC_FONTS = "fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea"
 #: the same packages under Homebrew on macOS (each name checked against formulae.brew.sh)
-BREW = {"libreoffice-impress": "--cask libreoffice", "poppler-utils": "poppler", "fontconfig": "fontconfig",
-        METRIC_FONTS: "--cask font-liberation font-carlito font-caladea"}
+BREW = {"libreoffice-impress": "--cask libreoffice", "poppler-utils": "poppler", "fontconfig": "fontconfig"}
 
 
 def system_install(apt_names: list[str]) -> str:
@@ -101,8 +99,8 @@ def main(argv: list[str]) -> int:
                 measures = f"measured with {measured.family} ({measured.provenance})"
             except LookupError:
                 measured = None
-                measures = (f"NOT measurable here: no installed {face} and no metric-compatible clone; the build refuses text set in it until "
-                            f"the face is installed or fc-match's stand-in ({textfit.fc_match(face)[0]}) is named under typography.families.substitutes")
+                measures = (f"NOT measurable here: no file of {face} and no metric-compatible clone; the build refuses text set in it until "
+                            f"the user supplies its file in $DECK_FONTS or fc-match's stand-in ({textfit.fc_match(face)[0]}) is named under typography.families.substitutes")
             symbol = face.lower().startswith(SYMBOL_FACES)  # bullet and tick glyphs: drawn, never measured as text
             if measured is None and symbol:
                 measures = "a symbol face: its glyphs are bullets and marks, not measured text"
@@ -121,12 +119,9 @@ def main(argv: list[str]) -> int:
     if missing_apt:
         print(f"install: {system_install(sorted(missing_apt))}")
     if not faces_ok:
-        print(f"faces: the user installs the named faces from their own licensed copies, or their metric-compatible stand-ins\n"
-              f"({system_install([METRIC_FONTS])}), then fc-cache -f; a face with no stand-in is named under\n"
-              "typography.families.substitutes in the completion (fc-match's answer). Do not install fonts yourself: a face\n"
-              "installed machine-wide changes what fontconfig, LibreOffice and the solver use for every session on this machine,\n"
-              "and a proprietary face (Verdana, Georgia: Microsoft's core fonts) comes under a licence the user accepts, not you.\n"
-              "Ask, and say in the report which faces were installed and by whom (references/intake.md, Fonts the machine lacks)")
+        print("faces: never download or install a font. Run python3 scripts/fonts.py report REF -o \"$DECK_WORK/ref/fonts.json\" and show\n"
+              "the user its report: the faces missing, the stand-in for each and its measured width, and the folder ($DECK_FONTS)\n"
+              "where they can put font files they license (references/fonts.md)")
     return 0 if ok and not missing_pip and not missing_apt else 1
 
 

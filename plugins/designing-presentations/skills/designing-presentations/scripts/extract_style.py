@@ -1979,7 +1979,7 @@ BLANK_OPEN = (
                      "gives the keys")),
     ("/reference/page", ('the page size, {"width_emu": int, "height_emu": int, "why": "..."}: 16:9 at 13.333 x 7.5 in is 12192000 x 6858000 EMU, '
                          "4:3 at 10 x 7.5 in is 9144000 x 6858000; choose for where the deck will be shown")),
-    ("/typography/families", 'the faces, {"major": "<face>", "minor": "<face>"}: installed faces only (preflight.py lists them), so every fit is measured'),
+    ("/typography/families", 'the faces, {"major": "<face>", "minor": "<face>"}: faces installed or supplied in $DECK_FONTS (fonts.py report --guide checks them), so every fit is measured'),
     *((f"/typography/roles/{role}", ("a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; "
                                      f"no size below the {_layout.PRODUCT_SAFETY_FLOOR_PT}pt absolute floor")) for role in CORE_TYPE_ROLES),
     ("/typography/bullets", ('the bullet per level, {"0": {"glyph": "<glyph>", "font": "<face>", "indent_role": "space.<step>", '

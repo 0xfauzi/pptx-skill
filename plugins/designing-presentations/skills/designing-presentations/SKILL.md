@@ -42,6 +42,7 @@ your own outside the skill:
 ```bash
 export DECK_WORK=/abs/path/outside/the/skill   # e.g. the user's project folder
 export REF=/abs/path/to/reference.pptx          # or .pdf; none on the no-reference branch
+export DECK_FONTS="$DECK_WORK/fonts"            # font files the user supplies; every script reads it
 ```
 
 Shell variables often do not survive between shell calls: set them in the same call as the
@@ -54,11 +55,14 @@ lists `pages`, and a page's plan id is its slide id.
 Before the first deck on a machine, run `python3 scripts/preflight.py --reference "$REF"`
 (no `--reference` when there is none). It checks the packages, LibreOffice, poppler,
 fontconfig, HarfBuzz and the faces the reference names, says whether each face is
-measurable here, and prints install commands for what is missing. Install nothing
-yourself: fonts and packages are machine-wide and move every other session's fits, and
-some faces come under a licence the user accepts. Ask, and report every face substituted or
-installed, and by whom ([references/intake.md](references/intake.md), "Fonts the machine
-lacks").
+measurable here, and prints install commands for missing packages. Install nothing
+yourself: packages are machine-wide and move every other session's fits. Ask, and report
+every package installed, and by whom ([references/intake.md](references/intake.md)).
+
+**Never download, fetch or install a font, by any route, even when asked.** When a face is
+missing, tell the user: step 1a's report says which faces, the stand-in and its width, and
+the folder where they can put font files they license
+([references/fonts.md](references/fonts.md)).
 
 ## No reference
 
@@ -79,7 +83,7 @@ calls for; a named brand; restraint). Write the answers as `/look_brief`, paste 
 your response, and only then answer every other address (page size, installed faces, a
 ladder with nothing under 7pt, palette, spacing, chrome or `[]`, tables, charts,
 `/description`). Nothing has a default; the brief is refused only when missing or a
-placeholder, never weighed. Then steps 5 to 11 with no `--reference`, `--chrome draw`, a
+placeholder, never weighed. Then step 1a with `--guide` alone, and steps 5 to 11 with no `--reference`, `--chrome draw`, a
 null `reference_sha256` and no `in_reference_look`: every hard limit runs, a look left to
 the stock theme or a constant is refused, and every comparison reports "no reference".
 Worked: `examples/no-reference.*` (a board review) and `examples/no-reference-credit.*` (a
@@ -87,12 +91,14 @@ dense credit book).
 
 ## Workflow
 
-Copy this checklist into your response and tick it off. Steps 5, 7, 8 and 9 are loops: run
+Copy this checklist into your response and tick it off. Steps 1a, 5, 7, 8 and 9 are loops: run
 the check, fix what it names, run it again.
 
 ```
 Deck progress:
 - [ ] 1. Intake: render, extract, gallery (triage a PDF first); no reference: the blank draft
+- [ ] 1a. Fonts: fonts.py report; show the user; wait for their files, licence or approval
+         of each stand-in; run it again until it exits 0
 - [ ] 2. Guide: answer every open address, including /titles/register,
          /exhibit_habits (from the digest) and /variety/content_pages; --check until nothing is open
 - [ ] 3. Template: the reference's template with its slides removed, or a blank page
@@ -121,6 +127,20 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster"  # only whe
 Look at `renders/grid.png`, then read `draft.md` in full, `renders/fonts.json`, and
 `gallery/MANIFEST.md` with its exemplars. PDF triage, scans and missing fonts:
 [references/intake.md](references/intake.md).
+
+### 1a. Fonts
+
+```bash
+python3 scripts/fonts.py report "$REF" -o "$DECK_WORK/ref/fonts.json"    # no reference: --guide "$DECK_WORK/ref/guide.json" after step 2
+```
+
+Exit 0: every face that sets text resolves (fonts folder, installed, metric-compatible, or
+a stand-in the guide names). Exit 3: paste `fonts.md` into your response and wait for the
+user: font files they license in `$DECK_FONTS`, a licence confirmed for a font the
+reference embeds (`fonts.py extract`), or approval of each stand-in at the width shown.
+Then run it again. Build nothing until it exits 0. The built deck embeds no font: tell the
+user which faces a recipient must have. The loop, the report and fsType:
+[references/fonts.md](references/fonts.md).
 
 ### 2. Complete the guide
 
@@ -319,7 +339,8 @@ The final report states:
 ```
 - template and layouts chosen, and why
 - what was measured; what you completed by judgement (with confidence) or, with no
-  reference, chose (with why); fonts substituted; what the user must supply
+  reference, chose (with why); fonts substituted, supplied or extracted; what the user must
+  supply; the faces a recipient must have
 - every page's status and scale; open findings from the last review
 - the variety report; each departure from a reference habit in one line
 - the leakage report; the firm chrome kept, replaced or dropped
@@ -384,6 +405,7 @@ around a refusal by changing the guide.
 | Path | Run or read |
 |---|---|
 | `scripts/preflight.py` | run once per machine: packages, LibreOffice, poppler, fontconfig, HarfBuzz, faces |
+| `scripts/fonts.py` | run: `report`, the font report; `extract`, a .pptx's embedded fonts after the user confirms a licence |
 | `scripts/ooxml.py` | run `triage` on a PDF; the OOXML and PDF reader behind every script |
 | `scripts/render.py` | run: LibreOffice to PNG, font report, contact sheet |
 | `scripts/extract_style.py` | run: reference to guide draft with provenance and the open list; `--blank` for no reference |
@@ -399,7 +421,7 @@ around a refusal by changing the guide.
 | `scripts/leakage.py` | run on any deck: past decks' content found in it (the build runs it too) |
 | `scripts/images.py` | run: `list` and `extract` the reference's pictures; `check` an icon in the SVG subset |
 | `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
-| `scripts/emit_pptx.py`, `textfit.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
+| `scripts/emit_pptx.py`, `textfit.py`, `fontfiles.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
 | `components/` | the shipped components, read-only, and their contract (`components/README.md`); yours go in `"$DECK_WORK/components"` |

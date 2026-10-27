@@ -124,11 +124,11 @@ def run(main: Callable[[list[str]], int | None]) -> None:
         name = error.filename if error.filename is not None else ""
         raise SystemExit(f"refused: {error.strerror or error}: {name!r}; {UNSET_HINT}") from None
     except Exception as error:
-        from textfit import RulerUnavailableError
+        from textfit import RulerUnavailableError, WorkFontsError
         if isinstance(error, Refused):
             raise SystemExit(f"refused: {error}") from None
-        if isinstance(error, RulerUnavailableError):
-            raise SystemExit(f"refused: {error}") from None  # the guide's pinned ruler, named
+        if isinstance(error, (RulerUnavailableError, WorkFontsError)):
+            raise SystemExit(f"refused: {error}") from None  # the guide's pinned ruler, or DECK_FONTS, named
         raise
     sys.exit(code)
 

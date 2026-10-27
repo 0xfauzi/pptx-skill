@@ -40,19 +40,39 @@ The two new decks do not copy the text, the figures or the logos of the referenc
   (`make_bg.py`, then `make_bg2.py`). It also replaces the document properties, the comment
   authors and the figure-number prompt of the layouts (`clean_template.py`).
 
-The SAMHSA file names Arial Narrow and Segoe UI. The machine that built the wildfire plan
-did not have these fonts. So its guide names Inter as their stand-in, and the build
-measured and drew the text in Inter. In PowerPoint, the text shows in Arial Narrow, which
-is narrower than Inter. Examine the deck in PowerPoint before you use it.
+The SAMHSA file names Arial Narrow, Segoe UI and Segoe UI Semibold for its text. The
+machine that built the wildfire plan does not have these fonts. The font report
+(`scripts/fonts.py report`) gives these results for the reference file:
 
-The board deck names Inter (SIL Open Font License). Install Inter on each machine that
-opens the deck. If the machine does not have Inter, PowerPoint draws the text in a
-different font.
+- Arial Narrow, Segoe UI and Segoe UI Semibold are missing. The stand-in for each is
+  Inter, the font that fontconfig draws. Inter is not metric-compatible with them.
+- The width difference cannot be measured. A .pptx file does not hold glyph widths, and
+  the machine has no file of these fonts.
+- The SAMHSA file names Calibri Light and two HelveticaNeueLT faces, but sets no text in
+  them. The report lists them and does not stop for them.
+
+The completion of the wildfire plan names Inter as the stand-in for the three fonts. With
+this guide, the report exits 0, and the build measures and draws the text in Inter. The
+built deck names Arial Narrow, Segoe UI and Segoe UI Semibold, and it embeds no font. In
+PowerPoint, the text shows in these fonts if the computer has them. Arial Narrow is a
+condensed font, so the text can take less space than in the renders. Examine the deck in
+PowerPoint before you use it.
+
+The EIA file sets a few words in Jost, a font that the machine does not have. The PDF
+holds only a subset of Jost, and the skill never sets new text with a subset. The report
+measures the stand-in Inter as 13.1% wider than Jost over the 4 words that the PDF sets in
+Jost. The guide of the transit outlook does not use Jost, so the report exits 0.
+
+The board deck names Inter (SIL Open Font License). The report finds Inter on the machine
+that built the deck. The deck embeds no font. Install Inter on each computer that opens
+the deck. If the computer does not have Inter, PowerPoint draws the text in a different
+font.
 
 ## Fonts of the five decks with no reference
 
 The board deck uses Inter. The other four decks name only fonts that PowerPoint has on
-Windows and macOS. So these .pptx files open as built. The build measures each font with
+Windows and macOS. So these .pptx files open as built. For each of the four decks, the
+font report finds a metric-compatible font for each font of the guide and exits 0. The build measures each font with
 the installed font or with its metric-compatible stand-in (`METRIC_ALIAS_CLASSES` in
 `scripts/textfit.py`):
 
@@ -72,14 +92,17 @@ shows its figures as a row of text above the plot.
 ## Build a deck again
 
 1. Install the requirements of the skill (see `INSTALL.md`).
-2. For the grocery and parks decks, also install the Gelasio font (SIL Open Font
-   License, github.com/SorkinType/Gelasio). Make sure that `fc-match Georgia` names
-   Gelasio. If fontconfig does not find Gelasio, the build refuses the pages.
-3. For the board deck and the wildfire plan, also install the Inter font (SIL Open Font
-   License, github.com/rsms/inter). Make sure that `fc-match "Arial Narrow"` and
-   `fc-match "Segoe UI"` name Inter, as on the machine that built the wildfire plan. If
-   fontconfig picks a different font, the text measures differently, and the build can
-   refuse pages.
+2. The grocery and parks decks need the Gelasio font (SIL Open Font License). Put your
+   copy of the Gelasio files in `WORK/fonts`, or install Gelasio yourself. The script
+   does not download fonts. If you install Gelasio yourself, make sure that
+   `fc-match Georgia` names Gelasio. If the skill does not find Gelasio, the font report
+   stops the build.
+3. The board deck and the wildfire plan need the Inter font (SIL Open Font License). Put
+   your copy of the Inter files in `WORK/fonts`, or install Inter yourself. For the
+   wildfire plan, install Inter yourself and make sure that `fc-match "Arial Narrow"` and
+   `fc-match "Segoe UI"` name Inter, as on the machine that built it. The fonts folder
+   does not change the font that fontconfig picks for a missing font. If fontconfig picks
+   a different font, the text measures differently, and the build can refuse pages.
 4. For the transit outlook and the wildfire plan, download the reference file (see "The
    two reference decks"). Use an absolute path outside the skill folder.
 5. Make an empty work folder. Use an absolute path outside the skill folder.
@@ -96,13 +119,16 @@ shows its figures as a row of text above the plot.
 
 1. It copies the sources of the deck into the work folder. In `completion.json`, it
    changes `@WORK@` to the path of the work folder.
-2. It makes the guide:
+2. It sets `DECK_FONTS` to `WORK/fonts` if `DECK_FONTS` is not set, and makes the
+   folder. Then it makes the guide:
    - With no reference, it completes a blank draft with `completion.json`.
    - With a reference, it checks the sha256 of the file against `reference.json`. It
      extracts the draft from the file and cuts the digest stub. It copies `digest.json`
      (the digest, answered after a look at each crop) next to the stub. Then it completes
      the draft with `completion.json` and the digest.
-3. It makes the template. If the deck has `template.sh`, the script makes it (the
+3. It runs the font report (`WORK/ref/fonts.md`) on the guide, and on the reference if
+   there is one. If the guide sets a font that the skill cannot measure, the script
+   stops. Then it makes the template. If the deck has `template.sh`, the script makes it (the
    wildfire plan). If not, it makes a blank template at the page size of the guide.
 4. It runs the figures script and the deck script.
 5. It checks the plan.
