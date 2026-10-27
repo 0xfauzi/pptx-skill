@@ -91,7 +91,7 @@ Claude Code keeps the plugin in its cache,
 `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` names another, per
 code.claude.com/docs/en/plugins/loading.md, "Find plugins on disk"; with `CLAUDE_CONFIG_DIR`
 set it was `$CLAUDE_CONFIG_DIR/plugins` on Claude Code 2.1.311), so the skill sits at
-`~/.claude/plugins/cache/pptx-skill/designing-presentations/0.8.0/skills/designing-presentations/`
+`~/.claude/plugins/cache/pptx-skill/designing-presentations/0.9.0/skills/designing-presentations/`
 for this release. `claude plugin list` shows what is installed. An update installs the new
 version into a new directory and removes the old one 14 days later (loading.md, "Cleanup of
 previous versions").
