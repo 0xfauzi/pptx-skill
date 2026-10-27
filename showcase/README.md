@@ -1,6 +1,7 @@
 # Showcase decks
 
-This folder holds the sources of the four decks in the top-level README. The built files
+This folder holds the sources of the four fictional-company decks in the gallery of the
+top-level README. The built files
 are in `docs/showcase/`. The skill built each deck with no reference. The `completion.json` of
 each deck chooses its look, and its `/look_brief` gives the reasons. All companies,
 persons and figures are fictional.
@@ -61,13 +62,19 @@ page renders go to `WORK/out/renders/`. The build report goes to
 Run these commands from the root of the repository:
 
 ```sh
-python3 showcase/sheet.py docs/showcase/hero.png 1632 1 LBO/out/renders/slide-01.png
-python3 showcase/sheet.py docs/showcase/strip.png 1632 3 GROCERY/out/renders/slide-04.png \
-  EARNINGS/out/renders/slide-04.png PARKS/out/renders/slide-01.png
 python3 showcase/sheet.py docs/showcase/grocery-strategy.png 1632 1 GROCERY/out/renders/slide-*.png
 ```
 
-`LBO`, `GROCERY`, `EARNINGS` and `PARKS` are the work folders of the four builds. Use the
-last command for each deck, with the name and work folder of that deck. It makes an
-image of all pages of the deck in one column. Then copy `WORK/out/deck.pptx` to
-`docs/showcase/<deck>.pptx`.
+`GROCERY` is the work folder of the grocery build. Use this command for each deck, with
+the name and work folder of that deck. It makes an image of all pages of the deck in one
+column. Then copy `WORK/out/deck.pptx` to `docs/showcase/<deck>.pptx`.
+
+The top-level README images `hero.png` and `strip.png` come from the three S-1 decks. Their
+build sources are not in this repository. These commands made the images from the page
+renders of those builds:
+
+```sh
+python3 showcase/sheet.py docs/showcase/hero.png 1632 1 PITCHBOOK/renders/slide-01.png
+python3 showcase/sheet.py docs/showcase/strip.png 1632 2 RESEARCH/renders/slide-04.png \
+  COMMITTEE/renders/slide-05.png
+```

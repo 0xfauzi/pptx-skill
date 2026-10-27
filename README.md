@@ -15,17 +15,18 @@ calculate the page geometry and write the .pptx file with native charts and tabl
 they render the file with LibreOffice, read the render, and refuse a page that has a
 defect they can measure.
 
-![Page 1 of an LBO investment committee book: seven headline figures over six tables and a bar chart, with a notes column](docs/showcase/hero.png)
+![Page 1 of an IPO pitch book built from a public S-1: six headline figures, an annotated quarterly revenue chart with margin and growth rows, the offering terms and summary financials](docs/showcase/hero.png)
 
-*Page 1 of the LBO investment committee book in the gallery below. It was built with no
-reference.*
+*Page 1 of the IPO pitch book in the gallery below. The skill built it from the public
+Form S-1 of Anthropic, PBC, with no reference. The bank, Halden & Rowe, is fictional. The
+deck is an unofficial demonstration and is not investment advice.*
 
-[![Three more showcase pages: a store network page from a grocery strategy, a margin page from an earnings deck and a visitors page from a parks annual report](docs/showcase/strip.png)](#gallery)
+[![Two more pages from the S-1 decks: a compute commitments page from an initiation report and a scenarios page from an investment committee pre-read](docs/showcase/strip.png)](#gallery)
 
-*Pages from the other three gallery decks. The left page is page 4 of a grocery format
-strategy. The middle page is page 4 of the quarterly results of a software company. The
-right page is page 1 of a national parks annual report. All companies and figures are fictional. Each image is the LibreOffice render of
-the .pptx file that the build wrote.*
+*Pages from the other two S-1 decks in the gallery. The left page is page 4 of the
+initiation report of a fictional broker. The right page is page 5 of the investment
+committee pre-read of a fictional fund. Each image is the LibreOffice render of the .pptx
+file that the build wrote.*
 
 ## What the skill can do
 
@@ -36,7 +37,7 @@ the .pptx file that the build wrote.*
   brief (reader, subject, data, brand, restraint) and chooses each value. No value has a
   default.
 - **Make dense pages.** A page can hold many exhibits, and each exhibit gets the size that
-  the solver calculates for it. Each page of the committee book in the gallery holds five
+  the solver calculates for it. Each page of the LBO committee book in the gallery holds five
   to nine tables and charts.
 - **Write native exhibits.** Charts are PowerPoint charts, and their data is in the file.
   Tables are PowerPoint tables. The file
@@ -166,7 +167,33 @@ gives the full workflow, step by step.
 
 ## Gallery
 
-The skill built these four decks with no reference. Each deck has a figures script, a plan, a
+### Three decks from a public S-1
+
+The skill built these three decks from the public Form S-1 of Anthropic, PBC, filed on
+26 October 2026. It used no reference deck. Claude chose the look of each deck.
+
+- The bank, the broker and the fund are fictional: Halden & Rowe, Keswick Research and
+  Marlow Street Capital.
+- Each page has this footer: "Unofficial demonstration built from Anthropic, PBC's public
+  Form S-1 (filed 26 October 2026). Not prepared by or affiliated with Anthropic. Not
+  investment advice."
+- Valuations, forecasts, probabilities, sizes and price limits are illustrative
+  assumptions of the fictional firm. The decks label them as assumptions.
+- A separate reviewer checked each figure against the filing. The builder then corrected
+  the errors that the reviewer found.
+
+The build sources of these three decks are not in this repository.
+
+| Deck | Pages | All pages | Files |
+|---|---|---|---|
+| IPO pitch book of a fictional bank: situation overview, business model, revenue growth, customers, margins, compute commitments, balance sheet, public comparables, illustrative valuation, offering structure and governance, timetable (US letter) | 11 | [image](docs/showcase/s1-ipo-pitch-book.png) | [.pptx](docs/showcase/s1-ipo-pitch-book.pptx), [PDF](docs/showcase/s1-ipo-pitch-book.pdf) |
+| Initiation of coverage by a fictional broker: thesis and key data, revenue drivers, unit economics, compute commitments, path to profit, key risks, forecast, valuation scenarios (16:9) | 8 | [image](docs/showcase/s1-initiation-report.png) | [.pptx](docs/showcase/s1-initiation-report.pptx), [PDF](docs/showcase/s1-initiation-report.pdf) |
+| Investment committee pre-read of a fictional fund: recommendation and size, growth and margins, ten risks, governance, scenarios, sizing rules and conditions (16:9) | 6 | [image](docs/showcase/s1-committee-pre-read.png) | [.pptx](docs/showcase/s1-committee-pre-read.pptx), [PDF](docs/showcase/s1-committee-pre-read.pdf) |
+
+### Four decks about fictional companies
+
+The skill built these four decks with no reference. All companies and figures are
+fictional. Each deck has a figures script, a plan, a
 completion and page specs. Each build passed all checks and both package validations.
 The folder [showcase/](showcase/README.md) holds the sources and the commands that build
 each deck and image again.
@@ -257,8 +284,8 @@ plugins/designing-presentations/  the plugin root; an install copies only this f
   README.md                       what the plugin runs, sends, fetches and writes
   skills/designing-presentations/ the skill: SKILL.md, references/, scripts/,
                                   components/, examples/, refs/
-showcase/                         the sources of the gallery decks, and the build script
-docs/showcase/                    the gallery images and .pptx files
+showcase/                         the sources of the four fictional-company decks, and the build script
+docs/showcase/                    the gallery images, .pptx files and PDF files
 tools/package_skill.py            builds the upload zip for claude.ai and the API
 tools/make_icon.py                draws the plugin icon
 tools/measure/                    the measurement scripts in the evidence table
