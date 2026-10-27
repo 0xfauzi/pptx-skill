@@ -1,5 +1,5 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/deck.refused.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
@@ -49,9 +49,9 @@
    },
    "tables": {},
    "density": {
-    "words": 117,
+    "words": 120,
     "elements": 15,
-    "covered_area_fraction": 0.169,
+    "covered_area_fraction": 0.156,
     "text_boxes_mostly_empty": [
      {
       "id": "e1",
@@ -128,7 +128,7 @@
     ],
     "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
     "words_per_slide": {
-     "value": 117,
+     "value": 120,
      "band": [
       32.8,
       159.3
@@ -144,7 +144,7 @@
      "verdict": "in band"
     },
     "content_area_fraction": {
-     "value": 0.169,
+     "value": 0.156,
      "band": [
       0.4116,
       0.7078
@@ -161,7 +161,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Total Asset Growth Rate",
+      "text": "Growth in Total Assets",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -176,7 +176,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Risk-Weighted Assets % Total Assets",
+      "text": "Risk-Weighted Share of Total Assets",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -191,7 +191,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Targeted CET 1 Ratio",
+      "text": "CET 1 Ratio Target",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -206,7 +206,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Return on Average Assets",
+      "text": "Return on Avg. Assets",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -221,7 +221,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Dividend Payout Ratio",
+      "text": "Share of Earnings Paid Out",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -236,7 +236,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Cost of Equity",
+      "text": "Required Equity Return",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -251,7 +251,7 @@
       "run": 0,
       "role": "type.body",
       "ink": "color.ink_inverse",
-      "text": "Terminal P / TBV Multiple",
+      "text": "Exit Price / TBV Multiple",
       "ratio": 1.54,
       "threshold": 4.5,
       "size_pt": 12.0,
@@ -395,11 +395,11 @@
    ],
    "title": {
     "element": "title",
-    "text": "Valuation: Summary of Dividend Discount Model Assumptions",
+    "text": "Valuation: Inputs to the Dividend Discount Model",
     "register_stated": null,
     "length": {
      "chars": {
-      "value": 57,
+      "value": 48,
       "reference": {
        "median": 35.0,
        "p90": 40.0,
@@ -522,7 +522,7 @@
     "page": 1,
     "composition": "b1",
     "structure": "drawn shapes (1 panel)",
-    "kinds": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
     "panels": 1,
     "drawn": {
      "count": 7,
@@ -558,8 +558,8 @@
     "pages_unread": []
    },
    "kinds": {
-    "V": 1.0,
-    "changed": 10,
+    "V": 0.7,
+    "changed": 7,
     "pairs": 10,
     "pages_unread": []
    },
@@ -641,7 +641,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/deck.refused.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -653,9 +653,9 @@
   "briefs": [],
   "computed": [],
   "declared_computed": [],
-  "findings": 70,
-  "distinctive": 70,
-  "low": 14,
+  "findings": 13,
+  "distinctive": 13,
+  "low": 8,
   "pages": [
    {
     "page": 1,
@@ -663,250 +663,7 @@
     "findings": [
      {
       "kind": "phrase",
-      "text": "11.42% rotce and 8.97% cost",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 3
-     },
-     {
-      "kind": "phrase",
-      "text": "growth 11.42% rotce and 8.97%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 3
-     },
-     {
-      "kind": "phrase",
-      "text": "0.60% increasing to 0.83% by",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "phrase",
-      "text": "1.33x based on 1.6% ni",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "phrase",
-      "text": "common growth 11.42% rotce and",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "phrase",
-      "text": "ni to common growth 11.42%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "phrase",
-      "text": "rotce and 8.97% cost of",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "phrase",
-      "text": "to common growth 11.42% rotce",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 2
-     },
-     {
-      "kind": "name",
-      "text": "risk-weighted assets total assets",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "name",
-      "text": "tbv multiple",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "1.6% ni to common growth",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "12 years in the explicit",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "2.1% rfr 5.8% erp and",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "8.97% cost of equity implied",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "8.97% in all periods 2.1%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "all periods 2.1% rfr 5.8%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "and 8.97% cost of equity",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "based on 1.6% ni to",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "explicit forecast period fy 15",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "in all periods 2.1% rfr",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "in the explicit forecast period",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "increasing to 0.83% by fy",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "on 1.6% ni to common",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "periods 2.1% rfr 5.8% erp",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "rfr 5.8% erp and 1.19",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "the explicit forecast period fy",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
       "text": "to 0.83% by fy 26",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 1
-     },
-     {
-      "kind": "phrase",
-      "text": "years in the explicit forecast",
       "past": [
        "mi_keybank_first_niagara_fig_ma.pptx p3"
       ],
@@ -1005,267 +762,6 @@
      },
      {
       "kind": "phrase",
-      "text": "1% and 2% declines to",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "2% declines to 1.5% by",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "5.8% erp and 1.19 levered",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "65 70% increasing to 80%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "70% increasing to 80% by",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "73 74% over the 12",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "74% over the 12 years",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "9.0% slightly above company s",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "above company s current target",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "and 2% declines to 1.5%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "between 1% and 2% declines",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "company s current target of",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "cost of equity implied terminal",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "declines to 1.5% by fy",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "equity implied terminal p e",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "erp and 1.19 levered beta",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "forecast period fy 15 fy",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "implied terminal p e multiple",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "increasing to 80% by fy",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "of dividend discount model assumptions",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "of equity implied terminal p",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "over the 12 years in",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "p e multiple of 11.8x",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "period fy 15 fy 26",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "s current target of 8.5%",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "slightly above company s current",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "summary of dividend discount model",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "terminal p e multiple of",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "the 12 years in the",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
       "text": "to 1.5% by fy 26",
       "past": [
        "mi_keybank_first_niagara_fig_ma.pptx p3"
@@ -1276,15 +772,6 @@
      {
       "kind": "phrase",
       "text": "to 80% by fy 26",
-      "past": [
-       "mi_keybank_first_niagara_fig_ma.pptx p3"
-      ],
-      "past_pages": 1,
-      "rare_words": 0
-     },
-     {
-      "kind": "phrase",
-      "text": "valuation summary of dividend discount",
       "past": [
        "mi_keybank_first_niagara_fig_ma.pptx p3"
       ],
@@ -1306,7 +793,23 @@
    },
    {
     "kind": "figure",
+    "text": "1%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
     "text": "1.5%",
+    "why": "a round figure",
+    "pages": [
+     1
+    ]
+   },
+   {
+    "kind": "figure",
+    "text": "2%",
     "why": "a round figure",
     "pages": [
      1
@@ -1343,77 +846,13 @@
     "pages": [
      1
     ]
-   },
-   {
-    "kind": "name",
-    "text": "average assets",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "common growth",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "dividend discount model assumptions",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "dividend payout ratio",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "levered beta",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "targeted cet",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "total asset growth rate",
-    "why": "a term of the trade: every word of it is in the public decks of other firms",
-    "pages": [
-     1
-    ]
-   },
-   {
-    "kind": "name",
-    "text": "valuation summary",
-    "why": "a term of the trade: also in 3 public deck(s) of other firms (mi_jazz_pharma_sellside_pitchbook.pdf, mi_jazz_pharma_sellside_pitchbook.pptx)",
-    "pages": [
-     1
-    ]
    }
   ],
   "what_to_do": {
    "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
    "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
   },
-  "rarity_basis": "12 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/round7/refs/files",
+  "rarity_basis": "12 public decks of other firms in /home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files",
   "chrome_excluded": {
    "mi_keybank_first_niagara_fig_ma.pptx": {
     "phrase": 0,
@@ -1423,16 +862,16 @@
   },
   "images_checked": "pptx media by sha256",
   "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
-  "verdict": "possible carry-over: 70 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
+  "verdict": "possible carry-over: 13 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/deck.refused.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
     "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
     "fidelity": "metric_alias",
-    "codepoints_checked": 68,
+    "codepoints_checked": 65,
     "uncovered_count": 0,
     "uncovered_sample": [],
     "bullets_only": false
@@ -1458,11 +897,11 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/renders.refused/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/renders.refused/slide-01.png"
   ]
  },
  "judge": {
-  "reference": "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
+  "reference": "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_keybank_first_niagara_fig_ma.pptx",
   "total": 0.056,
   "components": {
    "families": 0.0,
@@ -1473,7 +912,7 @@
    "text_colors": 0.0,
    "fills": 0.0,
    "lines": null,
-   "aligns": 0.195,
+   "aligns": 0.196,
    "kinds": 0.152,
    "background": 0.0,
    "margins": 0.363,
@@ -1497,7 +936,7 @@
      ],
      [
       "aligns",
-      0.195
+      0.196
      ]
     ]
    }
@@ -1511,25 +950,25 @@
    "max": 0.372
   },
   "others": {
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/45541_Header.pptx": 0.516,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.484,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/themes.pptx": 0.477
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/45541_Header.pptx": 0.518,
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.487,
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/themes.pptx": 0.479
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
    "files": [
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/bmo_fairness_opinion_board.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/citigroup_tribune_restructuring_update.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/goldman_airvana_why_goldman_2009.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mckinsey_uf_road_ahead_2023.pdf",
-    "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/perella_weinberg_pitch.pdf"
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/bmo_fairness_opinion_board.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/citigroup_tribune_restructuring_update.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/deutsche_bank_amtrust_pitchbook.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_why_goldman_2009.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/mckinsey_uf_road_ahead_2023.pdf",
+    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/perella_weinberg_pitch.pdf"
    ]
   },
   "same_style_on_panel": {
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.062,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.075,
-   "/home/user/pptx-skill/.claude/worktrees/round7/refs/files/mi_netflix_financing_pitchbook.pptx": 0.075
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_jazz_pharma_sellside_pitchbook.pdf": 0.062,
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_jazz_pharma_sellside_pitchbook.pptx": 0.075,
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/mi_netflix_financing_pitchbook.pptx": 0.075
   },
   "panel": "refs/files (default)",
   "nearest_is_reference": true,
@@ -1541,8 +980,8 @@
  "outputs": {
   "verdict": "refused",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/deck.refused.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8/out/br/kb/roundtrip-slide3/renders.refused",
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/renders.refused",
   "note": "refused: the deck and renders of this build are written as .refused beside the asked-for paths, for diagnosis; nothing at the asked-for paths is current"
  }
 }

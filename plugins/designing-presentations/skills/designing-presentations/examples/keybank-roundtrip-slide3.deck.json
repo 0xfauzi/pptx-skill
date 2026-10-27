@@ -3,7 +3,7 @@
   {
    "id": "import-3",
    "layout": "Title and Content",
-   "notes": "round trip of keybank.pptx slide 3: roles and weights only, no coordinates",
+   "notes": "round trip of keybank.pptx slide 3: roles and weights as import_slide.py read them, no coordinates; the text paraphrased from the public deck",
    "spec": {
     "root": {
      "type": "region",
@@ -24,7 +24,7 @@
        "paragraphs": [
         {
          "role": "type.title",
-         "text": "Valuation: Summary of Dividend Discount Model Assumptions"
+         "text": "Valuation: Inputs to the Dividend Discount Model"
         }
        ]
       },
@@ -60,7 +60,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Total Asset Growth Rate"
+             "text": "Growth in Total Assets"
             }
            ],
            "weight": 0.2885
@@ -72,7 +72,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Between 1% and 2%; declines to 1.5% by FY 26",
+             "text": "In a 1% to 2% range, easing to 1.5% by FY 26",
              "bullet_level": 0
             }
            ],
@@ -100,7 +100,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Risk-Weighted Assets % Total Assets"
+             "text": "Risk-Weighted Share of Total Assets"
             }
            ],
            "weight": 0.2885
@@ -112,7 +112,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "73-74% over the 12 years in the explicit forecast period (FY 15 \u2013 FY 26) ",
+             "text": "73-74% through all 12 years of the explicit forecast (FY 15 to FY 26)",
              "bullet_level": 0
             }
            ],
@@ -140,7 +140,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Targeted CET 1 Ratio"
+             "text": "CET 1 Ratio Target"
             }
            ],
            "weight": 0.2885
@@ -152,7 +152,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "9.0% (Slightly above company’s current target of 8.5%) ",
+             "text": "9.0% (a little over the bank's present 8.5% goal)",
              "bullet_level": 0
             }
            ],
@@ -180,7 +180,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Return on Average Assets"
+             "text": "Return on Avg. Assets"
             }
            ],
            "weight": 0.2885
@@ -192,7 +192,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "0.60% increasing to 0.83% by FY 26",
+             "text": "0.60%, rising to 0.83% by FY 26",
              "bullet_level": 0
             }
            ],
@@ -220,7 +220,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Dividend Payout Ratio"
+             "text": "Share of Earnings Paid Out"
             }
            ],
            "weight": 0.2885
@@ -232,7 +232,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "65-70% increasing to 80% by FY 26",
+             "text": "65-70%, rising to 80% by FY 26",
              "bullet_level": 0
             }
            ],
@@ -260,7 +260,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Cost of Equity"
+             "text": "Required Equity Return"
             }
            ],
            "weight": 0.2885
@@ -272,7 +272,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "8.97% in all periods (2.1% RFR, 5.8% ERP, and 1.19 Levered Beta)",
+             "text": "8.97% throughout (2.1% risk-free, 5.8% equity premium, 1.19 levered beta)",
              "bullet_level": 0
             }
            ],
@@ -300,7 +300,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "Terminal P / TBV Multiple"
+             "text": "Exit Price / TBV Multiple"
             }
            ],
            "weight": 0.2885
@@ -312,7 +312,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "1.33x based on 1.6% NI to Common Growth, 11.42% ROTCE, and 8.97% Cost of Equity; implied Terminal P / E multiple of 11.8x",
+             "text": "1.33x from 1.6% growth in common net income, an 11.42% ROTCE and the 8.97% equity return; an exit P / E of 11.8x follows",
              "bullet_level": 0
             }
            ],
