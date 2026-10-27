@@ -156,8 +156,8 @@ picture in a box of `"height_role": "type.body", "lines": 3, "width_role": "spac
  "us-icon": {"path": "/abs/work/img/flag.png", "height_role": "type.body", "lines": 3, "width_role": "space.xl", "align": "center", "valign": "middle"}}
 ```
 
-The star, `examples/icons/star-of-life.svg` (the union of three bars as one outline,
-its points computed, not traced):
+The star, star-of-life.svg in the skill's examples/icons folder (the union of three bars
+as one outline, its points computed, not traced):
 
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
