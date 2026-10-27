@@ -1,0 +1,860 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {
+   "id": "s1-overview",
+   "intent": "orient the committee on the business before the deal pages",
+   "message": "A $667.2m-revenue flow-control business growing 6.5% a year with margins up five years running; pumps and the cyclical end markets are what the case must underwrite",
+   "composition": "new:kpi-strip-over-three-columns",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the seven headline figures the committee quotes about Corvane, each with the comparison that makes it mean something",
+     "comparison": "each FY2026E figure against the prior year, the FY2021A starting point or the entry price",
+     "data": "seven single figures with one context figure each",
+     "forms_considered": [
+      {
+       "form": "a strip of figures with labels and one context line each",
+       "reason": "chosen: seven numbers read left to right in one line of sight, each beside its comparison"
+      },
+      {
+       "form": "a two-column key-figures table",
+       "reason": "repeats the historical table below it and loses the at-a-glance read"
+      },
+      {
+       "form": "tiles on filled panels",
+       "reason": "seven fills across the top would be the loudest thing on a page read for its tables"
+      }
+     ],
+     "chosen_form": "a strip of figures with labels and one context line each",
+     "why": "an IC member wants the size, growth, margin, mix, cash and price of the business before reading a line; a strip states them once and the tables below prove them",
+     "marks": "figures in Corvane blue at 14pt; the context line under each states the comparison in words"
+    },
+    {
+     "reader_must_see": "what Corvane is, where it operates, who it sells to and who is selling it",
+     "comparison": "none across rows: each line is a fact looked up",
+     "data": "ten descriptive facts with short values",
+     "forms_considered": [
+      {
+       "form": "a two-column fact table",
+       "reason": "chosen: lookup content, one fact per ruled line"
+      },
+      {
+       "form": "a prose paragraph",
+       "reason": "buries the figures (plants, employees, customer concentration) in sentences"
+      }
+     ],
+     "chosen_form": "a two-column fact table",
+     "why": "the committee looks facts up rather than reads them; a ruled fact sheet is the subject's own convention",
+     "marks": "row labels bold; no colour, since nothing here is compared"
+    },
+    {
+     "reader_must_see": "that no end market dominates and how much revenue sits in the less cyclical markets",
+     "comparison": "each end market's share against the others, grouped defensive against cyclical",
+     "data": "seven shares of FY2026E revenue summing to 100.0%",
+     "forms_considered": [
+      {
+       "form": "sorted horizontal bars grouped defensive then cyclical, with a bracket on each group",
+       "reason": "chosen: lengths compare the markets, and the two brackets state the split the risk view rests on"
+      },
+      {
+       "form": "pie chart of seven slices",
+       "reason": "seven angles cannot be compared and a pie needs seven colours"
+      },
+      {
+       "form": "a column in the fact table",
+       "reason": "states the shares but hides the grouping the reader needs"
+      }
+     ],
+     "chosen_form": "sorted horizontal bars grouped defensive then cyclical, with a bracket on each group",
+     "why": "the claim is the defensive share and the absence of a dominant market: bars in two groups with group totals show both without arithmetic",
+     "marks": "defensive bars blue and cyclical grey; a bracket per group carrying its total share (44.1% and 55.9%); values at bar ends"
+    },
+    {
+     "reader_must_see": "which segment earns what and grows how fast, and that aftermarket is the high-margin growth engine while pumps lags",
+     "comparison": "the three segments against each other on growth, share and margin",
+     "data": "three segments and corporate costs by revenue in two years, growth, share, EBITDA and margin, with a total",
+     "forms_considered": [
+      {
+       "form": "segment table with a totals row",
+       "reason": "chosen: revenue, growth and margin per segment in one row, and the total ties to the consolidated figures"
+      },
+      {
+       "form": "a bubble chart of growth against margin sized by revenue",
+       "reason": "three bubbles carry too little to justify a chart and drop the figures the committee checks"
+      }
+     ],
+     "chosen_form": "segment table with a totals row",
+     "why": "three segments by six measures is a lookup; the table ties out to the summary below it",
+     "marks": "aftermarket's CAGR and margin bold blue; pumps' margin in red, the lowest; totals bold under a rule"
+    },
+    {
+     "reader_must_see": "six years of revenue, margin, cash conversion and backlog with every line's growth rate",
+     "comparison": "each year against the years beside it and each line's five-year CAGR against the others",
+     "data": "16 lines in three blocks by six fiscal years plus a CAGR column, mixed units",
+     "forms_considered": [
+      {
+       "form": "one long table with block heads and a CAGR column",
+       "reason": "chosen: every figure the committee checks across years sits in one grid"
+      },
+      {
+       "form": "small multiple line charts of revenue, margin and backlog",
+       "reason": "shows trend but hides the figures the committee recomputes"
+      }
+     ],
+     "chosen_form": "one long table with block heads and a CAGR column",
+     "why": "the committee reads history line by line to test the plan's starting point; one grid holds it whole",
+     "marks": "block heads on pale steel; FY2026E column in blue; the FY2024A pumps revenue fall in red; ratio rows italic"
+    },
+    {
+     "reader_must_see": "where revenue is earned and which region grows fastest",
+     "comparison": "each region's FY2021A and FY2026E revenue and share, and its CAGR against the total",
+     "data": "three regions by two years with shares, a CAGR and a total",
+     "forms_considered": [
+      {
+       "form": "region table with shares and a totals row",
+       "reason": "chosen: amounts, shares and growth per region in one row, tied to total revenue"
+      },
+      {
+       "form": "map with regional bubbles",
+       "reason": "a map spends the column on geography the reader already knows and drops the figures"
+      }
+     ],
+     "chosen_form": "region table with shares and a totals row",
+     "why": "three regions are a lookup and the CAGR column carries the comparison",
+     "marks": "the fastest-growing region's CAGR bold blue; totals bold under a rule"
+    },
+    {
+     "reader_must_see": "whether orders, pricing, delivery and concentration support the revenue trend",
+     "comparison": "each indicator across six years",
+     "data": "five indicators and a derived revenue per employee by six fiscal years",
+     "forms_considered": [
+      {
+       "form": "indicator table by year",
+       "reason": "chosen: six years of each indicator read across"
+      },
+      {
+       "form": "sparkline row per indicator",
+       "reason": "sparklines at this size lose the values the committee quotes"
+      }
+     ],
+     "chosen_form": "indicator table by year",
+     "why": "operating indicators are checked against the revenue table above, year for year",
+     "marks": "FY2026E column in blue; the FY2024A book-to-bill under 1.00x in red"
+    },
+    {
+     "reader_must_see": "how concentrated revenue is in the five largest customers and how long each has bought",
+     "comparison": "each customer's share against the top-five total and the 21% top-ten share",
+     "data": "five anonymised customers with share and first year, and a total",
+     "forms_considered": [
+      {
+       "form": "customer table with a top-five total",
+       "reason": "chosen: share and tenure per customer, tied to a total"
+      },
+      {
+       "form": "a concentration sentence",
+       "reason": "states the total but not the tenure behind it"
+      }
+     ],
+     "chosen_form": "customer table with a top-five total",
+     "why": "concentration and tenure are what a lender and a buyer ask first; a small table answers both",
+     "marks": "top-five total bold under a rule"
+    }
+   ]
+  },
+  {
+   "id": "s2-structure",
+   "intent": "show how the price is paid for and the capital structure at close",
+   "message": "A $1,260.0m price (10.0x FY2026E Adj. EBITDA) funded with 5.75x of debt and 45.5% equity, under the LBO comps median price",
+   "composition": "new:three-exhibits-over-wide-table-over-two",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "where the money comes from and how much of it is debt",
+     "comparison": "each source against total sources and in turns of FY2026E EBITDA",
+     "data": "five sources with amount, share and multiple, and a total",
+     "forms_considered": [
+      {
+       "form": "sources table with a totals row",
+       "reason": "chosen: the committee checks that sources equal uses to the decimal"
+      },
+      {
+       "form": "a stacked bar of sources",
+       "reason": "draws proportions but not the amounts that must tie to uses"
+      }
+     ],
+     "chosen_form": "sources table with a totals row",
+     "why": "sources and uses are a tie-out; a table is how the reader checks it",
+     "marks": "the two debt tranches' amounts bold blue; totals bold under a rule"
+    },
+    {
+     "reader_must_see": "what the money is spent on, including fees",
+     "comparison": "each use against total uses, which equals total sources",
+     "data": "five uses with amount, share and multiple, and a total",
+     "forms_considered": [
+      {
+       "form": "uses table with a totals row beside sources",
+       "reason": "chosen: the two totals sit side by side at one height"
+      },
+      {
+       "form": "uses folded into one table with sources",
+       "reason": "a four-block single table is longer and the side-by-side tie is lost"
+      }
+     ],
+     "chosen_form": "uses table with a totals row beside sources",
+     "why": "placed beside sources the two totals line up and the reader sees they tie",
+     "marks": "totals bold under a rule; the footnote states the cash-free, debt-free basis"
+    },
+    {
+     "reader_must_see": "the shape of the stack: how much is senior debt, junior debt and equity, in turns of EBITDA",
+     "comparison": "each layer's height against the whole stack",
+     "data": "three layers in turns of FY2026E EBITDA adding to 10.54x",
+     "forms_considered": [
+      {
+       "form": "one stacked bar of the capital stack labelled in turns",
+       "reason": "chosen: the attachment points read as heights a lender prices"
+      },
+      {
+       "form": "a doughnut of debt and equity",
+       "reason": "angles of three layers hide the seniority order"
+      }
+     ],
+     "chosen_form": "one stacked bar of the capital stack labelled in turns",
+     "why": "a capital stack is read by seniority; one bar keeps the order and the proportions",
+     "marks": "first lien blue, notes light steel, equity grey; each layer labelled with amount and turns"
+    },
+    {
+     "reader_must_see": "every tranche's size, leverage, price, maturity and terms in one place",
+     "comparison": "each tranche against the others and the cumulative leverage at each attachment point",
+     "data": "two debt tranches, a revolver, cash and two equity lines by eleven measures",
+     "forms_considered": [
+      {
+       "form": "full-width capitalisation table with cumulative leverage",
+       "reason": "chosen: the committee reads terms across and leverage down"
+      },
+      {
+       "form": "term sheet bullets per tranche",
+       "reason": "scatters the same eleven terms over three blocks and hides the cumulative multiple"
+      }
+     ],
+     "chosen_form": "full-width capitalisation table with cumulative leverage",
+     "why": "the capital structure is a table in every IC book because its terms are compared across tranches",
+     "marks": "subtotal rows bold; total debt's 5.75x cumulative in bold blue; total capitalisation on pale steel"
+    },
+    {
+     "reader_must_see": "what the price is on several earnings bases and how it compares with peers and LBO precedents",
+     "comparison": "Corvane's implied multiple against the peer and LBO comps medians",
+     "data": "five multiples with their earnings base and two benchmark medians",
+     "forms_considered": [
+      {
+       "form": "implied multiples table against two medians",
+       "reason": "chosen: each base and benchmark sits on one line"
+      },
+      {
+       "form": "dot plot of the entry multiple among the comps",
+       "reason": "the comps are already drawn on sheets 5 and 6; here the reader needs the figures"
+      }
+     ],
+     "chosen_form": "implied multiples table against two medians",
+     "why": "the price is argued on several bases and the committee wants each beside its benchmark",
+     "marks": "the FY2026E line, the headline price, shaded"
+    },
+    {
+     "reader_must_see": "who owns the equity at close",
+     "comparison": "sponsor against management",
+     "data": "two holders with amount and ownership and a total",
+     "forms_considered": [
+      {
+       "form": "ownership table",
+       "reason": "chosen: two lines and a total that ties"
+      },
+      {
+       "form": "a sentence in the notes",
+       "reason": "the ownership split drives the returns on sheet 4 and needs to be found"
+      }
+     ],
+     "chosen_form": "ownership table",
+     "why": "the sponsor share is used in every return figure; a small table makes it findable",
+     "marks": "total bold under a rule; the units line states the incentive plan"
+    },
+    {
+     "reader_must_see": "what the transaction costs are and what share of the price they take",
+     "comparison": "each fee item against the total and against EV",
+     "data": "five fee items with amounts, a share of EV and a total",
+     "forms_considered": [
+      {
+       "form": "fees table with a totals row",
+       "reason": "chosen: the committee checks each fee and that the total ties to uses"
+      },
+      {
+       "form": "one fees line in uses",
+       "reason": "hides the split the committee negotiates"
+      }
+     ],
+     "chosen_form": "fees table with a totals row",
+     "why": "fees are negotiated line by line, so each line is shown and tied",
+     "marks": "totals bold under a rule"
+    },
+    {
+     "reader_must_see": "the first-year cash interest by tranche and its blended rate",
+     "comparison": "each tranche's interest against the total",
+     "data": "three tranches with opening balance, rate and interest, and a total",
+     "forms_considered": [
+      {
+       "form": "interest table with a totals row",
+       "reason": "chosen: balance, rate and interest per tranche tie to the model's first year"
+      },
+      {
+       "form": "a sentence in the notes",
+       "reason": "the rate per tranche is needed to judge rate exposure"
+      }
+     ],
+     "chosen_form": "interest table with a totals row",
+     "why": "the committee checks cash interest against the model on sheet 3",
+     "marks": "total bold under a rule; the blended rate on the total line"
+    },
+    {
+     "reader_must_see": "the covenant, incurrence, sweep, incremental and payment terms of each facility",
+     "comparison": "each term across the three facilities",
+     "data": "seven terms by three facilities, in words",
+     "forms_considered": [
+      {
+       "form": "terms grid of terms by facility",
+       "reason": "chosen: each term reads across the facilities"
+      },
+      {
+       "form": "term sheet bullets per facility",
+       "reason": "the same seven terms scattered over three lists"
+      }
+     ],
+     "chosen_form": "terms grid of terms by facility",
+     "why": "credit terms are compared across facilities, which a grid does",
+     "marks": "term names bold; no colour, as nothing is ranked"
+    }
+   ]
+  },
+  {
+   "id": "s3-model",
+   "intent": "lay out the operating case and debt schedule the returns rest on",
+   "message": "Revenue grows 5.6% a year to $878.2m and Adj. EBITDA to $200.2m at 22.8%; $332.5m of levered free cash flow repays 58.6% of the term loan",
+   "composition": "new:wide-model-beside-stacked-panels",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "every line of the base case from revenue to net leverage for three actual years, the entry year and five forecast years",
+     "comparison": "forecast years against history, and each line's 2026-31 CAGR",
+     "data": "31 lines in four blocks by nine fiscal years and a CAGR column; history NA below EBITDA",
+     "forms_considered": [
+      {
+       "form": "one long model table with block heads",
+       "reason": "chosen: the committee reads a model line by line and ties FCF to debt paydown"
+      },
+      {
+       "form": "separate P&L, cash flow and debt tables",
+       "reason": "three tables repeat the year heads and break the tie from EBITDA to paydown"
+      }
+     ],
+     "chosen_form": "one long model table with block heads",
+     "why": "the model is the evidence for every return figure; one grid lets a reader follow EBITDA to cash to debt in one column",
+     "marks": "forecast years in blue with their heads; total rows bold; ratio rows italic; block heads on pale steel"
+    },
+    {
+     "reader_must_see": "the assumptions that drive each forecast year",
+     "comparison": "each assumption across the five forecast years",
+     "data": "eleven assumptions by five years",
+     "forms_considered": [
+      {
+       "form": "assumptions table by year",
+       "reason": "chosen: the drivers sit beside the model they drive"
+      },
+      {
+       "form": "assumption footnotes under the model",
+       "reason": "eleven drivers by five years do not read as sentences"
+      }
+     ],
+     "chosen_form": "assumptions table by year",
+     "why": "a committee challenges inputs, not outputs; the table states each input once",
+     "marks": "the EBITDA margin line, the input the returns are most sensitive to, shaded"
+    },
+    {
+     "reader_must_see": "that the forecast EBITDA path continues the historical trend rather than breaking from it",
+     "comparison": "forecast EBITDA against the six actual and budget years before it",
+     "data": "one series of eleven fiscal years, six history and five forecast",
+     "forms_considered": [
+      {
+       "form": "column chart with history grey and forecast blue",
+       "reason": "chosen: the slope change at the forecast boundary is visible at once"
+      },
+      {
+       "form": "line chart",
+       "reason": "a line smooths the annual readings and the boundary is less clear"
+      },
+      {
+       "form": "EBITDA row of the model only",
+       "reason": "the trend comparison needs a shape, not eleven figures"
+      }
+     ],
+     "chosen_form": "column chart with history grey and forecast blue",
+     "why": "the reader tests whether the plan is a hockey stick; columns split at the boundary show it",
+     "marks": "values on every column; colour change at the forecast boundary"
+    },
+    {
+     "reader_must_see": "how far the sponsor case sits under management's and above the downside, in operating and return terms",
+     "comparison": "three cases side by side on FY2031E outcomes and returns",
+     "data": "eight measures by three cases",
+     "forms_considered": [
+      {
+       "form": "case comparison table",
+       "reason": "chosen: three cases by eight measures read across"
+      },
+      {
+       "form": "grouped bars of FY2031E EBITDA by case",
+       "reason": "draws one measure and drops the returns"
+      }
+     ],
+     "chosen_form": "case comparison table",
+     "why": "the committee wants to see the haircut to management and what the downside does to returns",
+     "marks": "the base column on pale steel in blue; downside IRR and MOIC in red, under the hurdles"
+    },
+    {
+     "reader_must_see": "how far below management's plan the sponsor case sits in each year",
+     "comparison": "sponsor base against management's revenue and EBITDA by year",
+     "data": "two management lines and two variance lines by five forecast years",
+     "forms_considered": [
+      {
+       "form": "variance table by year",
+       "reason": "chosen: management's figures and the haircut read under the model's own years"
+      },
+      {
+       "form": "paired columns by year",
+       "reason": "ten bars for a variance the reader wants as a percentage"
+      }
+     ],
+     "chosen_form": "variance table by year",
+     "why": "the haircut is the committee's protection; it should be visible by year, not only in FY2031E",
+     "marks": "variance rows italic in blue"
+    },
+    {
+     "reader_must_see": "how much of EBITDA is reinvested and how much of capex is growth",
+     "comparison": "maintenance against growth capex, and reinvestment against EBITDA, by year",
+     "data": "five lines by five forecast years",
+     "forms_considered": [
+      {
+       "form": "reinvestment table by year",
+       "reason": "chosen: capex split and working capital per year"
+      },
+      {
+       "form": "stacked columns of capex",
+       "reason": "draws the split but drops working capital and the ratio"
+      }
+     ],
+     "chosen_form": "reinvestment table by year",
+     "why": "the case's cash conversion rests on reinvestment staying at these levels",
+     "marks": "total capex bold; the ratio row italic"
+    }
+   ]
+  },
+  {
+   "id": "s4-returns",
+   "intent": "state the returns and how far each assumption can move before the hurdle is missed",
+   "message": "2.56x and 20.7% in the base case with no multiple expansion; the hurdle holds to a 9.77x exit or margins about 35bp under plan",
+   "composition": "new:three-panels-over-three-grids",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "how exit enterprise value becomes sponsor proceeds, MOIC and IRR",
+     "comparison": "each step from EV down to the sponsor's proceeds against invested equity",
+     "data": "twelve lines from exit EBITDA to IRR",
+     "forms_considered": [
+      {
+       "form": "returns waterfall table",
+       "reason": "chosen: every deduction the committee checks is a line"
+      },
+      {
+       "form": "a returns sentence",
+       "reason": "states MOIC and IRR but not the deductions behind them"
+      }
+     ],
+     "chosen_form": "returns waterfall table",
+     "why": "IC members recompute returns from EV; the table gives each step",
+     "marks": "equity lines bold; MOIC and IRR shaded in blue"
+    },
+    {
+     "reader_must_see": "where the equity gain comes from: EBITDA growth, deleveraging, and none from multiple",
+     "comparison": "each source of value against the others, from equity invested to equity at exit",
+     "data": "an opening total, six steps and a closing total",
+     "forms_considered": [
+      {
+       "form": "value creation bridge",
+       "reason": "chosen: each step's size and sign read as a bar"
+      },
+      {
+       "form": "attribution table",
+       "reason": "gives the figures but not the proportions"
+      }
+     ],
+     "chosen_form": "value creation bridge",
+     "why": "the committee asks whether returns rely on multiple expansion; a bridge shows a zero step there",
+     "marks": "costs in red, gains in blue, totals grey; each step labelled with its value; the zero multiple step labelled 0.0"
+    },
+    {
+     "reader_must_see": "how IRR changes with an earlier or later exit at three exit multiples",
+     "comparison": "IRR by exit year at 9.0x, 10.0x and 11.0x",
+     "data": "three exit years by three exit multiples, plus MOIC at 10.0x",
+     "forms_considered": [
+      {
+       "form": "small hold-period table",
+       "reason": "chosen: nine IRRs and three MOICs read as a lookup"
+      },
+      {
+       "form": "line chart of IRR by year",
+       "reason": "three short lines are fewer figures than the table and harder to read off"
+      }
+     ],
+     "chosen_form": "small hold-period table",
+     "why": "timing is a lookup; the table sits beside the summary it extends",
+     "marks": "base cell shaded; IRRs under the hurdle in red"
+    },
+    {
+     "reader_must_see": "which entry and exit multiple pairs clear the 20% IRR hurdle",
+     "comparison": "IRR across entry multiples and exit multiples, against the hurdle",
+     "data": "a grid of five entry by seven exit multiples",
+     "forms_considered": [
+      {
+       "form": "sensitivity grid with cells under the hurdle in red",
+       "reason": "chosen: the reader finds any pair and sees the hurdle frontier"
+      },
+      {
+       "form": "heat map shaded by IRR",
+       "reason": "gives colour a value scale and competes with the one meaning red holds"
+      }
+     ],
+     "chosen_form": "sensitivity grid with cells under the hurdle in red",
+     "why": "sensitivity is a lookup the committee reads cell by cell; red draws the frontier",
+     "marks": "base cell (10.0x, 10.0x) shaded in blue; cells under 20% in red; a spanner names the exit axis"
+    },
+    {
+     "reader_must_see": "which entry and exit multiple pairs clear the 2.5x MOIC hurdle",
+     "comparison": "MOIC across the same entry and exit multiples, against its hurdle",
+     "data": "the same five by seven grid in multiples of money",
+     "forms_considered": [
+      {
+       "form": "MOIC grid beside the IRR grid on the same axes",
+       "reason": "chosen: the two hurdles compare cell for cell"
+      },
+      {
+       "form": "MOIC as a second figure in each IRR cell",
+       "reason": "two figures per cell at 7pt halve the legibility of both"
+      }
+     ],
+     "chosen_form": "MOIC grid beside the IRR grid on the same axes",
+     "why": "funds report both hurdles; sibling grids on one order let the reader compare them",
+     "marks": "base cell shaded; cells under 2.5x in red"
+    },
+    {
+     "reader_must_see": "how much growth or margin shortfall the base case can absorb before missing the hurdle",
+     "comparison": "IRR across revenue growth and EBITDA margin changes against the base",
+     "data": "four growth changes by six margin changes",
+     "forms_considered": [
+      {
+       "form": "operating sensitivity grid",
+       "reason": "chosen: each cell is a full model re-run at one pair of changes"
+      },
+      {
+       "form": "tornado chart of single-variable swings",
+       "reason": "drops the joint cases the committee asks about"
+      }
+     ],
+     "chosen_form": "operating sensitivity grid",
+     "why": "operating misses are the main risk to the case; the grid shows the joint frontier",
+     "marks": "base cell shaded; cells under 20% in red"
+    },
+    {
+     "reader_must_see": "how much IRR each turn of entry debt buys at each exit multiple",
+     "comparison": "IRR across four entry leverage levels and five exit multiples, against the hurdle",
+     "data": "a grid of four leverage levels by five exit multiples",
+     "forms_considered": [
+      {
+       "form": "leverage sensitivity grid with cells under the hurdle in red",
+       "reason": "chosen: the trade between leverage and return is read cell by cell"
+      },
+      {
+       "form": "line chart of IRR against leverage per exit multiple",
+       "reason": "five crossing lines at 7pt labels are harder to read off than a grid"
+      }
+     ],
+     "chosen_form": "leverage sensitivity grid with cells under the hurdle in red",
+     "why": "the committee sets leverage against headroom; the grid prices each turn",
+     "marks": "base cell shaded; cells under 20% in red"
+    },
+    {
+     "reader_must_see": "how far each input can move alone before IRR falls to the 20% hurdle",
+     "comparison": "each input's base value against its break-even value",
+     "data": "five inputs with base, break-even and cushion",
+     "forms_considered": [
+      {
+       "form": "break-even table",
+       "reason": "chosen: one line per input with its cushion"
+      },
+      {
+       "form": "tornado chart",
+       "reason": "shows swing for a fixed move, not the distance to the hurdle"
+      }
+     ],
+     "chosen_form": "break-even table",
+     "why": "the question is how much room each assumption has; the cushion column answers it",
+     "marks": "cushion column bold"
+    },
+    {
+     "reader_must_see": "what each holder puts in and takes out at exit, and what the incentive plan costs",
+     "comparison": "sponsor, management rollover and the incentive plan against total exit equity",
+     "data": "three holders by amount in, amount out and multiple, with a total",
+     "forms_considered": [
+      {
+       "form": "holder proceeds table with a total",
+       "reason": "chosen: in, out and multiple per holder tie to exit equity"
+      },
+      {
+       "form": "a stacked bar of exit equity by holder",
+       "reason": "shows shares but not the multiple each holder earns"
+      }
+     ],
+     "chosen_form": "holder proceeds table with a total",
+     "why": "management alignment and the plan's cost are read as figures that tie to the returns table",
+     "marks": "total bold under a rule"
+    }
+   ]
+  },
+  {
+   "id": "s5-debt",
+   "intent": "test whether the business carries the proposed debt",
+   "message": "5.75x sits under three of four capacity tests and the downside keeps 26.6% headroom to the springing covenant",
+   "composition": "new:chart-over-table-beside-two-tables",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "first-lien net leverage in each year in the base and downside cases against the 6.60x springing covenant, and the tightest gap",
+     "comparison": "each year's leverage in two cases against the covenant line",
+     "data": "two leverage series over six year ends and one constant limit",
+     "forms_considered": [
+      {
+       "form": "paired columns with a covenant line and a dimension bracket on the tightest year",
+       "reason": "chosen: the gap between each column and the line is the headroom"
+      },
+      {
+       "form": "two lines against the covenant",
+       "reason": "year-end tests are discrete readings, and labels on two close lines collide"
+      },
+      {
+       "form": "the leverage rows of the table only",
+       "reason": "the reader would subtract to find the headroom"
+      }
+     ],
+     "chosen_form": "paired columns with a covenant line and a dimension bracket on the tightest year",
+     "why": "a covenant is a ceiling the ratio must stay under; columns against the line make the tight year visible, and the bracket states its size",
+     "marks": "base blue, downside red, covenant orange named in the legend; values on every column; a bracket dimensioning the FY2027E downside headroom"
+    },
+    {
+     "reader_must_see": "every credit statistic by year in the base case and the key ones in the downside",
+     "comparison": "each year against the next and the downside against the base",
+     "data": "eleven base and four downside statistics by six year ends",
+     "forms_considered": [
+      {
+       "form": "credit statistics table aligned to the chart's years",
+       "reason": "chosen: the figures behind each column sit in the column under it"
+      },
+      {
+       "form": "data labels for every statistic on the chart",
+       "reason": "fifteen labels per year would bury the chart"
+      }
+     ],
+     "chosen_form": "credit statistics table aligned to the chart's years",
+     "why": "lenders recompute ratios from their inputs; the table gives the inputs and the headroom",
+     "marks": "first-lien leverage and headroom bold; downside leverage and headroom in red"
+    },
+    {
+     "reader_must_see": "how the proposed structure compares with twelve recent industrial LBO financings",
+     "comparison": "Corvane's leverage, equity, pricing and OID against each precedent and the statistics",
+     "data": "twelve financings by nine measures with mean, median, high and low and the proposed terms",
+     "forms_considered": [
+      {
+       "form": "precedent financings table with statistics rows",
+       "reason": "chosen: every term reads against each precedent and the median"
+      },
+      {
+       "form": "scatter of leverage against equity contribution",
+       "reason": "shows the cluster but drops pricing and ratings"
+      }
+     ],
+     "chosen_form": "precedent financings table with statistics rows",
+     "why": "debt capacity is argued from what the market has just financed; the table gives every term",
+     "marks": "statistics in italics, median bold; Corvane's proposed row shaded in blue"
+    },
+    {
+     "reader_must_see": "the maximum debt each capacity test allows against the proposed 5.75x",
+     "comparison": "each method's maximum against the proposed debt",
+     "data": "four methods with a basis and a maximum, and the proposed structure",
+     "forms_considered": [
+      {
+       "form": "capacity tests table",
+       "reason": "chosen: method, basis and maximum on one line each"
+      },
+      {
+       "form": "bar chart of maxima against a proposed-debt line",
+       "reason": "four bars repeat four figures and drop the basis"
+      }
+     ],
+     "chosen_form": "capacity tests table",
+     "why": "each test is a stated rule; the committee reads the rule beside its answer",
+     "marks": "the proposed row shaded in blue; the note names the one test it exceeds"
+    },
+    {
+     "reader_must_see": "what the downside case assumes in each year and how far it sits under the base",
+     "comparison": "downside segment growth and margin by year, and the gap to the base",
+     "data": "three growth lines, margin and two gap lines by five years",
+     "forms_considered": [
+      {
+       "form": "downside assumptions table",
+       "reason": "chosen: the stress is stated as inputs a lender can challenge"
+      },
+      {
+       "form": "downside described in a footnote",
+       "reason": "five years of three segments do not read as a sentence"
+      }
+     ],
+     "chosen_form": "downside assumptions table",
+     "why": "a downside is only as credible as its inputs, which a lender reads by year",
+     "marks": "the FY2027E shock in red; gap rows italic"
+    },
+    {
+     "reader_must_see": "what higher rates do to interest, cover, deleveraging and returns",
+     "comparison": "the current curve against +100bp and +200bp",
+     "data": "five measures by three rate cases",
+     "forms_considered": [
+      {
+       "form": "rate sensitivity table",
+       "reason": "chosen: three cases side by side on the measures a lender tests"
+      },
+      {
+       "form": "a line of cover by rate case",
+       "reason": "drops FCF and returns"
+      }
+     ],
+     "chosen_form": "rate sensitivity table",
+     "why": "the TLB is floating and unhedged in the case, so rate exposure is a credit question",
+     "marks": "the curve case shaded"
+    }
+   ]
+  },
+  {
+   "id": "s6-exit",
+   "intent": "show how the investment is realised and what the listed market pays",
+   "message": "Probability-weighted 2.34x and 19.7%; the base exit at 10.0x sits under six of seven reference multiples",
+   "composition": "new:table-beside-chart-over-wide-table",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each exit route's timing, multiple, proceeds and returns with its probability",
+     "comparison": "four routes against each other and against the hurdles",
+     "data": "four scenarios by eleven measures",
+     "forms_considered": [
+      {
+       "form": "exit scenarios table",
+       "reason": "chosen: each route's arithmetic reads down its column"
+      },
+      {
+       "form": "one scenario paragraph each",
+       "reason": "four sets of figures in prose cannot be compared"
+      }
+     ],
+     "chosen_form": "exit scenarios table",
+     "why": "the committee compares routes on the same measures; columns of a table do that",
+     "marks": "the base column shaded; MOIC and IRR rows bold; returns under a hurdle in red"
+    },
+    {
+     "reader_must_see": "which exit routes clear the 2.5x MOIC hurdle and by how much",
+     "comparison": "each route's MOIC against the hurdle line",
+     "data": "four MOICs with their IRRs and one hurdle",
+     "forms_considered": [
+      {
+       "form": "horizontal bars with a hurdle line",
+       "reason": "chosen: the distance of each bar end from the line is the margin over the hurdle"
+      },
+      {
+       "form": "the MOIC row of the scenarios table only",
+       "reason": "the reader would subtract to find the margin"
+      }
+     ],
+     "chosen_form": "horizontal bars with a hurdle line",
+     "why": "the hurdle is a threshold; bars against the line show at once which routes clear it",
+     "marks": "the hurdle as an orange dashed line labelled; bars under it in red; each bar labelled MOIC and IRR"
+    },
+    {
+     "reader_must_see": "what listed peers trade at and how Corvane's entry price, growth and mix compare",
+     "comparison": "each peer's multiples and operating measures against the statistics and Corvane",
+     "data": "twelve listed peers by nine measures with mean, median, high and low and Corvane at entry",
+     "forms_considered": [
+      {
+       "form": "trading comparables table with statistics rows",
+       "reason": "chosen: the exit multiple is argued from these figures"
+      },
+      {
+       "form": "scatter of EV / EBITDA against aftermarket share",
+       "reason": "shows the mix premium but drops the figures the committee looks up"
+      }
+     ],
+     "chosen_form": "trading comparables table with statistics rows",
+     "why": "comps are reference content; every IC member looks up a peer",
+     "marks": "statistics in italics, median bold; Corvane's row shaded in blue"
+    },
+    {
+     "reader_must_see": "what strategic and financial buyers have paid for flow-control businesses",
+     "comparison": "each deal's EV and multiples against the strategic, sponsor and overall medians",
+     "data": "ten deals by date, target, acquirer, EV and two multiples, with three medians",
+     "forms_considered": [
+      {
+       "form": "precedent transactions table with buyer-type medians",
+       "reason": "chosen: the strategic exit multiple is argued from these deals"
+      },
+      {
+       "form": "bar chart of deal multiples by buyer type",
+       "reason": "drops dates, targets and EVs the committee checks"
+      }
+     ],
+     "chosen_form": "precedent transactions table with buyer-type medians",
+     "why": "a strategic exit assumption needs the deals behind it, read line by line",
+     "marks": "medians in italics, the strategic median bold"
+    },
+    {
+     "reader_must_see": "where the 10.0x base exit sits among the multiples the market has paid or pays today",
+     "comparison": "each reference multiple against the base exit line",
+     "data": "seven reference multiples from peers, precedents and LBO financings",
+     "forms_considered": [
+      {
+       "form": "sorted bars with the base exit as a line",
+       "reason": "chosen: the line shows at once that the base exit sits under all but one reference"
+      },
+      {
+       "form": "a table of reference multiples",
+       "reason": "the reader would compare seven figures with 10.0x by eye"
+      },
+      {
+       "form": "dot plot on one axis",
+       "reason": "seven labels would collide between 9.8x and 12.0x"
+      }
+     ],
+     "chosen_form": "sorted bars with the base exit as a line",
+     "why": "the committee asks whether the exit is conservative; bars against the line answer it",
+     "marks": "bars grey as context; the base exit as a labelled blue line; values at the bar ends"
+    }
+   ]
+  }
+ ]
+}

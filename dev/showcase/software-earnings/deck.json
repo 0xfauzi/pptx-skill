@@ -1,0 +1,4029 @@
+{
+ "slides": [
+  {
+   "id": "p1-highlights",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Q3 FY2026 results  |  Highlights"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Revenue grew 21.3% to $358.2M and operating margin widened 5.4 points to 16.6%, both above guidance"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "main",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "tiles",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "tile1",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t1l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Total revenue",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t1v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "$358.2M"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t1c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "+21.3% year on year",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp1",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          },
+          {
+           "type": "region",
+           "id": "tile2",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t2l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Ending ARR",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t2v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "$1,498M"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t2c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "+22.2% year on year",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp2",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          },
+          {
+           "type": "region",
+           "id": "tile3",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t3l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Net new ARR",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t3v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "$83M"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t3c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Record; +43.1% year on year",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp3",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          },
+          {
+           "type": "region",
+           "id": "tile4",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t4l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Net revenue retention",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t4v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "119%"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t4c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "+3 pts from the 116% low",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp4",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          },
+          {
+           "type": "region",
+           "id": "tile5",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t5l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Operating margin",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t5v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "16.6%"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t5c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "+5.4 pts year on year",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp5",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          },
+          {
+           "type": "region",
+           "id": "tile6",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": "space.md",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "t6l",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Free cash flow margin",
+               "ink_role": "color.ink_muted"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t6v",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.metric",
+               "text": "21.4%"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "t6c",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "+3.1 pts year on year",
+               "ink_role": "color.ink"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "sp6",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0,
+           "fill_role": "color.surface_alt"
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "body",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "left",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "m_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "The quarter against last year"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "m_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "Q3 FY26 in indigo; GAAP margin and stock compensation as reported"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "metrics",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "Metric",
+                "value_kind": "text"
+               },
+               {
+                "key": "a",
+                "label": "Q3 FY25",
+                "value_kind": "number"
+               },
+               {
+                "key": "b",
+                "label": "Q3 FY26",
+                "value_kind": "number"
+               },
+               {
+                "key": "c",
+                "label": "Change",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "Subscription revenue ($M)",
+                "280.3",
+                "342.8",
+                "+22.3%"
+               ],
+               [
+                "Remaining performance obligations ($M)",
+                "1,384",
+                "1,741",
+                "+25.8%"
+               ],
+               [
+                "Customers above $100K ARR",
+                "1,779",
+                "2,148",
+                "+20.7%"
+               ],
+               [
+                "Customers above $1M ARR",
+                "81",
+                "109",
+                "+34.6%"
+               ],
+               [
+                "GAAP operating margin (%)",
+                "(8.9)",
+                "(0.4)",
+                "+8.5 pts"
+               ],
+               [
+                "Stock-based compensation (% of revenue)",
+                "16.2",
+                "14.6",
+                "(1.6) pts"
+               ],
+               [
+                "Rule of 40 (%)",
+                "40.0",
+                "42.7",
+                "+2.7 pts"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": false,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "b"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent1",
+                "bold": true
+               }
+              ]
+             }
+            }
+           ],
+           "weight": 1.25
+          },
+          {
+           "type": "region",
+           "id": "mid",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "s_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "Against Q3 guidance"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "s_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "guided in August 2026 (amber); beat against the high end in green"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "score",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "Metric",
+                "value_kind": "text"
+               },
+               {
+                "key": "g",
+                "label": "Guidance",
+                "value_kind": "number"
+               },
+               {
+                "key": "a",
+                "label": "Actual",
+                "value_kind": "number"
+               },
+               {
+                "key": "v",
+                "label": "vs high end",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "Revenue ($M)",
+                "350.0-354.0",
+                "358.2",
+                "+4.2"
+               ],
+               [
+                "Operating income ($M)",
+                "52.0-54.0",
+                "59.5",
+                "+5.5"
+               ],
+               [
+                "Operating margin (%)",
+                "14.9-15.3",
+                "16.6",
+                "+1.3 pts"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": false,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "g"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent2",
+                "bold": false
+               },
+               {
+                "columns": [
+                 "a"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent1",
+                "bold": true
+               },
+               {
+                "columns": [
+                 "v"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.positive",
+                "bold": true
+               }
+              ]
+             }
+            },
+            {
+             "type": "element",
+             "id": "s_fn",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.footnote",
+               "text": "Operating income and margin are non-GAAP; guided margin is the guided income over guided revenue at each end of the range."
+              }
+             ]
+            }
+           ],
+           "weight": 1.0
+          },
+          {
+           "type": "region",
+           "id": "notes",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "n_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h2",
+               "text": "What drove the quarter"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "n1",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "text": "Net new ARR of $83M was a record, $17M above the prior high, as customers above $1M ARR rose 34.6% to 109.",
+               "bullet_level": 0
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "n2",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "text": "Net revenue retention rose for a third quarter, to 119% from 116%.",
+               "bullet_level": 0
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "n3",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "text": "Sales and marketing fell to 35.8% of revenue from 38.9%, 3.1 of the 5.4 points of margin gained.",
+               "bullet_level": 0
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "n4",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body",
+               "text": "FY2026 revenue guidance raised to $1,394.4-1,398.4M.",
+               "bullet_level": 0
+              }
+             ]
+            }
+           ],
+           "weight": 0.95
+          }
+         ],
+         "weight": 0.6
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December. Bars: nine quarters, Q3 FY24 to Q3 FY26; Q3 FY26 in indigo."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "notes": "Illustrative: Corvane Software is a fictional company and every figure on this page is invented for this example, computed by figures.py. Headline metrics for the quarter ended 30 September 2026, against Q3 FY25 and against the range guided in August.",
+   "charts": {
+    "sp1": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        242.5,
+        256.5,
+        266.4,
+        280.2,
+        295.2,
+        311.4,
+        324.0,
+        340.2,
+        358.2
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 376.1,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     },
+     "gap_width": 40,
+     "overlap": 0
+    },
+    "sp2": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        1012,
+        1068,
+        1115,
+        1168,
+        1226,
+        1292,
+        1349,
+        1415,
+        1498
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 1572.9,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     },
+     "gap_width": 40,
+     "overlap": 0
+    },
+    "sp3": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        50,
+        56,
+        47,
+        53,
+        58,
+        66,
+        57,
+        66,
+        83
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 87.2,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     },
+     "gap_width": 40,
+     "overlap": 0
+    },
+    "sp4": {
+     "type": "LINE",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        121,
+        119,
+        118,
+        117,
+        116,
+        116,
+        117,
+        118,
+        119
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 1.75,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 112,
+       "max": 123,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     }
+    },
+    "sp5": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        8.1,
+        9.0,
+        9.6,
+        10.4,
+        11.2,
+        12.8,
+        14.5,
+        15.8,
+        16.6
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 17.4,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     },
+     "gap_width": 40,
+     "overlap": 0
+    },
+    "sp6": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "trend",
+       "values": [
+        14.9,
+        18.8,
+        16.2,
+        16.8,
+        18.3,
+        21.5,
+        19.4,
+        19.3,
+        21.4
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 22.6,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.0,
+      "y": 0.04,
+      "w": 1.0,
+      "h": 0.94
+     },
+     "gap_width": 40,
+     "overlap": 0
+    }
+   }
+  },
+  {
+   "id": "p2-revenue-arr",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Q3 FY2026 results  |  Revenue and ARR"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "ARR grew 22.2% to $1,498M on a record $83M of net new ARR"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "r_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Total revenue"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "r_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$M by fiscal quarter; growth on the same quarter a year before beneath"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "rev",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "mid",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "a_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Net new ARR"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "a_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "$M added in the quarter; ending ARR ($M) and its growth beneath"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "nn",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "notes",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "n_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "What moved"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Net new ARR of $83M was 43.1% above Q3 FY25's $58M and $17M above the prior record of $66M.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "ARR growth of 22.2% ran 0.9 points ahead of revenue growth.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "ARR growth rose to 22.2% after four quarters at 21.0-21.1%; revenue growth held at 21.3-21.7% for five quarters.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "x_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Revenue by type"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "x_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "subscription 95.7% of revenue in Q3 FY26"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mix",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "$M",
+              "value_kind": "text"
+             },
+             {
+              "key": "a",
+              "label": "Q3 FY25",
+              "value_kind": "number"
+             },
+             {
+              "key": "b",
+              "label": "Q3 FY26",
+              "value_kind": "number"
+             },
+             {
+              "key": "g",
+              "label": "Y/Y (%)",
+              "value_kind": "number",
+              "total": "none"
+             }
+            ],
+            "rows": [
+             [
+              "Subscription",
+              "280.3",
+              "342.8",
+              "22.3"
+             ],
+             [
+              "Services",
+              "14.9",
+              "15.4",
+              "3.4"
+             ],
+             [
+              "Total revenue",
+              "295.2",
+              "358.2",
+              "21.3"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": true,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "columns": [
+               "b"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "n_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "ARR: annualised value of subscription contracts in force at quarter end. Net new ARR: the change in ARR over the quarter."
+            }
+           ]
+          }
+         ],
+         "weight": 0.7
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "notes": "Illustrative: Corvane Software is a fictional company and every figure on this page is invented for this example, computed by figures.py. Nine quarters, Q3 FY24 to Q3 FY26; Q3 FY26 in indigo, earlier quarters in slate.",
+   "charts": {
+    "rev": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "value",
+       "values": [
+        242.5,
+        256.5,
+        266.4,
+        280.2,
+        295.2,
+        311.4,
+        324.0,
+        340.2,
+        358.2
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 400,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 45,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.11,
+      "y": 0.04,
+      "w": 0.88,
+      "h": 0.74
+     }
+    },
+    "nn": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "value",
+       "values": [
+        50,
+        56,
+        47,
+        53,
+        58,
+        66,
+        57,
+        66,
+        83
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 8,
+         "fill_role": "color.accent1",
+         "label": {
+          "text": "83\nrecord"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 100,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 45,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.11,
+      "y": 0.04,
+      "w": 0.88,
+      "h": 0.74
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "rev_g",
+     "host": "rev",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       8
+      ]
+     },
+     "position": "below",
+     "gap_role": "type.axis_label",
+     "cells": [
+      {
+       "text": "27.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "25.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "24.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "23.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.7%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.4%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.6%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.4%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.3%",
+       "role": "type.axis_label",
+       "ink_role": "color.accent1",
+       "emphasis": true
+      }
+     ],
+     "align": "center",
+     "cell_width": "own",
+     "role": "type.axis_label",
+     "ink_role": "color.ink",
+     "label": {
+      "text": "Y/Y",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.1,
+      "align": "left"
+     },
+     "gap_lines": 2
+    },
+    {
+     "id": "arr_r",
+     "host": "nn",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       8
+      ]
+     },
+     "position": "below",
+     "gap_role": "type.axis_label",
+     "cells": [
+      {
+       "text": "1,012",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,068",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,115",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,168",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,226",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,292",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,349",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,415",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,498",
+       "role": "type.axis_label",
+       "ink_role": "color.accent1",
+       "emphasis": true
+      }
+     ],
+     "align": "center",
+     "cell_width": "own",
+     "role": "type.axis_label",
+     "ink_role": "color.ink",
+     "label": {
+      "text": "ARR",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.1,
+      "align": "left"
+     },
+     "gap_lines": 2
+    },
+    {
+     "id": "arr_g",
+     "host": "nn",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       8
+      ]
+     },
+     "position": "below",
+     "gap_role": "space.xs",
+     "cells": [
+      {
+       "text": "26.5%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "26.2%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "24.3%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.4%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.1%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.0%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "21.1%",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "22.2%",
+       "role": "type.axis_label",
+       "ink_role": "color.accent1",
+       "emphasis": true
+      }
+     ],
+     "align": "center",
+     "cell_width": "own",
+     "role": "type.axis_label",
+     "ink_role": "color.ink",
+     "label": {
+      "text": "Y/Y",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.1,
+      "align": "left"
+     },
+     "after": "arr_r"
+    }
+   ]
+  },
+  {
+   "id": "p3-unit-economics",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Q3 FY2026 results  |  Unit economics and cohorts"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Net revenue retention rose for a third quarter to 119%, and the FY2024 cohort expanded fastest in its second year"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "r_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Net and gross revenue retention"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "r_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "net retention (%, trailing four quarters) plotted; gross retention (GRR, %) beneath"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "nrr",
+           "kind": "chart",
+           "weight": 1.0
+          },
+          {
+           "type": "element",
+           "id": "u_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Unit economics"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "u_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "non-GAAP, last five quarters; Q3 FY26 in indigo"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "ue",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "Metric",
+              "value_kind": "text"
+             },
+             {
+              "key": "q0",
+              "label": "Q3'25",
+              "value_kind": "number"
+             },
+             {
+              "key": "q1",
+              "label": "Q4'25",
+              "value_kind": "number"
+             },
+             {
+              "key": "q2",
+              "label": "Q1'26",
+              "value_kind": "number"
+             },
+             {
+              "key": "q3",
+              "label": "Q2'26",
+              "value_kind": "number"
+             },
+             {
+              "key": "q4",
+              "label": "Q3'26",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Gross margin (%)",
+              "79.6",
+              "79.9",
+              "80.1",
+              "80.3",
+              "80.4"
+             ],
+             [
+              "Sales and marketing (% of revenue)",
+              "38.9",
+              "38.1",
+              "37.0",
+              "36.2",
+              "35.8"
+             ],
+             [
+              "CAC payback (months)",
+              "28.8",
+              "26.1",
+              "31.2",
+              "27.1",
+              "22.2"
+             ],
+             [
+              "ARR magic number (x)",
+              "0.52",
+              "0.57",
+              "0.48",
+              "0.55",
+              "0.67"
+             ],
+             [
+              "Free cash flow margin (%)",
+              "18.3",
+              "21.5",
+              "19.4",
+              "19.3",
+              "21.4"
+             ],
+             [
+              "Rule of 40 (%)",
+              "40.0",
+              "42.9",
+              "41.0",
+              "40.7",
+              "42.7"
+             ],
+             [
+              "Customers above $100K ARR",
+              "1,779",
+              "1,858",
+              "1,931",
+              "2,032",
+              "2,148"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "columns": [
+               "q4"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             },
+             {
+              "rows": [
+               2,
+               3
+              ],
+              "fill_role": "keep",
+              "bold": true
+             }
+            ]
+           }
+          }
+         ],
+         "weight": 1.1
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "c_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "ARR by annual cohort, as a multiple of first-year ARR"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "c_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "x, by years since the cohort landed; FY2024 cohort in indigo"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "coh",
+           "kind": "chart",
+           "weight": 1.0
+          },
+          {
+           "type": "element",
+           "id": "c_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "A cohort is the customers landed in a fiscal year; its ARR is indexed to the end of that year. The FY2025 cohort has one year and is not drawn. CAC payback: prior-quarter sales and marketing over net new ARR times gross margin, in months. ARR magic number: net new ARR over prior-quarter sales and marketing."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "notes": "Illustrative: Corvane Software is a fictional company and every figure on this page is invented for this example, computed by figures.py. Retention is trailing four quarters. The FY2024 cohort reached 1.47x its first-year ARR in year two, against 1.35-1.41x for earlier cohorts.",
+   "charts": {
+    "nrr": {
+     "type": "LINE_MARKERS",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Net revenue retention",
+       "values": [
+        121,
+        119,
+        118,
+        117,
+        116,
+        116,
+        117,
+        118,
+        119
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 5,
+        "fill_role": "color.accent1"
+       },
+       "labels": {
+        "show": true,
+        "position": "above",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.accent1"
+       },
+       "points": [
+        {
+         "index": 5,
+         "label": {
+          "text": "116 low",
+          "position": "below"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 113,
+       "max": 123,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.1,
+      "y": 0.1,
+      "w": 0.89,
+      "h": 0.6
+     }
+    },
+    "coh": {
+     "type": "LINE_MARKERS",
+     "categories": [
+      "Year 1",
+      "Year 2",
+      "Year 3",
+      "Year 4",
+      "Year 5"
+     ],
+     "number_format": "0.00",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "FY2021 cohort",
+       "values": [
+        1.0,
+        1.38,
+        1.66,
+        1.88,
+        2.05
+       ],
+       "line_role": "color.accent3",
+       "line_width_pt": 1.5,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 5,
+        "fill_role": "color.accent3"
+       },
+       "labels": {
+        "show": false,
+        "position": "above",
+        "role": "type.data_label",
+        "ink_role": "color.ink_muted"
+       },
+       "points": [
+        {
+         "index": 4,
+         "label": {
+          "show": true,
+          "text": "FY2021 2.05x",
+          "position": "above"
+         }
+        }
+       ]
+      },
+      {
+       "name": "FY2022 cohort",
+       "values": [
+        1.0,
+        1.35,
+        1.62,
+        1.82,
+        null
+       ],
+       "line_role": "color.accent3",
+       "line_width_pt": 1.5,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 5,
+        "fill_role": "color.accent3"
+       },
+       "labels": {
+        "show": false,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.ink_muted"
+       },
+       "points": [
+        {
+         "index": 3,
+         "label": {
+          "show": true,
+          "text": "FY2022 1.82x",
+          "position": "right"
+         }
+        }
+       ]
+      },
+      {
+       "name": "FY2023 cohort",
+       "values": [
+        1.0,
+        1.41,
+        1.71,
+        null,
+        null
+       ],
+       "line_role": "color.accent3",
+       "line_width_pt": 1.5,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 5,
+        "fill_role": "color.accent3"
+       },
+       "labels": {
+        "show": false,
+        "position": "above",
+        "role": "type.data_label",
+        "ink_role": "color.ink_muted"
+       },
+       "points": [
+        {
+         "index": 2,
+         "label": {
+          "show": true,
+          "text": "FY2023 1.71x",
+          "position": "above"
+         }
+        }
+       ]
+      },
+      {
+       "name": "FY2024 cohort",
+       "values": [
+        1.0,
+        1.47,
+        null,
+        null,
+        null
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 2.25,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 5,
+        "fill_role": "color.accent1"
+       },
+       "labels": {
+        "show": false,
+        "position": "above",
+        "role": "type.data_label",
+        "ink_role": "color.accent1"
+       },
+       "points": [
+        {
+         "index": 1,
+         "label": {
+          "show": true,
+          "text": "FY2024 1.47x",
+          "position": "above"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "none",
+       "tick_marks": "none",
+       "reverse": false,
+       "min": 0.8,
+       "max": 2.2,
+       "major_unit": 0.2,
+       "number_format": "0.0\"x\"",
+       "cross_between": "midpoint",
+       "gridlines": {
+        "line_role": "color.rule",
+        "line_width_pt": 0.5
+       },
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       }
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.07,
+      "y": 0.04,
+      "w": 0.86,
+      "h": 0.86
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "grr",
+     "host": "nrr",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       8
+      ]
+     },
+     "position": "below",
+     "gap_role": "type.axis_label",
+     "gap_lines": 2,
+     "cells": [
+      {
+       "text": "93",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "93",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "92",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "92",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "92",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "93",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "93",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "93",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "94",
+       "role": "type.axis_label",
+       "ink_role": "color.ink"
+      }
+     ],
+     "align": "center",
+     "cell_width": "own",
+     "role": "type.axis_label",
+     "ink_role": "color.ink",
+     "label": {
+      "text": "GRR",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.08,
+      "align": "left"
+     }
+    }
+   ]
+  },
+  {
+   "id": "p4-margin",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Q3 FY2026 results  |  Margin"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Operating margin widened 5.4 points to 16.6%, 3.1 of them from sales and marketing"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "b_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Operating margin bridge, Q3 FY25 to Q3 FY26"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "b_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "% of revenue; each step is the fall in that cost line's share of revenue (gross margin: its rise)"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "bridge",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.2
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "g-cs",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "s_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "Cost structure"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "s_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "% of revenue, last five quarters"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "cs",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "% of revenue",
+                "value_kind": "text"
+               },
+               {
+                "key": "q0",
+                "label": "Q3'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q1",
+                "label": "Q4'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q2",
+                "label": "Q1'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q3",
+                "label": "Q2'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q4",
+                "label": "Q3'26",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "Gross margin",
+                "79.6",
+                "79.9",
+                "80.1",
+                "80.3",
+                "80.4"
+               ],
+               [
+                "Sales and marketing",
+                "38.9",
+                "38.1",
+                "37.0",
+                "36.2",
+                "35.8"
+               ],
+               [
+                "Research and development",
+                "20.4",
+                "20.1",
+                "19.9",
+                "19.7",
+                "19.5"
+               ],
+               [
+                "General and administrative",
+                "9.1",
+                "8.9",
+                "8.7",
+                "8.6",
+                "8.5"
+               ],
+               [
+                "Operating margin",
+                "11.2",
+                "12.8",
+                "14.5",
+                "15.8",
+                "16.6"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": false,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "q4"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent1",
+                "bold": false
+               },
+               {
+                "rows": [
+                 4
+                ],
+                "fill_role": "keep",
+                "bold": true
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "region",
+           "id": "g-rec",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "g_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "GAAP to non-GAAP operating income"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "g_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "$M, last five quarters"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "rec",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "$M",
+                "value_kind": "text"
+               },
+               {
+                "key": "q0",
+                "label": "Q3'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q1",
+                "label": "Q4'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q2",
+                "label": "Q1'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q3",
+                "label": "Q2'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q4",
+                "label": "Q3'26",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "GAAP operating income (loss)",
+                "(26.3)",
+                "(17.3)",
+                "(12.5)",
+                "(7.0)",
+                "(1.3)"
+               ],
+               [
+                "Stock-based compensation",
+                "47.9",
+                "49.6",
+                "50.2",
+                "51.4",
+                "52.3"
+               ],
+               [
+                "Amortization of acquired intangibles",
+                "6.4",
+                "6.4",
+                "6.2",
+                "6.1",
+                "6.1"
+               ],
+               [
+                "Employer payroll tax on equity",
+                "1.9",
+                "1.2",
+                "3.1",
+                "2.2",
+                "2.4"
+               ],
+               [
+                "Restructuring",
+                "3.2",
+                "0.0",
+                "0.0",
+                "1.1",
+                "0.0"
+               ],
+               [
+                "Non-GAAP operating income",
+                "33.1",
+                "39.9",
+                "47.0",
+                "53.8",
+                "59.5"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": true,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "q4"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent1",
+                "bold": false
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "region",
+           "id": "g-fcf",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "Free cash flow"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "f_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "$M; margin 18.3% in Q3 FY25 and 21.4% in Q3 FY26"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "fcf",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "$M",
+                "value_kind": "text"
+               },
+               {
+                "key": "q0",
+                "label": "Q3'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q1",
+                "label": "Q4'25",
+                "value_kind": "number"
+               },
+               {
+                "key": "q2",
+                "label": "Q1'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q3",
+                "label": "Q2'26",
+                "value_kind": "number"
+               },
+               {
+                "key": "q4",
+                "label": "Q3'26",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "Operating cash flow",
+                "61.2",
+                "74.8",
+                "70.3",
+                "73.9",
+                "86.5"
+               ],
+               [
+                "Capital expenditure",
+                "(7.1)",
+                "(8.0)",
+                "(7.4)",
+                "(8.3)",
+                "(9.8)"
+               ],
+               [
+                "Free cash flow",
+                "54.1",
+                "66.8",
+                "62.9",
+                "65.6",
+                "76.7"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": true,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "q4"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent1",
+                "bold": false
+               }
+              ]
+             }
+            },
+            {
+             "type": "element",
+             "id": "g_fn",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.footnote",
+               "text": "GAAP operating margin rose from (8.9)% to (0.4)% of revenue. Negatives in parentheses."
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP except the GAAP line of the reconciliation; fiscal year ends December."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "notes": "Illustrative: Corvane Software is a fictional company and every figure on this page is invented for this example, computed by figures.py. The bridge ties: 11.2 + 0.8 + 3.1 + 0.9 + 0.6 = 16.6. The reconciliation ties in every quarter.",
+   "charts": {
+    "bridge": {
+     "type": "COLUMN_STACKED",
+     "categories": [
+      "Q3 FY25 margin",
+      "Gross margin",
+      "Sales and marketing",
+      "R&D",
+      "G&A",
+      "Q3 FY26 margin"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Base",
+       "values": [
+        0,
+        11.2,
+        12.0,
+        15.1,
+        16.0,
+        0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Step",
+       "values": [
+        11.2,
+        0.8,
+        3.1,
+        0.9,
+        0.6,
+        16.6
+       ],
+       "fill_role": "color.positive",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.accent3"
+        },
+        {
+         "index": 5,
+         "fill_role": "color.accent1"
+        }
+       ]
+      },
+      {
+       "name": "Label",
+       "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "11.2%"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "+0.8"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "+3.1\n57% of gain"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "+0.9"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "text": "+0.6"
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "text": "16.6%"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 18.5,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 45,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.02,
+      "y": 0.03,
+      "w": 0.96,
+      "h": 0.85
+     },
+     "bridge": {
+      "deltas": [
+       11.2,
+       0.8,
+       3.1,
+       0.9,
+       0.6,
+       16.6
+      ],
+      "totals": [
+       0,
+       5
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "p5-guidance",
+   "layout": "Blank",
+   "title": {
+    "register": "claim"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "kicker",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Q3 FY2026 results  |  Outlook"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "FY2026 revenue guidance raised a third time, to $1,394.4-1,398.4M, 20.9-21.3% growth"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "g-guide",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "g_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "Guidance"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "g_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "issued 26 October 2026; non-GAAP; new guidance in amber, August's in grey"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "guide",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "m",
+                "label": "Metric",
+                "value_kind": "text"
+               },
+               {
+                "key": "q4",
+                "label": "Q4 FY26",
+                "value_kind": "number"
+               },
+               {
+                "key": "fy",
+                "label": "FY2026 now",
+                "value_kind": "number"
+               },
+               {
+                "key": "aug",
+                "label": "FY2026 in August",
+                "value_kind": "number"
+               }
+              ],
+              "rows": [
+               [
+                "Revenue ($M)",
+                "372.0-376.0",
+                "1,394.4-1,398.4",
+                "1,379.0-1,389.0"
+               ],
+               [
+                "Growth year on year (%)",
+                "19.5-20.7",
+                "20.9-21.3",
+                "19.6-20.4"
+               ],
+               [
+                "Operating income ($M)",
+                "61.0-63.0",
+                "221.3-223.3",
+                "214.0-218.0"
+               ],
+               [
+                "Operating margin (%)",
+                "16.4-16.8",
+                "15.9-16.0",
+                "15.5-15.7"
+               ]
+              ],
+              "header_rows": 1,
+              "totals_last_row": false,
+              "cell_anchor": "m",
+              "emphasis": [
+               {
+                "columns": [
+                 "q4",
+                 "fy"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.accent2",
+                "bold": true
+               },
+               {
+                "columns": [
+                 "aug"
+                ],
+                "fill_role": "keep",
+                "ink_role": "color.ink_muted",
+                "bold": false
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "region",
+           "id": "g-rng",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "r_h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "FY2026 revenue guidance at each update"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "r_u",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.caption",
+               "text": "$M, low to high; the current range in amber, superseded ranges in slate"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "rng",
+             "kind": "chart",
+             "weight": 1.0
+            }
+           ],
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.3
+        },
+        {
+         "type": "region",
+         "id": "notes",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "n_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "What the guidance assumes"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "The full-year midpoint of $1,396.4M is $12.4M above August's and $36.4M (2.7%) above the initial $1,360.0M.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Q4 growth of 19.5-20.7% assumes net new ARR returns to its usual range after Q3's record.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Full-year operating margin of 15.9-16.0%, up from 15.5-15.7% guided in August.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n4",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Exchange rates as of October 2026; no acquisitions.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "t_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Long-term target model"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "t_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "% of revenue, non-GAAP; targets (amber) are forward-looking"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "lt",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "% of revenue",
+              "value_kind": "text"
+             },
+             {
+              "key": "a",
+              "label": "Q3 FY26",
+              "value_kind": "number"
+             },
+             {
+              "key": "t",
+              "label": "Target",
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Gross margin",
+              "80.4",
+              "80-82"
+             ],
+             [
+              "Sales and marketing",
+              "35.8",
+              "28-30"
+             ],
+             [
+              "Research and development",
+              "19.5",
+              "15-17"
+             ],
+             [
+              "General and administrative",
+              "8.5",
+              "6-7"
+             ],
+             [
+              "Operating margin",
+              "16.6",
+              "25-28"
+             ],
+             [
+              "Free cash flow margin",
+              "21.4",
+              "28-30"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false,
+            "cell_anchor": "m",
+            "emphasis": [
+             {
+              "columns": [
+               "a"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent1",
+              "bold": false
+             },
+             {
+              "columns": [
+               "t"
+              ],
+              "fill_role": "keep",
+              "ink_role": "color.accent2",
+              "bold": true
+             }
+            ]
+           }
+          },
+          {
+           "type": "element",
+           "id": "t_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Operating margin is 8.4 points below the low end of its target."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n_fn",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Forward-looking statements: guidance reflects expectations at the date issued and is subject to risk. Corvane Software is fictional; every figure is illustrative."
+            }
+           ]
+          }
+         ],
+         "weight": 0.75
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "notes": "Illustrative: Corvane Software is a fictional company and every figure on this page is invented for this example, computed by figures.py. FY2026 guidance equals year-to-date revenue of $1,022.4M plus the Q4 range of $372.0-376.0M.",
+   "charts": {
+    "rng": {
+     "type": "BAR_STACKED",
+     "categories": [
+      "Initial (Feb)",
+      "After Q1 (May)",
+      "After Q2 (Aug)",
+      "After Q3 (Oct)"
+     ],
+     "number_format": "#,##0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Low",
+       "values": [
+        1355.0,
+        1367.0,
+        1379.0,
+        1394.4
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_end",
+        "number_format": "#,##0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       }
+      },
+      {
+       "name": "Range",
+       "values": [
+        10.0,
+        10.0,
+        10.0,
+        4.0
+       ],
+       "fill_role": "color.accent3",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 3,
+         "fill_role": "color.accent2"
+        }
+       ]
+      },
+      {
+       "name": "High label",
+       "values": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "1,365.0"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "1,377.0"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "1,389.0"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "1,398.4"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "color.rule",
+       "tick_marks": "out",
+       "reverse": false,
+       "min": 1340,
+       "max": 1405,
+       "major_unit": 10,
+       "number_format": "#,##0",
+       "cross_between": "between",
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted"
+       },
+       "line_width_pt": 0.75
+      }
+     },
+     "gap_width": 90,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.16,
+      "y": 0.06,
+      "w": 0.7,
+      "h": 0.84
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "mid",
+     "host": "rng",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       3
+      ]
+     },
+     "position": "right",
+     "gap_role": "space.md",
+     "cells": [
+      {
+       "text": "1,360.0",
+       "role": "type.data_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,372.0",
+       "role": "type.data_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,384.0",
+       "role": "type.data_label",
+       "ink_role": "color.ink"
+      },
+      {
+       "text": "1,396.4",
+       "role": "type.data_label",
+       "ink_role": "color.accent2",
+       "emphasis": true
+      }
+     ],
+     "align": "right",
+     "cell_width": "uniform",
+     "role": "type.data_label",
+     "ink_role": "color.ink",
+     "label": {
+      "text": "Midpoint",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.14,
+      "align": "right"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,394 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {
+   "id": "p1-highlights",
+   "intent": "the quarter's headline results and how they landed against guidance",
+   "message": "Revenue grew 21.3% to $358.2M and non-GAAP operating margin widened 5.4 points to 16.6%, both above the top of guidance",
+   "composition": "new:tiles-over-three-columns",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the six headline metrics of the quarter, each with its change on the year before, at a glance",
+     "comparison": "each Q3 FY26 metric against Q3 FY25",
+     "data": "six single figures in mixed units (dollars, percent, points), each with a year-on-year change",
+     "forms_considered": [
+      {
+       "form": "row of headline metric tiles",
+       "reason": "chosen: the investor-relations convention; the figure is large and its growth sits under it"
+      },
+      {
+       "form": "one summary table of metrics",
+       "reason": "holds the figures but gives the headline no more weight than the detail below it"
+      },
+      {
+       "form": "six small sparkline charts",
+       "reason": "nine-quarter trends belong on the next pages; here the reader wants the number"
+      }
+     ],
+     "chosen_form": "row of headline metric tiles",
+     "why": "the analyst's first question is the headline number and its growth; tiles on one pale ground give six figures equal weight and read in seconds",
+     "marks": "each figure in indigo, the current quarter; its change on the year before in the caption under it; the record net new ARR named in its tile"
+    },
+    {
+     "reader_must_see": "that each headline metric got here by a steady climb, the current quarter the latest step",
+     "comparison": "each metric's current quarter against its own previous eight quarters",
+     "data": "six series of nine quarterly values, one per headline metric",
+     "forms_considered": [
+      {
+       "form": "small unlabelled column sparkline in each tile",
+       "reason": "chosen: the shape of nine quarters under the figure, with the current bar in indigo"
+      },
+      {
+       "form": "a separate nine-quarter table",
+       "reason": "repeats pages 2 to 4 in figures; the reader here needs the direction, not the values"
+      },
+      {
+       "form": "no trend on the summary page",
+       "reason": "a figure without its history invites the question whether it is a blip"
+      }
+     ],
+     "chosen_form": "small unlabelled column sparkline in each tile",
+     "why": "a tile states the figure; the sparkline under it answers whether it is a trend, and the exact values live on the later pages",
+     "marks": "the Q3 FY26 bar in indigo, earlier bars in slate; retention drawn as an indigo line showing its trough and turn; the source line says what the bars span"
+    },
+    {
+     "reader_must_see": "the supporting metrics behind the headline: backlog, large customers, GAAP margin and stock compensation, against last year",
+     "comparison": "each metric in Q3 FY26 against Q3 FY25, with the change",
+     "data": "six metrics by two quarters and a change column, mixed units",
+     "forms_considered": [
+      {
+       "form": "two-period metrics table with a change column",
+       "reason": "chosen: reads across a row, last year to this year to the change"
+      },
+      {
+       "form": "more headline tiles",
+       "reason": "a second row of tiles would flatten the hierarchy and crowd the page"
+      }
+     ],
+     "chosen_form": "two-period metrics table with a change column",
+     "why": "these are figures to look up and check, which a table serves, and the change column carries the comparison",
+     "marks": "the Q3 FY26 column in indigo; nothing worsened, so no red"
+    },
+    {
+     "reader_must_see": "that revenue and operating income both landed above the top of the range guided in August",
+     "comparison": "each actual against the guided low and high and the beat against the high end",
+     "data": "three metrics, each a guided low, a guided high and an actual",
+     "forms_considered": [
+      {
+       "form": "guidance scorecard table",
+       "reason": "chosen: guided range, actual and beat read in one row for each metric"
+      },
+      {
+       "form": "floating range bars with an actual marker",
+       "reason": "three metrics on three scales need three charts for three rows of figures"
+      }
+     ],
+     "chosen_form": "guidance scorecard table",
+     "why": "an analyst checks the beat against the stated range, a figure to quote; the table gives it directly",
+     "marks": "the guided range in amber, the forward-looking colour; each beat in green"
+    }
+   ]
+  },
+  {
+   "id": "p2-revenue-arr",
+   "intent": "nine quarters of revenue and ARR growth",
+   "message": "ARR grew 22.2% to $1,498M on a record $83M of net new ARR, while revenue growth held at 21.3-21.7% for five quarters",
+   "composition": "new:two-charts-beside-notes",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "revenue rising every quarter and its growth rate settling at 21-22% after FY2024's 23-27%",
+     "comparison": "each quarter's revenue against the quarters before it, and its growth against the year before",
+     "data": "total revenue by nine quarters, with a year-on-year growth rate per quarter",
+     "forms_considered": [
+      {
+       "form": "labelled columns with a growth row under the quarters",
+       "reason": "chosen: the level and its growth read in the same column"
+      },
+      {
+       "form": "columns on one axis and a growth line on a second axis",
+       "reason": "two scales invite reading the line against the bars, a false comparison"
+      },
+      {
+       "form": "stacked subscription and services columns",
+       "reason": "services are 4% of revenue and would be slivers; one colour per series would cost the current-quarter meaning"
+      }
+     ],
+     "chosen_form": "labelled columns with a growth row under the quarters",
+     "why": "investors read revenue level and growth together; a row of growth figures under each column keeps the growth exact without a second axis",
+     "marks": "Q3 FY26 in indigo, prior quarters in slate; growth figures in a row under the quarters"
+    },
+    {
+     "reader_must_see": "net new ARR at a record $83M in Q3 FY26 and the ending ARR it built",
+     "comparison": "each quarter's net new ARR against every earlier quarter, and ending ARR quarter by quarter",
+     "data": "net new ARR by nine quarters, with ending ARR and its growth per quarter",
+     "forms_considered": [
+      {
+       "form": "net new ARR columns with an ending-ARR row under the quarters",
+       "reason": "chosen: the record is the tallest column and the stock it builds reads beneath"
+      },
+      {
+       "form": "ending ARR columns",
+       "reason": "the stock rises smoothly and hides the record quarter, which is a flow"
+      },
+      {
+       "form": "a table of ARR and net new ARR",
+       "reason": "carries the figures but the reader must hunt for the record"
+      }
+     ],
+     "chosen_form": "net new ARR columns with an ending-ARR row under the quarters",
+     "why": "the claim is the record flow; columns of the flow make it the tallest mark, and the ending ARR stays exact in the row",
+     "marks": "the Q3 FY26 column in indigo with its label reading record; ending ARR and its growth in rows under the quarters"
+    },
+    {
+     "reader_must_see": "that subscription revenue is nearly all of revenue and grew faster than the total",
+     "comparison": "subscription against services, Q3 FY26 against Q3 FY25",
+     "data": "two revenue lines and their total by two quarters with growth rates",
+     "forms_considered": [
+      {
+       "form": "small revenue-by-type table with a totals row",
+       "reason": "chosen: the split, the growth and a total that ties"
+      },
+      {
+       "form": "stacked columns of subscription and services",
+       "reason": "services at 4% would be a sliver too thin to label"
+      }
+     ],
+     "chosen_form": "small revenue-by-type table with a totals row",
+     "why": "the reader checks the mix as figures; a three-row table ties to the revenue chart beside it",
+     "marks": "the Q3 FY26 column in indigo; the total bold under a rule"
+    }
+   ]
+  },
+  {
+   "id": "p3-unit-economics",
+   "intent": "retention, cohort expansion and the cost of growth",
+   "message": "Net revenue retention rose for a third quarter to 119% and the FY2024 cohort expanded 1.47x in its second year, the fastest of any cohort",
+   "composition": "new:chart-over-table-beside-chart",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "net revenue retention bottoming at 116% and rising three points to 119%, with gross retention steady at 92-94% beneath",
+     "comparison": "each quarter's retention against the quarters before it, net against gross",
+     "data": "two percentages by nine quarters",
+     "forms_considered": [
+      {
+       "form": "net retention line with gross retention as a row of figures beneath",
+       "reason": "chosen: net retention on its own tight scale shows the trough and turn; gross retention, nearly flat, reads as figures"
+      },
+      {
+       "form": "two labelled lines on one scale",
+       "reason": "a scale wide enough for both flattens net retention's three-point turn"
+      },
+      {
+       "form": "clustered columns of net and gross retention",
+       "reason": "eighteen columns near 100% would differ by slivers"
+      }
+     ],
+     "chosen_form": "net retention line with gross retention as a row of figures beneath",
+     "why": "retention is a rate whose turn is the claim; a line shows the trough and the recovery, and labels keep each value exact",
+     "marks": "net retention in indigo with every value labelled and the 116% trough labelled low; gross retention as a row of figures under the quarters"
+    },
+    {
+     "reader_must_see": "every annual cohort expanding its ARR, and the FY2024 cohort ahead of the others at the same age",
+     "comparison": "each cohort's ARR multiple against the other cohorts at the same years since landing",
+     "data": "five annual cohorts by up to five years since landing, an ARR multiple of the first year, a triangle",
+     "forms_considered": [
+      {
+       "form": "one line per cohort over years since landing",
+       "reason": "chosen: cohorts at the same age line up vertically and the faster one sits above"
+      },
+      {
+       "form": "a triangle table of multiples",
+       "reason": "exact but the reader compares numbers down a column to find the fastest"
+      },
+      {
+       "form": "a stacked layer-cake area of ARR by cohort",
+       "reason": "shows the stock by vintage but not the expansion rate the claim is about"
+      }
+     ],
+     "chosen_form": "one line per cohort over years since landing",
+     "why": "aligning cohorts by age makes faster expansion visible as a higher line; the claim is a comparison at the same age",
+     "marks": "the FY2024 cohort in indigo, others in slate; each line named with its latest multiple at its end"
+    },
+    {
+     "reader_must_see": "the cost of growth improving: payback shorter and the ARR magic number higher in Q3 FY26",
+     "comparison": "each unit-economics metric over five quarters",
+     "data": "six metrics by five quarters, mixed units (percent, months, multiple, count)",
+     "forms_considered": [
+      {
+       "form": "five-quarter metrics table",
+       "reason": "chosen: six metrics in mixed units read across five quarters"
+      },
+      {
+       "form": "small multiple column charts",
+       "reason": "six charts in a third of a page would be too small to label"
+      }
+     ],
+     "chosen_form": "five-quarter metrics table",
+     "why": "mixed units resist one chart; an analyst copies these figures into a model, and a table gives them exactly",
+     "marks": "the Q3 FY26 column in indigo; payback and magic number rows bold, the two the page states"
+    }
+   ]
+  },
+  {
+   "id": "p4-margin",
+   "intent": "where the year's operating margin expansion came from and how GAAP reconciles",
+   "message": "Non-GAAP operating margin widened 5.4 points to 16.6%, 3.1 of them from sales and marketing; GAAP operating loss narrowed to $1.3M",
+   "composition": "new:chart-beside-two-tables",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the 5.4-point widening split into its four cost lines, with sales and marketing the largest step",
+     "comparison": "each cost line's contribution against the others, from Q3 FY25 margin to Q3 FY26 margin",
+     "data": "a start margin, four signed steps in points of revenue and an end margin",
+     "forms_considered": [
+      {
+       "form": "margin bridge in points of revenue",
+       "reason": "chosen: the steps add visibly from one margin to the other"
+      },
+      {
+       "form": "table of cost ratios by year",
+       "reason": "carries the ratios but the reader subtracts to find the drivers"
+      },
+      {
+       "form": "stacked columns of cost structure for two quarters",
+       "reason": "the changes are under four points and vanish in a 100% stack"
+      }
+     ],
+     "chosen_form": "margin bridge in points of revenue",
+     "why": "the question is what moved the margin; a bridge sizes each driver and ties to both margins",
+     "marks": "start in slate, end in indigo, each widening step in green with its signed value above it; the sales and marketing step labelled with its 57% share of the gain"
+    },
+    {
+     "reader_must_see": "the cost ratios behind the bridge for each of the last five quarters",
+     "comparison": "each cost line as a share of revenue quarter by quarter",
+     "data": "five ratios by five quarters, percent of revenue",
+     "forms_considered": [
+      {
+       "form": "five-quarter cost structure table",
+       "reason": "chosen: the reader recomputes the bridge from the first and last columns"
+      },
+      {
+       "form": "line chart of each ratio",
+       "reason": "four lines on one scale from 8% to 80% flatten every change"
+      }
+     ],
+     "chosen_form": "five-quarter cost structure table",
+     "why": "the bridge needs its inputs where an analyst can check them; the table supplies them",
+     "marks": "the operating margin row bold; the Q3 FY26 column in indigo"
+    },
+    {
+     "reader_must_see": "how GAAP operating loss reconciles to non-GAAP operating income in each quarter, and that it narrowed to $1.3M",
+     "comparison": "each adjustment against the others and GAAP against non-GAAP, quarter by quarter",
+     "data": "a GAAP figure, four adjustments and a non-GAAP total by five quarters, in dollars",
+     "forms_considered": [
+      {
+       "form": "reconciliation table with a totals row",
+       "reason": "chosen: the required disclosure form, and the totals tie"
+      },
+      {
+       "form": "a GAAP to non-GAAP bridge chart",
+       "reason": "a second bridge on the page, in dollars, would compete with the margin bridge"
+      }
+     ],
+     "chosen_form": "reconciliation table with a totals row",
+     "why": "investors expect the reconciliation as a table that ties; it is checked figure by figure",
+     "marks": "the non-GAAP total bold under a rule; the Q3 FY26 column in indigo"
+    },
+    {
+     "reader_must_see": "operating cash flow less capital expenditure giving free cash flow in each of the five quarters",
+     "comparison": "free cash flow quarter by quarter, and against the operating cash flow behind it",
+     "data": "operating cash flow, capital expenditure and free cash flow by five quarters, in dollars",
+     "forms_considered": [
+      {
+       "form": "three-line cash flow table with a totals row",
+       "reason": "chosen: the free cash flow figure ties to its two inputs in each quarter"
+      },
+      {
+       "form": "columns of free cash flow",
+       "reason": "drops the inputs an analyst checks and adds a third chart form to the page"
+      }
+     ],
+     "chosen_form": "three-line cash flow table with a totals row",
+     "why": "free cash flow is the figure under the margin; a table that ties shows it is real cash",
+     "marks": "free cash flow bold under a rule; the Q3 FY26 column in indigo"
+    }
+   ]
+  },
+  {
+   "id": "p5-guidance",
+   "intent": "the outlook for Q4 and the full year",
+   "message": "FY2026 revenue guidance raised for a third time, to $1,394.4-1,398.4M or 20.9-21.3% growth, $36.4M above the initial midpoint",
+   "composition": "new:table-and-chart-beside-notes",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the Q4 FY26 and FY2026 guidance ranges for revenue, growth, operating income and margin, beside the prior FY2026 guidance",
+     "comparison": "the new full-year range against the range given in August, and each guided figure against the year before",
+     "data": "four metrics by three guidance columns (Q4, FY2026 now, FY2026 prior), each a low to high range",
+     "forms_considered": [
+      {
+       "form": "guidance table of ranges",
+       "reason": "chosen: ranges are quoted as text and modelled as figures"
+      },
+      {
+       "form": "range bars per metric",
+       "reason": "four metrics in four units each need their own scale"
+      }
+     ],
+     "chosen_form": "guidance table of ranges",
+     "why": "guidance is what analysts copy into the model; the table gives the ranges exactly and the prior guidance beside them",
+     "marks": "the new guidance columns in amber, the forward-looking colour; the prior guidance column muted"
+    },
+    {
+     "reader_must_see": "the FY2026 revenue range moving up at each of the four updates, the latest highest",
+     "comparison": "each guidance range against the ones before it on one dollar scale",
+     "data": "four low and high revenue ranges for one fiscal year, with their midpoints",
+     "forms_considered": [
+      {
+       "form": "floating horizontal range bars on one dollar axis",
+       "reason": "chosen: each update's range is a bar and the move up reads left to right"
+      },
+      {
+       "form": "column chart of guidance midpoints",
+       "reason": "drops the width of each range, which narrowed as the year closed"
+      },
+      {
+       "form": "a table of the four ranges",
+       "reason": "exact but the reader must subtract to see the raises"
+      }
+     ],
+     "chosen_form": "floating horizontal range bars on one dollar axis",
+     "why": "the claim is a sequence of raises; ranges on one axis show both the step up and the narrowing",
+     "marks": "the current range in amber, superseded ranges in slate; low and high at the bar ends; the initial and current midpoints as text with the $36.4M raise"
+    },
+    {
+     "reader_must_see": "how far each cost line and margin still sits from the long-term target model",
+     "comparison": "each line's Q3 FY26 share of revenue against its target range",
+     "data": "six ratios, each a current value and a target range",
+     "forms_considered": [
+      {
+       "form": "two-column target model table",
+       "reason": "chosen: current figure beside the target range, the way target models are published"
+      },
+      {
+       "form": "bullet bars of current against target",
+       "reason": "six bars in a narrow column would be too small to label"
+      }
+     ],
+     "chosen_form": "two-column target model table",
+     "why": "targets are quoted ranges; a table keeps them exact and leaves the gap to the reader",
+     "marks": "targets in amber, the forward-looking colour; the current column in indigo; the operating margin gap stated in a note"
+    }
+   ]
+  }
+ ]
+}

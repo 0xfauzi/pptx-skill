@@ -1,0 +1,1938 @@
+{
+ "slides": [
+  {
+   "id": "p1-visitors",
+   "layout": "Blank",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "notes": "All figures on this page are illustrative: Brannoch National Parks Service is fictional, and every number was invented for this example, computed and checked by assertion in figures.py.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "disc",
+         "weight": 0.0355,
+         "fill_role": "color.accent1",
+         "prst": "ellipse",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "pad_roles": {
+           "left": "space.xs",
+           "right": "space.xs",
+           "top": "space.sm",
+           "bottom": "space.sm"
+          },
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "disc-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "1",
+             "ink_role": "color.ink_inverse",
+             "align": "center"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "head-words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kicker",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Visitors and access"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Visits rose 6.0% to 8.42 million, and more than a third of visitors now arrive without a car"
+            }
+           ]
+          }
+         ],
+         "weight": 0.9645
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "chart-cap",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Visits each month, thousands: this year, 2025-26, and last year, 2024-25"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "visits",
+           "kind": "chart"
+          }
+         ],
+         "weight": 1.9
+        },
+        {
+         "type": "region",
+         "id": "panel",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": "space.md",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "panel-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "How visitors arrived"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "arrive",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "m",
+              "label": "Share of visits",
+              "value_kind": "text",
+              "width_share": 0.34
+             },
+             {
+              "key": "a",
+              "label": "2024-25",
+              "value_kind": "number",
+              "width_share": 0.22
+             },
+             {
+              "key": "b",
+              "label": "2025-26",
+              "value_kind": "number",
+              "width_share": 0.22
+             },
+             {
+              "key": "chg",
+              "label": "Change",
+              "value_kind": "number",
+              "width_share": 0.22
+             }
+            ],
+            "rows": [
+             [
+              "Car",
+              "71%",
+              "64%",
+              "-7 pts"
+             ],
+             [
+              "Bus, shuttle or train",
+              "19%",
+              "25%",
+              "+6 pts"
+             ],
+             [
+              "On foot or by bike",
+              "10%",
+              "11%",
+              "+1 pt"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": false
+           }
+          },
+          {
+           "type": "element",
+           "id": "trail",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Step-free trails"
+            },
+            {
+             "role": "type.body",
+             "text": "241 km of trail can now be used without steps by wheelchairs and buggies, 53 km more than last year."
+            },
+            {
+             "role": "type.h2",
+             "text": "School visits"
+            },
+            {
+             "role": "type.body",
+             "text": "41,300 pupils came on free school trips."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0,
+         "fill_role": "color.surface_alt"
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Visits are counted at park entrances; how visitors arrived comes from our visitor survey. Source: Brannoch National Parks Service records, April 2025 to March 2026. Illustrative figures for a fictional service."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "visits": {
+     "type": "LINE_MARKERS",
+     "categories": [
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+      "Jan",
+      "Feb",
+      "Mar"
+     ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "2025-26",
+       "values": [
+        560,
+        690,
+        840,
+        1060,
+        1180,
+        920,
+        760,
+        470,
+        380,
+        330,
+        400,
+        830
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 2.5,
+       "smooth": false,
+       "marker": {
+        "style": "circle",
+        "size": 6,
+        "fill_role": "color.accent1",
+        "line_role": "color.accent1"
+       },
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 9,
+         "label": {
+          "show": true,
+          "text": "Low: 330,000",
+          "position": "below",
+          "role": "type.data_label",
+          "ink_role": "color.ink"
+         }
+        }
+       ]
+      },
+      {
+       "name": "2024-25",
+       "values": [
+        520,
+        640,
+        780,
+        1010,
+        1120,
+        860,
+        700,
+        430,
+        360,
+        310,
+        380,
+        830
+       ],
+       "line_role": "color.accent3",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       },
+       "title": "none"
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 1400,
+       "cross_between": "between"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.03,
+      "y": 0.04,
+      "w": 0.94,
+      "h": 0.86
+     }
+    }
+   },
+   "styling": {
+    "chart-cap": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "Visits each month, thousands: "
+        },
+        {
+         "text": "this year, 2025-26",
+         "emphasis": true,
+         "ink_role": "color.accent1"
+        },
+        {
+         "text": ", and "
+        },
+        {
+         "text": "last year, 2024-25",
+         "emphasis": true,
+         "ink_role": "color.ink_muted"
+        }
+       ]
+      }
+     }
+    },
+    "arrive": {
+     "emphasis": [
+      {
+       "rows": [
+        1
+       ],
+       "fill_role": "keep",
+       "bold": true
+      },
+      {
+       "rows": [
+        1
+       ],
+       "columns": [
+        "chg"
+       ],
+       "fill_role": "keep",
+       "bold": true,
+       "ink_role": "color.emphasis"
+      }
+     ]
+    }
+   },
+   "annotations": [
+    {
+     "id": "peak",
+     "host": "visits",
+     "kind": "outline_box",
+     "anchor": {
+      "point": {
+       "series": 0,
+       "category": 4
+      }
+     },
+     "shape": "ellipse",
+     "line_role": "color.emphasis",
+     "line_width_pt": 1.75,
+     "pad_role": "space.xs",
+     "gap_role": "space.sm",
+     "label": {
+      "text": "Peak: 1.18 million visits in August",
+      "role": "type.data_label",
+      "ink_role": "color.emphasis",
+      "position": "right",
+      "align": "left"
+     }
+    }
+   ]
+  },
+  {
+   "id": "p2-conservation",
+   "layout": "Blank",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "notes": "All figures on this page are illustrative: Brannoch National Parks Service is fictional, and every number was invented for this example, computed and checked by assertion in figures.py.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "disc",
+         "weight": 0.0355,
+         "fill_role": "color.accent1",
+         "prst": "ellipse",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "pad_roles": {
+           "left": "space.xs",
+           "right": "space.xs",
+           "top": "space.sm",
+           "bottom": "space.sm"
+          },
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "disc-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "2",
+             "ink_role": "color.ink_inverse",
+             "align": "center"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "head-words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kicker",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Conservation outcomes"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Six of nine priority species have grown since 2021; three that need rivers or old pinewood have fallen"
+            }
+           ]
+          }
+         ],
+         "weight": 0.9645
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "chart-cap",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Change in each species' counted population since the 2021 count, %"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "species",
+           "kind": "chart"
+          }
+         ],
+         "weight": 1.9
+        },
+        {
+         "type": "region",
+         "id": "panel",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": "space.md",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "panel-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Habitat restored this year"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "hab",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "We restored 2,140 hectares against a target of 2,000:"
+            },
+            {
+             "role": "type.body",
+             "text": "1,260 ha of peatland re-wetted"
+            },
+            {
+             "role": "type.body",
+             "text": "540 ha of native woodland planted"
+            },
+            {
+             "role": "type.body",
+             "text": "340 ha of wetland restored"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "why",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Why three species fell"
+            },
+            {
+             "role": "type.body",
+             "text": "Salmon and pearl mussels need cool, clean rivers; warmer summers and silt from eroding banks harm both. Capercaillie are disturbed by walkers leaving the path in old pinewood."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "ha",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "A hectare is a square 100 m by 100 m."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0,
+         "fill_role": "color.surface_alt"
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Species are counted by rangers and volunteers each spring against the 2021 baseline count. Source: Brannoch National Parks Service records, April 2025 to March 2026. Illustrative figures for a fictional service."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "hab": {
+     "paragraphs": {
+      "0": {
+       "runs": [
+        {
+         "text": "We restored "
+        },
+        {
+         "text": "2,140 hectares",
+         "emphasis": true
+        },
+        {
+         "text": " against a target of 2,000:"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "charts": {
+    "species": {
+     "type": "BAR_CLUSTERED",
+     "categories": [
+      "Water vole",
+      "Pine marten",
+      "Red squirrel",
+      "Golden eagle (pairs)",
+      "Natterjack toad",
+      "Black grouse",
+      "Atlantic salmon (returning)",
+      "Freshwater pearl mussel",
+      "Capercaillie"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Change since 2021 (%)",
+       "values": [
+        41,
+        34,
+        22,
+        18,
+        12,
+        5,
+        -6,
+        -9,
+        -14
+       ],
+       "fill_role": "color.positive",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "+0\"%\";-0\"%\"",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 6,
+         "fill_role": "color.negative"
+        },
+        {
+         "index": 7,
+         "fill_role": "color.negative"
+        },
+        {
+         "index": 8,
+         "fill_role": "color.negative"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "position": "low",
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "rotation_deg": 0
+       },
+       "title": "none"
+      },
+      "value": {
+       "visible": false,
+       "min": -25,
+       "max": 50,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 45,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.27,
+      "y": 0.02,
+      "w": 0.71,
+      "h": 0.96
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "fallers",
+     "host": "species",
+     "kind": "bracket",
+     "anchor": {
+      "categories": [
+       6,
+       8
+      ]
+     },
+     "side": "right",
+     "style": "square",
+     "gap_role": "space.md",
+     "depth_role": "space.xs",
+     "line_role": "color.emphasis",
+     "line_width_pt": 1.25,
+     "label": {
+      "text": "Fell since 2021: next year's focus is their rivers and pinewood",
+      "role": "type.data_label",
+      "ink_role": "color.emphasis",
+      "align": "left",
+      "max_width_share": 0.32
+     }
+    }
+   ]
+  },
+  {
+   "id": "p3-budget",
+   "layout": "Blank",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "notes": "All figures on this page are illustrative: Brannoch National Parks Service is fictional, and every number was invented for this example, computed and checked by assertion in figures.py.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "disc",
+         "weight": 0.0355,
+         "fill_role": "color.accent1",
+         "prst": "ellipse",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "pad_roles": {
+           "left": "space.xs",
+           "right": "space.xs",
+           "top": "space.sm",
+           "bottom": "space.sm"
+          },
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "disc-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "3",
+             "ink_role": "color.ink_inverse",
+             "align": "center"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "head-words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kicker",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Budget and where it goes"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Of every $100 we spent, $32 went to conservation and $10 to running the service"
+            }
+           ]
+          }
+         ],
+         "weight": 0.9645
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "lead",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "We received $148.3m, 5.3% more than last year, and spent $145.1m. The $3.2m left over is set aside for repairs. The government grant paid 65% of our income; visitors, shops, donors and trusts gave the other $51.9m."
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "chart-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Where each $100 went"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "chart-cap",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Dollars of every $100 spent in 2025-26; the area's spending in $m after its name"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "spend",
+           "kind": "chart"
+          }
+         ],
+         "weight": 1.45
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "tab-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Where the money came from"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "tab-cap",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Income, $m"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "income",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "s",
+              "label": "Source",
+              "value_kind": "text",
+              "width_share": 0.6
+             },
+             {
+              "key": "a",
+              "label": "2024-25",
+              "value_kind": "number",
+              "width_share": 0.2
+             },
+             {
+              "key": "b",
+              "label": "2025-26",
+              "value_kind": "number",
+              "width_share": 0.2
+             }
+            ],
+            "rows": [
+             [
+              "Government grant",
+              "94.0",
+              "96.4"
+             ],
+             [
+              "Parking, camping and permits",
+              "25.9",
+              "28.7"
+             ],
+             [
+              "Shops, cafes and leases",
+              "10.6",
+              "11.2"
+             ],
+             [
+              "Donations and legacies",
+              "6.8",
+              "7.9"
+             ],
+             [
+              "Grants from trusts",
+              "3.5",
+              "4.1"
+             ],
+             [
+              "Total income",
+              "140.8",
+              "148.3"
+             ]
+            ],
+            "header_rows": 1,
+            "totals_last_row": true
+           }
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Spending shares are rounded so that they add to $100. Source: Brannoch National Parks Service records, April 2025 to March 2026. Illustrative figures for a fictional service."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "spend": {
+     "type": "BAR_CLUSTERED",
+     "categories": [
+      "Conservation and habitats ($46.1m)",
+      "Rangers and visitor services ($35.6m)",
+      "Trails, roads and buildings ($31.8m)",
+      "Running the service ($15.2m)",
+      "Education and community ($12.4m)",
+      "Volunteer programme ($4.0m)"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Of every $100 spent",
+       "values": [
+        32,
+        24,
+        22,
+        10,
+        9,
+        3
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "\"$\"0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.accent2",
+         "label": {
+          "ink_role": "color.emphasis"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "rotation_deg": 0
+       },
+       "title": "none"
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 36,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 45,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.37,
+      "y": 0.01,
+      "w": 0.57,
+      "h": 0.98
+     }
+    }
+   }
+  },
+  {
+   "id": "p4-volunteers",
+   "layout": "Blank",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "notes": "All figures on this page are illustrative: Brannoch National Parks Service is fictional, and every number was invented for this example, computed and checked by assertion in figures.py.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "disc",
+         "weight": 0.0355,
+         "fill_role": "color.accent1",
+         "prst": "ellipse",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "pad_roles": {
+           "left": "space.xs",
+           "right": "space.xs",
+           "top": "space.sm",
+           "bottom": "space.sm"
+          },
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "disc-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "4",
+             "ink_role": "color.ink_inverse",
+             "align": "center"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "head-words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kicker",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Volunteer programme"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Volunteers gave 192,000 hours this year, up 63% in four years"
+            }
+           ]
+          }
+         ],
+         "weight": 0.9645
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "chart-cap",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Volunteer hours each year, with the number of volunteers under each year"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "hours",
+           "kind": "chart"
+          }
+         ],
+         "weight": 2.0
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "worth-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "What the work is worth"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "worth",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "At $24.50 an hour, this year's hours are worth $4.70m: $1.18 of work for every $1 the programme cost us ($4.0m)."
+            },
+            {
+             "role": "type.body",
+             "text": "That is the work of 116 full-time staff, given by 4,760 people."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "worth-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "$24.50 is the average hourly cost of a seasonal ranger; a full-time year is 1,650 hours."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "region",
+       "id": "acts",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "acts-h",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "What volunteers did in 2025-26"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "acts-row",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "act0",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "74,000"
+            },
+            {
+             "role": "type.caption",
+             "text": "hours of habitat work"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "act1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "48,000"
+            },
+            {
+             "role": "type.caption",
+             "text": "hours repairing trails"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "act2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "39,000"
+            },
+            {
+             "role": "type.caption",
+             "text": "hours welcoming and guiding visitors"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "act3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "21,000"
+            },
+            {
+             "role": "type.caption",
+             "text": "hours of wildlife surveys"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "act4",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "10,000"
+            },
+            {
+             "role": "type.caption",
+             "text": "hours of litter clean-ups"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Hours are logged by volunteers and checked by their team leaders. Source: Brannoch National Parks Service records, April 2025 to March 2026. Illustrative figures for a fictional service."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "hours": {
+     "type": "COLUMN_CLUSTERED",
+     "categories": [
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "Volunteer hours (thousands)",
+       "values": [
+        118,
+        139,
+        158,
+        171,
+        192
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "118,000"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "139,000"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "158,000"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "171,000"
+         }
+        },
+        {
+         "index": 4,
+         "fill_role": "color.accent2",
+         "label": {
+          "text": "192,000",
+          "ink_role": "color.emphasis"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       },
+       "title": "none"
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 215,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 55,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.13,
+      "y": 0.08,
+      "w": 0.86,
+      "h": 0.68
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "vols",
+     "host": "hours",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       4
+      ]
+     },
+     "position": "below",
+     "gap_role": "type.axis_label",
+     "gap_lines": 2,
+     "cells": [
+      "2,950",
+      "3,410",
+      "3,880",
+      "4,320",
+      "4,760"
+     ],
+     "role": "type.data_label",
+     "ink_role": "color.accent1",
+     "align": "center",
+     "cell_width": "uniform",
+     "label": {
+      "text": "Volunteers",
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted",
+      "max_width_share": 0.12,
+      "align": "left"
+     }
+    }
+   ]
+  },
+  {
+   "id": "p5-priorities",
+   "layout": "Blank",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "notes": "All figures on this page are illustrative: Brannoch National Parks Service is fictional, and every number was invented for this example, computed and checked by assertion in figures.py.",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "space_between"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "start",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "disc",
+         "weight": 0.0355,
+         "fill_role": "color.accent1",
+         "prst": "ellipse",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "pad_roles": {
+           "left": "space.xs",
+           "right": "space.xs",
+           "top": "space.sm",
+           "bottom": "space.sm"
+          },
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "disc-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "5",
+             "ink_role": "color.ink_inverse",
+             "align": "center"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "head-words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "kicker",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Priorities for next year"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Five commitments for 2026-27, costing $13.6m, each with a measure we will report next year"
+            }
+           ]
+          }
+         ],
+         "weight": 0.9645
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "lead",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "Each commitment answers a finding on the pages before. Hold us to the measures: next year's report will say whether we met each one."
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "prio",
+       "kind": "table",
+       "weight": 1.0,
+       "table": {
+        "columns": [
+         {
+          "key": "p",
+          "label": "Commitment",
+          "value_kind": "text",
+          "width_share": 0.19
+         },
+         {
+          "key": "what",
+          "label": "What we will do",
+          "value_kind": "text",
+          "width_share": 0.39
+         },
+         {
+          "key": "measure",
+          "label": "How you will know, by March 2027",
+          "value_kind": "text",
+          "width_share": 0.3
+         },
+         {
+          "key": "cost",
+          "label": "Budget ($m)",
+          "value_kind": "number",
+          "width_share": 0.12
+         }
+        ],
+        "rows": [
+         [
+          "1  Healthier rivers",
+          "Replant 18 km of riverbank with native trees and fence it from grazing, to cool and clean the water for salmon and mussels",
+          "18 km planted; silt and summer water temperature measured at 12 river sites",
+          "3.4"
+         ],
+         [
+          "2  Getting here without a car",
+          "Run three new shuttle routes from rail stations and towns, with one ticket for the bus and entry",
+          "30% of visits by bus, shuttle or train, up from 25%",
+          "2.6"
+         ],
+         [
+          "3  Step-free trails",
+          "Resurface and widen trails so wheelchairs, buggies and walking frames can use them",
+          "281 km of step-free trail, up from 241 km",
+          "1.9"
+         ],
+         [
+          "4  Repairs we have put off",
+          "Fix bridges, toilets and paths on our list of 214 priority repairs, worst first",
+          "60 of the 214 repairs done (28%)",
+          "4.8"
+         ],
+         [
+          "5  More and younger volunteers",
+          "Start a scheme for 16 to 25 year olds and add weekend and evening sessions",
+          "5,300 volunteers, up from 4,760",
+          "0.9"
+         ],
+         [
+          "Total",
+          "",
+          "",
+          "13.6"
+         ]
+        ],
+        "header_rows": 1,
+        "totals_last_row": true
+       }
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Budgets are from the 2026-27 spending plan approved by the Service's board. Source: Brannoch National Parks Service records, April 2025 to March 2026. Illustrative figures for a fictional service."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "prio": {
+     "emphasis": [
+      {
+       "columns": [
+        "measure"
+       ],
+       "fill_role": "keep",
+       "bold": true
+      },
+      {
+       "columns": [
+        "p"
+       ],
+       "fill_role": "keep",
+       "bold": true
+      }
+     ],
+     "cell_anchor": "t"
+    }
+   }
+  }
+ ]
+}
