@@ -337,12 +337,12 @@ def main(argv: list[str]) -> int:
     ap.add_argument("new")
     ap.add_argument("--past", action="append", required=True, help="a past deck used as evidence (.pptx or .pdf), repeatable")
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file: its words are allowed")
-    ap.add_argument("--computed", action="extend", nargs="+", default=[], metavar="FILE", help="figures your own arithmetic produced from the user's data, as text: "
+    ap.add_argument("--computed", action="append", default=[], metavar="FILE", help="figures your own arithmetic produced from the user's data, as text (one file a flag, repeated for more): "
                     "a matching figure is listed under declared_computed, not as distinctive")
     ap.add_argument("--template", default=None, help="the template the deck was built on: its own text and pictures are furniture")
     ap.add_argument("-o", "--out", default=None)
-    args = ap.parse_args(argv)
     import cli
+    args = cli.parse_args(ap, argv, "--computed")
     cli.guard_args(args, "out")
     report = leakage(args.new, args.past, args.brief, args.template, computed=args.computed)
     text = json.dumps(report, indent=1)

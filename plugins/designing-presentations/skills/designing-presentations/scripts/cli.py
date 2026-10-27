@@ -141,6 +141,17 @@ def guard_args(args: object, *names: str) -> None:
             out_path(value, f"--{name.replace('_', '-')} path")
 
 
+def parse_args(ap, argv: list[str], repeated: str):
+    """ap.parse_args, except that a word left over is named with the form of `repeated`,
+    a flag that takes one file and is given once per file: a flag that took several would
+    also take the positional argument written after it."""
+    args, extra = ap.parse_known_args(argv)
+    if extra:
+        ap.error(f"unrecognized arguments: {' '.join(extra)} ({repeated} takes one file: give each file its own flag, "
+                 f"{repeated} a.txt {repeated} b.txt)")
+    return args
+
+
 def page_range(text: str) -> tuple[int, int]:
     """`--pages A-B` (or one page `A`): a 1-based inclusive range, refused by name when it
     is not one. Every command that reads part of a long deck takes it in this one spelling."""
