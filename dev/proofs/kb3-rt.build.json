@@ -1,11 +1,11 @@
 {
- "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
+ "out": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/deck.pptx",
  "ruler": "harfbuzz",
  "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
  "slides": [
   {
    "id": "import-3",
-   "status": "unfittable",
+   "status": "fit",
    "attempts": [
     {
      "scale": "1",
@@ -154,113 +154,7 @@
    },
    "contrast": {
     "checked": 18,
-    "violations": [
-     {
-      "element": "e1",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Growth in Total Assets",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e1",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e3",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Risk-Weighted Share of Total Assets",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e3",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e5",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "CET 1 Ratio Target",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e5",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e7",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Return on Avg. Assets",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e7",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e9",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Share of Earnings Paid Out",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e9",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e11",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Required Equity Return",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e11",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     },
-     {
-      "element": "e13",
-      "paragraph": 0,
-      "run": 0,
-      "role": "type.body",
-      "ink": "color.ink_inverse",
-      "text": "Exit Price / TBV Multiple",
-      "ratio": 1.54,
-      "threshold": 4.5,
-      "size_pt": 12.0,
-      "bold": false,
-      "backing": "color.accent1 of e13",
-      "ink_hex": "FFFFFF",
-      "backing_hex": "CCD1D7"
-     }
-    ],
+    "violations": [],
     "warnings": [],
     "reference_precedent": [],
     "undecidable": [],
@@ -355,44 +249,7 @@
     "source_line": false
    },
    "solver_status": "fit",
-   "reason": "contrast",
-   "problems": [
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e1 paragraph 0 run 0: color.ink_inverse over color.accent1 of e1 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e3 paragraph 0 run 0: color.ink_inverse over color.accent1 of e3 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e5 paragraph 0 run 0: color.ink_inverse over color.accent1 of e5 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e7 paragraph 0 run 0: color.ink_inverse over color.accent1 of e7 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e9 paragraph 0 run 0: color.ink_inverse over color.accent1 of e9 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e11 paragraph 0 run 0: color.ink_inverse over color.accent1 of e11 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    },
-    {
-     "kind": "contrast",
-     "severity": "refusal",
-     "detail": "e13 paragraph 0 run 0: color.ink_inverse over color.accent1 of e13 is 1.54:1, under 3.0:1 (AA asks 4.5:1 at 12.0pt)"
-    }
-   ],
+   "problems": [],
    "title": {
     "element": "title",
     "text": "Valuation: Inputs to the Dividend Discount Model",
@@ -641,7 +498,7 @@
   ]
  },
  "validation": {
-  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
+  "file": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/deck.pptx",
   "slides": 1,
   "problems": [],
   "ok": true
@@ -865,7 +722,7 @@
   "verdict": "possible carry-over: 13 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
  },
  "renders": {
-  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
+  "source": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/deck.pptx",
   "fonts": {
    "Arial": {
     "rendered_with": "Liberation Sans",
@@ -897,7 +754,7 @@
   },
   "pages": 1,
   "images": [
-   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/renders.refused/slide-01.png"
+   "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/renders/slide-01.png"
   ]
  },
  "judge": {
@@ -951,8 +808,8 @@
   },
   "others": {
    "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/45541_Header.pptx": 0.518,
-   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.487,
-   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/themes.pptx": 0.479
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/goldman_airvana_go_private_board_2009.pdf": 0.681,
+   "/home/user/pptx-skill/.claude/worktrees/round8/plugins/designing-presentations/skills/designing-presentations/refs/files/themes.pptx": 0.454
   },
   "panel_skipped": {
    "reason": "no type evidence (a scan, a browser print or an empty deck)",
@@ -975,13 +832,12 @@
   "reference_rank": 1,
   "within_reference_spread": true,
   "layout_clean": true,
-  "filed_under_reference": false
+  "filed_under_reference": true
  },
  "outputs": {
-  "verdict": "refused",
+  "verdict": "built",
   "moved_aside": [],
-  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/deck.refused.pptx",
-  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt/renders.refused",
-  "note": "refused: the deck and renders of this build are written as .refused beside the asked-for paths, for diagnosis; nothing at the asked-for paths is current"
+  "deck": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/deck.pptx",
+  "renders": "/tmp/claude-0/-home-user/bb2024fa-587c-54ed-917f-288f1f2efaef/scratchpad/r8q/i7/rt2/renders"
  }
 }

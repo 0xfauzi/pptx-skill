@@ -3,7 +3,7 @@
   {
    "id": "import-3",
    "layout": "Title and Content",
-   "notes": "round trip of keybank.pptx slide 3: roles and weights as import_slide.py read them, no coordinates; the text paraphrased from the public deck",
+   "notes": "round trip of keybank.pptx (mi_keybank_first_niagara_fig_ma.pptx) slide 3: roles and weights as import_slide.py read them on the keybank guide, no coordinates; the text paraphrased from the public deck",
    "spec": {
     "root": {
      "type": "region",
@@ -330,7 +330,7 @@
    "styling": {
     "e1": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -343,7 +343,7 @@
     },
     "e3": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -356,7 +356,7 @@
     },
     "e5": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -369,7 +369,7 @@
     },
     "e7": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -382,7 +382,7 @@
     },
     "e9": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -395,7 +395,7 @@
     },
     "e11": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -408,7 +408,7 @@
     },
     "e13": {
      "anchor": "m",
-     "fill_role": "color.accent1",
+     "fill_role": "color.rule",
      "paragraphs": {
       "0": {
        "align": "center",
@@ -420,7 +420,18 @@
      "anchor": "m"
     }
    },
-   "import_notes": []
+   "import_notes": [
+    "e1: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e3: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e5: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e7: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e9: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e11: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e13: filled text box written flush, without its inset; wrap it in a padded region to keep one"
+   ],
+   "import_lost": [
+    "each element's exact position and size (rebuilt from roles and weights)"
+   ]
   }
  ]
 }
