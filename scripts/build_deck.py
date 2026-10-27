@@ -1941,11 +1941,11 @@ _NUMBER_FORMAT = re.compile(r'^(?P<pre>(?:"[^"]*")*)(?P<int>[#,]*0)(?:\.(?P<dec>
 
 
 def label_text(value: float, number_format: str | None) -> str | None:
-    """A value label as the file's number format writes it, for the formats the chart
-    recipes use (0, 0.0, #,##0, 0%, quoted literals); None for anything else, which the
-    check reports as unmeasured rather than guess."""
+    """A value label as the renderer draws it under the file's number format, for General
+    and the formats the chart recipes use (0, 0.0, #,##0, 0%, quoted literals); None for
+    anything else, which the check reports as unmeasured rather than guess."""
     if number_format in (None, "General"):
-        return f"{value:g}"
+        return general_text(value)
     m = _NUMBER_FORMAT.match(number_format)
     if not m:
         return None
@@ -1954,9 +1954,37 @@ def label_text(value: float, number_format: str | None) -> str | None:
     # value is read at its shortest decimal spelling, so 2.675 is a half, as the file shows it
     v = Decimal(repr(float(value))) * (100 if m["pct"] else 1)
     v = v.quantize(Decimal(1).scaleb(-len(m["dec"] or "")), rounding=ROUND_HALF_UP)
-    body = f"{v:{',' if ',' in m['int'] else ''}f}"
+    # a value that rounds to zero is drawn unsigned, and the sign leads a quoted prefix
+    # (measured, round 8, LibreOffice 24.2.7: -0.04 under 0.0 is '0.0', -0.4 under 0 is '0',
+    # -0.4 under "$"0.0 is '-$0.4'; r8x/pub/gen/genz.json)
+    sign = "-" if v < 0 else ""
+    body = f"{abs(v):{',' if ',' in m['int'] else ''}f}"
     lit = lambda part: re.sub(r'"([^"]*)"', r"\1", part or "")  # noqa: E731
-    return lit(m["pre"]) + body + m["pct"] + lit(m["post"])
+    return sign + lit(m["pre"]) + body + m["pct"] + lit(m["post"])
+
+
+#: Measured, round 8, LibreOffice 24.2.7, 72 value labels under General
+#: (r8x/pub/gen/gen*.json, read from the render's PDF text): an integer below 2^53 is drawn
+#: whole (1234567890123456); any other value is rounded to 15 significant digits, drawn plain
+#: with no trailing zeros from 1e-4 up to 1e15 (0.30000000000000004 is '0.3', 1/3 is
+#: '0.333333333333333'), and zero is '0' whatever its sign. Past those bounds the renderer
+#: switches between plain and its own exponent spelling ('1E+016', '5E-10', but '0.00001')
+#: by a rule not measured here, so those values are not read.
+GENERAL_PLAIN_RANGE = (Decimal("1e-4"), Decimal("1e15"))
+
+
+def general_text(value: float) -> str | None:
+    """A value label under General as LibreOffice draws it (GENERAL_PLAIN_RANGE), or None
+    where the spelling is not measured."""
+    value = float(value)
+    if value.is_integer() and abs(value) < 2**53:
+        return str(int(value))
+    rounded = Decimal(f"{value:.15g}")
+    if rounded == 0:
+        return "0"
+    if GENERAL_PLAIN_RANGE[0] <= abs(rounded) < GENERAL_PLAIN_RANGE[1]:
+        return f"{value:.15g}"
+    return None
 
 
 def label_overflows_bar(el: dict, item: dict, spec: dict) -> list[int]:
@@ -2104,7 +2132,7 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
                 if text is None:
                     text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
                 if text is None:
-                    unmeasured.append({"chart": el["id"], "part": f"series[{si}] point {pi} label", "why": f"number format {merged.get('number_format')!r} not read here"})
+                    unmeasured.append({"chart": el["id"], "part": f"series[{si}] point {pi} label", "why": f"its text under number format {merged.get('number_format') or 'General'!r} is not read here (label_text)"})
                     continue
                 words_over(text, merged.get("role"), bar, f"series[{si}] {s.get('name')!r} point {pi} label", marks.get((si, pi)))
     return findings, unmeasured, spills
