@@ -1066,8 +1066,11 @@ def emitted_structures(path: Path, numbers: list[int], guide: dict, slides: list
     written = [p for p in ooxml.fingerprint_deck(str(path)) if p.generated]
     if len(written) != len(numbers):
         return {n: None for n in numbers}, f"the file holds {len(written)} generated slides for {len(numbers)} solved pages"
-    facts = {n: ooxml.exhibit_facts(p, left_out(role_sized(slides[n - 1]))) for n, p in zip(numbers, written, strict=True)}
-    return {n: {**{key: f[key] for _, key in plan.FACT_MEASURES}, "panels": f["panels"], "drawn": f["drawn"]} for n, f in facts.items()}, None
+    by_page = dict(zip(numbers, written, strict=True))
+    facts = {n: ooxml.exhibit_facts(p, left_out(role_sized(slides[n - 1]))) for n, p in by_page.items()}
+    rows = {n: ooxml.headline_figure_rows(p, left_out(role_sized(slides[n - 1]))) for n, p in by_page.items()}
+    return {n: {**{key: f[key] for _, key in plan.FACT_MEASURES}, "panels": f["panels"], "drawn": f["drawn"], "headline_rows": rows[n]}
+            for n, f in facts.items()}, None
 
 
 def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict], slide_ids: dict[int, str],
@@ -1079,7 +1082,10 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
     and an empty list states the page holds none. Other differences in count are warned
     with both counts (one brief may cover a chart and the table set under it as one
     exhibit; a logo wall is many pictures and one brief), and a page whose file was not
-    read says so in entry["briefs"], never as agreement."""
+    read says so in entry["briefs"], never as agreement. A row of headline figures set as
+    text (ooxml.headline_figure_rows) is no panel, so it never makes a page need a brief;
+    where the plan briefs one exhibit more than the panels and the page holds such a row,
+    the row is the exhibit that brief covers and the counts agree."""
     if plan_pages is None:
         return
     planned = {p["id"]: p for p in plan_pages}
@@ -1093,7 +1099,14 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
             entry["briefs"] = {"plan": briefs, "file": None, "verdict": f"not compared: {unread_why or 'the written file was not read'}"}
             continue
         panels = facts["panels"]
-        entry["briefs"] = {"plan": briefs, "file": panels, "file_structure": facts["structure"],
+        structure = facts["structure"]
+        rows = facts.get("headline_rows") or []
+        if rows and panels + 1 == briefs:
+            # a row of headline figures set as text is no panel of exhibit_facts; where the
+            # plan briefs one exhibit more than the panels, that brief covers the row
+            panels += 1
+            structure += f"; a row of {len(rows[0])} headline figures set as text ({', '.join(rows[0])}), read as the exhibit one brief covers"
+        entry["briefs"] = {"plan": briefs, "file": panels, "file_structure": structure,
                            "verdict": "agree" if panels == briefs else "differ"}
         if panels and not briefs:
             entry["problems"].append({"kind": "exhibit without a brief", "severity": "refusal",
@@ -1106,7 +1119,7 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
         elif panels != briefs:
             entry["problems"].append({"kind": "briefs differ from the file's exhibits", "severity": "warning",
                                       "detail": f"the plan briefs {briefs} exhibit(s) for {page['id']!r} and the written page holds {panels} "
-                                                f"({facts['structure']}): say in the report which brief covers which exhibit, or brief the one left out"})
+                                                f"({structure}): say in the report which brief covers which exhibit, or brief the one left out"})
 
 
 #: Unmeasured: a pair of pages whose box similarity lies this close to the archetype

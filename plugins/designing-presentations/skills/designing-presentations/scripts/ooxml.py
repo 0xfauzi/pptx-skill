@@ -921,6 +921,52 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
             "elements": dict(sorted(Counter(sh.kind for sh in content).items())), "charts": charts, "marks": marks}
 
 
+#: one figure and nothing else: a sign, a currency, a number (thousands groups, a decimal)
+#: and a unit ($358.2M, 16.6%, 10.0x, £0.4bn, +5.4 pts)
+HEADLINE_FIGURE = re.compile(r"[+\-−]?[$€£¥]?[+\-−]?\d[\d,]*(?:\.\d+)?\s?(?:%|x|bn|b|mn|m|mm|k|pts?|bps|p)?", re.IGNORECASE)
+#: definition, unmeasured: widths of one row that differ by this share or less are one width
+#: (the solver splits a row's width in whole EMU, so a seventh tile can be 1 EMU narrower)
+HEADLINE_WIDTH_TOLERANCE = 0.01
+
+
+def headline_figure_rows(print_: SlidePrint, is_chrome) -> list[list[str]]:
+    """Rows of headline figures set as text (a KPI row of plain text tiles), which
+    exhibit_facts does not count as a panel. A row is SMALL_MULTIPLE_MIN or more content
+    text shapes on no chart, table or picture, at one top edge and one height, widths within
+    HEADLINE_WIDTH_TOLERANCE of each other, each holding one paragraph that is one figure
+    (HEADLINE_FIGURE) in one size larger than the size most of the page's content characters
+    are set in (so a category row of 8pt figures under a chart on an 8pt page is not one).
+    Each row is the names (or refs) of its shapes, left to right. The build's brief count
+    reads such a row as the exhibit a brief covers (build_deck.briefs_against_file)."""
+    content = [sh for sh in print_.shapes if sh.box and sh.box[2] > 0 and sh.box[3] > 0 and sh.kind != "group" and not is_chrome(sh)]
+    hosts = [sh.box for sh in content if sh.kind in HOST_KINDS]
+    sizes: Counter = Counter()
+    for sh in content:
+        for para in sh.paragraphs or []:
+            for run in para.get("runs") or []:
+                if run.get("size_pt"):
+                    sizes[run["size_pt"]] += len((run.get("text") or "").strip())
+    if not sizes:
+        return []
+    body = sizes.most_common(1)[0][0]
+    figures: dict[tuple[int, int], list[Shape]] = {}
+    for sh in content:
+        if sh.kind not in ("text_shape", "text_box") or len(sh.paragraphs or []) != 1 or any(shares_area(sh.box, h) for h in hosts):
+            continue
+        runs = [r for r in sh.paragraphs[0].get("runs") or [] if (r.get("text") or "").strip()]
+        text = "".join(r.get("text") or "" for r in runs).strip()
+        run_sizes = {r.get("size_pt") for r in runs}
+        if not text or not HEADLINE_FIGURE.fullmatch(text) or len(run_sizes) != 1 or not (run_sizes.pop() or 0) > body:
+            continue
+        figures.setdefault((sh.box[1], sh.box[3]), []).append(sh)
+    rows = []
+    for shapes in figures.values():
+        widths = [sh.box[2] for sh in shapes]
+        if len(shapes) >= SMALL_MULTIPLE_MIN and max(widths) - min(widths) <= HEADLINE_WIDTH_TOLERANCE * max(widths):
+            rows.append([sh.name or sh.ref for sh in sorted(shapes, key=lambda s: s.box[0])])
+    return sorted(rows)
+
+
 def form_of(plot: dict) -> str:
     """One plot group's form as the chart XML states it: its type, bar direction and
     grouping (a column chart, a stacked horizontal bar, a scatter), not its series count."""

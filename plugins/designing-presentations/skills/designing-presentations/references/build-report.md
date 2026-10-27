@@ -108,7 +108,10 @@ gives both counts). Warnings never refuse: `annotation unexplained` (a ring, box
 line, bracket or mark with no label and no `explained_by`, with the reference's own count of
 such marks with and without words: answer it in the report); `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
-which exhibit), `tieout` (a totals cell that does not equal its column), `no
+which exhibit. A row of three or more headline figures set as text, one figure to a box at
+one top and one size, larger than the page's body, is no exhibit of its own, so it never
+needs a brief; where the plan briefs one exhibit more than the page counts and holds such a
+row, the row is read as that exhibit and the counts agree), `tieout` (a totals cell that does not equal its column), `no
 source line` (below), `renderer divergence: category interval` (a `label_interval` or
 `tick_interval` above 1, which LibreOffice ignores: chart-recipes.md), `renderer-unmeasured preset` (a shape in a preset no render here has
 shown: look at it, and open the deck in PowerPoint before release), `type size off the

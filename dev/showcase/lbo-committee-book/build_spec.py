@@ -363,10 +363,6 @@ s1 = page("s1-overview", "Section 4  |  Leveraged finance and LBO  |  4.1 Compan
                "label": {"text": f"Cyclical {pc(cyc_share)}", "role": "type.data_label", "ink_role": "color.ink_muted", "align": "left", "max_width_share": 0.2}},
           ])
 
-s1["answered"] = [{"kind": "briefs differ from the file's exhibits",
-                   "why": "the first brief covers the KPI row, seven figures set as text, which the file counts as no exhibit; "
-                          "the other seven briefs cover the end-market chart and the six tables in page order"}]
-
 # ================================================================ PAGE 2: sources and uses, capital structure
 src = BASE["sources"]
 uses = BASE["uses"]
