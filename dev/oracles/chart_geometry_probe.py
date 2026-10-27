@@ -32,7 +32,7 @@ from PIL import Image
 from pptx import Presentation
 from pptx.util import Emu
 
-SKILL = Path(__file__).resolve().parents[2] / "skills" / "designing-presentations"
+SKILL = Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 sys.path.insert(0, str(SKILL / "scripts"))
 import emit_pptx as E  # noqa: E402
 from chart_geometry import ChartGeometry  # noqa: E402

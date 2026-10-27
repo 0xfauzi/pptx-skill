@@ -18,7 +18,7 @@ from pathlib import Path
 
 from deckgen_server.style.compiler import extract
 
-SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "skills" / "designing-presentations"))
+SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"))
 DECKGEN = Path(os.environ.get("DECKGEN", Path.cwd()))
 S = Path(os.environ.get("ORACLE_OUT") or tempfile.mkdtemp(prefix="diff_oracle_"))
 S.mkdir(parents=True, exist_ok=True)

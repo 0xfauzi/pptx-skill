@@ -7,7 +7,7 @@ are re-run by hand when the ported code changes, and the numbers below are what 
 printed on the date given, against the skill at the commit that ships this file.
 
 Paths below are as they stood before the repository took its plugin layout: `oracles/` is
-now `dev/oracles/`, and `scripts/` is `skills/designing-presentations/scripts/`. Each
+now `dev/oracles/`, and `scripts/` is `plugins/designing-presentations/skills/designing-presentations/scripts/`. Each
 script finds the skill there itself (`PPTX_SKILL` overrides).
 
 Every script needs a deckgen checkout (read-only) at /home/user/deckgen and, unless noted,

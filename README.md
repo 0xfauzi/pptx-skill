@@ -16,7 +16,7 @@ file says, a past deck's content, an invented number.
 
 ![A page of the no-reference credit example, rendered](docs/no-reference-credit-p1.png)
 
-*Page 1 of `skills/designing-presentations/examples/no-reference-credit.*`: a two-page credit committee section on a
+*Page 1 of `plugins/designing-presentations/skills/designing-presentations/examples/no-reference-credit.*`: a two-page credit committee section on a
 fictional railroad, built with no reference, its look reasoned out from the brief. Rendered
 by LibreOffice from the .pptx the build wrote.*
 
@@ -37,7 +37,7 @@ it on its own when a request asks for slides.
 
 ### Claude Code, by hand
 
-Copy (or symlink) `skills/designing-presentations/` into `~/.claude/skills/` for every
+Copy (or symlink) `plugins/designing-presentations/skills/designing-presentations/` into `~/.claude/skills/` for every
 project, or into a project's `.claude/skills/`. The directory name must stay
 `designing-presentations`, the skill's `name`.
 
@@ -68,13 +68,13 @@ built and measured on, and how to fetch the judge's panel of public decks.
 
 Python 3.11 or later with lxml, Pillow, python-pptx and pdfplumber (uharfbuzz optional, a
 better text ruler); LibreOffice, poppler and fontconfig. The skill installs nothing: run
-`python3 skills/designing-presentations/scripts/preflight.py` and it lists what is
+`python3 plugins/designing-presentations/skills/designing-presentations/scripts/preflight.py` and it lists what is
 missing with the install command for your platform, for you to run. Versions measured, and
 fonts: [INSTALL.md](INSTALL.md).
 
 ## Examples
 
-Worked inputs ship in `skills/designing-presentations/examples/`: a four-page section, an
+Worked inputs ship in `plugins/designing-presentations/skills/designing-presentations/examples/`: a four-page section, an
 annotated page, a bridge and a round trip on a bank pitch book (pptx); two pages on a
 McKinsey board PDF; and two decks with no reference at all (a board review and a dense
 credit paper), each with its brief, figures script, plan, completion and page specs. Their
@@ -124,13 +124,16 @@ gradient.
 ## Repository layout
 
 ```
-.claude-plugin/plugin.json       the plugin manifest
-.claude-plugin/marketplace.json  the marketplace that lists it (this repository, source ./)
-skills/designing-presentations/  the skill, self-contained: SKILL.md, references/, scripts/,
-                                 components/, examples/, refs/ (fetch.sh and MANIFEST.md)
-dev/                             development material, never installed as the skill:
-                                 TARGET_SPEC.md, PORT_AUDIT.md, evals/, oracles/, proofs/, tools/
-docs/                            the image above
+.claude-plugin/marketplace.json   the marketplace (name pptx-skill); its one plugin's source is
+                                  ./plugins/designing-presentations
+plugins/designing-presentations/  the plugin root, all that an install copies:
+  .claude-plugin/plugin.json      the plugin manifest
+  skills/designing-presentations/ the skill, self-contained: SKILL.md, references/, scripts/,
+                                  components/, examples/, refs/ (fetch.sh and MANIFEST.md)
+dev/                              development material, outside the plugin root, so never
+                                  installed: TARGET_SPEC.md, PORT_AUDIT.md, evals/, oracles/,
+                                  proofs/, tools/
+docs/                             the image above
 ```
 
 [dev/README.md](dev/README.md) describes the development material.
@@ -138,7 +141,7 @@ docs/                            the image above
 ## Licence
 
 MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill carries the same text as
-`skills/designing-presentations/LICENSE.txt`. `scripts/confusable_letters.json` holds a
+`plugins/designing-presentations/skills/designing-presentations/LICENSE.txt`. `scripts/confusable_letters.json` holds a
 subset of the Unicode confusables data under the Unicode License v3, whose notice it carries
 in full. The public reference decks `refs/fetch.sh` downloads belong to their publishers
 and are never committed or shipped (`refs/MANIFEST.md` names each source).

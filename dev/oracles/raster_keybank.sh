@@ -5,7 +5,7 @@
 # Defaults: $DECKGEN/fixtures/corpus/keybank.pptx (DECKGEN defaults to /home/user/deckgen),
 # and a fresh temporary directory. Runs with plain python3 -I from the skill repo.
 set -eu
-SKILL=$(cd "$(dirname "$0")/../../skills/designing-presentations" && pwd)
+SKILL=$(cd "$(dirname "$0")/../../plugins/designing-presentations/skills/designing-presentations" && pwd)
 DECK=${1:-${DECKGEN:-/home/user/deckgen}/fixtures/corpus/keybank.pptx}
 OUT=${2:-$(mktemp -d "${TMPDIR:-/tmp}/raster_keybank.XXXXXX")}
 python3 -I "$SKILL/scripts/render.py" "$DECK" --out "$OUT/renders" --dpi 100

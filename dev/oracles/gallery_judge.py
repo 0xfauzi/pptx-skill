@@ -10,7 +10,7 @@ from pathlib import Path
 
 # PPTX_SKILL: the skill under test (default: the repo this file sits in); DECKGEN: the
 # deckgen checkout whose recorded manifests are the oracle (default: the working directory)
-SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "skills" / "designing-presentations"))
+SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"))
 DECKGEN = Path(os.environ.get("DECKGEN", Path.cwd()))
 sys.path.insert(0, str(SKILL / "scripts"))
 import gallery as g  # noqa: E402

@@ -9,7 +9,7 @@ held out (none is made from a deck under test).
 The skill ships worked examples (a completion, a digest, deck specs, build proofs) made
 from public reference decks. An evaluation that tests the skill on one of those decks
 would grade the examples, not the skill. This writes the shipped skill directory
-(skills/designing-presentations) to DIR (outside it, new or empty) without every example examples/PROVENANCE.json ties to a reference
+(plugins/designing-presentations/skills/designing-presentations) to DIR (outside it, new or empty) without every example examples/PROVENANCE.json ties to a reference
 given here, matched by the reference file's sha256, or by its twin's stem (the same deck in
 another format: the PDF of a pptx whose examples PROVENANCE.json lists). It refuses a skill
 tree holding an example file PROVENANCE.json does not name (it could not say whether that
@@ -38,7 +38,7 @@ import shutil
 import sys
 from pathlib import Path
 
-SKILL = Path(__file__).resolve().parents[2] / "skills" / "designing-presentations"
+SKILL = Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 SKIP_DIRS = {".git", "__pycache__", ".claude", ".ruff_cache", ".mypy_cache", ".pytest_cache"}  # caches name the skill's own paths
 TEXT_SUFFIXES = {".md", ".json", ".py", ".sh", ".txt"}
 

@@ -23,7 +23,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SKILL = ROOT / "skills" / "designing-presentations"
+SKILL = ROOT / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 #: the frontmatter keys the Agent Skills specification defines, the only ones a claude.ai or
 #: API upload accepts (code.claude.com/docs/en/skills, Frontmatter reference)
 UPLOAD_KEYS = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}

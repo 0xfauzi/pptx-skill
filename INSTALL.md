@@ -1,6 +1,6 @@
 # Installing designing-presentations
 
-The skill is the folder `skills/designing-presentations/`. It runs Python scripts and
+The skill is the folder `plugins/designing-presentations/skills/designing-presentations/`. It runs Python scripts and
 LibreOffice on the machine where Claude works, so that machine needs the requirements
 below. The skill installs nothing itself: `scripts/preflight.py` checks every requirement
 and prints the install command for whatever is missing, for you to run.
@@ -44,7 +44,7 @@ brew install poppler fontconfig && brew install --cask libreoffice         # mac
 Check a machine, and a reference's faces:
 
 ```bash
-python3 skills/designing-presentations/scripts/preflight.py --reference /path/to/reference.pptx
+python3 plugins/designing-presentations/skills/designing-presentations/scripts/preflight.py --reference /path/to/reference.pptx
 ```
 
 ## Claude Code
@@ -62,7 +62,7 @@ through the project's settings). Claude Code copies the plugin into its plugin c
 skill loads as `/designing-presentations:designing-presentations` and is used on its own
 when a request matches its description.
 
-By hand: copy or symlink `skills/designing-presentations/` to
+By hand: copy or symlink `plugins/designing-presentations/skills/designing-presentations/` to
 `~/.claude/skills/designing-presentations/` (every project) or to a project's
 `.claude/skills/designing-presentations/`.
 
@@ -104,7 +104,7 @@ rarity basis and the leakage check's background). They are third-party files and
 shipped; fetch them once, into the skill's git-ignored `refs/files/`:
 
 ```bash
-sh skills/designing-presentations/refs/fetch.sh     # checks every sha256 in refs/MANIFEST.md
+sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh     # checks every sha256 in refs/MANIFEST.md
 ```
 
 Without them the build still runs and says the panel is empty. In a plugin install the

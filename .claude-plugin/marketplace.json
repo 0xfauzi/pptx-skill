@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "designing-presentations",
-      "source": "./",
+      "source": "./plugins/designing-presentations",
       "description": "Designs native, editable PowerPoint decks in the look of a reference deck or PDF, or with no reference, with text fit measured on the real fonts and measurable defects refused.",
       "category": "productivity",
       "tags": ["powerpoint", "pptx", "presentations"]

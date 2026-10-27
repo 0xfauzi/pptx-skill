@@ -1,9 +1,10 @@
 # Development material
 
-Nothing under `dev/` is installed with the skill: the plugin, a manual install and the
-claude.ai zip all take `skills/designing-presentations/` only (the plugin's cache copy holds
-this folder too, and no skill file reads it). Paths in the skill's text that start with
-`dev/` name files here.
+Nothing under `dev/` is installed with the skill. The marketplace's one plugin has the
+source `./plugins/designing-presentations`, so the plugin root, which Claude Code copies into
+its cache, holds only `.claude-plugin/plugin.json` and `skills/designing-presentations/`; a
+manual install and the claude.ai zip take the skill folder alone. Paths in the skill's text
+that start with `dev/` name files here, in the source repository only.
 
 | Path | What it is |
 |---|---|
@@ -11,7 +12,7 @@ this folder too, and no skill file reads it). Paths in the skill's text that sta
 | `PORT_AUDIT.md` | every port from the predecessor system, its assumption and its check, one row per item, round by round |
 | `evals/` | ten end-to-end scenarios, the blind-round and fresh-agent protocol, and `holdout.py` (a copy of the skill with the worked examples of the decks under test held out; no `--reference` for a run with no reference) |
 | `oracles/` | the scripts behind every "Checked by" in `PORT_AUDIT.md` |
-| `proofs/` | the build reports and notes of the worked examples in `skills/designing-presentations/examples/` |
+| `proofs/` | the build reports and notes of the worked examples in `plugins/designing-presentations/skills/designing-presentations/examples/` |
 | `tools/package_skill.py` | the claude.ai and API upload zip, checked against the upload rules |
 
 No unit tests are kept: the proofs are end-to-end runs on real reference files, rebuilt

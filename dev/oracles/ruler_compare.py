@@ -8,7 +8,7 @@ from pathlib import Path
 
 # argv[1]: the oracle file ruler_oracle.py wrote (default: ruler_oracle.json in the system
 # temporary directory); PPTX_SKILL: the skill under test (default: the repo this file sits in)
-SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "skills" / "designing-presentations"))
+SKILL = Path(os.environ.get("PPTX_SKILL", Path(__file__).resolve().parents[2] / "plugins" / "designing-presentations" / "skills" / "designing-presentations"))
 sys.path.insert(0, str(SKILL / "scripts"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import textfit  # noqa: E402

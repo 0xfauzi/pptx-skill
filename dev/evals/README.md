@@ -3,7 +3,7 @@
 End-to-end scenarios, a fresh-agent protocol and the blind round. None of this is a unit
 test: every result is a real run on real reference files, recorded beside the claim it
 supports. Company decks are confidential, so development runs these scenarios on the public
-corpus (`skills/designing-presentations/refs/fetch.sh`, and the consulting PDFs named in each file); a deployment re-runs
+corpus (`plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh`, and the consulting PDFs named in each file); a deployment re-runs
 the same scenarios on the company's own templates and past decks.
 
 ## Contents
@@ -47,7 +47,7 @@ The skill ships worked examples made from public reference decks: a completion, 
 deck specs and plans for keybank (their build proofs are in `dev/proofs/`, outside the skill) (`mi_keybank_first_niagara_fig_ma.pptx`),
 the McKinsey board PDF (`mckinsey-calstrs-future-of-boards-2024.pdf`) and the Goldman
 Airvana raster proof. An evaluation run on one of those decks grades the examples, not the
-skill: in blind round 2 a generator on keybank found `examples/keybank.completion.json` (now `skills/designing-presentations/examples/`)
+skill: in blind round 2 a generator on keybank found `examples/keybank.completion.json` (now `plugins/designing-presentations/skills/designing-presentations/examples/`)
 and the keybank digest, and step 2 could be copied instead of read off the renders.
 
 `examples/PROVENANCE.json` ties every file under `examples/` to the reference it was made
@@ -55,7 +55,7 @@ from, by sha256 (or lists it as independent). Before any run on a reference, mak
 skill copy the agent will see with that deck's examples held out:
 
 ```bash
-python3 dev/evals/holdout.py --reference skills/designing-presentations/refs/files/mi_keybank_first_niagara_fig_ma.pptx \
+python3 dev/evals/holdout.py --reference plugins/designing-presentations/skills/designing-presentations/refs/files/mi_keybank_first_niagara_fig_ma.pptx \
         [--reference OTHER ...] [--alias WORD ...] --out /abs/path/skill-under-test
 python3 dev/evals/holdout.py --out /abs/path/skill-under-test    # a run with no reference deck
 ```
