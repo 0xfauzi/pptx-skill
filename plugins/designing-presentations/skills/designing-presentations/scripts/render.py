@@ -203,11 +203,50 @@ def uncovered_faces(fonts: dict[str, dict[str, object]]) -> dict[str, dict[str, 
     return {face: entry for face, entry in fonts.items() if int(entry.get("uncovered_count") or 0) > 0}
 
 
-def to_pdf(src: Path, workdir: Path) -> Path:
+#: the one external relationship kept for LibreOffice: a hyperlink is a click target, never fetched
+HYPERLINK_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+
+
+def offline_copy(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
+    """A copy of the deck whose external relationships, a hyperlink aside, point nowhere.
+    LibreOffice fetches a picture a deck links to on the web when it converts the deck
+    (measured, docs round: a picture linked to a local HTTP server drew an OPTIONS and a
+    GET request during render.py), and a reference deck is untrusted input. Each target
+    left out is added to `blocked` ("part: target"); the copy is the deck LibreOffice
+    renders, so a linked picture draws as an empty frame, as it would offline."""
+    import zipfile
+    out = workdir / "offline" / src.name
+    out.parent.mkdir(parents=True, exist_ok=True)
+    parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
+    with zipfile.ZipFile(src) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        for info in zin.infolist():
+            data = zin.read(info)
+            if info.filename.endswith(".rels"):
+                try:
+                    root = etree.fromstring(data, parser)
+                except etree.XMLSyntaxError:
+                    root = None
+                cut = [rel for rel in (root if root is not None else []) if isinstance(rel.tag, str)
+                       and rel.get("TargetMode") == "External" and rel.get("Type") != HYPERLINK_REL]
+                for rel in cut:
+                    if blocked is not None:
+                        blocked.append(f"{info.filename}: {rel.get('Target')}")
+                    rel.set("Target", "")
+                if cut:
+                    data = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+            zout.writestr(info, data)
+    return out
+
+
+def to_pdf(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
+    """The deck's PDF as LibreOffice draws it, from offline_copy, so nothing the deck links
+    to on the web is fetched; `blocked` collects the external targets left out."""
     profile = workdir / "profile"
     profile.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
     env.setdefault("HOME", str(workdir))
+    if src.suffix.lower() == ".pptx":
+        src = offline_copy(src, workdir, blocked)
     cmd = [
         "soffice", f"-env:UserInstallation=file://{profile}", "--headless", "--norestore",
         "--nolockcheck", "--convert-to", "pdf", "--outdir", str(workdir), str(src),
@@ -304,7 +343,10 @@ def main(argv: list[str]) -> int:
             fonts = font_report(faces, src)
             report["fonts"] = fonts
             (out / "fonts.json").write_text(json.dumps(fonts, indent=1))
-            pdf = to_pdf(src, work)
+            blocked: list[str] = []
+            pdf = to_pdf(src, work, blocked)
+            if blocked:
+                report["external_links_not_fetched"] = blocked
             if args.keep_pdf:
                 shutil.copyfile(pdf, args.keep_pdf)
         n = page_count(pdf)

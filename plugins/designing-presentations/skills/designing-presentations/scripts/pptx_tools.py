@@ -843,13 +843,13 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
         problems.append(f"python-pptx cannot open: {exc}")
     if render:
         with tempfile.TemporaryDirectory(prefix="validate-") as tmp:
-            profile = Path(tmp) / "profile"
-            cmd = ["soffice", f"-env:UserInstallation=file://{profile}", "--headless", "--norestore", "--nolockcheck",
-                   "--convert-to", "pdf", "--outdir", tmp, path]
+            import render  # the one converter: it renders an offline copy, so no linked picture is fetched
             try:
-                subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-                pdf = Path(tmp) / (Path(path).stem + ".pdf")
-                if not pdf.exists():
+                try:
+                    pdf = render.to_pdf(Path(path), Path(tmp))
+                except RuntimeError:
+                    pdf = None
+                if pdf is None:
                     problems.append("LibreOffice produced no PDF")
                 else:
                     pages = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, timeout=60).stdout
