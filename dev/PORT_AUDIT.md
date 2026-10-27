@@ -961,3 +961,45 @@ the plugin root but on disk; and a member that relationship names but that is no
 reaches extract_style as an XMLSyntaxError traceback, as a malformed XML part did before.
 
 ruff 0.16.9: 143 findings, the same 143 as 284b5e8 (paths normalised).
+
+## Round 8, part 7: the second packaging verifier's defects
+
+The verifier on 420caa5 reproduced six defects (its reproductions: `r8r/bin`, `r8r/bomb`,
+`r8r/pk2.zip` in the session scratchpad). Each was reproduced here first, fixed at its
+cause, broken again to watch it return, and restored. Proofs: `r8q/d1` (element cap and
+openers), `r8q/d3` (packager), `r8q/rb` and `r8q/pub2` (rebuild and install) in the session
+scratchpad.
+
+| Defect | Reproduced | Fix | With the fix broken | Commit |
+|---|---|---|---|---|
+| 1 a UTF-32 part is not counted | `u32x6.pptx` (six slides in UTF-32 BE with its byte order mark, 16.7 million elements): `template` rc 0 in 16.7 s at 2,472 MB (`d1/pre-template.txt`) | the counter is lxml itself: `_count_elements` parses each member's bytes with `etree.fromstring`, python-pptx's entry point and its encoding detection, through a parser target that counts start tags, builds no tree and stops past the budget; a member read whole is in `xml_parts`. The byte-order-mark list and the first-byte test are gone. Refused in 1.0 to 1.4 s at 114 to 185 MB: u32x6, UTF-32 LE with its mark, UTF-16 BE and UTF-32 BE without one, UTF-16 LE, dat.pptx, xml.pptx, u16.pptx (`d1/fix-template.txt`); extract_style and preflight --reference refuse u32x6 by name (`d1/fix-extract-preflight.txt`); a small UTF-32 deck now extracts (rc 0, where 420caa5 raised XMLSyntaxError). On the 39 measured packages the counts are the old ones (largest 24,263), but billion_laughs, whose slide lxml refuses ("entity amplification") either way (`d1/census-fix.txt`). A package of 967,970 elements validates in 2.7 s at 294 MB against 1.4 s at 296 MB on 420caa5 | the counter as iterparse, the streaming reader: u32x6 rc 0 in 18.9 s at 2,472 MB again, since iterparse refuses a UTF-32 member that fromstring parses (`d1/brk-template.txt`) | 7d9db92 |
+| 2 `layouts --reference` reads the reference uncapped | `layouts kb.pptx --reference dat.pptx`: rc 0, 2.0 s, 693 MB (`d1/pre-layouts-ref.txt`) | one opener, `emit_pptx.open_presentation`: ooxml.Package (caps and element count) then python-pptx. Every `Presentation(path)` in pptx_tools, emit_pptx (`--template`), build_deck and import_slide goes through it; python-pptx's `Presentation` is called directly only for the blank package. dat.pptx and u32x6.pptx as the reference refused by name in 1.1 to 1.3 s; keybank as the reference: output byte-identical to 420caa5 (`d1/fix-layouts.txt`) | open_presentation without the Package call: rc 0, 693 MB again (`d1/brk-layouts.txt`) | 0352821 |
+| 3 a YAML block description passes the packager | `description: >-` and 12 lines holding `<b>claude</b>`, committed: zip written, "description 2 characters" (`d3/pre.txt`) | the frontmatter reader reads one-line plain `key: value` lines only and refuses any other line by number: a block or quoted or flow value, an indented or empty line, a repeated key, a value holding ': ' or ' #'. The shipped SKILL.md reads as `yaml.safe_load` reads it (`d3/fm-edges.txt`) | the old reader back: zip written, "description 2 characters" (`d3/brk3.txt`) | af594ae |
+| 4 the packager zips the working tree | `git update-index --assume-unchanged SKILL.md`, a line appended: the zip holds it; `--skip-worktree` the same (`d3/pre.txt`) | every byte written is a blob of HEAD (`git ls-tree -r HEAD`, `git cat-file blob`), with the committed mode (16 executables, as committed) and the commit's time; SKILL.md's frontmatter and both LICENSE files are read from HEAD too. Both flags: zip written without the line (`d3/fix.txt`); the untracked, symlink and directory-to-symlink refusals of part 6 still fire, and a stray refs/files file stays out (`d3/item4-still.txt`) | files read from the working tree again: the line in the zip under both flags (`d3/brk4.txt`) | af594ae |
+| 5 stale claims and scratch citations | raster_style.py's docstring and TARGET_SPEC 8.3 said "a 14.4pt pitch" and "within 0.08 in"; ooxml.py and build_deck.py cited `r8x/pub/...` scratch files | the docstring and the spec read the raster oracle's table: modal pitch 14pt over 11 pages (14.4pt on 3), other sides within 0.09 in, citing `dev/proofs/keybank-raster-oracle.md`; the code cites this file. A grep of plugins/ for `r8?/`, scratchpad and /tmp finds nothing | | f763786 |
+| 6 machine paths in the repository | `git grep -E '/tmp/claude-0|/home/user|bb2024fa' HEAD`: 17 files | the oracle scripts and their README take `$DECKGEN` (raster_keybank.sh refuses to run without it or a deck); two audit rows name the paths in words; the proofs are filed by `dev/tools/file_proofs.py`, which replaces each mapped prefix with `$WORK`, `$SKILL`, `$DECKGEN` or `$INPUTS` and refuses a report that still holds a /tmp, /home, /Users, /root, /private or /var path. The same grep now finds nothing (rc 1) | the deckgen map left out: refused, nothing written, naming the bcg report's deckgen path (`d1/file-brk.txt`) | f763786, ee8e91f |
+
+Not a defect, and changed by defect 1's fix: a member lxml cannot parse is now not counted
+at all (its count stops at lxml's error), where 420caa5 counted its '<' bytes. The
+200 KB-of-leading-spaces and EBCDIC variants of part 6 are therefore no longer refused by
+the cap; python-pptx refuses them in 0.5 to 1.7 s at 115 MB with an XMLSyntaxError
+traceback, the open item part 6 names. They are no bomb: no reader parses what lxml cannot.
+
+Rebuilt from a fresh clone of f763786 (`r8q/rb/driver.sh`, the panel checked by `dash
+refs/fetch.sh`, 13 of 13) and compared with the rebuild of a9029ad (`r8q/rb/out-a9029ad`,
+`r8q/rb/genre-a9029ad`; `r8q/rb/cmp4.py`): the 68 result lines are identical, every one of
+the 21 example and 10 genre reports, plan checks and guides has 0 differences, and 106 of
+106 and 27 of 27 renders are pixel-identical. The 10 rebuilt proofs were byte-identical to
+the reports before filing and differ from them only in the mapped prefixes after.
+
+From a fresh clone of ee8e91f, Claude Code 2.1.311: `claude plugin validate . --strict` and
+of the plugin folder pass; marketplace add from a smart-HTTP git server on 127.0.0.1 and
+install into a scratch config: 0.8.0, the cache's 94 files equal `git ls-files` of the
+plugin and its bytes, 0 under dev/; the packager: 93 files, 2,094,989 bytes, entries and
+bytes equal to the skill's committed files, no machine path in any entry. A cold headless
+session on that config, given only the Harrow Valley Water brief, invoked
+`designing-presentations:designing-presentations` as its first tool: PASS, 2 of 2 pages fit,
+package valid, judge and leakage "no reference"; the plugin cache's hashes are unchanged
+afterwards and no `__pycache__` was written.
+
+ruff 0.16.9 over plugins/: 121 findings, the same 121 as 420caa5 (paths normalised).
