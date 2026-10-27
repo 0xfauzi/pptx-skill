@@ -164,6 +164,8 @@ of these folders:
    python3 tools/package_skill.py     # writes dist/designing-presentations.zip
    ```
 
+   If the packager refuses a `__pycache__` folder in the skill, delete that folder and
+   run the command again. Python makes these folders when you run the scripts.
 2. In claude.ai, go to Customize > Skills and upload the zip.
 3. Turn on the skill. Code execution must be on.
 4. Ask Claude to run `scripts/preflight.py`. The sandbox of claude.ai can be different

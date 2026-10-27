@@ -111,6 +111,8 @@ automatically when you ask for slides.
    python3 tools/package_skill.py          # writes dist/designing-presentations.zip
    ```
 
+   If the packager refuses a `__pycache__` folder, delete that folder and run the
+   command again.
 2. In claude.ai, go to Customize > Skills and upload the zip.
 3. Turn on the skill. Code execution must be on.
 4. Ask Claude to run `scripts/preflight.py`. This script shows if the sandbox has
