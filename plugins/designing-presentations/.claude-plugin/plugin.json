@@ -10,5 +10,6 @@
   "homepage": "https://github.com/0xfauzi/pptx-skill",
   "repository": "https://github.com/0xfauzi/pptx-skill",
   "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
   "keywords": ["powerpoint", "pptx", "presentations", "pitch-book", "slides", "design", "libreoffice"]
 }
