@@ -80,7 +80,7 @@ import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
-from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, Guide as EmitGuide, paragraph_align, _point_label_shown, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_defaults_taken, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, Guide as EmitGuide, paragraph_align, _point_label_shown, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, open_presentation, table_defaults_taken, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import EMU_PER_INCH, paragraphs_words, visual_extent  # noqa: E402
 
@@ -1746,9 +1746,8 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
     than the ruler did and wrapped it: the box overflows below its measured height (on
     LibreOffice 24.2.7, a 7.5pt line measured 24,110 EMU inside its box was wrapped). Words
     the render does not hold as one run are reported as not found, never as a fit."""
-    from pptx import Presentation
     from pptx.oxml.ns import qn as pqn
-    slides = list(Presentation(out).slides)
+    slides = list(open_presentation(out).slides)
     offset = len(slides) - len(emitted)
     out_pages = []
     for i, page in enumerate(emit_pages):
@@ -1875,10 +1874,9 @@ def emitted_fit(out: str, emitted: list[dict], emit_pages: list[dict], guide: di
     solver fitted but the file overflows is a defect in the path between them, and the
     page is refused by name."""
     from fingerprint import fingerprint_deck, text_overflows
-    from pptx import Presentation
     from pptx.oxml.ns import qn as pqn
     prints = fingerprint_deck(out)
-    slides = list(Presentation(out).slides)
+    slides = list(open_presentation(out).slides)
     offset = len(slides) - len(emitted)
     substitutes = ((guide.get("typography") or {}).get("families") or {}).get("substitutes") or {}
     per_page: list[list[dict]] = []
@@ -1956,7 +1954,7 @@ def label_text(value: float, number_format: str | None) -> str | None:
     v = v.quantize(Decimal(1).scaleb(-len(m["dec"] or "")), rounding=ROUND_HALF_UP)
     # a value that rounds to zero is drawn unsigned, and the sign leads a quoted prefix
     # (measured, round 8, LibreOffice 24.2.7: -0.04 under 0.0 is '0.0', -0.4 under 0 is '0',
-    # -0.4 under "$"0.0 is '-$0.4'; r8x/pub/gen/genz.json)
+    # -0.4 under "$"0.0 is '-$0.4'; dev/PORT_AUDIT.md, round 8)
     sign = "-" if v < 0 else ""
     body = f"{abs(v):{',' if ',' in m['int'] else ''}f}"
     lit = lambda part: re.sub(r'"([^"]*)"', r"\1", part or "")  # noqa: E731
@@ -1964,7 +1962,7 @@ def label_text(value: float, number_format: str | None) -> str | None:
 
 
 #: Measured, round 8, LibreOffice 24.2.7, 72 value labels under General
-#: (r8x/pub/gen/gen*.json, read from the render's PDF text): an integer below 2^53 is drawn
+#: (dev/PORT_AUDIT.md, read from the render's PDF text): an integer below 2^53 is drawn
 #: whole (1234567890123456); any other value is rounded to 15 significant digits, drawn plain
 #: with no trailing zeros from 1e-4 up to 1e15 (0.30000000000000004 is '0.3', 1/3 is
 #: '0.333333333333333'), and zero is '0' whatever its sign. Past those bounds the renderer

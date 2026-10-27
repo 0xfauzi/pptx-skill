@@ -56,7 +56,7 @@ EMU_PER_INCH = 914400
 EMU_PER_PT = 12700
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
+from emit_pptx import ORIGIN_TAG_NAME, open_presentation  # noqa: E402  the producer's
 from layout import PRODUCT_SAFETY_FLOOR_PT, table_floor_pt  # noqa: E402  the build's own floors: one rule for both gates
 from ooxml import Package, PackageRefused, _apply_transform, group_child_transform, resolve_target, visual_extent, xfrm_box, xfrm_rotation  # noqa: E402  one reader
 R_NS = qn("r:id")[1:].partition("}")[0]
@@ -138,7 +138,7 @@ TITLE_PLACEHOLDERS = frozenset({PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITL
 
 
 def slide_text(path: str) -> list[dict]:
-    prs = Presentation(path)
+    prs = open_presentation(path)
     out = []
     for i, slide in enumerate(prs.slides, 1):
         entry: dict = {"slide": i, "layout": slide.slide_layout.name, "origin": slide_origin(slide), "title": None, "blocks": [], "tables": [], "charts": [], "notes": None}
@@ -222,8 +222,8 @@ def layouts(path: str, reference: str | None = None) -> dict:
     (the deck a template was made from, whose layout parts it keeps) the reference's
     slides are counted. A file with no slides and no reference counts nothing: its usage
     reads "not counted", never 0 of 0."""
-    prs = Presentation(path)
-    counted = Presentation(reference) if reference else prs
+    prs = open_presentation(path)
+    counted = open_presentation(reference) if reference else prs
     usage: dict[str, int] = {}
     for slide in counted.slides:
         part = str(slide.slide_layout.part.partname)
@@ -289,32 +289,32 @@ def _drop_slide(prs, index: int) -> None:
 
 
 def template(path: str, out: str, keep: list[int]) -> dict:
-    prs = Presentation(path)
+    prs = open_presentation(path)
     n = len(prs.slides)
     keep_set = {k for k in keep if 1 <= k <= n}
     for index in range(n - 1, -1, -1):
         if index + 1 not in keep_set:
             _drop_slide(prs, index)
     prs.save(out)
-    check = Presentation(out)
+    check = open_presentation(out)
     return {"out": out, "slides_kept": len(check.slides), "masters": len(check.slide_masters),
             "layouts": sum(len(m.slide_layouts) for m in check.slide_masters)}
 
 
 def delete(path: str, out: str, slides: list[int]) -> dict:
-    prs = Presentation(path)
+    prs = open_presentation(path)
     n = len(prs.slides)
     for index in sorted({s - 1 for s in slides if 1 <= s <= n}, reverse=True):
         _drop_slide(prs, index)
     prs.save(out)
-    return {"out": out, "slides": len(Presentation(out).slides)}
+    return {"out": out, "slides": len(open_presentation(out).slides)}
 
 
 def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
     """Copy slide `slide_no` (1-based) as a NEW part with its own copies of charts and
     notes, so editing the copy never edits the original. Media (pictures) are shared by
     relationship, which is what PowerPoint itself does."""
-    prs = Presentation(path)
+    prs = open_presentation(path)
     src = prs.slides[slide_no - 1]
     new = prs.slides.add_slide(src.slide_layout)
     # replace the new slide's shape tree with a deep copy of the source's
@@ -370,7 +370,7 @@ def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
     target_index = (after if after is not None else slide_no)
     sld_id_lst.insert(min(target_index, len(ids) - 1), moved)
     prs.save(out)
-    return {"out": out, "copied_slide": slide_no, "new_position": target_index + 1, "slides": len(Presentation(out).slides)}
+    return {"out": out, "copied_slide": slide_no, "new_position": target_index + 1, "slides": len(open_presentation(out).slides)}
 
 
 def _remap_rids(root: etree._Element, rid_map: dict[str, str]) -> None:
@@ -455,7 +455,7 @@ def clean(path: str, out: str) -> dict:
     """Rewrite the zip keeping only parts reachable from the package relationships plus
     [Content_Types].xml. python-pptx already drops unreachable parts on save; this handles
     packages edited by hand whose stale parts python-pptx would carry as unknown blobs."""
-    prs = Presentation(path)
+    prs = open_presentation(path)
     reachable = {str(p.partname) for p in prs.part.package.iter_parts()} | {"/"}  # "/": the package itself, source of _rels/.rels
     with zipfile.ZipFile(path) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
         kept = dropped = 0
@@ -484,7 +484,7 @@ def undrawn_paragraphs(path: str, pdf: Path) -> list[str]:
     column heads wrapped beside each other: -layout alone interleaved their lines and
     reported both undrawn although both were on the page."""
     out: list[str] = []
-    prs = Presentation(path)
+    prs = open_presentation(path)
     for i, slide in enumerate(prs.slides, 1):
         readings = []
         for mode in (["-layout"], ["-raw"]):
@@ -836,7 +836,7 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
         emit_problems, info["emit"] = emit_checks(pkg, slide_parts, guide, parse)
         problems.extend(emit_problems)
     try:
-        Presentation(path)
+        open_presentation(path)
     except Exception as exc:  # noqa: BLE001
         problems.append(f"python-pptx cannot open: {exc}")
     if render:

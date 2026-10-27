@@ -256,7 +256,7 @@ def _pptx_shape(path: str, index: int, ref: str):
     on slide `index`, searched through groups; None when the ref names no id."""
     import re
 
-    from pptx import Presentation
+    from emit_pptx import open_presentation
     m = re.search(r"\[id=(\d+)\]", ref or "")
     if not m:
         return None
@@ -272,7 +272,7 @@ def _pptx_shape(path: str, index: int, ref: str):
                     return found
         return None
 
-    return walk(Presentation(path).slides[index].shapes)
+    return walk(open_presentation(path).slides[index].shapes)
 
 
 def pptx_picture(path: str, index: int, ref: str, out_dir: Path, ident: str) -> str | None:

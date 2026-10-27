@@ -76,7 +76,7 @@ import sys
 from pathlib import Path
 
 from lxml import etree
-from pptx import Presentation
+from pptx import Presentation as _Presentation
 from pptx.chart.data import BubbleChartData, CategoryChartData, XyChartData
 from pptx.chart.datalabel import DataLabels
 from pptx.dml.color import RGBColor
@@ -109,6 +109,18 @@ from layout import (  # noqa: E402
     header_labels,
     header_spans,
 )
+
+
+def open_presentation(path: str):
+    """python-pptx's Presentation of a file, after ooxml.Package has read the same file
+    under the zip-bomb and element caps (PackageRefused names a refused one). Every script
+    opens a deck file through here, never through python-pptx directly: a gate placed per
+    command argument missed the second path a command reads."""
+    from ooxml import Package
+
+    Package(str(path))
+    return _Presentation(path)
+
 
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
@@ -2784,7 +2796,7 @@ def firm_entries(entries: list[dict], choices: dict) -> list[dict]:
 
 def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> dict:
     guide = Guide(guide_data)
-    prs = Presentation(template)
+    prs = open_presentation(template)
     kept = len(prs.slides)  # a template made with --keep carries pages the new ones follow
     surface = guide.colors.get("color.surface", {}).get("hex")
     def furniture(page: dict | None) -> tuple[set[str], list[dict]]:
