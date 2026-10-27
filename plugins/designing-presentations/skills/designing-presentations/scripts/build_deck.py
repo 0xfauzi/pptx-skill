@@ -943,12 +943,25 @@ def contrast_of(elements: list[dict], resolved: dict, guide: dict, chrome_mode: 
                             unknown.append("an image lies under the chart; contrast needs pixels")
                         backings.extend(plot)
                 spec = item["spec"] or {}
-                over = label_overflows_bar(el, item, spec, ctx) if backings and "series" in item else []
+                over = label_overflows_bar(el, item, spec, ctx) if backings and "series" in item else {}
                 if over:
                     # a label taller than its column, or longer than its horizontal bar, runs
-                    # off the bar onto the plot: scored there too
+                    # off the bar onto the plot, and on a stack onto the segments beside it:
+                    # scored there too
                     backings.extend(plot)
-                    where["overflows_bar_at_points"] = over
+                    where["overflows_bar_at_points"] = sorted(over)
+                    if str(el.get("type", "")).startswith("COLUMN_STACKED"):
+                        where["overflows_stack"] = True
+                    for sj, i in overflow_neighbours(el, item["series"], over):
+                        nb = el["series"][sj]
+                        role = next((p.get("fill_role") for p in nb.get("points") or [] if p["index"] == i and "fill_role" in p), nb.get("fill_role"))
+                        if role is None:
+                            unknown.append(f"series[{sj}] beside the label leaves its fill to the renderer")
+                        elif role == "none":
+                            backings.extend(plot)
+                        else:
+                            backings.append(eg.hex(role, where=el["id"]))
+                            names.setdefault(backings[-1], f"{role} fill of series[{sj}] {nb['name']!r}")
                 if unknown or not backings:
                     out["undecidable"].append({**where, "why": "; ".join(unknown) or "no backing"})
                     if not backings:
@@ -1443,8 +1456,11 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
             where = f"{v['element']} {v['part']}" + (f" (points {v['points']})" if v.get("points") else "")
         else:
             where = f"{v['element']} {v['row_class']} rows"
-        off_bar = (f"; the label runs past its bar at points {v['overflows_bar_at_points']} onto {v['backing']}: set it outside the bar "
-                   "(position outside_end) in an ink that reads on that ground, or shorten it, or lengthen the bar" if v.get("overflows_bar_at_points") else "")
+        off_bar = "" if not v.get("overflows_bar_at_points") else (
+            f"; the label runs past its segment at points {v['overflows_bar_at_points']} onto {v['backing']}: give it fewer lines, "
+            "give the stack more height, or label the segment outside the stack (a callout annotation)" if v.get("overflows_stack") else
+            f"; the label runs past its bar at points {v['overflows_bar_at_points']} onto {v['backing']}: set it outside the bar "
+            "(position outside_end) in an ink that reads on that ground, or shorten it, or lengthen the bar")
         problems.append({"kind": "contrast", "severity": "refusal", "detail": f"{where}: {v['ink']} over {v['backing']} is {v['ratio']}:1, under {CONTRAST_REFUSAL}:1 (AA asks {v['threshold']}:1 at {v['size_pt']}pt{' bold' if v['bold'] else ''})" + off_bar})
     found = bridge_ties(elements)
     failures = [b for b in found if b.get("severity", "refusal") == "refusal"]
@@ -2064,10 +2080,26 @@ def general_text(value: float) -> str | None:
 BAR_LABEL_INSET_EMU = {"inside_base": 35_801, "inside_end": 29_303, "center": 0}
 
 
-def label_overflows_bar(el: dict, item: dict, spec: dict, ctx: L.Context | None = None) -> list[int]:
+def _bar_label_text(el: dict, si: int, i: int) -> tuple[dict, str | None]:
+    """The label settings of point i of series si (the point's over the series') and the
+    text the renderer draws: its own text, else its value under its number format."""
+    s = el["series"][si]
+    points = {p["index"]: p for p in s.get("points") or []}
+    merged = {**(s.get("labels") or {}), **(points.get(i, {}).get("label") or {})}
+    text = merged.get("text")
+    value = s["values"][i]
+    if text is None and value is not None:
+        text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
+    return merged, (str(text) if text else None)
+
+
+def label_overflows_bar(el: dict, item: dict, spec: dict, ctx: L.Context | None = None) -> dict[int, tuple[float, float]]:
     """The points whose label, set on its bar's fill, runs off the bar along the value
-    axis. On a column: one line of the label's role at its size (1.2 x size, PowerPoint's
-    single line) taller than the column's segment. On a horizontal bar (with `ctx`, whose
+    axis, each with the span along that axis the label covers (page EMU, low to high). On
+    a column: the label's lines (each line break it holds starts one; LibreOffice may wrap
+    a line further, so this is the fewest it draws) at 1.2 x size, PowerPoint's single
+    line, taller than the column's segment; the span is centred on the segment, or set at
+    its end or base for inside_end and inside_base. On a horizontal bar (with `ctx`, whose
     ruler measures the label in the face the renderer draws): the label's one line
     (LibreOffice does not wrap a label on a horizontal bar, round 8) plus where it starts
     on the bar (BAR_LABEL_INSET_EMU) longer than the bar, for inside_base, inside_end and
@@ -2077,36 +2109,68 @@ def label_overflows_bar(el: dict, item: dict, spec: dict, ctx: L.Context | None 
     size_pt = float(spec.get("size_pt") or 0)
     kind = str(el.get("type", ""))
     if not size_pt or not kind.startswith(("COLUMN_", "BAR_")) or (kind.startswith("BAR_") and ctx is None):
-        return []
+        return {}
     try:
         geo = ChartGeometry(el, el["box"])
         si = item["series"]
         if geo.series_family(si) not in ("bar", "bar_stacked"):
-            return []
+            return {}
+        over: dict[int, tuple[float, float]] = {}
         if kind.startswith("COLUMN_"):
             line = size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
-            return [i for i in item["points"] if geo.bar_rect(si, i)[3] < line]
-        s = el["series"][si]
-        labels = s.get("labels") or {}
-        points = {p["index"]: p for p in s.get("points") or []}
-        over = []
+            for i in item["points"]:
+                merged, text = _bar_label_text(el, si, i)
+                height = line * (text.count("\n") + 1 if text else 1)
+                _, top, _, seg = geo.bar_rect(si, i)
+                if seg >= height:
+                    continue
+                value = el["series"][si]["values"][i] or 0
+                end_at_top = value >= 0
+                position = merged.get("position")
+                if position == "inside_end":
+                    lo = top if end_at_top else top + seg - height
+                elif position == "inside_base":
+                    lo = top + seg - height if end_at_top else top
+                else:
+                    lo = top + seg / 2 - height / 2
+                over[i] = (lo, lo + height)
+            return over
         for i in item["points"]:
-            merged = {**labels, **(points.get(i, {}).get("label") or {})}
+            merged, text = _bar_label_text(el, si, i)
             inset = BAR_LABEL_INSET_EMU.get(merged.get("position"))
-            value = s["values"][i]
-            if inset is None or value is None:
-                continue
-            text = merged.get("text")
-            if text is None:
-                text = label_text(float(value), merged.get("number_format") or s.get("number_format") or el.get("number_format"))
             role = merged.get("role") or (el.get("text") or {}).get("role")
-            if not text or not role:
+            if inset is None or not text or not role:
                 continue
             entry = L.resolve_type_entry(ctx.guide, role, L.Fraction(1))
-            width = max(L.advance_emu(ctx.ruler, line, ctx.face(entry).path, entry.size_pt) for line in str(text).split("\n"))
-            if inset + width > geo.bar_rect(si, i)[2]:
-                over.append(i)
+            width = max(L.advance_emu(ctx.ruler, ln, ctx.face(entry).path, entry.size_pt) for ln in text.split("\n"))
+            left, _, length, _ = geo.bar_rect(si, i)
+            if inset + width > length:
+                over[i] = (left, left + inset + width)
         return over
+    except GeometryRefused:
+        return {}
+
+
+def overflow_neighbours(el: dict, si: int, over: dict[int, tuple[float, float]]) -> list[tuple[int, int]]:
+    """The (series, point) bars of the same stack that labels running off their column
+    (label_overflows_bar's spans) reach: on a stacked column the label sits on the
+    segments above and below its own as well as on the plot."""
+    from chart_geometry import ChartGeometry, GeometryRefused
+    if not str(el.get("type", "")).startswith("COLUMN_") or not over:
+        return []
+    try:
+        geo = ChartGeometry(el, el["box"])
+        if geo.series_family(si) != "bar_stacked":
+            return []
+        out = []
+        for i, (lo, hi) in sorted(over.items()):
+            for sj in geo.group(si):
+                if sj == si or el["series"][sj]["values"][i] in (None, 0):
+                    continue
+                _, top, _, seg = geo.bar_rect(sj, i)
+                if top < hi and top + seg > lo:
+                    out.append((sj, i))
+        return out
     except GeometryRefused:
         return []
 

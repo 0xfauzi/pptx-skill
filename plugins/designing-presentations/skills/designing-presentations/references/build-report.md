@@ -205,8 +205,10 @@ confirm, and words drawn in their backing's own colour, are no precedent; the fi
 names why under `no_precedent`. A run is scored where its measured lines draw (their
 height, width and alignment), not across its whole box. With no `--reference` nothing
 claims precedent; with no reference, `precedent_source` reads "no reference". `undecidable` lists text over images; `unbound` lists runs with
-no ink role. A column's label taller than its segment is scored against the plot too and
-carries `overflows_bar_at_points` (chart-recipes.md). The fix is a role change; nothing in
+no ink role. A column's label taller than its segment (one line for each line break it
+holds, at least: LibreOffice may wrap a line further) is scored against the plot too, on a
+stacked column also against the segments it reaches above and below, and carries
+`overflows_bar_at_points` (chart-recipes.md). The fix is a role change; nothing in
 the emitter corrects an ink.
 
 ## Titles, register and density
