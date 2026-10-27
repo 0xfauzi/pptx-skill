@@ -53,40 +53,48 @@ python3 plugins/designing-presentations/skills/designing-presentations/scripts/p
 
 ## Claude Code
 
-As a plugin, from this repository's marketplace:
+As a plugin, from this repository's marketplace, added by the URL of its catalog file:
 
 ```
-/plugin marketplace add 0xfauzi/pptx-skill
+/plugin marketplace add https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/.claude-plugin/marketplace.json
 /plugin install designing-presentations@pptx-skill
 ```
 
-or from a shell, `claude plugin marketplace add 0xfauzi/pptx-skill` and
+or from a shell, `claude plugin marketplace add <that URL>` and
 `claude plugin install designing-presentations@pptx-skill` (add `--scope project` to share it
 through the project's settings). One command does both: in a session
-`/plugin install designing-presentations --marketplace 0xfauzi/pptx-skill` (Claude Code
-2.1.275 or later), and from a shell `claude plugin install designing-presentations
---marketplace 0xfauzi/pptx-skill` (2.1.292 or later), per code.claude.com/docs/en/discover-plugins.md
-("Add a marketplace and install in one command"). The skill loads as
+`/plugin install designing-presentations --marketplace <that URL>` (Claude Code 2.1.275 or
+later), and from a shell `claude plugin install designing-presentations --marketplace <that
+URL>` (2.1.292 or later), per code.claude.com/docs/en/discover-plugins.md ("Add a
+marketplace and install in one command"). The skill loads as
 `/designing-presentations:designing-presentations` and is used on its own when a request
 matches its description.
 
-The marketplace lists one plugin whose source is `./plugins/designing-presentations`, so an
-install copies that folder only (its manifest and the skill), never `dev/`. Adding the
-marketplace clones this repository into `~/.claude/plugins/marketplaces/pptx-skill/`, `dev/`
-included; to keep `dev/` out of that checkout too, add it with a sparse checkout:
-`claude plugin marketplace add 0xfauzi/pptx-skill --sparse .claude-plugin plugins`
-(marketplace-reference.md, `sparsePaths`; git still holds the other files' objects in the
-clone's `.git`). Claude Code
-keeps the copy in its plugin cache, `~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/`
-(the plugins root is `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` names another,
-per code.claude.com/docs/en/plugins/loading.md, "Find plugins on disk"; with
-`CLAUDE_CONFIG_DIR` set it was `$CLAUDE_CONFIG_DIR/plugins` on Claude Code 2.1.311), so the
-skill sits at
+What lands on disk. Added by URL, the marketplace is the one catalog file, and its one entry
+is a `git-subdir` source (`plugins/designing-presentations` of this repository), which
+Claude Code fetches with a sparse checkout of that folder alone (code.claude.com/docs/en/
+plugins/marketplace-reference.md, "git-subdir plugin source"; host-marketplace.md, "Host
+your marketplace": a hosted marketplace.json URL). Measured on Claude Code 2.1.311, from a
+git server on 127.0.0.1 into a scratch config: the marketplaces folder held one file, the
+plugin cache the plugin folder's committed files byte for byte, and nothing of `dev/` and no
+`.git` anywhere. The marketplace can also be added as `0xfauzi/pptx-skill` (the shorter form
+above works in place of the URL): that clones the whole repository into
+`~/.claude/plugins/marketplaces/pptx-skill/`, `dev/` included (66 files there on the same
+test), while the install still fetches the plugin folder alone; `--sparse .claude-plugin` on
+that add keeps the checkout to the catalog and the files at the repository's root (5 files,
+nothing of `dev/`). A marketplace added from a local folder of this repository installs from
+GitHub too, since the entry names the repository by URL; to try a local change, load the
+plugin folder with `claude --plugin-dir plugins/designing-presentations`.
+
+Claude Code keeps the plugin in its cache,
+`~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/` (the plugins root is
+`~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` names another, per
+code.claude.com/docs/en/plugins/loading.md, "Find plugins on disk"; with `CLAUDE_CONFIG_DIR`
+set it was `$CLAUDE_CONFIG_DIR/plugins` on Claude Code 2.1.311), so the skill sits at
 `~/.claude/plugins/cache/pptx-skill/designing-presentations/0.8.0/skills/designing-presentations/`
 for this release. `claude plugin list` shows what is installed. An update installs the new
 version into a new directory and removes the old one 14 days later (loading.md, "Cleanup of
-previous versions"). A marketplace added from a local folder is read in place instead of
-copied (`claude plugin list` shows "Read from:").
+previous versions").
 
 By hand: copy or symlink `plugins/designing-presentations/skills/designing-presentations/` to
 `~/.claude/skills/designing-presentations/` (every project) or to a project's

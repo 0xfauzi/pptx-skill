@@ -70,18 +70,18 @@ wrote.*
 ### Claude Code, as a plugin
 
 ```
-/plugin marketplace add 0xfauzi/pptx-skill
-/plugin install designing-presentations@pptx-skill
+/plugin install designing-presentations --marketplace https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/.claude-plugin/marketplace.json
 ```
 
-From a shell: `claude plugin marketplace add 0xfauzi/pptx-skill` then
-`claude plugin install designing-presentations@pptx-skill`. One line does both: in a session
-`/plugin install designing-presentations --marketplace 0xfauzi/pptx-skill` (Claude Code
-2.1.275 or later), from a shell `claude plugin install designing-presentations --marketplace
-0xfauzi/pptx-skill` (2.1.292 or later). The install copies the plugin folder only, never
-`dev/`. The skill then loads as `/designing-presentations:designing-presentations`, and
-Claude uses it on its own when a request asks for slides. Where the install lands, and how
-to fetch the judge's panel again after an update: [INSTALL.md](INSTALL.md).
+That one line (Claude Code 2.1.275 or later in a session; `claude plugin install
+designing-presentations --marketplace <URL>` from a shell, 2.1.292 or later) adds the
+marketplace by its catalog file and installs the plugin. Claude Code downloads the catalog
+file alone, and the plugin's entry fetches the plugin folder alone (a `git-subdir` source),
+so nothing of `dev/` reaches the disk. Adding the marketplace as `0xfauzi/pptx-skill` also
+works and clones the whole repository, `dev/` included. The skill then loads as
+`/designing-presentations:designing-presentations`, and Claude uses it on its own when a
+request asks for slides. Where the install lands, and how to fetch the judge's panel again
+after an update: [INSTALL.md](INSTALL.md).
 
 ### Claude Code, by hand
 
@@ -176,7 +176,20 @@ weights and figures with every text run paraphrased.
   re-arranges, cuts words or splits the page.
 - **One renderer.** Every render check reads LibreOffice 24.2.7's drawing. PowerPoint was
   measured for text-box fit and table row heights (`references/gotchas.md`); chart label
-  and annotation positions were measured in LibreOffice only (`dev/PORT_AUDIT.md`).
+  and annotation positions, and the label gaps and ink bands per face and size, were
+  measured in LibreOffice only (`dev/PORT_AUDIT.md`). The order PowerPoint lists a
+  horizontal bar chart's legend in is unmeasured; LibreOffice lists it last series first.
+- **Half-point sizes draw wider in LibreOffice.** At 7.5pt LibreOffice set Liberation Sans
+  and Carlito lines 0.69 to 0.80% wider than the text ruler measures them (8pt: 0.07 to
+  0.33%; 7, 9, 10 and 12pt from 0.78% narrower to 0.06% wider), more than the fitter's 20,234 EMU
+  margin on a line longer than about 2.6 million EMU (2.8 in). A table cell or text line
+  that the renderer wraps for it is refused at render time (`renderer divergence`), not
+  predicted before it.
+- **Carlito chart text.** LibreOffice draws Carlito (Calibri's stand-in) chart labels at 7pt
+  with collapsed word spaces ("Water andwastewater") and at 7.5 and 8pt with gaps inside
+  words ("Wat er"); setting `kern` on the chart text changed nothing, and 8.5 and 9pt drew
+  within the measured bounds. The committee book in the gallery sets its 7pt chart text in
+  Arial for this (`dev/PORT_AUDIT.md`, docs round 2).
 - **Leakage and stated figures are reported, not refused.** The build lists every name,
   figure and phrase of the reference found in the new deck, and warns where a figure the
   plan's message states is not on the page; Claude removes or answers each in the final
@@ -231,9 +244,11 @@ size histogram 0.698 and the bold ratio 0.537 against the reference (`judge.comp
 
 ```
 .claude-plugin/marketplace.json   the marketplace (name pptx-skill); its one plugin's source is
-                                  ./plugins/designing-presentations
+                                  plugins/designing-presentations of this repository (git-subdir)
 plugins/designing-presentations/  the plugin root, all that an install copies:
-  .claude-plugin/plugin.json      the plugin manifest
+  .claude-plugin/plugin.json      the plugin manifest, and icon.png, its listing icon
+  README.md                       the directory listing's description: what the plugin runs,
+                                  sends, fetches and writes
   skills/designing-presentations/ the skill, self-contained: SKILL.md, references/, scripts/,
                                   components/, examples/, refs/ (fetch.sh and MANIFEST.md)
 dev/                              development material, outside the plugin root, so never

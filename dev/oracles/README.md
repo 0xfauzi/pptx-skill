@@ -167,3 +167,19 @@ Last run 2026-10-25 (LibreOffice 24.2.7.2): 408 features read, worst |mark - pre
 1.07 px, mean 0.24 px; markers within 0.39 px of their predicted pixel; 4 bar edges not
 found, each hidden by the next series of a clustered chart with overlap 30.
 
+## label_probe.py: chart data labels per face and size against LibreOffice renders
+
+```sh
+python3 -I dev/oracles/label_probe.py OUT_DIR --sizes 6,7,8,9,10,11,12,14
+```
+
+One page per face (Arial, Calibri, Georgia, Inter as a deck names them; fontconfig maps
+them to Liberation Sans, Carlito, Gelasio and Inter) and size, written through the emitter:
+a line chart with every label above its point, one with every label below, and horizontal
+bars labelled inside the base and inside the end. pdftotext's word boxes are matched to the
+points and bars chart_geometry predicts; the ink rows inside each box are read at 600 dpi.
+`labels.json` holds every reading. The build's `LINE_LABEL_GAP_EMU`, `LABEL_BOX_OVER_SIZE`,
+`INK_INSETS` and `BAR_LABEL_INSET_EMU` are quoted from its run in the docs round (32 pages,
+1,022 words): every word's ink inside the band the build gives it, every predicted gap
+within 330 EMU of the measured box.
+

@@ -15,9 +15,12 @@ The decks name only faces that Windows and macOS PowerPoint carry, so the .pptx 
 as built. The build measures each face with the installed face or its metric-compatible
 stand-in (`scripts/textfit.py`, `METRIC_ALIAS_CLASSES`): Liberation Sans for Arial and
 Carlito for Calibri, both in INSTALL.md's font list, and Gelasio for Georgia, which is not.
-The LBO deck sets chart text in Arial because LibreOffice drew its 7pt Carlito chart labels
-with lost and split word spaces ("Water andwastewater", "Downsi de case") on a render of
-this deck, and draws Arial at that size as written.
+The LBO deck sets chart text in Arial because LibreOffice draws Carlito chart labels with
+collapsed or split word spaces at the sizes the deck could use: measured on this deck's own
+labels, the narrowest word space was 0.51 of a space at 7pt ("Water andwastewater"), and gaps
+inside words reached 0.35 to 0.41 of a space at 7.5 and 8pt ("Wat er"), where Arial at 7pt
+drew every space at 0.69 or more and no gap inside a word over 0.15; `kern` 0 or 1200 on
+the chart text changed nothing (PORT_AUDIT.md, docs round 2).
 
 ## Rebuild a deck
 
