@@ -32,8 +32,8 @@ the .pptx the build wrote.
 - **Sends:** nothing. No script imports a network module, and no command sends a file,
   a deck or a figure anywhere.
 - **Fetches:** nothing while it works. LibreOffice renders an offline copy of each deck in
-  which every external link but a hyperlink points nowhere, so a picture a deck links to on
-  the web is not downloaded (`scripts/render.py`, `offline_copy`). The one script that
+  which every link to something outside the deck, hyperlinks included, points nowhere, so a
+  picture a deck links to on the web is not downloaded (`scripts/render.py`, `offline_copy`). The one script that
   downloads is `refs/fetch.sh`, and only when you run it: it fetches the public reference
   decks listed in `refs/MANIFEST.md` (from the publishers' own sites, Amazon S3,
   DocumentCloud and raw.githubusercontent.com) with curl into the skill's `refs/files/`

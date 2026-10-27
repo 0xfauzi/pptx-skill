@@ -203,50 +203,66 @@ def uncovered_faces(fonts: dict[str, dict[str, object]]) -> dict[str, dict[str, 
     return {face: entry for face, entry in fonts.items() if int(entry.get("uncovered_count") or 0) > 0}
 
 
-#: the one external relationship kept for LibreOffice: a hyperlink is a click target, never fetched
-HYPERLINK_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-
-
 def offline_copy(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
-    """A copy of the deck whose external relationships, a hyperlink aside, point nowhere.
-    LibreOffice fetches a picture a deck links to on the web when it converts the deck
-    (measured, docs round: a picture linked to a local HTTP server drew an OPTIONS and a
-    GET request during render.py), and a reference deck is untrusted input. Each target
-    left out is added to `blocked` ("part: target"); the copy is the deck LibreOffice
-    renders, so a linked picture draws as an empty frame, as it would offline."""
+    """A copy of the package in which every relationship that does not name a part inside
+    it points nowhere. LibreOffice fetches a picture a deck links to on the web when it
+    converts the deck (measured, docs rounds 2 and 3: a linked picture drew OPTIONS, HEAD
+    and GET requests to a local HTTP server), and a reference deck is untrusted input.
+    It reads TargetMode without regard to case and follows a picture's relationship by its
+    id whatever its Type (a picture under a hyperlink Type was fetched too), so the rule
+    here reads neither: a relationship is kept only when it is Internal and its target,
+    compared case-insensitively, is a member of the zip. Every package is copied, whatever
+    its extension (.potx and .pptm were fetched from when only .pptx was). Each target left
+    out is added to `blocked` ("part: target"); a linked picture draws as an empty frame,
+    as it would offline."""
     import zipfile
+    from urllib.parse import unquote
+    ooxml.Package(str(src)).zip.close()  # the caps, one copy per part name, well-formed relationship parts
     out = workdir / "offline" / src.name
     out.parent.mkdir(parents=True, exist_ok=True)
     parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
     with zipfile.ZipFile(src) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        members = {info.filename.lower() for info in zin.infolist()}
         for info in zin.infolist():
             data = zin.read(info)
-            if info.filename.endswith(".rels"):
+            name = info.filename
+            if name.lower().endswith(".rels"):
+                low = name.lower()
+                folder = low.rpartition("/_rels/")[0] if "/_rels/" in low else ""
                 try:
                     root = etree.fromstring(data, parser)
                 except etree.XMLSyntaxError:
-                    root = None
-                cut = [rel for rel in (root if root is not None else []) if isinstance(rel.tag, str)
-                       and rel.get("TargetMode") == "External" and rel.get("Type") != HYPERLINK_REL]
+                    root = etree.Element(f"{{{RELS_NS}}}Relationships")  # nothing in it is followed
+                    if blocked is not None:
+                        blocked.append(f"{name}: not well-formed, dropped")
+                cut = []
+                for rel in root.iter():
+                    if not isinstance(rel.tag, str) or rel.get("Target") is None:
+                        continue
+                    target = rel.get("Target") or ""
+                    internal = (rel.get("TargetMode") or "Internal").strip().lower() == "internal"
+                    if not (internal and ooxml.resolve_target(folder, unquote(target)).lower() in members):
+                        cut.append(rel)
                 for rel in cut:
                     if blocked is not None:
-                        blocked.append(f"{info.filename}: {rel.get('Target')}")
+                        blocked.append(f"{name}: {rel.get('Target')}")
                     rel.set("Target", "")
-                if cut:
-                    data = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+                data = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
             zout.writestr(info, data)
     return out
 
 
+RELS_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
+
+
 def to_pdf(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
-    """The deck's PDF as LibreOffice draws it, from offline_copy, so nothing the deck links
-    to on the web is fetched; `blocked` collects the external targets left out."""
+    """The deck's PDF as LibreOffice draws it, from offline_copy, so nothing the package
+    links to outside itself is fetched; `blocked` collects the targets left out."""
     profile = workdir / "profile"
     profile.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
     env.setdefault("HOME", str(workdir))
-    if src.suffix.lower() == ".pptx":
-        src = offline_copy(src, workdir, blocked)
+    src = offline_copy(src, workdir, blocked)
     cmd = [
         "soffice", f"-env:UserInstallation=file://{profile}", "--headless", "--norestore",
         "--nolockcheck", "--convert-to", "pdf", "--outdir", str(workdir), str(src),
