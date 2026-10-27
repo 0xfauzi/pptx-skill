@@ -1,73 +1,93 @@
 # Designing presentations
 
-A Claude Code plugin with one skill, `designing-presentations`, with which Claude designs
-native, editable PowerPoint decks: pitch books, investment committee books, consulting
-pages, earnings decks, annual reports. Give it a reference (a company template, a past
-deck, any .pptx, or a vector or scanned PDF) and the new pages take that reference's look;
-give it none and Claude reasons a look out from the reader, the subject and the data.
+This Claude Code plugin has one skill, `designing-presentations`. With it, Claude designs
+native PowerPoint decks that you can edit. Examples are pitch books, investment committee
+books, consulting pages, earnings decks and annual reports.
 
-Claude designs; the skill's scripts measure. They read the reference's look, measure every
-line of text in the installed fonts, solve the page geometry, write the .pptx with native
-charts and tables, render it with LibreOffice, read the render back and refuse a page whose
-defect can be measured (text that does not fit or overlaps, contrast under 3:1, a bridge
-that does not tie, a label the renderer wrapped, dropped or covered).
+You can give Claude a reference: a company template, a past deck, any .pptx file, or a
+vector or scanned PDF. The new pages then use the look of that reference. If you give no
+reference, Claude chooses a look from the reader, the subject and the data.
+
+Claude makes the design decisions. The scripts of the skill do the measurements. They read
+the look of the reference and measure each line of text with the installed fonts. They
+calculate the page geometry and write the .pptx file with native charts and tables. Then
+they render the file with LibreOffice and read the render.
+
+The scripts refuse a page that has a defect they can measure. These are examples:
+
+- Text that does not fit, or text that overlaps.
+- Contrast less than 3:1.
+- A bridge that does not tie.
+- A label that the renderer wrapped, dropped or covered.
 
 ![Page 1 of an LBO investment committee book built with no reference: seven headline figures over six tables and a bar chart, with a notes column](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/hero.png)
 
 ![Pages from a grocery strategy, an earnings deck and a parks annual report built with the skill](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/strip.png)
 
-Every company and figure in these pages is fictional; each image is LibreOffice's render of
-the .pptx the build wrote.
+All companies and figures on these pages are fictional. Each image is the LibreOffice
+render of the .pptx file that the build wrote.
 
-## What it runs, sends and fetches
+## What the plugin runs, sends, fetches and writes
 
-- **Runs, on your machine:** Python 3 scripts in the skill's `scripts/` folder (with lxml,
-  Pillow, python-pptx, pdfplumber and, if installed, uharfbuzz), LibreOffice (`soffice`,
-  headless, a fresh profile per conversion) to turn a deck into a PDF, poppler
-  (`pdftoppm`, `pdftotext`, `pdffonts`, `pdfinfo`, `pdfimages`) to rasterise and read
-  pages, fontconfig (`fc-match`, `fc-query`) to find installed fonts, and `git check-ignore`,
-  to confirm that a library of public decks built inside the skill folder is ignored by git.
-  The scripts install nothing: `scripts/preflight.py` prints the install command for
-  whatever is missing, for you to run.
-- **Sends:** nothing. No script imports a network module, and no command sends a file,
-  a deck or a figure anywhere.
-- **Fetches:** nothing while it works. LibreOffice renders an offline copy of each deck in
-  which every link to something outside the deck, hyperlinks included, points nowhere, so a
-  picture a deck links to on the web is not downloaded (`scripts/render.py`, `offline_copy`). The one script that
-  downloads is `refs/fetch.sh`, and only when you run it: it fetches the public reference
-  decks listed in `refs/MANIFEST.md` (from the publishers' own sites, Amazon S3,
-  DocumentCloud and raw.githubusercontent.com) with curl into the skill's `refs/files/`
-  folder and checks each against its sha256. Without them the build still runs and says
-  its panel of reference decks is empty.
-- **Writes:** under a work directory you name; an output path inside the skill folder is
-  refused by name. The exceptions are the git-ignored folders for the public reference decks:
-  `refs/files/`, which `refs/fetch.sh` fills, and `refs/library/`, a library built from them.
+- **Runs on your machine:**
+  - Python 3 scripts in the `scripts/` folder of the skill. They use lxml, Pillow,
+    python-pptx, pdfplumber and, if it is installed, uharfbuzz.
+  - LibreOffice (`soffice`, headless, with a new profile for each conversion). It changes
+    a deck into a PDF.
+  - poppler (`pdftoppm`, `pdftotext`, `pdffonts`, `pdfinfo`, `pdfimages`). It rasterises
+    and reads pages.
+  - fontconfig (`fc-match`, `fc-query`). It finds the installed fonts.
+  - `git check-ignore`. It makes sure that git ignores a library of public decks that you
+    build in the skill folder.
+
+  The scripts install nothing. `scripts/preflight.py` prints the install command for each
+  missing item. You run the commands.
+- **Sends:** nothing. No script imports a network module. No command sends a file, a deck
+  or a figure to a different location.
+- **Fetches:** nothing while it works. LibreOffice renders an offline copy of each deck.
+  In this copy, each link to an item outside the deck (hyperlinks also) points to no
+  location. Thus LibreOffice does not download a picture that a deck links to on the web
+  (`scripts/render.py`, `offline_copy`).
+
+  Only one script downloads files: `refs/fetch.sh`.
+  It runs only when you start it. It downloads the public reference decks that
+  `refs/MANIFEST.md` lists, with curl, into the folder `refs/files/` of the skill. The
+  sources are the sites of the publishers, Amazon S3, DocumentCloud and
+  raw.githubusercontent.com. The script checks each file against its sha256. Without
+  these decks, the build still runs and reports that its panel of reference decks is
+  empty.
+- **Writes:** in a work folder that you name. The scripts refuse an output path in the
+  skill folder. There are two exceptions, both ignored by git: `refs/files/`, which
+  `refs/fetch.sh` fills, and `refs/library/`, a library that you build from those decks.
 
 ## Install
 
-In a Claude Code session (2.1.275 or later):
+Type this command in Claude Code (2.1.275 or later):
 
 ```
 /plugin install designing-presentations --marketplace https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/.claude-plugin/marketplace.json
 ```
 
-From a marketplace URL, Claude Code downloads the one catalog file, and the plugin entry
-fetches this plugin folder alone from the repository (a `git-subdir` source). Adding the
-marketplace as `0xfauzi/pptx-skill` works too, and clones the whole repository, its
-development material included, under `~/.claude/plugins/marketplaces/`.
+Claude Code downloads the catalog file of the marketplace. The plugin entry then fetches
+only this plugin folder from the repository (a `git-subdir` source). You can also add the
+marketplace as `0xfauzi/pptx-skill`. Then Claude Code clones the full repository under
+`~/.claude/plugins/marketplaces/`.
 
 ## Requirements
 
-Python 3.11 or later with lxml, Pillow, python-pptx and pdfplumber (uharfbuzz optional);
-LibreOffice, poppler and fontconfig; the fonts your reference names, or their
-metric-compatible stand-ins. Run `scripts/preflight.py` in the skill to see what is
-missing. Every install route (Claude Code, claude.ai, the Claude API) and the versions this
-release was measured on are in the repository's INSTALL.md:
+- Python 3.11 or later, with lxml, Pillow, python-pptx and pdfplumber.
+- uharfbuzz (optional).
+- LibreOffice, poppler and fontconfig.
+- The fonts that your reference names, or their metric-compatible stand-ins.
+
+Run `scripts/preflight.py` in the skill folder to see what is missing. The INSTALL.md file
+of the repository gives all install methods: Claude Code, claude.ai and the Claude API. It
+also gives the versions that we tested this release on:
 https://github.com/0xfauzi/pptx-skill/blob/main/INSTALL.md
 
 ## Licence
 
 MIT (see `skills/designing-presentations/LICENSE.txt`). `scripts/confusable_letters.json`
-holds a subset of the Unicode confusables data under the Unicode License v3, whose notice it
-carries. The reference decks `refs/fetch.sh` downloads belong to their publishers and are
-not part of the plugin.
+holds a subset of the Unicode confusables data under the Unicode License v3. The file
+includes the notice of that licence. The reference decks that `refs/fetch.sh` downloads
+belong to their publishers. They are not part of the plugin.

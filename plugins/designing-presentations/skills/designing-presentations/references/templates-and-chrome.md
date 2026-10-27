@@ -147,7 +147,6 @@ Read `judge.total` against `judge.reference_spread` (the leave-one-out distance 
 reference page to the rest). Then LOOK at the render beside the reference page: the number
 does not see what was lost. Measured: a bank page round-tripped at 0.056 (reference spread
 0.055 to 0.372) and matched the original to the eye; a consulting PDF page round-tripped at
-0.100, filed, while its render had lost the ring diagram and the block positions
-(round 8; `dev/proofs/mckinsey-p13-roundtrip.md` in the source repository). Name everything else the render lost; the import's `lost` list names what
+0.100, filed, while its render had lost the ring diagram and the block positions. Name everything else the render lost; the import's `lost` list names what
 it knows of (positions, a table's own fills and widths). The imported spec is also your seed: a page that starts from the reference's
 own page begins inside its bands and columns.

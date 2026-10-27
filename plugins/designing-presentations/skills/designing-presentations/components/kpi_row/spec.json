@@ -33,7 +33,7 @@
    1143000,
    6858000
   ],
-  "source": "the size domain of the seed this component was ported from"
+  "source": "the size domain of the seed this component was made from"
  },
  "variants": {
   "horizontal": "flex row of one column per metric: figure over its label",

@@ -62,7 +62,7 @@ from emit_pptx import ORIGIN_TAG_NAME, open_presentation  # noqa: E402  the prod
 from layout import PRODUCT_SAFETY_FLOOR_PT, table_floor_pt  # noqa: E402  the build's own floors: one rule for both gates
 from ooxml import Package, PackageRefused, _apply_transform, group_child_transform, resolve_target, visual_extent, xfrm_box, xfrm_rotation  # noqa: E402  one reader
 R_NS = qn("r:id")[1:].partition("}")[0]
-# 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
+# 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (measured).
 RULE_WEIGHT_FLOOR_EMU = 6350
 # Every DrawingML stroke: a:ln on shapes and charts, the six table cell borders.
 LINE_TAGS = ("a:ln", "a:lnL", "a:lnR", "a:lnT", "a:lnB", "a:lnTlToBr", "a:lnBlToTr")
@@ -267,8 +267,7 @@ def _drop_slide(prs, index: int) -> None:
 
     A custom show that names the slide holds a second reference, and python-pptx's
     drop_rel declines while any reference remains: the part would survive and collide
-    with the next added slide's partname (deckgen render/emit/master.py found this on a
-    reference deck). A custom show's entry for the removed slide means nothing, so it goes
+    with the next added slide's partname (seen on a reference deck). A custom show's entry for the removed slide means nothing, so it goes
     first; the show keeps its other slides, and a show left with none goes with it."""
     root = prs.part._element
     sld_id_lst = prs.slides._sldIdLst
@@ -344,8 +343,8 @@ def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
         target = rel.target_part
         if rel.reltype in (RT.CHART, RT.TAGS):
             # a chart part must be copied, or both slides edit one chart; a tags part is
-            # one slide's own record (deckgen 2E-1: a tags part merely related from a
-            # slide marked it as generated)
+            # one slide's own record (a tags part merely related from a slide marked it
+            # as generated)
             new_part = _copy_part(prs, target)
             rid_map[rel.rId] = new.part.relate_to(new_part, rel.reltype)
         else:
@@ -545,7 +544,7 @@ def _guide_floors(guide: dict | None) -> dict:
     any_floor = min(by_family.values()) if by_family else absolute
     table = table_floor_pt(guide) if guide else any_floor
     chart = min([by_role[r] for r in ("type.axis_label", "type.data_label") if r in by_role] or [by_family.get("chart", any_floor)])
-    return {"slide": any_floor, "table": table, "chart": chart, "source": "guide floors" if by_family else f"no guide: {absolute}pt product safety floor (deckgen E45)"}
+    return {"slide": any_floor, "table": table, "chart": chart, "source": "guide floors" if by_family else f"no guide: {absolute}pt product safety floor"}
 
 
 def _guide_rule_widths_emu(guide: dict | None) -> set[int]:
@@ -589,7 +588,7 @@ def _check_strokes(part: str, root: etree._Element, guide_widths: set[int], prob
             if int(w) in guide_widths:
                 info["guide_rule_widths_below_floor"].append({"part": part, "tag": tag, "w_emu": int(w), "w_pt": round(int(w) / EMU_PER_PT, 2)})
                 continue
-            problems.append(f"{part}: {tag} w={w} EMU ({int(w) / EMU_PER_PT:.2f}pt) is below the 6350 EMU (0.5pt) floor: at 0.25pt PowerPoint inks 0.48px where LibreOffice inks 1.27px (E38 class 5)")
+            problems.append(f"{part}: {tag} w={w} EMU ({int(w) / EMU_PER_PT:.2f}pt) is below the 6350 EMU (0.5pt) floor: at 0.25pt PowerPoint inks 0.48px where LibreOffice inks 1.27px")
 
 
 def _check_sizes(part: str, nodes, floor_pt: float, where: str, problems: list[str], info: dict) -> None:
@@ -623,7 +622,7 @@ def emit_checks(pkg, slide_parts: list[str], guide: dict | None, parse) -> tuple
                 tag_root = parse(target)
                 if tag_root is not None and any(t.get("name") == ORIGIN_TAG_NAME for t in tag_root.iter(qn("p:tag"))):
                     info["generated_slides"] += 1
-        # shared table edges, byte for byte on both declaring cells (E38 class 4)
+        # shared table edges, byte for byte on both declaring cells
         for tbl in root.iter(qn("a:tbl")):
             info["tables"] += 1
             frame = next(tbl.iterancestors(qn("p:graphicFrame")), None)
@@ -643,10 +642,10 @@ def emit_checks(pkg, slide_parts: list[str], guide: dict | None, parse) -> tuple
                             mismatches.append(f"column {ci} lnR vs column {ci + 1} lnL at row {ri}")
             if mismatches:
                 problems.append(f"{sp}: table {name!r} declares {len(mismatches)} shared edge(s) differently on its two cells ({mismatches[0]}{'; ...' if len(mismatches) > 1 else ''}): "
-                                "PowerPoint keeps the first-declared side and writes it back on save, LibreOffice draws the heavier one (E38 class 4)")
+                                "PowerPoint keeps the first-declared side and writes it back on save, LibreOffice draws the heavier one")
         _check_strokes(sp, root, guide_widths, problems, info)
         for grad in root.iter(qn("a:gradFill")):
-            problems.append(f"{sp}: a:gradFill: the two renderers put a gradient's midpoint 20 points apart and a radial's dark area a factor of 2.7 apart (E38 classes 6-7)")
+            problems.append(f"{sp}: a:gradFill: the two renderers put a gradient's midpoint 20 points apart and a radial's dark area a factor of 2.7 apart")
             break
         # run sizes against the floor of where the run sits
         # membership by ancestry: lxml recreates element proxies, so identity sets drop runs
@@ -672,10 +671,10 @@ def emit_checks(pkg, slide_parts: list[str], guide: dict | None, parse) -> tuple
             groups = [g for g in area if etree.QName(g).localname in VARY_COLORS_GROUPS] if area is not None else []
             for g in groups:
                 if g.find(qn("c:varyColors")) is None:
-                    problems.append(f"{cp}: c:{etree.QName(g).localname} writes no c:varyColors: the element defaults to true and PowerPoint paints one series in five theme colours where LibreOffice paints one (E38 class 10)")
+                    problems.append(f"{cp}: c:{etree.QName(g).localname} writes no c:varyColors: the element defaults to true and PowerPoint paints one series in five theme colours where LibreOffice paints one")
             _check_strokes(cp, croot, guide_widths, problems, info)
             for grad in croot.iter(qn("a:gradFill")):
-                problems.append(f"{cp}: a:gradFill in a chart part (E38 classes 6-7)")
+                problems.append(f"{cp}: a:gradFill in a chart part: the two renderers draw a gradient differently")
                 break
             _check_sizes(cp, croot.iter(), floors["chart"], "chart family", problems, info)
     return problems, info

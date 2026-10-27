@@ -1,6 +1,6 @@
 """Measured text fit for layout.py: face resolution, two rulers, one wrap rule.
 
-A ported text ruler (dev/PORT_AUDIT.md). Nothing here estimates a width: every candidate line is measured as
+Nothing here estimates a width: every candidate line is measured as
 ONE string by a ruler, and the two rulers are the two instruments scored
 against PowerPoint's own PDF export (600 boxes):
 HarfBuzz (uharfbuzz, optional; 541/600 exact breaks, 588/600 same line count) and
@@ -38,26 +38,23 @@ except ImportError:  # the stock sandbox ships Pillow; uharfbuzz is optional
 EMU_PER_POINT = 12_700
 
 #: Width shrink before wrapping, per ruler, so no box is optimistic against
-#: PowerPoint. HarfBuzz: deckgen measure/tolerance.py:133 (13 + 20,221;
-#: docs/measurements/1D-2-tolerance.md). Pillow x128: docs/measurements/
-#: E16-decision.md ("shrink 5,933 EMU -> 0 optimistic boxes").
+#: PowerPoint, measured. HarfBuzz: 13 + 20,221. Pillow x128:
+#: "shrink 5,933 EMU -> 0 optimistic boxes".
 FIT_EPSILON_HARFBUZZ_EMU = 20_234
 FIT_EPSILON_PILLOW_EMU = 5_933
 
-#: E16's converged Pillow scale: at x1 only 306/600 boxes agree, at x128 539/600
-#: (deckgen measure/decided.py:38, docs/measurements/E16-decision.md).
+#: The converged Pillow scale: at x1 only 306/600 boxes agree, at x128 539/600.
 PILLOW_SCALE = 128
 
-#: deckgen measure/text.py:51 - a 7.5 in page at 1 pt holds about 450 lines.
+#: A 7.5 in page at 1 pt holds about 450 lines.
 MAX_WRAPPED_LINES = 2_000
 
 DEFAULT_FONT_ROOTS = ("/usr/share/fonts", "/usr/local/share/fonts")
 FONT_SUFFIXES = frozenset({".ttf", ".otf", ".ttc"})
 
 #: fontconfig's own `binding="same"` metric aliases, normalized with normalize_family:
-#: the 17 classes (84 family-to-family edges) deckgen read from the 72 binding="same"
-#: alias elements of /etc/fonts/conf.d/30-metric-aliases.conf (deckgen render/tuning.py:170,
-#: docs/measurements/S1B3-decision.md part 1). The file's weak generic aliases (Arial to
+#: the 17 classes (84 family-to-family edges) read from the 72 binding="same"
+#: alias elements of /etc/fonts/conf.d/30-metric-aliases.conf. The file's weak generic aliases (Arial to
 #: Helvetica) are not binding="same", so arial and helvetica are separate classes.
 #: The one table: render.py's fidelity verdict imports it.
 METRIC_ALIAS_CLASSES: tuple[frozenset[str], ...] = (
@@ -80,7 +77,7 @@ METRIC_ALIAS_CLASSES: tuple[frozenset[str], ...] = (
     frozenset({"symbol", "symbolneu"}),
 )
 
-#: What a font's own name table may call each style (deckgen measure/faces.py:93).
+#: What a font's own name table may call each style.
 _STYLE_SPELLINGS: dict[tuple[bool, bool], tuple[str, ...]] = {
     (False, False): ("Regular", "Book", "Roman", "Normal", "Medium"),
     (True, False): ("Bold", "Heavy", "Black"),
@@ -217,7 +214,7 @@ def resolve_measured(index: FaceIndex, family: str, *, bold: bool = False, itali
         found = index.resolve(drawn, bold=bold, italic=italic)
         return Face(family, found.family, found.style, found.path, "renderer_substitute")
 
-# --- the decided wrap rule (docs/measurements/E16-decision.md) ------------------
+# --- the decided wrap rule ------------------
 
 class Advance(Protocol):
     """Whole-run advance of one string, in the ruler's own units."""
@@ -274,9 +271,9 @@ def break_opportunities(text: str) -> tuple[int, ...]:
     return tuple(stops)
 
 def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[WrappedLine, ...]:
-    """Greedy wrap under E16's rules: break after space or hyphen, trailing
+    """Greedy wrap under the measured rules: break after space or hyphen, trailing
     spaces free, a token wider than the line breaks between characters, every
-    candidate line measured as one string. Port of deckgen measure/text.py:203."""
+    candidate line measured as one string."""
     return wrap_spans(text, budget_units, lambda a, b: advance(text[a:b]))
 
 
@@ -300,7 +297,7 @@ def wrap_spans(text: str, budget_units: float, span: Callable[[int, int], float]
         chosen_advance = 0.0
         # Advance is monotone in prefix length: exponential probe then binary
         # search bound the longest prefix that could fit, so no stop past it
-        # is ever shaped (deckgen measured 9.55 s per call without this).
+        # is ever shaped (measured: 9.55 s per call without this).
         end_of_text = stops[-1]
         width = 16
         upper = min(position + width, end_of_text)
@@ -374,7 +371,7 @@ class HarfBuzzRuler:
 
     name = "harfbuzz"
     fit_epsilon_emu = FIT_EPSILON_HARFBUZZ_EMU
-    MAX_CACHED_STRINGS = 4_096  # deckgen measure/text.py:136
+    MAX_CACHED_STRINGS = 4_096
 
     def __init__(self) -> None:
         if hb is None:
@@ -417,12 +414,11 @@ class HarfBuzzRuler:
         return round(units / self._font(path)[1] * size_pt * EMU_PER_POINT)
 
 class PillowRuler:
-    """E16's decided Pillow configuration: x128 scale, BASIC layout, getlength.
+    """The measured Pillow configuration: x128 scale, BASIC layout, getlength.
 
     BASIC is pinned explicitly because a RAQM-enabled Pillow would otherwise
-    shape through a different engine than the one E16 scored. Pillow's BASIC
-    engine applies legacy kern pairs at 1/64 magnitude and ignores GPOS
-    (docs/measurements/1D-2-who-is-wrong.md); its 5,933 EMU shrink is what
+    shape through a different engine than the one that was scored. Pillow's BASIC
+    engine applies legacy kern pairs at 1/64 magnitude and ignores GPOS; its 5,933 EMU shrink is what
     makes it one-sided despite that.
     """
 

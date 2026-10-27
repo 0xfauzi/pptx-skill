@@ -2,8 +2,8 @@
 """Where a chart's data lands on the page, in EMU, from the spec alone.
 
 The one definition of chart data coordinates. The annotation layer anchors to it, the
-build's label-break check sizes bars with it, and dev/oracles/chart_geometry_probe.py
-measures it against LibreOffice renders. Nothing here reads a renderer.
+build's label-break check sizes bars with it, and tools/measure/chart_geometry_probe.py
+(in the source repository) measures it against LibreOffice renders. Nothing here reads a renderer.
 
 The chart must be written with a fixed inner plot rectangle (`plot_area`, x, y, w, h
 as fractions of the chart frame, emitted as c:manualLayout with layoutTarget inner and

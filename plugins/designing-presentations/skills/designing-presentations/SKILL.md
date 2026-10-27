@@ -83,8 +83,7 @@ placeholder, never weighed. Then steps 5 to 11 with no `--reference`, `--chrome 
 null `reference_sha256` and no `in_reference_look`: every hard limit runs, a look left to
 the stock theme or a constant is refused, and every comparison reports "no reference".
 Worked: `examples/no-reference.*` (a board review) and `examples/no-reference-credit.*` (a
-dense credit book); their build reports are in the source repository's `dev/proofs/`, which
-is not installed with the skill.
+dense credit book).
 
 ## Workflow
 

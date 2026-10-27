@@ -47,7 +47,7 @@ import layout as L  # noqa: E402
 from build_deck import (EMU_PER_INCH, SHIPPED_COMPONENTS, build, chrome_zones, component_root, load_component, top_rules,  # noqa: E402
                         use_components, user_components)
 
-#: deckgen expansion_checks.py HASH_SEEDS: two seeds are enough, since one differing
+#: Two hash seeds are enough, since one differing
 #: iteration order between them is the whole finding.
 HASH_SEEDS = ("0", "1")
 

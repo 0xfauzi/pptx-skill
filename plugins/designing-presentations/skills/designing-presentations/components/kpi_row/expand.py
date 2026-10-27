@@ -1,6 +1,6 @@
 """KPI row: figures with their labels, a lead among them or none.
 
-Ported from deckgen fixtures/components/kpi_row (seed 2A-3). By default the first metric
+By default the first metric
 leads (its own type role and the first accent that reads on the ground) and the rest are
 its comparison; labels are a caption role in a muted ink. `data["lead"]` names another
 metric to lead, or null for co-equal figures. Every role, gap and ink is open through
@@ -11,21 +11,21 @@ label beneath its figure; `stacked` turns the row on its side into label-left,
 figure-right lines; `panel` sets each figure and its label in a filled tile. Panels are
 reached only by asking for them (`data["variant"]`): big-number or KPI panels are on 8 of
 578 coded corpus pages, none of them bank pages (references/composition.md), and a
-blind rater named "icon + number + label tiles" a generated-deck tell; a figure alone in
+rater named "icon + number + label tiles" a generated-deck tell; a figure alone in
 a tile must carry its base in its label, so the report asks of what, and for whom.
 
-WHICH RULE PICKS THE VARIANT when none is asked: deckgen's rule, with parts = the
+WHICH RULE PICKS THE VARIANT when none is asked: the bullet_stack rule, with parts = the
 metric count,
 
     parts >= 2 and width // parts >= height
 
 AND, added here, every figure must measure onto one line in its horizontal column
 (guide["_api"]["text_width_emu"] plus the ruler's fit epsilon, against the column
-width after the gutters). A figure is never wrapped: a box that passes deckgen's
+width after the gutters). A figure is never wrapped: a box that passes the
 aspect test but cannot hold the widest figure gets `stacked`. The choice and its reason
 are in the report. `horizontal` or `panel` with fewer than two metrics is refused.
 
-All arrangements are flex, not deckgen's grid: grid tracks are uniform
+All arrangements are flex, not grid: grid tracks are uniform
 (scripts/layout.py), so a two-row grid gives the label row the same height as the
 figure row whatever either holds, and an n x 2 grid gives the figure column half the
 width. Here the stacked figure column is exactly as wide as the widest figure

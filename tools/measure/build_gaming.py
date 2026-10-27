@@ -1,11 +1,20 @@
-"""Build decks a human would call obviously wrong for the keybank reference.
+"""Build five decks that a person calls wrong, in the look of the keybank reference.
+
+    python3 -I tools/measure/build_gaming.py OUT_DIR keybank.pptx honest.pptx template.pptx
+
+keybank.pptx is the deck that refs/fetch.sh downloads (mi_keybank_first_niagara_fig_ma.pptx).
+honest.pptx is a section built on that reference, for example from
+examples/keybank-section.deck.json. template.pptx is the output of
+`scripts/pptx_tools.py template keybank.pptx`. The script writes these decks:
 
 G1 scramble : keybank.pptx, every slide-level shape moved to a random position (sizes kept)
 G2 stack    : keybank.pptx, every slide-level shape moved to (0,0): everything overlaps
-G3 overflow : the honest generated section with every run's text repeated 12x (every box overflows)
+G3 overflow : the honest section with every run's text repeated 12x (every box overflows)
 G4 giant    : keybank template, 12 slides, one page-sized text shape of Arial 12 black per slide
 G5 random   : keybank template, 12 slides, 9 random boxes per slide at random positions/sizes
               carrying keybank's values (Arial 12 black, 113D63 / CCD1D7 fills, 24pt title)
+
+Judge each deck with `scripts/fingerprint.py compare OUT_DIR/gN.pptx --reference keybank.pptx`.
 """
 import copy
 import random

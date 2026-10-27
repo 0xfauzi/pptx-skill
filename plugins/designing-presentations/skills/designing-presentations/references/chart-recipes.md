@@ -82,7 +82,7 @@ keybank (the pages named under "Proven on") and read from the render.
   tick labels) through the middle of the plot, where it meets annotations; the report
   lists that default. `axes.value.crosses: "min"` puts the x axis along the bottom and
   `axes.category.crosses: "min"` the y axis along the left (rendered in LibreOffice
-  24.2.7, round 8). On a category chart the category axis takes the three words only.
+  24.2.7). On a category chart the category axis takes the three words only.
   Category labels sit next to the category axis, where it crosses the value axis, so a
   bar below that value (or below zero when the scale spans it) grows through them; their
   contrast is scored against that bar's fill as well as the plot. `"position": "low"` on
@@ -137,8 +137,8 @@ keybank (the pages named under "Proven on") and read from the render.
   "hide_entries"}`. Left out, no legend is written and `chart_defaults_taken` lists it.
   `hide_entries` is refused on BAR_* charts: LibreOffice counts a horizontal bar chart's
   legend entries from the other end, so `[0]` hid the last series ("Wave 3") instead of
-  the first (measured, round 6, nycha); draw the key as text there. A horizontal bar
-  chart's legend is listed last series first in LibreOffice (round 8), so the build warns
+  the first (measured, nycha); draw the key as text there. A horizontal bar
+  chart's legend is listed last series first in LibreOffice, so the build warns
   `renderer divergence: legend order` with the order drawn. The order PowerPoint lists
   them in is unmeasured: nothing here has opened such a chart in PowerPoint, so if the
   key's order matters, name the series in text beside the chart. A series with an
@@ -177,7 +177,7 @@ keybank (the pages named under "Proven on") and read from the render.
   does a title's `role` or `ink_role` left out.
 - `axes.category.label_interval` and `tick_interval`: label (tick) every n-th category
   (c:tickLblSkip, c:tickMarkSkip). PowerPoint honours both; LibreOffice 24.2.7 honours
-  neither (measured, round 7: 20 quarters at 4 drew all 20; 120 days at 20 drew every 6th,
+  neither (measured: 20 quarters at 4 drew all 20; 120 days at 20 drew every 6th,
   its own thinning), so the build warns `renderer divergence: category interval`: the render
   is not the page there. To draw the same labels in both (quarters by year), hide the axis
   labels (`labels.show: false`) and draw a `category_row` annotation with a cell per
@@ -510,8 +510,8 @@ value on the primary axis (`{"value": v}`; a line at a secondary value is
 `{"value": v, "axis": "secondary_value"}`).
 
 Proven on: the Netflix pitchbook's page 5 rebuilt on its own guide (data read back from
-the page's picture; dev/PORT_AUDIT.md, exhibit fidelity). Measured by
-`dev/oracles/chart_geometry_probe.py` with a line on 0..100 and columns on a secondary
+the page's picture). Measured by
+`tools/measure/chart_geometry_probe.py` (in the source repository) with a line on 0..100 and columns on a secondary
 0..40: every bar edge and point within 0.64 px of chart_geometry at 1600 px.
 
 ```json
@@ -650,7 +650,7 @@ covers the neighbouring rows; `"pad_role": "none"` is the box on the cell edges.
 ### A mark says what it means
 
 A ring, box, band, line or bracket with no words reads as decoration or as a model's
-attempt to annotate (a blind rater on an unlabelled red circle). Each one carries a
+attempt to annotate (a rater on an unlabelled red circle). Each one carries a
 `label`, or names under `explained_by` exactly one thing that explains it, or neither:
 then it is drawn and warned `annotation unexplained`, with the reference's own count beside
 it (the outline, fill, line or bracket marks its files draw on that kind of host, with
@@ -707,7 +707,7 @@ And warns, under `problems`, to be answered in the report:
 Positions are computed in EMU from `plot_area`, the axis scale, `gap_width`, `overlap`
 and the series count (`scripts/chart_geometry.py`), and were measured against
 LibreOffice 24.2 renders of 13 chart configurations and a table (408 features, worst
-1.07 px, mean 0.24 px at 1600 px: `dev/oracles/chart_geometry_probe.py`). Whether
+1.07 px, mean 0.24 px at 1600 px: `tools/measure/chart_geometry_probe.py` in the source repository). Whether
 PowerPoint places the inner plot rectangle the same way is not measured.
 
 Proven on: `examples/keybank-annotations.deck.json`, four pages rebuilt from corpus
@@ -828,7 +828,7 @@ Placement inside the frame: a callout, a row or a label below a chart band lands
 next element unless the chart frame leaves room for it. Give the room inside the frame
 with `plot_area` (a smaller `h`, so the plot ends above the frame's bottom and the
 annotation sits between them), never by hoping the gap below the chart is free: a callout
-below a jazz chart collided with the bullets under it and cost a build (round 6).
+below a jazz chart collided with the bullets under it and cost a build.
 
 The cells must lie inside the chart frame or clear every other element (the collision
 check), may cover no mark of the host, and after the render may cover none of the
@@ -839,7 +839,7 @@ their lines, fixed it).
 
 Proven on: BCG New York page 24 (a bridge with two rows of figures in ovals) and the
 Jazz pitchbook's page 9 (eleven company logos as category labels), each rebuilt on its
-reference's guide (dev/PORT_AUDIT.md, exhibit fidelity).
+reference's guide.
 
 ```json
 "annotations": [

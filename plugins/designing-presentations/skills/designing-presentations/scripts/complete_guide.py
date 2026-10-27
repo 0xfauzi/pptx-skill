@@ -465,7 +465,7 @@ def check_writable(guide: dict, path: str, value, open_paths: dict) -> None:
     if (len(parts) == 3 and parts[:2] == ["color", "roles"] and parts[2].startswith("color.") and not plan.has_reference(guide)
             and parts[2] not in (guide.get("color", {}).get("roles") or {})):
         # with no reference every colour is the model's choice: a further role (color.accent4)
-        # is written where the core roles are, not only under /extra_roles (round 7)
+        # is written where the core roles are, not only under /extra_roles
         return
     levels = size_levels(guide)
     new_role = (len(parts) == 3 and parts[0] == "typography" and parts[1] == "roles" and parts[2] not in guide["typography"]["roles"]
@@ -583,7 +583,7 @@ def title_register(guide: dict, value) -> dict:
 #: that later steps hold the reference to (a data page, chart text the reference sets); nothing
 #: in a record is chosen from a list
 #: least words; marks takes any words, since what an exhibit marks may be nothing ("nothing
-#: ringed" was refused as too short: round 7)
+#: ringed" must not be refused as too short)
 EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": 1}
 EXHIBIT_FLAGS = ("chart_or_table", "axis_labels", "value_labels")
 EXHIBIT_KEYS = {"candidate", *EXHIBIT_TEXT, *EXHIBIT_FLAGS, "why"}

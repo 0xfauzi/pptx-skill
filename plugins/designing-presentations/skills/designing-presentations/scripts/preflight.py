@@ -41,7 +41,7 @@ TOOLS = (  # (binary, apt package, required, what it does)
     ("fc-query", "fontconfig", True, "reads a face's character coverage"),
 )
 METRIC_FONTS = "fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea"
-#: the same packages under Homebrew on macOS (each name checked against formulae.brew.sh, round 8)
+#: the same packages under Homebrew on macOS (each name checked against formulae.brew.sh)
 BREW = {"libreoffice-impress": "--cask libreoffice", "poppler-utils": "poppler", "fontconfig": "fontconfig",
         METRIC_FONTS: "--cask font-liberation font-carlito font-caladea"}
 

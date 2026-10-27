@@ -675,7 +675,7 @@ def _fmt(v: float) -> str:
 #: the emitted drawing's longer side, in user units. LibreOffice 24.2 draws an SVG part
 #: whose width and height are a few units (viewBox "0 0 10 10") inset by about 3 px in a
 #: 69 px box, so a correct icon read as 6.5% differing; the same shapes at 100 units drew
-#: with 0.0% (dev/PORT_AUDIT.md, exhibit fidelity round 5). Every icon is therefore written at
+#: with 0.0%. Every icon is therefore written at
 #: this size, whatever viewBox the model chose.
 EMIT_UNITS = 1000.0
 
@@ -913,7 +913,7 @@ def fallback_png(icon: Icon, hx: dict[str, str], w_emu: int, h_emu: int) -> byte
 
 #: a pixel counts as differing when no pixel of the picture as written within one pixel
 #: of it is within this of it on every channel (of 255); the share of differing pixels a
-#: picture may show is RENDER_TOLERANCE. Measured (dev/PORT_AUDIT.md, exhibit fidelity) on
+#: picture may show is RENDER_TOLERANCE. Measured on
 #: LibreOffice 24.2 at 1600 px: 14 pictures drawn as written (an SVG icon, two PDF crops,
 #: eleven pptx logos down to 0.25 in tall) differ by 0 to 1.46%; an icon whose SVG part
 #: draws nothing differs by 31.9%. 5% sits between; unmeasured in PowerPoint.

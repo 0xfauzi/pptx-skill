@@ -4,8 +4,8 @@
     layout.py solve spec.json --guide guide.json [--scale 1.0] [-o resolved.json]
     layout.py capacity deck.json --slide ID --guide guide.json [--chrome draw] [-o capacity.json]
 
-A ported layout solver (spacing, solver, type styles, validation, table fitter and the
-scale descent; dev/PORT_AUDIT.md) in one standalone script; the ruler is textfit.py beside
+A layout solver (spacing, solver, type styles, validation, table fitter and the
+scale descent) in one standalone script; the ruler is textfit.py beside
 it. Stdlib + Pillow, uharfbuzz when importable.
 
 THE LOOP at one scale s: resolve every in-use type role (size snapped to the 0.5 pt
@@ -108,36 +108,35 @@ from textfit import (  # noqa: E402
 
 EMU_PER_POINT = 12_700
 EMU_PER_HUNDREDTH_POINT = 127
-#: deckgen config/provisional.py:35 - the one font grid; 0.5 pt lands on sz.
+#: The one font grid; 0.5 pt lands on sz.
 FONT_QUANTUM_PT = Fraction(1, 2)
-#: Runaway bounds, never design limits. MAX_NODES and MAX_GRID_TRACKS are deckgen's
-#: (contracts limits.py). Its MAX_TREE_DEPTH of 5 measured shape containment (depth 3 on
-#: three reference decks plus 2 of headroom, docs/measurements/E10-decision.md), not this
+#: Runaway bounds, never design limits. MAX_NODES and MAX_GRID_TRACKS are
+#: inherited. A MAX_TREE_DEPTH of 5 measured shape containment (depth 3 on
+#: three reference decks plus 2 of headroom), not this
 #: tree's layout regions, and refused a component placed three regions down (root > body
 #: > col > component > its rows); the depth bound here is a finite guard against a
 #: runaway tree, and the build reports each page's deepest chain (Spec.deepest).
 MAX_TREE_DEPTH, MAX_NODES, MAX_GRID_TRACKS = 12, 400, 64
-#: deckgen measure/tolerance.py:157 - what the emit gate forgives between two
+#: What the emit gate forgives between two
 #: measurements of the same text; the table fitter's height budget slack.
 EMIT_SLACK_EMU = 13
-#: OOXML's default a:tcPr marT/marB, 0.05 in (deckgen table_fitter.py:144).
+#: OOXML's default a:tcPr marT/marB, 0.05 in.
 DEFAULT_CELL_INSET_EMU = 45_720
 #: PowerPoint's natural line box in a table cell: 1.2 x size, exact to the EMU
-#: on 5 sizes x 4 families (deckgen table_fitter.py:100, docs/measurements/
-#: E38-decision.md); +254 EMU is the widest family offset above an explicit
-#: a:spcPts on that sweep (table_fitter.py:121).
+#: on 5 sizes x 4 families; +254 EMU is the widest family offset above an explicit
+#: a:spcPts on that sweep.
 POWERPOINT_LINE_HEIGHT_RATIO = 1.2
 REQUESTED_SPACING_SLACK_EMU = 254
 NUMERIC_VALUE_KINDS = frozenset({"number", "percent", "currency", "date"})
-#: deckgen content/design_scale.py:41 - 0.01 steps from 0.99 down to 0.10, the
-#: single step E21-decision.md recommends; the floor stops the descent first.
+#: 0.01 steps from 0.99 down to 0.10, a
+#: single measured step; the floor stops the descent first.
 SCALE_LADDER = tuple(Fraction(n, 100) for n in range(99, 9, -1))
 MARGIN_ROLE = "space.margin"
 #: Whole-string mean advance for capacity, labelled in the output as such.
 REFERENCE_ALPHABET = "the quick brown fox jumps over the lazy dog 0123456789 ($%,.)"
 #: What PowerPoint draws when the attribute is absent: b/i off, spcBef/spcAft/spc
-#: zero, and single spacing = 1.2 x size (docs/measurements/E16-decision.md 1.2002 em
-#: on 7 families, E38-decision.md 1.2000 exact in cells; deckgen decided.py:91).
+#: zero, and single spacing = 1.2 x size (measured: 1.2002 em
+#: on 7 families, 1.2000 exact in cells).
 _ABSENT_TYPE_VALUES = {
     "line_spacing": 1.2, "weight": 400, "italic": False, "space_before_pt": 0.0,
     "space_after_pt": 0.0, "tracking_pt": 0.0, "case": "as_typed",
@@ -158,14 +157,14 @@ class CandidateRefused(ValueError):
     """One scale candidate cannot be honestly measured (tracked overrun, lines
     that moved under the final solve, a table width that moved)."""
 
-# --- spacing: every token-times-s snap, in one place (deckgen spacing.py) ----------
+# --- spacing: every token-times-s snap, in one place ----------
 
 def decimal_fraction(value: float | int) -> Fraction:
     """The one float door: recover the DECIMAL the JSON carried."""
     return Fraction(str(value))
 
 def quantize_emu(value: Fraction | int) -> int:
-    return round(value)  # round-half-even, unbiased (port audit rows C1-C2)
+    return round(value)  # round-half-even, unbiased
 
 def hundredths(points: float) -> int:
     return round(points * 100)
@@ -263,7 +262,7 @@ TABLE_ROLES = ("type.table_cell", "type.table_header")
 
 
 #: The product safety floor: the smallest size the specimen stays legible at on both render
-#: media, measured in deckgen docs/measurements/E45-decision.md (7.0pt for display, body,
+#: media, measured (7.0pt for display, body,
 #: annotation and chart, Calibri 700 the binding face). No floor, a guide's or a table's,
 #: is ever below it; extract_style writes it as every family's absolute_floor_pt and
 #: pptx_tools validate --emit reads it with no guide. The one definition.
@@ -529,7 +528,7 @@ class Spec:
     # the title band (build_deck.prepare_page): the node that holds the title and the page
     # y its box ends at (the top rule). Its height is that y less the root's top padding AT
     # THE SCALE SOLVED, so a page that descends keeps its title block ending on the rule
-    # (round 7: a band sized at full scale ended above the rule once the padding shrank,
+    # (a band sized at full scale ended above the rule once the padding shrank,
     # and what followed crossed the rule at every scale below 1)
     band: tuple[str, int] | None = None
 
@@ -741,7 +740,7 @@ def defaults_taken(raw_root: Mapping[str, Any]) -> list[str]:
     visit(raw_root)
     return out
 
-# --- type resolution and scale admission (deckgen typestyles.py, design_scale.py) ---
+# --- type resolution and scale admission ---
 
 @dataclass(frozen=True)
 class TypeEntry:
@@ -760,8 +759,7 @@ class TypeEntry:
     @property
     def pitch_emu(self) -> int:
         """Baseline-to-baseline advance: exactly the a:spcPts the file writes (whole
-        hundredths of a point, _entry_hints), measured font-independent (deckgen
-        measure_bridge.py:492)."""
+        hundredths of a point, _entry_hints), measured font-independent."""
         return hundredths(self.line_spacing * self.size_pt) * EMU_PER_HUNDREDTH_POINT
 
     @property
@@ -890,7 +888,7 @@ def floor_admitted_candidates(guide: Guide, spec: Spec) -> tuple[Fraction, ...]:
         allowed.append(candidate)
     return tuple(allowed)
 
-# --- the geometry core (deckgen solver.py) -----------------------------------------
+# --- the geometry core -----------------------------------------
 
 @dataclass(frozen=True)
 class IntrinsicSize:
@@ -945,7 +943,7 @@ def _reserve_edge_zones(content: Box, spec: Spec, guide: Guide) -> Box:
     """Every reserved zone that reaches the page's margin band (space.margin at
     scale 1.00, the page's own band) costs the root content box a full-width
     strip from the nearer edge; interior zones are boundaries validation
-    guards (deckgen solver.py:731)."""
+    guards."""
     margin_y = space_emu(guide, MARGIN_ROLE, Fraction(1), "y") if MARGIN_ROLE in guide.steps else 0
     remaining = content
     for zone, source in spec.zones:
@@ -1058,7 +1056,7 @@ def _grid_child_boxes(region: Region, layout: Grid, content: Box, guide: Guide, 
         out.append(Box(content.left + x1, content.top + y1, x2 - x1, y2 - y1))
     return out
 
-# --- validation (deckgen validation.py) ------------------------------------------
+# --- validation ------------------------------------------
 
 @dataclass(frozen=True)
 class Violation:
@@ -1120,10 +1118,10 @@ def validate(spec: Spec, guide: Guide, scale: Fraction, boxes: Mapping[str, Box]
             out.append(Violation("containment", el_id, None, f"columns at their minimum widths need {fit.width_deficit_emu} EMU more than the table box", fit.width_deficit_emu, True))
     return out
 
-# --- text measurement bridge (deckgen measure_bridge.py) ------------------------
+# --- text measurement bridge ------------------------
 
 def apply_case(text: str, case: str) -> str:
-    """The guide's case convention over one whole paragraph (deckgen lineage/text.py:77)."""
+    """The guide's case convention over one whole paragraph."""
     if case == "upper":
         return text.upper()
     if case == "lower":
@@ -1155,7 +1153,7 @@ def apply_case_runs(texts: Sequence[str], case: str | None) -> list[str]:
 
 def tracked_width_emu(width_emu: int, text: str, tracking_pt: float) -> int:
     """What a measured line DRAWS once OOXML spc adds tracking per character:
-    one rounding over the whole run (deckgen measure/text.py:385)."""
+    one rounding over the whole run."""
     return width_emu + round(tracking_pt * len(text) * EMU_PER_POINT)
 
 @dataclass(frozen=True)
@@ -1280,7 +1278,7 @@ def measured_violations(ctx: Context, boxes: Mapping[str, Box], measurements: Ma
             out.append(Violation("overflow", el_id, None, f"the fitted rows need {fit.total_height_emu} EMU and the table's box is {box.height} EMU tall", fit.total_height_emu - box.height, True))
     return out
 
-# --- the dense-table fitter (deckgen table_fitter.py, table_text.py) ----------------
+# --- the dense-table fitter ----------------
 
 @dataclass(frozen=True)
 class DrawnRole:
@@ -1369,14 +1367,14 @@ def wrapped_lines(ctx: Context, text: str, budget: int, kind: DrawnRole) -> tupl
 
 def required_line_box_emu(size_hundredths: int, requested_spacing_hundredths: int | None) -> int:
     """PowerPoint's line box in a cell: exact at 1.2 x size with no a:lnSpc, an
-    upper bound (never exceeded on 200 E38 cases) with an explicit a:spcPts."""
+    upper bound (never exceeded on 200 measured cases) with an explicit a:spcPts."""
     natural = POWERPOINT_LINE_HEIGHT_RATIO * size_hundredths * EMU_PER_HUNDREDTH_POINT
     requested = 0.0 if requested_spacing_hundredths is None else requested_spacing_hundredths * EMU_PER_HUNDREDTH_POINT + REQUESTED_SPACING_SLACK_EMU
     return round(max(natural, requested))
 
 def required_row_height_emu(line_counts: Sequence[int], size_hundredths: int, requested_spacing_hundredths: int | None, inset_top: int, inset_bottom: int) -> int:
     """a:tr/@h is a MINIMUM: PowerPoint realises lines x line_box + marT + marB
-    (E38, 114 graded cases), so this is what the row is declared at."""
+    (measured, 114 graded cases), so this is what the row is declared at."""
     return max(line_counts, default=0) * required_line_box_emu(size_hundredths, requested_spacing_hundredths) + inset_top + inset_bottom
 
 def _spread_surplus(keys: list[str], natural: dict[str, int], surplus: int) -> dict[str, int]:
@@ -1571,7 +1569,7 @@ def _region_heights(node: Region | Element, guide: Guide, scale: Fraction, heigh
     if not node.children:
         # an empty region is as tall as its padding, like any region of its content; only a
         # weight in a column (or the root) makes it a spacer that takes a share (an empty
-        # region with top padding took the page's spare height in silence: round 7)
+        # region with top padding took the page's spare height in silence)
         if root or (in_column and node.weight is not None):
             floors[node.id] = pad
             return None, pad
@@ -1645,7 +1643,7 @@ def solve_measured(ctx: Context, scale: float | Fraction) -> Resolved:
             raise CandidateRefused(f"table {element.id!r} was fitted at {fits[element.id].box_width} EMU wide and solved to {solved[element.id].width}")
     return Resolved(s, solved, final, fits, validate(spec, guide, s, solved, fits) + measured_violations(ctx, solved, final, fits), ctx.ruler.name, ctx.ruler.fit_epsilon_emu)
 
-# --- scale descent (deckgen content/design_scale.py, docs/measurements/E21-decision.md)
+# --- scale descent
 
 @dataclass
 class Attempt:
@@ -1678,7 +1676,7 @@ def _attempt(ctx: Context, scale: Fraction) -> Attempt:
 
 def descend(ctx: Context) -> Outcome:
     """Solve at 1.00; when every violation is scale-fixable, bisect the admitted
-    candidates down to the floor (fit is monotone in s, E21); else Unfittable."""
+    candidates down to the floor (fit is monotone in s, measured); else Unfittable."""
     candidates = floor_admitted_candidates(ctx.guide, ctx.spec)
     if not candidates:
         breaches = table_floor_breaches(ctx.guide, ctx.spec)
@@ -1744,7 +1742,7 @@ def outcome_json(ctx: Context, outcome: Outcome) -> dict[str, Any]:
         out["resolved"] = resolved_json(ctx, outcome.resolved)
     if outcome.status == "unfittable":
         resolved = outcome.resolved
-        # `fitting_row_prefix` is deckgen's: body rows that fit the PROBE box
+        # `fitting_row_prefix`: body rows that fit the PROBE box
         # (the weight share) at the fitted widths. `rows_to_fit_slide` is the
         # split cut: the prefix left once the slide's largest overshoot at
         # scale_min is taken out of this table alone (other content unchanged).

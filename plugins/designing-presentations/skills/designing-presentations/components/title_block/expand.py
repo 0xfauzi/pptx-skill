@@ -1,6 +1,6 @@
 """Title block: an optional kicker, one dominant claim, and a hairline closing the band.
 
-Ported from deckgen fixtures/components/title_block (seed 2A-3). Two arrangements:
+Two arrangements:
 `with_kicker` stacks the kicker over the title in a flex column and closes it with a
 hairline; `no_kicker` is the same column without the kicker.
 
@@ -16,10 +16,10 @@ The roles, the gap and the hairline are open through `data["roles"]` and `data["
 report, with the variant and why.
 
 Kicker over title, not beside it: setting one text beside another needs a flex weight
-for kicker against title, and deckgen found no source for that ratio (its 2x2 grid
-attempt gave the hairline half the band's height).
+for kicker against title, and no source gives that ratio (a 2x2 grid gave the
+hairline half the band's height).
 
-The column gap is space.xs, not deckgen's space.sm: on keybank (title 24pt, two lines in
+The column gap is space.xs, not space.sm: on keybank (title 24pt, two lines in
 the 8,229,600 x 1,143,000 band) the two space.sm gaps left the block 102,473 EMU over
 the band, and the kicker reads as the title's label only when it sits tight to it.
 """

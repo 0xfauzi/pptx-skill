@@ -1,6 +1,6 @@
 #!/bin/sh
 # Rebuild one showcase deck from its sources with the skill in this repository.
-# usage: dev/showcase/rebuild.sh DECK WORK
+# usage: sh showcase/rebuild.sh DECK WORK
 #   DECK  lbo-committee-book | grocery-strategy | software-earnings | parks-annual-report
 #   WORK  an absolute path to an empty work directory outside the skill
 # Writes WORK/out/deck.pptx, WORK/out/renders/slide-NN.png, WORK/out/deck.build.json and
@@ -13,7 +13,7 @@ case $work in /*) ;; *) echo "WORK must be an absolute path" >&2; exit 2 ;; esac
 
 here=$(cd "$(dirname "$0")" && pwd)
 src=$here/$deck
-skill=$(cd "$here/../../plugins/designing-presentations/skills/designing-presentations" && pwd)
+skill=$(cd "$here/../plugins/designing-presentations/skills/designing-presentations" && pwd)
 [ -d "$src" ] || { echo "no showcase deck named $deck" >&2; exit 2; }
 
 mkdir -p "$work/ref" "$work/deck" "$work/out"

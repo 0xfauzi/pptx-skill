@@ -23,13 +23,13 @@ Writes DIR/pages/slide-NN.png + fonts.json (render.py's output), then
 DIR/crops/crop-NN.png, DIR/exemplars/ex-NN.png + ex-NN.skeleton.json,
 DIR/manifest.json and DIR/MANIFEST.md.
 
-A ported gallery (dev/PORT_AUDIT.md). Every decision is
+Every decision is
 integer EMU geometry read from the OOXML: the render is only ever CUT, never
 measured, because LibreOffice breaks lines differently from PowerPoint and a
 pixel cannot judge fit or position. Captions are mechanical. No document text
 reaches a caption, a skeleton or the manifest.
 
-The parameters are measured values carried with the port, cited where declared. They
+The parameters are measured values, cited where declared. They
 were CHECKED on a three-deck 4:3 investment-banking corpus, not tuned until the
 output looked nice: no crop is evidence that a component is well designed, only
 that it carries arrangement the numeric guide cannot state and is big enough to
@@ -73,7 +73,7 @@ Box = tuple[int, int, int, int]  # x, y, width, height in EMU
 # --- parameters -------------------------------------------------------------------------
 
 COMPONENT_GAP_EMU = 114_300
-# 9 pt, a CEILING. Measured (S1B3 part 2): nearest-neighbour gaps between content
+# 9 pt, a CEILING. Measured: nearest-neighbour gaps between content
 # shapes on the corpus are bimodal with the 1 pt bins [8,9) and [9,10) empty on
 # all three decks; counts are identical at 8, 9 and 10 pt (96/74/46), 12 pt
 # merges. Points, not a page fraction: gutters are set in points. A deck laid
@@ -81,19 +81,19 @@ COMPONENT_GAP_EMU = 114_300
 # min(ceiling, mined gutter // 2) rule in component_gap_emu.
 COMPONENT_SIMILARITY_TAU = 0.95
 # Two components are the SAME crop at or above this: a judgement bounded by
-# measurement (S1B3 part 2): no valley in pairwise similarity, adjacent-threshold
+# measurement: no valley in pairwise similarity, adjacent-threshold
 # agreement 100% at 0.95-1.00, and at 0.70 visibly different proportions collapse.
 ARCHETYPE_IOU_THRESHOLD = 0.5  # slide families: the PASCAL VOC match criterion
 MOTIF_MIN_OCCURRENCES = 2  # definition, not measurement: the smallest count that is "recurring"
 MIN_CROP_AREA_PX = 200 * 200
-# AREA floor in raster pixels (deckgen engineering guidance: models hallucinate
+# AREA floor in raster pixels (engineering guidance: models hallucinate
 # under ~200px images). Area, not short side: the short-side reading rejected the
 # 1748x148 header banner that is each corpus deck's most repeated component.
 CROP_PAD_MIN_RASTER_PX = 2  # rounding at either edge cannot clip a boundary pixel
-GALLERY_POOL_MAX = 24  # provisional in deckgen (config/provisional.py), binds only on jazz
-EXEMPLAR_POOL_MAX = 8  # provisional in deckgen, binds only on jazz (13 families)
-MAX_SHAPE_PAIRS = 5_000_000  # grouping is quadratic per slide; 0.53 us per pair (deckgen)
-MAX_COMPONENTS = 1_000  # clustering is quadratic over components; 4 s at 1000 (deckgen)
+GALLERY_POOL_MAX = 24  # provisional, binds only on jazz
+EXEMPLAR_POOL_MAX = 8  # provisional, binds only on jazz (13 families)
+MAX_SHAPE_PAIRS = 5_000_000  # grouping is quadratic per slide; 0.53 us per pair
+MAX_COMPONENTS = 1_000  # clustering is quadratic over components; 4 s at 1000
 
 NON_TEXT_KINDS = frozenset({"table", "chart", "image", "graphic"})
 KIND_ORDER = ("table", "chart", "image", "graphic", "connector", "shape")
@@ -122,7 +122,7 @@ class GalleryRefused(Exception):
 
 @dataclass(frozen=True)
 class Leaf:
-    ref: str  # deckgen's spelling: spTree/sp[3](id=6), position among ALL container children
+    ref: str  # spelling spTree/sp[3](id=6), position among ALL container children
     shape_ref: str  # ooxml.py's spelling (sp[id=6]), the key a guide's evidence carries
     kind: str  # shape | connector | image | table | chart | graphic
     role: str  # placeholder type, or "none"
@@ -221,7 +221,7 @@ def _ink_reach(element: etree._Element, shape: ooxml.Shape) -> tuple[int, bool]:
 def join_deck(path: Path) -> Deck:
     """ooxml.py's per-slide shapes (placeholder geometry inherited, group transforms
     applied) joined, in document order, to the XML leaf each came from, for the
-    facts ooxml.py does not record: deckgen's ref spelling, the a:r count, and the
+    facts ooxml.py does not record: the ref spelling, the a:r count, and the
     ink reach. Any disagreement between the two walks refuses the deck."""
     prints = ooxml.fingerprint_deck(str(path))
     if not prints:
@@ -318,7 +318,7 @@ def join_pdf(path: Path, chrome: Sequence[Box]) -> tuple[Deck, list[int]]:
 
 
 def content_leaves(slide: Slide) -> list[Leaf]:
-    """Leaves with geometry, chrome dropped, sorted by ref: deckgen's shape join
+    """Leaves with geometry, chrome dropped, sorted by ref: the shape join
     sorts its keys, and that order fixes which member names a component."""
     return sorted((leaf for leaf in slide.leaves if leaf.bounds is not None and not leaf.chrome), key=lambda leaf: leaf.ref)
 
@@ -523,7 +523,7 @@ def select(
     ones. Clustering ran over ALL components so a cluster's size is the deck's
     true repetition count; only the representative must pass the filters. When
     the cap binds: greedy set cover over the mined tokens the candidates show
-    (S1B3 part 4: recurrence ordering lost ten mined tokens on jazz, coverage
+    (recurrence ordering lost ten mined tokens on jazz, coverage
     lost none), ties by recurrence, part count, deck order; with no evidence
     index every candidate covers nothing and the ties decide."""
     candidates: list[Candidate] = []
@@ -588,7 +588,7 @@ def cut(page_png: Path, box: Box, page: Slide, target: Path) -> tuple[int, int]:
     return right - left, bottom - top
 
 
-# --- captions (deckgen's wording, byte for byte) ------------------------------------------
+# --- captions ------------------------------------------
 
 def _plural(count: int, noun: str) -> str:
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
@@ -729,7 +729,7 @@ def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], di
     out.mkdir(parents=True, exist_ok=True)
     fonts = render.font_report(render.declared_fonts(deck_path), deck_path)
     (out / "fonts.json").write_text(json.dumps(fonts, indent=1))
-    # Tofu refuses; a substitution does not (deckgen style/gallery.py:1310-1331, S1B3 part 5).
+    # Tofu refuses; a substitution does not.
     # Nothing reads geometry off these images, so a different letterform or extent misleads
     # no consumer; a crop of empty boxes teaches nothing, and no family-name comparison can
     # see it, because fc-match answers with a family for any name.
@@ -746,7 +746,7 @@ def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], di
 
 
 def render_fidelity(fonts: dict[str, dict[str, object]]) -> str:
-    """deckgen's worst-family verdict. A metric alias (Liberation, Carlito,
+    """The worst-family verdict. A metric alias (Liberation, Carlito,
     Caladea) keeps the layout faithful and the letterforms not; an unrelated
     substitute changes text extents too; a deck that vouches for nothing is unknown.
     A face proven to draw bullet glyphs only (render.font_report bullets_only) sets no
@@ -1148,9 +1148,9 @@ def manifest_markdown(
 
 # --- pick: the images a page's design call carries ---------------------------------------------
 
-EXEMPLAR_PICK = 2  # deckgen content/design_prompt.py EXEMPLAR_BUDGET
-CROP_PICK = 3  # deckgen JUDGE_IMAGE_BUDGET_PER_CALL (5, provisional) less the two exemplars
-_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z]+|[a-z]+|\d+")  # deckgen component_generator/images.py:56
+EXEMPLAR_PICK = 2  # exemplar budget
+CROP_PICK = 3  # an image budget per call (5, provisional) less the two exemplars
+_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z]+|[a-z]+|\d+")
 
 
 def words(text: str) -> frozenset[str]:
@@ -1158,9 +1158,9 @@ def words(text: str) -> frozenset[str]:
 
 
 def skeleton_leaves(payload: dict[str, object]) -> list[tuple[str, str]]:
-    """(label, line) per leaf, deckgen design_prompt.py skeleton_lines/_leaf_line: the
+    """(label, line) per leaf: the
     label (kind and role) is what the ranking reads, the line is what a prompt prints.
-    A leaf with no placeholder role carries no role word, as in deckgen."""
+    A leaf with no placeholder role carries no role word."""
     shapes = payload.get("shapes")
     if not isinstance(shapes, list):
         raise SystemExit(f"skeleton carries no 'shapes' list: keys {sorted(payload)}")
@@ -1205,7 +1205,7 @@ def page_words(guide: dict | None) -> dict[int, frozenset[str]]:
 
 
 def rank(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> tuple[list[tuple[dict, int, list[str]]], list[tuple[dict, int]]]:
-    """deckgen select_design_images (content/design_prompt.py:252-291): exemplars by
+    """Exemplars by
     overlap of the intent's words with family, id and skeleton vocabulary, crops by
     overlap with the caption's words; ties break on id. With the completed guide, each
     exemplar and crop also carries its page's words (page_words: its title and its digest
@@ -1231,7 +1231,7 @@ def rank(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> tupl
 
 
 def pick(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> str:
-    """rank() printed in the shape of deckgen's _exemplars_block and _gallery_block (600-632)."""
+    """rank() printed as an exemplars block and a gallery block."""
     exemplars, crops = rank(gallery_dir, intent_text, guide)
     tagged = bool(page_words(guide))
     lines = [f"intent words: {' '.join(sorted(words(intent_text)))}",

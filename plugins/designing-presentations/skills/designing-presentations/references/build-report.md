@@ -146,7 +146,7 @@ answered no `source_line`, or fewer than three data pages, is `unmeasured`: a da
 without one warns, never read as "the reference carries none". Nothing about source lines
 refuses: the count is evidence beside the choice, answered in the report. The deck-level
 `source_lines` sets the reference's count beside the deck's pages with one, and the brief
-prints both. In round 2 the old rule (warn on every data page without one, whatever the
+prints both. The old rule (warn on every data page without one, whatever the
 reference did) told agents on keybank and netflix, references with 1 of 5 and 1 of 8, to add
 source lines to every page. With no reference a source line is your call. An
 illustrative-figures note goes where the deck puts notes; say where in the report.
@@ -365,7 +365,7 @@ and `overflow` each below 0.2 of their span; `overflow_where` names each shape),
 page fit with a valid package. `judge.components` names what is off (`size_hist`,
 `fills`, `text_colors`, `margins`, `kinds`). `judge.cannot_judge` replaces the distances
 when the reference has no type evidence (a scan): the verdict is yours, from the renders.
-The judge does not track a reader's eye: in a blind round, decks filed at 0.068 and 0.085
+The judge does not track a reader's eye: decks filed at 0.068 and 0.085
 were caught on every page, and one the judge could not file fooled the rater 4 of 5
 times. A filed deck is necessary, not sufficient, and is not thereby finished. A deck
 nearer another panel deck than its reference shows in `judge.components` which components
@@ -377,6 +377,6 @@ Add content, build, read the report. `density` says where the page sits in the r
 own band (words, elements, covered area: its 10th to 90th percentile), as evidence, not a
 target. A page below the band with room left is one to ask about: is something the
 reader needs missing? Measured on hand-built specimen pages against 96 corpus pages (median
-ink coverage 0.21 to 0.25 against 0.576, dev/TARGET_SPEC.md 14.3), what closed the gap was
+ink coverage 0.21 to 0.25 against 0.576), what closed the gap was
 adding the exhibits a page lacked, not enlarging the ones it had. When a page does not fit
 at the floor, split or re-arrange.

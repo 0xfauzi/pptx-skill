@@ -171,7 +171,7 @@ against the reference, each page's exhibit structure read back from the file the
 (the one reader that read the reference's pages, `ooxml.exhibit_facts`, the drawn chrome left
 out), structure V and kinds V against the reference's, and every page where plan and build
 disagree. Neither can be renamed: a section of table-beside-chart pages reads as the repeat
-it is however the plan describes them (measured: the round-2 netflix section a rater
+it is however the plan describes them (measured: the netflix section a rater
 called samey builds at structure V 1.0, since each of its charts plots something else,
 and kinds V 0.25 against 0.494, the 10th percentile of the three decks it was then pooled with, warned; its
 revision builds at kinds V 0.75, not warned; the class V that came before this read 0.25

@@ -9,8 +9,8 @@ on its master and a deck that writes it on every run fingerprint the same.
     fingerprint.py print  deck.pptx                      # per-deck summary
     fingerprint.py compare cand.pptx --reference ref.pptx [--others a.pptx ...]
     fingerprint.py calibrate firm1=a.pptx,b.pptx firm2=c.pptx ...  [--json out]
-    fingerprint.py calibrate --firms-file dev/oracles/calibration-firms.txt --corpus-root CORPUS \
-                   --max-pages 25 --fit-weights        # the corpus DEFAULT_WEIGHTS was scored on
+    fingerprint.py calibrate --firms-file FIRMS.txt --corpus-root CORPUS \
+                   --max-pages 25 --fit-weights        # how DEFAULT_WEIGHTS was fitted
 
 `compare` prints every distance component, so a bad component names the defect
 (sizes off the reference ladder, a colour outside the palette, margins wrong).
@@ -18,8 +18,7 @@ on its master and a deck that writes it on every run fingerprint the same.
 over the firms given and prints accuracy against the binomial chance bound: it
 is how the measure itself is checked before it judges anything.
 
-The style walker (inheritance order, colour transforms) is ported, with the
-port audit in dev/PORT_AUDIT.md. No value in here is a design standard.
+No value in here is a design standard.
 """
 
 from __future__ import annotations
@@ -118,13 +117,13 @@ def overlap_rate(s: SlidePrint, chrome_keys: set) -> float | None:
 
 
 #: The build's emitted-file check forgives what the solver's own emit gate forgives
-#: between two measurements of the same text (layout.EMIT_SLACK_EMU, deckgen tolerance.py).
+#: between two measurements of the same text (layout.EMIT_SLACK_EMU).
 STRICT_SLACK_EMU = 13
 
 
 def _pitch_emu(para: dict, size_pt: float) -> float:
     """The line pitch the file draws: lnSpc spcPts as written (negative from the reader),
-    spcPct as a share of single spacing (1.2 x size, E16), else single spacing."""
+    spcPct as a share of single spacing (1.2 x size, measured), else single spacing."""
     ls = para.get("line_spacing")
     if ls is None:
         return size_pt * 1.2 * 12700
@@ -438,26 +437,24 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "overlap": 1.0, "overflow": 1.0,
 }
 """Per-component weight = that component's 1-NN accuracy above chance, FITTED on the
-even-numbered slides of the eight firms in dev/oracles/calibration-firms.txt (gs: 3
-Mergers & Inquisitions pitch books; header and themes: the 2 Apache POI test decks, one
-firm each; taste: 20 taste-spike slides; mckinsey: 6, bcg: 3, bain: 1, jpm: 1 public
-PDFs; 25 pages each, raster pages not scored) and JUDGED on the odd-numbered slides.
+even-numbered slides of eight firms (3 Mergers & Inquisitions pitch books as one firm;
+the 2 Apache POI test decks, one firm each; 20 one-slide decks of a design study; 6
+McKinsey, 3 BCG, 1 Bain and 1 JPMorgan public PDFs; 25 pages each, raster pages not
+scored) and JUDGED on the odd-numbered slides.
 
-These shipped weights, re-scored on 2026-10-20 with the command in the module docstring:
-152/165 odd slides correct, against 132/165 with equal weights, chance bound 29. The
-same run re-fits weights on the even slides (families 0.4331, count 0.2083, ...: the
-`fitted_weights_on_even_slides` it prints) and those score 151/165, so the shipped set
-is kept. Before raster pages left the scoring (ooxml.is_type_evidence), 6 OCR pages were
-scored as type and the figures were 158/171 shipped, 157/171 fitted, 132/171 equal.
-Re-fit when the corpus changes; never tune on the slides being judged.
+These weights scored 152/165 odd slides correct, against 132/165 with equal weights,
+chance bound 29. The same run re-fits weights on the even slides (families 0.4331,
+count 0.2083, ...: the `fitted_weights_on_even_slides` it prints) and those scored 151/165, so these are kept.
+To re-fit on your own corpus, write one firm per line (name=deck,deck,...) and run the
+calibrate command in the module docstring. Re-fit when the corpus changes; never tune on the slides being judged.
 
 `overlap` and `overflow` are not the fitted values: the same fit gives them 0.4083 and
 0.4464 (the reference decks differ a little in their own overlap and overflow rates).
-They are ASSERTED at 1.0, above the largest fitted weight, because the review of
-2026-10-20 built decks a rater calls wrong (keybank's shapes at random positions:
+They are ASSERTED at 1.0, above the largest fitted weight, because decks a rater
+calls wrong (keybank's shapes at random positions:
 0.013; all stacked at one point: 0.044; nine random boxes per page: 0.122; every text
-box overflowing twelve times over: 0.192) and the fourteen style components filed every
-one under keybank. Separating firms is not their job; reading whether the page is laid
+box overflowing twelve times over: 0.192) were each filed under keybank by the fourteen
+style components (re-run: tools/measure/build_gaming.py in the source repository). Separating firms is not their job; reading whether the page is laid
 out at all is, and DEFECT_GATE holds that line on its own."""
 
 
@@ -496,7 +493,7 @@ def calibrate(firms: dict[str, list[str]], weights: dict[str, float] | None = No
     for firm, decks in firms.items():
         for deck in decks:
             slides = fingerprint_deck(deck, max_pages)
-            # a deck class is keyed by firm and path, never by file stem: four taste decks
+            # a deck class is keyed by firm and path, never by file stem: four decks
             # named slide1.pptx once collapsed into one class and a BCG page was filed under it
             key = f"{firm}/{Path(deck).as_posix()}" if by_deck else firm
             prints.setdefault(key, {})[deck] = slides
@@ -510,7 +507,7 @@ def calibrate(firms: dict[str, list[str]], weights: dict[str, float] | None = No
 
     def scored(s: SlidePrint, deck: str = "", single: bool = False) -> bool:
         # a single-slide deck has only slide 0: its parity is the deck's rank in the firm,
-        # so a firm of single-slide decks is split too (the taste firm was never judged)
+        # so a firm of single-slide decks is split too (else it is never judged)
         if split is None:
             return True
         parity = deck_rank.get(deck, 0) if single else s.index

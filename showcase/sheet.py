@@ -1,6 +1,6 @@
 """Lay page renders out as one PNG and shrink it to a 256-colour palette.
 
-usage: python3 dev/showcase/sheet.py OUT.png WIDTH COLUMNS PAGE.png [PAGE.png ...]
+usage: python3 showcase/sheet.py OUT.png WIDTH COLUMNS PAGE.png [PAGE.png ...]
 
 Pages are scaled to the column width and placed in reading order on a grey ground, with a
 16 px gutter. The palette is chosen by maximum coverage with no dithering: on the six showcase

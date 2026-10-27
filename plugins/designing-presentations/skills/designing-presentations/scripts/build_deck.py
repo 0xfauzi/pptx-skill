@@ -84,8 +84,7 @@ from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TA
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import EMU_PER_INCH, paragraphs_words, visual_extent  # noqa: E402
 
-#: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes (deckgen style/contrast.py:
-#: AA_NORMAL, AA_LARGE, LARGE_REGULAR_PT, LARGE_BOLD_PT), cited there to
+#: WCAG 2.2 SC 1.4.3 minimums and the large-scale sizes, cited to
 #: https://www.w3.org/TR/WCAG22/#contrast-minimum and #dfn-large-scale.
 AA_NORMAL, AA_LARGE, LARGE_REGULAR_PT, LARGE_BOLD_PT = 4.5, 3.0, 18.0, 14.0
 #: Below this a run is refused, not warned: AA_LARGE, the weakest pair WCAG accepts for
@@ -325,7 +324,7 @@ RUN_KEYS = {"text", "emphasis", "ink_role", "bold", "italic"}
 
 def check_presentation(nid: str, kind: str, st: dict) -> None:
     """A presentation value nothing would draw is refused by name, never dropped: an
-    anchor outside t, m, b fell back to top in silence (round 5: "middle" on three
+    anchor outside t, m, b fell back to top in silence ("middle" on three
     reference decks), and a prst on a text element drew a plain box."""
     from emit_pptx import SpecError, preset_shape
     if "anchor" in st and st["anchor"] not in TEXT_ANCHORS:
@@ -535,7 +534,7 @@ def position_drift(pages: list[tuple[int, list[dict]]], guide: dict) -> dict:
     return out
 
 
-# --- contrast on the resolved page (deckgen quality/contrast.py, style/contrast.py) -------
+# --- contrast on the resolved page -------
 
 
 def aa_threshold(size_pt: float, bold: bool) -> float:
@@ -624,7 +623,7 @@ def unmeasured_presets(elements: list[dict]) -> list[dict]:
 
 def label_interval_divergence(elements: list[dict]) -> list[dict]:
     """A category axis labelled or ticked every n-th category (label_interval, tick_interval
-    above 1): a warning. Measured, round 7, LibreOffice 24.2.7: c:tickLblSkip and
+    above 1): a warning. Measured, LibreOffice 24.2.7: c:tickLblSkip and
     c:tickMarkSkip are not honoured on a line or column chart at any rotation; LibreOffice
     thins the labels by its own fit (120 categories at an interval of 20 drew every 6th) and
     PowerPoint draws every n-th, so the render reviewed may show other labels than the page."""
@@ -643,7 +642,7 @@ def label_interval_divergence(elements: list[dict]) -> list[dict]:
 
 def bar_legend_order(elements: list[dict]) -> list[dict]:
     """A horizontal bar chart with a legend of two or more entries: a warning naming the
-    order the legend draws. Measured, round 8, LibreOffice 24.2.7: a BAR_CLUSTERED legend
+    order the legend draws. Measured, LibreOffice 24.2.7: a BAR_CLUSTERED legend
     lists its series last first (series 'Alpha', 'Beta' drew 'Beta' then 'Alpha', at the
     bottom and at the right, with the category axis reversed or not). Unreversed, that is
     the order the bars sit in each group from the top; reversed (categories top-down) the
@@ -815,7 +814,7 @@ def _spec_ink(eg: EmitGuide, spec: dict, ink_role: str | None, where: str) -> tu
 
 
 def _score(ink: str, backings: list[str], size_pt: float, bold: bool, names: dict[str, str]) -> dict:
-    """The worst (ink, backing) pair against its AA threshold, as deckgen reports it."""
+    """The worst (ink, backing) pair against its AA threshold."""
     worst = min(backings, key=lambda b: contrast_ratio(ink, b))
     ratio = contrast_ratio(ink, worst)
     return {"ratio": round(ratio, 2), "threshold": aa_threshold(size_pt, bold), "size_pt": size_pt, "bold": bold, "backing": names.get(worst, worst),
@@ -1137,7 +1136,7 @@ def briefs_against_file(pages: list[tuple[int, list[dict]]], emitted: list[dict]
 
 
 #: Unmeasured: a pair of pages whose box similarity lies this close to the archetype
-#: line is marked borderline (round 5: one lead-in wrapping to two lines moved a keybank
+#: line is marked borderline (one lead-in wrapping to two lines moved a keybank
 #: pair from 0.434 to 0.543 and flipped the realised variety).
 BORDERLINE_SIMILARITY = 0.1
 
@@ -1578,11 +1577,11 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
     LibreOffice turns itself to fit) is cut into fragments there, so a label not found on a
     line is looked for whole among the page's turned runs (annotate.pdf_turned_runs). A data label not found on one line
     whose words are all drawn was wrapped by the renderer: refused where it is set on its
-    mark's fill (round 7: 'First-lien / TLB' inside a stacked segment, label_on_fill), and
-    held to the crossing checks below where it wraps in open space, which is a design (round
-    8 verifier: 'CLKB 1.58x' on two lines beside a scatter point touched nothing); a category label may wrap, so its words are found one by
+    mark's fill ('First-lien / TLB' inside a stacked segment, label_on_fill), and
+    held to the crossing checks below where it wraps in open space, which is a design (
+    'CLKB 1.58x' on two lines beside a scatter point touched nothing); a category label may wrap, so its words are found one by
     one; anything else is not drawn as written: LibreOffice drops category labels that do
-    not fit their band (round 8: a 14-name horizontal bar ranking drew every third name)
+    not fit their band (a 14-name horizontal bar ranking drew every third name)
     and breaks a label it squeezes. Each word is matched once."""
     out = []
     for i, page in enumerate(emit_pages):
@@ -1670,14 +1669,14 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
     return out
 
 
-#: Measured, docs round, LibreOffice 24.2.7, a line series with no markers, 12 points a
-#: chart (dev/oracles/label_probe.py): per face the renderer draws and per size, the gap from
+#: Measured, LibreOffice 24.2.7, a line series with no markers, 12 points a
+#: chart (tools/measure/label_probe.py in the source repository): per face the renderer draws and per size, the gap from
 #: an `above` label's word box (pdftotext's) to its point and from its point to a `below`
 #: label's box, the middle of the 12 points' range (each range is 560 EMU or less). The gap
 #: does not grow with the size; it moves by up to 12,000 EMU between neighbouring sizes. At a
 #: size not measured the face's smallest gap is taken (the label nearest its point, which a
 #: neighbouring segment crosses first), and on a face not measured the smallest of all. With
-#: a marker the gap is unmeasured. Round 8's Inter 9pt (37,411 to 38,050 and 38,908 to
+#: a marker the gap is unmeasured. An earlier reading of Inter 9pt (37,411 to 38,050 and 38,908 to
 #: 39,379) is reproduced here (37,489 to 38,048, 38,816 to 39,375).
 LINE_LABEL_GAP_EMU: dict[str, dict[float, tuple[int, int]]] = {
     "Liberation Sans": {6: (39_900, 33_000), 7: (37_200, 31_300), 8: (34_600, 39_000), 9: (41_200, 36_600), 10: (38_500, 34_900),
@@ -1742,13 +1741,13 @@ def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
     return out
 
 
-#: A word box runs the face's ascent to descent; the ink sits inside it. Measured, docs
-#: round, on LibreOffice's render of chart labels rasterised at 600 dpi (dev/oracles/
-#: label_probe.py, 6 to 14pt, 254 to 256 words a face): per face the renderer draws, the
+#: A word box runs the face's ascent to descent; the ink sits inside it. Measured,
+#: on LibreOffice's render of chart labels rasterised at 600 dpi (tools/measure/
+#: label_probe.py in the source repository, 6 to 14pt, 254 to 256 words a face): per face the renderer draws, the
 #: smallest share of the box above the ink (top), and below it for words with no descender
 #: and with one ('Aug'), over every size; the shares move by 0.03 or less between sizes.
 #: Liberation Sans's descender reaches 0.002 past the box's bottom (under a pixel), kept.
-#: Round 8's Inter at 9pt and about 110 dpi read 0.17, 0.21 and 0.06; at 600 dpi Inter's
+#: An earlier reading of Inter at 9pt and about 110 dpi read 0.17, 0.21 and 0.06; at 600 dpi Inter's
 #: descender inset is 0.018, so the old band left the descender's bottom out. A line is held
 #: to the ink band, never to the empty ascent and descent (investor p3: a cohort line ran
 #: under '1.47x' through its box's descent). A face not measured takes the smallest of each.
@@ -1886,8 +1885,8 @@ def drawn_lines(out: str, emitted: list[dict], emit_pages: list[dict], words: li
 
 def _table_cells_drawn(shape, page_words: list[tuple], el: dict) -> tuple[dict, list[str], list[str]]:
     """Each table cell as the renderer drew it: the render's words in its column, between
-    the table's top and bottom (a word below the table is another element's: round 8
-    verifier, keybank's 'Required for FY17 accretion' was read through words under the
+    the table's top and bottom (a word below the table is another element's:
+    keybank's 'Required for FY17 accretion' was read through words under the
     table and not found), in reading order (lines top down, words left to right); the
     cell's characters found there in row order as consecutive words (spaces aside), and the
     lines they sit on counted against the lines the cell writes. A spanner is not read. A
@@ -2039,16 +2038,16 @@ def label_text(value: float, number_format: str | None) -> str | None:
     v = Decimal(repr(float(value))) * (100 if m["pct"] else 1)
     v = v.quantize(Decimal(1).scaleb(-len(m["dec"] or "")), rounding=ROUND_HALF_UP)
     # a value that rounds to zero is drawn unsigned, and the sign leads a quoted prefix
-    # (measured, round 8, LibreOffice 24.2.7: -0.04 under 0.0 is '0.0', -0.4 under 0 is '0',
-    # -0.4 under "$"0.0 is '-$0.4'; dev/PORT_AUDIT.md, round 8)
+    # (measured, LibreOffice 24.2.7: -0.04 under 0.0 is '0.0', -0.4 under 0 is '0',
+    # -0.4 under "$"0.0 is '-$0.4')
     sign = "-" if v < 0 else ""
     body = f"{abs(v):{',' if ',' in m['int'] else ''}f}"
     lit = lambda part: re.sub(r'"([^"]*)"', r"\1", part or "")  # noqa: E731
     return sign + lit(m["pre"]) + body + m["pct"] + lit(m["post"])
 
 
-#: Measured, round 8, LibreOffice 24.2.7, 72 value labels under General
-#: (dev/PORT_AUDIT.md, read from the render's PDF text): an integer below 2^53 is drawn
+#: Measured, LibreOffice 24.2.7, 72 value labels under General
+#: (read from the render's PDF text): an integer below 2^53 is drawn
 #: whole (1234567890123456); any other value is rounded to 15 significant digits, drawn plain
 #: with no trailing zeros from 1e-4 up to 1e15 (0.30000000000000004 is '0.3', 1/3 is
 #: '0.333333333333333'), and zero is '0' whatever its sign. Past those bounds the renderer
@@ -2071,8 +2070,8 @@ def general_text(value: float) -> str | None:
     return None
 
 
-#: Measured, docs round, LibreOffice 24.2.7, a horizontal clustered bar chart, labels on one
-#: line (dev/oracles/label_probe.py; Liberation Sans, Carlito, Gelasio and Inter at 6, 7, 8,
+#: Measured, LibreOffice 24.2.7, a horizontal clustered bar chart, labels on one
+#: line (tools/measure/label_probe.py in the source repository; Liberation Sans, Carlito, Gelasio and Inter at 6, 7, 8,
 #: 9, 10, 11, 12 and 14pt, 4 bars each): an `inside_base` label's word box starts 35,801 EMU
 #: past the bar's base at every face and size; an `inside_end` label's ends 29,303 to 47,136
 #: EMU short of the bar's end, varying with face and size. The smallest is kept, the
@@ -2101,7 +2100,7 @@ def label_overflows_bar(el: dict, item: dict, spec: dict, ctx: L.Context | None 
     line, taller than the column's segment; the span is centred on the segment, or set at
     its end or base for inside_end and inside_base. On a horizontal bar (with `ctx`, whose
     ruler measures the label in the face the renderer draws): the label's one line
-    (LibreOffice does not wrap a label on a horizontal bar, round 8) plus where it starts
+    (LibreOffice does not wrap a label on a horizontal bar) plus where it starts
     on the bar (BAR_LABEL_INSET_EMU) longer than the bar, for inside_base, inside_end and
     center; the rest of the label then sits on the plot. Empty when the chart's geometry is
     not computable (no plot_area or no axis range): nothing is claimed then."""
@@ -2262,11 +2261,11 @@ def chart_label_breaks(elements: list[dict], ctx: L.Context) -> tuple[list[dict]
                 return
             # a turned label takes its slot along the category axis by its footprint there, one
             # line of the word turned by `turn`: at 90 degrees its line height, not its width
-            # (round 8: 'Neighbourhood' turned -90 was refused as level and drew on one line)
+            # ('Neighbourhood' turned -90 was refused as level and drew on one line)
             line = entry.size_pt * L.POWERPOINT_LINE_HEIGHT_RATIO * L.EMU_PER_POINT
             if mark is None and part.startswith("series"):
                 # a centred label on a column: LibreOffice wraps it at spaces or keeps it on one
-                # line past the bar's sides, unpredictably (round 7 and 8: 'First-lien / TLB 3.75x'
+                # line past the bar's sides, unpredictably ('First-lien / TLB 3.75x'
                 # wrapped, 'Senior notes 1.25x' beside it ran over both sides); the render
                 # check reads which, and a line wider than the bar is warned before it
                 whole = max(L.advance_emu(ctx.ruler, ln, face.path, entry.size_pt) for ln in str(text).split("\n"))
@@ -2324,7 +2323,7 @@ def title_node(spec_raw: dict) -> dict | None:
 
 def banded_title(spec_raw: dict) -> dict | None:
     """The block the title band holds: the root's first child when it is the title
-    (title_node) or a region holding it (a kicker over the title, round 7: with no
+    (title_node) or a region holding it (a kicker over the title: with no
     reference such a head was not banded, so the content under it started above the drawn
     title rule and was refused as crossing it). None when the title sits anywhere else."""
     node = title_node(spec_raw)
@@ -2468,7 +2467,7 @@ def prepare_page(spec_raw: dict, guide: dict, chrome_mode: str = "auto", page_ch
         page["reserved_zones"] = chrome_zones(guide, chrome_mode, page_chrome_choices)
     if "bullet_indent_roles" not in spec_raw and not guide.get("typography", {}).get("bullets"):
         # a reference with no bullets (a PDF, a deck of prose) gets the indent progression
-        # of the spacing scale (deckgen 4b row 1: continue the indent progression), listed
+        # of the spacing scale, listed
         # under layout_defaults_taken where a page sets bullets (bullet_indents_taken)
         spec_raw["bullet_indent_roles"] = dict(BULLET_INDENTS_TAKEN)
     band = title_band_emu(guide, spec_raw)
@@ -2825,7 +2824,7 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
         return out
     if base_slide.get("annotations") is not None:
         # placed on the solved page as the build places them, so a collision or a refused
-        # anchor shows before a build (round 7: capacity placed none)
+        # anchor shows before a build (capacity placed none)
         flat = flatten(base_slide, L.resolved_json(base_ctx, outcome.resolved), base_raw, guide)
         _, placed, found = annotate.resolve(base_slide["annotations"], flat, base_ctx, outcome.resolved.scale, guide,
                                             base_raw["page"].get("reserved_zones") or [])
@@ -3179,7 +3178,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 # the brief names the cause on the page's own line, not only in the JSON. The
                 # cause is the page at FULL scale first: at the smallest scale tried the page
                 # is shrunk, and what crosses then (a heading over a rule) is the shrinking's
-                # effect, not the cause (a sidebar 0.09 in too tall read as the headings: round 7)
+                # effect, not the cause (a sidebar 0.09 in too tall read as the headings)
                 import copy
                 _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, L.Fraction(1))
                 entry["why_not_full_scale"] = full_scale_cause(full_ctx, full)

@@ -45,8 +45,7 @@ from textfit import fc_match, metric_alias  # noqa: E402
 
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 UNCOVERED_SAMPLE_MAX = 10
-# Codepoints that carry no glyph by definition (deckgen render/fonts.py
-# uncovered_codepoints): control, format, unassigned, private use, surrogate,
+# Codepoints that carry no glyph by definition: control, format, unassigned, private use, surrogate,
 # separators. PowerPoint keeps Wingdings bullets in the Private Use Area.
 NON_DRAWING_CATEGORIES = frozenset({"Cc", "Cf", "Cn", "Co", "Cs", "Zl", "Zp", "Zs"})
 
@@ -206,7 +205,7 @@ def uncovered_faces(fonts: dict[str, dict[str, object]]) -> dict[str, dict[str, 
 def offline_copy(src: Path, workdir: Path, blocked: list[str] | None = None) -> Path:
     """A copy of the package in which every relationship that does not name a part inside
     it points nowhere. LibreOffice fetches a picture a deck links to on the web when it
-    converts the deck (measured, docs rounds 2 and 3: a linked picture drew OPTIONS, HEAD
+    converts the deck (measured: a linked picture drew OPTIONS, HEAD
     and GET requests to a local HTTP server), and a reference deck is untrusted input.
     It reads TargetMode without regard to case and follows a picture's relationship by its
     id whatever its Type (a picture under a hyperlink Type was fetched too), so the rule

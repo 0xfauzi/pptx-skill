@@ -125,15 +125,15 @@ def open_presentation(path: str):
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
-# The origin tag every generated slide carries (one p:tag in its own tags part). deckgen
-# 2E-1 measured the part coming back out of a PowerPoint save with the p:tag intact.
+# The origin tag every generated slide carries (one p:tag in its own tags part). Measured:
+# the part coming back out of a PowerPoint save with the p:tag intact.
 ORIGIN_TAG_NAME = "pptx-skill"
 ORIGIN_TAG_VALUE = "generated"
 # The thinnest stroke PowerPoint still inks: at 0.25pt it lays 0.48px where LibreOffice
-# lays 1.27px (deckgen E38 class 5); at 0.5pt both are above one pixel.
+# lays 1.27px (measured); at 0.5pt both are above one pixel.
 RULE_WEIGHT_FLOOR_EMU = 6350
 # Chart plot groups whose schema carries c:varyColors (ECMA-376 21.2.2). The element
-# defaults to TRUE and the two renderers read the default oppositely (E38 class 10).
+# defaults to TRUE and the two renderers read the default oppositely (measured).
 VARY_COLORS_GROUPS = {"barChart", "bar3DChart", "lineChart", "line3DChart", "pieChart", "pie3DChart", "ofPieChart", "doughnutChart",
                       "areaChart", "area3DChart", "scatterChart", "radarChart", "bubbleChart"}
 # Children that precede c:varyColors in those groups' sequences.
@@ -342,7 +342,7 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
             p_pr.remove(el)
     fit = para.get("fit")
     size = fit["sz"] / 100 if fit else float(spec["size_pt"])
-    ls = spec.get("line_spacing") or 1.2  # measured default pitch (deckgen E16: 1.2002 x size, font independent)
+    ls = spec.get("line_spacing") or 1.2  # measured default pitch (1.2002 x size, font independent)
     ln = etree.SubElement(p_pr, qn("a:lnSpc"))
     etree.SubElement(ln, qn("a:spcPts")).set("val", str(fit["lnSpc_spcPts"] if fit else int(round(ls * size * 100))))
     bef = etree.SubElement(p_pr, qn("a:spcBef"))
@@ -730,7 +730,7 @@ def _horizontal_edge_class(index: int, header_rows: int, n_rows: int, totals_ind
 def _write_table_edges(table, guide: Guide, n_rows: int, n_cols: int, header_rows: int, totals_index: int | None, rules: dict) -> None:
     """Every shared edge written to BOTH of its declaring cells from one rule, so the two
     sides agree byte for byte (upper lnB == lower lnT, left lnR == right lnL). Measured
-    (deckgen E38 class 4, 8 of 8 cases in both axes): where the sides differ, PowerPoint
+    (8 of 8 cases in both axes): where the sides differ, PowerPoint
     draws the first-declared side and writes it back on save while LibreOffice draws the
     heavier one, so a totals rule declared on the totals row's lnT alone shows in the
     render and vanishes in PowerPoint. Identical sides leave no conflict to resolve."""
@@ -1144,7 +1144,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
 # overlap) comes from the spec. A choice the spec leaves out is written as the neutral
 # value named in CHART_DEFAULTS and listed in the note's `defaults_taken`, so the model
 # reads back what it did not decide. c:varyColors val=0 is the one value written without
-# being asked for: it is file safety, not design (E38 class 10, below).
+# being asked for: it is file safety, not design (below).
 
 CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title",
               "plot_area",
@@ -1228,7 +1228,7 @@ CHART_DEFAULTS = {
     "series.marker": "the renderer's automatic marker",
     "series.smooth": "python-pptx's chart part",
     "axis.visible": "shown",
-    "axis.line_role": "no stroke written: each renderer reads the theme's line style, and they differ (E38 class 5)",
+    "axis.line_role": "no stroke written: each renderer reads the theme's line style, and they differ",
     "axis.gridlines": "none (OOXML absence)",
     "axis.number_format": "linked to the source data",
     "axis.reverse": "minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)",
@@ -1288,7 +1288,7 @@ def unnamed_series(el: dict) -> list[int]:
 
 def marker_divergence(guide: Guide, s: dict, m: dict, where: str) -> None:
     """A marker the two renderers draw differently is refused. LibreOffice draws a marker as
-    one solid colour and never its outline (measured, round 7, on an XY_SCATTER at 9pt
+    one solid colour and never its outline (measured on an XY_SCATTER at 9pt
     markers): the series line's colour when the series draws a line, else the marker's fill,
     else the marker's line. A hollow ring (a surface fill and a coloured outline) drew
     nothing at all; PowerPoint draws it as written. So a marker is one colour: every role it
@@ -1421,7 +1421,7 @@ def chart_parse(el: dict, guide: Guide) -> dict:
             took(f"series[{si}].line_role", "series.line_role")
         if stroked and "smooth" not in s and s_family != "radar" and s.get("line_role") != NONE:
             # smoothing shapes a drawn line: a series whose line_role is "none" (a scatter of
-            # markers) draws none, so nothing is left to a look nobody chose (round 7)
+            # markers) draws none, so nothing is left to a look nobody chose
             took(f"series[{si}].smooth", "series.smooth")
         if "dash" in s:
             _enum(sw, "dash", s["dash"], DASHES)
@@ -1804,7 +1804,7 @@ def _write_cross_between(val_ax: etree._Element, value: str) -> None:
 def _write_vary_colors(chart_space: etree._Element) -> None:
     """c:varyColors val=0 on every plot group that can carry it. python-pptx 1.0.2 writes
     none for a bar chart; absent, PowerPoint paints one series in five theme colours and
-    LibreOffice in one (E38 class 10). With 0 both renderers draw the fills the spec
+    LibreOffice in one. With 0 both renderers draw the fills the spec
     wrote: a pie whose slices should differ names a fill per point."""
     area = chart_space.find(".//" + qn("c:plotArea"))
     if area is None:
@@ -2005,7 +2005,7 @@ def write_chart(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
                     axis.crosses_at = float(c)
             if ax.get("visible") is False and name == "secondary_value":
                 # LibreOffice drops the min and max of a DELETED secondary axis and plots its
-                # series on the primary scale (measured, round 7: a 0..30 margin line drawn
+                # series on the primary scale (measured: a 0..30 margin line drawn
                 # flat along a 0..250 baseline); a deleted primary axis keeps its scale. So
                 # the secondary is written present and drawn as nothing: no line, no tick
                 # marks, no labels
@@ -2175,7 +2175,7 @@ def _write_axis_title(axis, title: dict, guide: Guide, name: str, chart, where: 
 def bars_across_labels(el: dict) -> set[int]:
     """The series whose bars cross the category labels: the labels sit next to the category
     axis, where it crosses the value axis (`crosses`, or zero when the scale spans it), and
-    a bar on the low side of that value grows from the axis through them (round 8 verifier:
+    a bar on the low side of that value grows from the axis through them (
     min 50, max 150, crosses 100 drew 'South' and 'West' on their bars). Labels set `low` or
     `high` sit at the plot's edge; a reversed value axis is not measured, so nothing is
     claimed there."""
@@ -2623,7 +2623,7 @@ def _origin_tag_xml() -> bytes:
 
 def write_origin_tag(slide) -> str:
     """One User Defined Tags part per generated slide, referenced from p:cSld/p:custDataLst
-    (deckgen render/emit/chrome.py add_tag_part and attach_tag_reference; 2E-1 measured
+    (measured:
     the part surviving a PowerPoint save with its p:tag intact). python-pptx writes the
     part's content type into [Content_Types].xml and the relationship into the slide's
     rels on save. p:custDataLst follows p:spTree in CT_CommonSlideData's sequence."""

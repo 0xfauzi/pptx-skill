@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the upload zip of the shipped skill, for claude.ai or the Skills API.
 
-    python3 dev/tools/package_skill.py [-o dist/designing-presentations.zip]
+    python3 tools/package_skill.py [-o dist/designing-presentations.zip]
 
 The zip holds the skill directory itself as its one top-level entry
 (designing-presentations/SKILL.md, ...), as claude.ai and the API ask, and only the files
@@ -31,7 +31,7 @@ import time
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 #: the frontmatter keys the Agent Skills specification defines, the only ones a claude.ai or
 #: API upload accepts (code.claude.com/docs/en/skills, Frontmatter reference)

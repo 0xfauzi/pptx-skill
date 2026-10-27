@@ -1,157 +1,173 @@
 # designing-presentations
 
-An Agent Skill, and a Claude Code plugin, with which Claude designs native, editable
-PowerPoint decks: pitch books, investment committee books, consulting pages, earnings
-decks, annual reports. Give it a reference (a company template, a past deck, any .pptx, or
-a vector or scanned PDF) and the new pages take that reference's look; give it none and
-Claude reasons a look out from the reader, the subject and the data.
+designing-presentations is an Agent Skill and a Claude Code plugin. With it, Claude
+designs native PowerPoint decks that you can edit. Examples are pitch books, investment
+committee books, consulting pages, earnings decks and annual reports.
 
-Claude designs and the skill's scripts measure. Claude chooses the storyline, each page's
-composition, every exhibit, every annotation and every colour. The scripts read the
-reference's look, measure text with the installed fonts, solve the page geometry, write
-the .pptx with native charts and tables, render it with LibreOffice, read the render back
-and refuse a page whose defect can be measured.
+You can give Claude a reference: a company template, a past deck, any .pptx file, or a
+vector or scanned PDF. The new pages then use the look of that reference. If you give no
+reference, Claude chooses a look from the reader, the subject and the data.
+
+Claude makes the design decisions. It chooses the storyline, the layout of each page, each
+exhibit, each annotation and each colour. The scripts of the skill do the measurements.
+They read the look of the reference and measure text with the installed fonts. They
+calculate the page geometry and write the .pptx file with native charts and tables. Then
+they render the file with LibreOffice, read the render, and refuse a page that has a
+defect they can measure.
 
 ![Page 1 of an LBO investment committee book: seven headline figures over six tables and a bar chart, with a notes column](docs/showcase/hero.png)
 
-*Page 1 of the LBO investment committee book in the gallery below, built with no
-reference. Click the image for the full-size render.*
+*Page 1 of the LBO investment committee book in the gallery below. It was built with no
+reference.*
 
 [![Three more showcase pages: a store network page from a grocery strategy, a margin page from an earnings deck and a visitors page from a parks annual report](docs/showcase/strip.png)](#gallery)
 
-*From the other three gallery decks: page 4 of a grocery format strategy, page 4 of a
-software company's quarterly results and page 1 of a national parks annual report. Every
-company and figure is fictional. Each image is LibreOffice's render of the .pptx its build
-wrote.*
+*Pages from the other three gallery decks. The left page is page 4 of a grocery format
+strategy. The middle page is page 4 of the quarterly results of a software company. The
+right page is page 1 of a national parks annual report. All companies and figures are fictional. Each image is the LibreOffice render of
+the .pptx file that the build wrote.*
 
-## What it is good at
+## What the skill can do
 
-- **Any reference look, or a reasoned one.** A .pptx is read through its masters, layouts
-  and theme; a PDF is triaged page by page into vector and scanned pages, and a scan is
-  measured from its pixels. The guide records each value with where it came from. With no
-  reference, Claude writes a short look brief (reader, subject, data, brand, restraint)
-  and chooses every value itself; none has a default.
-- **Dense pitch-book pages.** Many exhibits to a page, each at its measured size: the
-  committee book in the gallery sets five to nine tables and charts on each letter page
-  (counted in its page specs).
-- **Native, editable exhibits.** Charts are PowerPoint charts with their data in the file;
-  tables are PowerPoint tables. Bridges (one crossing zero among them), floating
-  valuation ranges, a mekko and a price-and-volume combo chart have worked recipes in the skill's `references/chart-recipes.md`.
-- **Annotation.** Reference lines, bands, brackets, callouts, badges, outline boxes, rows
-  aligned to categories and any OOXML shape, placed at data positions on a chart or on
-  table cells. A mark with no words says what explains it, or the build warns.
-- **Logos and icons.** Pictures from the user's files, the reference's own pictures, and
-  small SVG icons drawn in the deck's colour roles.
-- **Measured text fit.** Every text box, table cell and label is measured in the face the
-  renderer will draw: the font the deck names, or a stand-in the guide names (HarfBuzz, or
-  Pillow where HarfBuzz is not installed). A page set in a face the machine lacks, with no
-  stand-in named, is refused rather than measured in another face; a page that does not
-  fit is reported with what to change.
-- **Refusal of measurable defects.** A page is refused for text that does not fit or
-  overlaps, contrast under 3:1, a bridge that does not tie, an exhibit with no written
-  brief, or a render that is not what the file says (text, a table cell or a chart label
-  the renderer wrapped, dropped or covered). A totals row that does not tie is warned.
-  Everything else is Claude's choice, shown beside the reference's own habits.
+- **Use the look of a reference, or choose a look.** The skill reads a .pptx file through
+  its masters, layouts and theme. It sorts the pages of a PDF into vector pages and
+  scanned pages, and it measures a scanned page from its pixels. The style guide records
+  each value and the source of that value. With no reference, Claude writes a short look
+  brief (reader, subject, data, brand, restraint) and chooses each value. No value has a
+  default.
+- **Make dense pages.** A page can hold many exhibits, and each exhibit gets the size that
+  the solver calculates for it. Each page of the committee book in the gallery holds five
+  to nine tables and charts.
+- **Write native exhibits.** Charts are PowerPoint charts, and their data is in the file.
+  Tables are PowerPoint tables. The file
+  `plugins/designing-presentations/skills/designing-presentations/references/chart-recipes.md`
+  has worked examples for bridges, valuation ranges, a mekko chart and a price-and-volume
+  chart.
+- **Annotate exhibits.** The skill can put marks on a chart or on table cells. The marks
+  include reference lines, bands, brackets, callouts, badges, outline boxes and rows
+  aligned to categories. Any OOXML shape can also be a mark. If a mark has no words that
+  explain it, the build gives a warning.
+- **Use logos and icons.** The skill can use pictures from your files, pictures from the
+  reference, and small SVG icons in the colours of the deck.
+- **Measure text fit.** The skill measures each text box, table cell and label in the
+  font that the renderer will draw. It uses HarfBuzz, or Pillow if HarfBuzz is not
+  installed. If the machine does not have the font that a page names, and the guide names
+  no stand-in font, the build refuses the page. If a page does not fit, the report tells you what
+  to change.
+- **Refuse defects that it can measure.** The build refuses a page that has one of these
+  defects:
+  - Text that does not fit, or text that overlaps.
+  - Contrast less than 3:1.
+  - A bridge that does not tie.
+  - An exhibit with no written brief.
+  - A render that is different from the file.
 
-## What to ask
+  A totals row that does not tie gives a warning. All other decisions belong to Claude.
+  The report shows each decision next to the habits of the reference.
 
-- "Here is our pitch book template, `bank_template.pptx`. Build a four-page valuation
-  section for Project Atlas from `comps.csv` and `model.csv`: a summary, trading comps, a
-  football field with the $36.50 offer marked, and the accretion bridge."
+## Examples of requests
+
+- "Here is our pitch book template, `bank_template.pptx`. Use `comps.csv` and
+  `model.csv`. Build a four-page valuation section for Project Atlas. Include a summary,
+  trading comps, a football field that marks the $36.50 offer, and the accretion bridge."
 - "No template. Write a five-page steering committee pre-read on our store format strategy
-  from `stores.csv`. The audience is the board; every title should state the finding."
+  from `stores.csv`. The audience is the board. Every title must state the finding."
 - "Use the look of `board_pack.pdf` (a scan) for two new pages on the capital plan."
-- "Add a returns sensitivity page to `ic_book.pptx`, in the style of the deck's own pages."
-- "Use our logo, `logo.png`, in place of the template firm's logo, and drop the firm's
-  name from the footer."
+- "Add a returns sensitivity page to `ic_book.pptx`, in the style of the pages of the deck."
+- "Use our logo, `logo.png`, instead of the logo of the template firm. Remove the name of
+  the firm from the footer."
 
 ## Install
 
+[INSTALL.md](INSTALL.md) gives all the steps. It also gives the versions that we tested
+this release on.
+
 ### Claude Code, as a plugin
+
+Type this command in Claude Code:
 
 ```
 /plugin install designing-presentations --marketplace https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/.claude-plugin/marketplace.json
 ```
 
-That one line (Claude Code 2.1.275 or later in a session; `claude plugin install
-designing-presentations --marketplace <URL>` from a shell, 2.1.292 or later) adds the
-marketplace by its catalog file and installs the plugin. Claude Code downloads the catalog
-file alone, and the plugin's entry fetches the plugin folder alone (a `git-subdir` source),
-so nothing of `dev/` reaches the disk. Adding the marketplace as `0xfauzi/pptx-skill` also
-works and clones the whole repository, `dev/` included. The skill then loads as
-`/designing-presentations:designing-presentations`, and Claude uses it on its own when a
-request asks for slides. Where the install lands, and how to fetch the judge's panel again
-after an update: [INSTALL.md](INSTALL.md).
+The command adds the marketplace and installs the plugin. Claude Code downloads only the
+catalog file and the plugin folder. The skill then loads as
+`/designing-presentations:designing-presentations`. Claude also uses the skill
+automatically when you ask for slides.
 
-### Claude Code, by hand
+### Claude Code, manual install
 
-Copy (or symlink) `plugins/designing-presentations/skills/designing-presentations/` into
-`~/.claude/skills/` for every project, or into a project's `.claude/skills/`. The directory
-name must stay `designing-presentations`, the skill's `name`.
+1. Copy the folder `plugins/designing-presentations/skills/designing-presentations/`.
+2. Put the copy in `~/.claude/skills/` for all projects, or in `.claude/skills/` of one
+   project.
+3. Keep the folder name `designing-presentations`. This name must be the same as the
+   `name` of the skill.
 
 ### claude.ai
 
-Build the upload zip, upload it in claude.ai under Customize > Skills and turn it on (code
-execution must be on):
+1. Build the upload zip from the root of this repository:
 
-```bash
-python3 dev/tools/package_skill.py          # writes dist/designing-presentations.zip
-```
+   ```bash
+   python3 tools/package_skill.py          # writes dist/designing-presentations.zip
+   ```
 
-The zip holds the `designing-presentations/` folder as its one top-level entry: the files
-git tracks there, as committed, without the third-party reference decks. The packager
-refuses an untracked or ignored file in the skill and anything an upload would reject
-(INSTALL.md lists the rules). Whether claude.ai's sandbox has LibreOffice and the packages
-below depends on the environment; ask Claude to run `scripts/preflight.py` first.
+2. In claude.ai, go to Customize > Skills and upload the zip.
+3. Turn on the skill. Code execution must be on.
+4. Ask Claude to run `scripts/preflight.py`. This script shows if the sandbox has
+   LibreOffice and the necessary packages.
+
+The zip holds one top-level folder, `designing-presentations/`. The zip holds only the
+files that git tracks in that folder, as committed. The packager refuses a file that git
+does not track and any content that an upload would reject. INSTALL.md lists the rules.
 
 ### Claude API
 
-Upload the same folder through the Skills API (`POST /v1/skills`, each file sent as
-`designing-presentations/<path>`) and attach it to a Messages request in
-`container.skills` with the code execution tool. The API's container has no network and
-installs no packages, so the skill runs there only as far as its pre-installed packages
-cover the requirements below; `scripts/preflight.py` says which are missing.
-
-[INSTALL.md](INSTALL.md) has every step, the versions this release was measured on, and
-how to fetch the judge's panel of public decks.
+Upload the same folder through the Skills API. INSTALL.md gives the commands. The
+container of the API has no network access and cannot install packages. Thus the skill
+can run there only if the container already has the packages that the skill needs.
+`scripts/preflight.py` shows which packages are missing.
 
 ## Requirements
 
-Python 3.11 or later with lxml, Pillow, python-pptx and pdfplumber (uharfbuzz optional, the
-better text ruler); LibreOffice, poppler and fontconfig. The skill installs nothing: run
-`scripts/preflight.py` in the skill and it lists what is missing, with the install command
-for your platform, for you to run. Install the fonts your reference names (or their
-metric-compatible stand-ins) before building, since text is measured with the installed
-faces. Versions measured, and fonts: [INSTALL.md](INSTALL.md).
+- Python 3.11 or later, with lxml, Pillow, python-pptx and pdfplumber.
+- uharfbuzz (optional). It gives a better text ruler.
+- LibreOffice, poppler and fontconfig.
+- The fonts that your reference names, or their metric-compatible stand-ins.
 
-## How it works
+The skill installs nothing. Run `scripts/preflight.py` in the skill folder. The script
+lists what is missing and prints the install command for your platform. Install the
+fonts before you build, because the skill measures text with the installed fonts.
 
-1. **Intake.** The reference is rendered, its look extracted into a guide draft with the
-   provenance of every value, and its exhibits cut into a gallery. With no reference the
-   draft is blank.
-2. **Guide.** Claude answers every value the reference left open (with none: all of
-   them), including how the reference titles pages and marks its exhibits.
-3. **Plan.** Claude writes the storyline and, for each exhibit, a brief: what the reader
-   must see, the forms weighed and why one was chosen, where the claim is marked. A script
-   computes and asserts every figure a title states.
-4. **Page specs.** Each page is a tree of regions and elements written in roles (a type
-   role, a colour role, a spacing step), never a literal size, colour or coordinate.
-5. **Build.** The solver places every box, the text ruler measures every line, the emitter
-   writes the .pptx on the reference's masters (or a blank one), LibreOffice renders it
-   and the build reads the render back. A page with a measurable defect is refused with
-   what to change.
-6. **Review.** Claude looks at every render at full size against each exhibit's brief,
-   fixes, and rebuilds, then validates the package.
+## How the skill works
 
-The whole workflow, step by step: the skill's
-[SKILL.md](plugins/designing-presentations/skills/designing-presentations/SKILL.md).
+1. **Intake.** The skill renders the reference, extracts its look into a draft guide, and
+   cuts its exhibits into a gallery. The draft records the source of each value. With no
+   reference, the draft is blank.
+2. **Guide.** Claude gives a value for each open item in the draft. With no reference,
+   all items are open.
+3. **Plan.** Claude writes the storyline and a brief for each exhibit. The brief says what
+   the reader must see, which forms Claude compared, and why it chose one. A script
+   calculates and checks each figure that a title states.
+4. **Page specs.** Each page is a tree of regions and elements. The spec uses roles (a
+   type role, a colour role, a spacing step). It never uses a literal size, colour or
+   coordinate.
+5. **Build.** The solver puts each box on the page, and the text ruler measures each line.
+   The emitter writes the .pptx file on the masters of the reference, or on a blank
+   master. LibreOffice renders the file, and the build reads the render. The build refuses
+   a page with a defect that it can measure, and it tells you what to change.
+6. **Review.** Claude examines each render at full size against the brief of each
+   exhibit. Claude then makes corrections, builds again and validates the package.
+
+The file
+[SKILL.md](plugins/designing-presentations/skills/designing-presentations/SKILL.md)
+gives the full workflow, step by step.
 
 ## Gallery
 
-Four decks built with no reference, each from its figures script, plan, completion and
-page specs, on the skill in this repository. Each build passed every gate and both package
-validations. The sources and the command that rebuilds each deck and image are in
-[dev/showcase/](dev/showcase/README.md).
+The skill built these four decks with no reference. Each deck has a figures script, a plan, a
+completion and page specs. Each build passed all checks and both package validations.
+The folder [showcase/](showcase/README.md) holds the sources and the commands that build
+each deck and image again.
 
 | Deck | Pages | All pages | File |
 |---|---|---|---|
@@ -160,117 +176,109 @@ validations. The sources and the command that rebuilds each deck and image are i
 | Software company quarterly results: highlights, revenue and ARR, unit economics, margin, guidance | 5 | [image](docs/showcase/software-earnings.png) | [.pptx](docs/showcase/software-earnings.pptx) |
 | National parks annual report: visitors, conservation, budget, volunteers, priorities | 5 | [image](docs/showcase/parks-annual-report.png) | [.pptx](docs/showcase/parks-annual-report.pptx) |
 
-The skill's own `examples/` hold worked inputs with a reference: a four-page section, four
-annotated pages, two bridge pages and a round trip on a bank pitch book (pptx), and two
-pages on a McKinsey board PDF; and two more decks with no reference (a three-page board
-review and a two-page credit paper). Their build reports are in `dev/proofs/`. The
-reference examples are derived from public decks (the bank pitch book is a Mergers and
-Inquisitions training deck; the PDF a public board packet); the new pages carry their own
-text, and the round trip, which rebuilds the bank deck's own page 3, keeps its roles,
-weights and figures with every text run paraphrased.
+The `examples/` folder of the skill holds worked inputs:
 
-## Limits and known gaps
+- With a bank pitch book (pptx) as the reference: a four-page section, four annotated
+  pages, two bridge pages and a round trip.
+- With a McKinsey board PDF as the reference: two pages.
+- With no reference: a three-page board review and a two-page credit paper.
 
-- **No arrangement search.** When a page does not fit, the solver reports the splittable
-  groups and the row prefix of each table that fits (`scripts/layout.py`); Claude
-  re-arranges, cuts words or splits the page.
-- **One renderer.** Every render check reads LibreOffice 24.2.7's drawing. PowerPoint was
-  measured for text-box fit and table row heights (`references/gotchas.md`); chart label
-  and annotation positions, and the label gaps and ink bands per face and size, were
-  measured in LibreOffice only (`dev/PORT_AUDIT.md`). The order PowerPoint lists a
-  horizontal bar chart's legend in is unmeasured; LibreOffice lists it last series first.
-- **Half-point sizes draw wider in LibreOffice.** At 7.5pt LibreOffice set Liberation Sans
-  and Carlito lines 0.69 to 0.80% wider than the text ruler measures them (8pt: 0.07 to
-  0.33%; 7, 9, 10 and 12pt from 0.78% narrower to 0.06% wider), more than the fitter's 20,234 EMU
-  margin on a line longer than about 2.6 million EMU (2.8 in). A table cell or text line
-  that the renderer wraps for it is refused at render time (`renderer divergence`), not
-  predicted before it.
-- **Chart text spacing.** LibreOffice draws Carlito (Calibri's stand-in) chart labels at 7pt
-  with collapsed word spaces ("Water andwastewater") and at 7.5 and 8pt with gaps inside
-  words ("Wat er"); setting `kern` on the chart text changed nothing, and 8.5 and 9pt drew
-  within the measured bounds. The committee book in the gallery sets its 7pt chart text in
-  Arial for this (`dev/PORT_AUDIT.md`, docs round 2). Liberation Sans (Arial) chart labels
-  are spaced unevenly too: figures such as "(30.0)" drew with gaps and overlaps between
-  glyphs of 0.25 to 0.42 of a space at 7, 7.5, 8, 8.5 and 9pt bold and at 7pt regular, where the
-  same figures as text boxes drew within 0.06 (docs round 3). The committee book's bridge
-  sets its figures as a row of text above the plot (`category_row`).
-- **Leakage and stated figures are reported, not refused.** The build lists every name,
-  figure and phrase of the reference found in the new deck, and warns where a figure the
-  plan's message states is not on the page; Claude removes or answers each in the final
-  report. The leakage report's matching rules and thresholds are unmeasured, and its false
-  positives have not been recorded across the scenarios.
-- **Source-line habit.** A data page without a source line warns where at least half of
-  the reference's data pages carry one (counted over three or more data pages), and also
-  where the habit is unmeasured (the digest has no answer, or the reference has fewer than
-  three data pages); both lines are definitions in `scripts/build_deck.py`
-  (`SOURCE_LINE_MAJORITY`, `SOURCE_LINE_MIN_PAGES`), not measurements.
-- **Football-field ticks.** The football-field component sets each axis tick label
-  starting at its value (left-aligned, not centred on it), except the last, which it
-  right-aligns at the end of the track; it drops a tick whose label does not fit its
-  interval (`components/football_field/expand.py`). On the keybank example the $14 tick
-  is not drawn: the build report holds ticks `ff-tk0` to `ff-tk3` and `ff-tk5` and no
-  `ff-tk4` (`dev/proofs/keybank-section.build.json`). Read the axis on every render.
-- **Hidden slides** are read as evidence (the predecessor's rule); the draft lists them,
-  and Claude excludes them by deleting them from a copy.
-- **Scanned PDFs** yield palette, ink, chrome, margins and line pitch from pixels, with
-  confidence capped at 0.5 (`scripts/raster_style.py`), and nothing about faces: Claude
-  names the family by eye.
-- **The judge** was calibrated on 8 firms: 16 public decks and 20 one-slide pages of the
-  predecessor's taste spike (`dev/oracles/calibration-firms.txt`). It does not track a
-  human rater: in a blind round on an earlier build the rater caught every generated page
-  in two firms the judge had filed (`dev/evals/README.md`).
-- **Model tiers.** No results of the scenarios in `dev/evals/` are recorded per model tier.
+The reference examples come from public decks. The bank pitch book is a Mergers and
+Inquisitions training deck, and the PDF is from a public board packet. The new pages have
+their own text. The round trip builds page 3 of the bank deck again. It keeps the roles,
+weights and figures of that page, but it uses new words for each text run.
 
-## What was measured
+## Limits
 
-Each number below was produced by a script on the corpus its row names, and cites the
-file that holds it.
+- **No arrangement search.** If a page does not fit, the solver reports the groups that
+  can split and the rows of each table that fit (`scripts/layout.py`). Claude then
+  changes the arrangement, removes words or splits the page.
+- **One renderer.** All render checks read the drawing of LibreOffice 24.2.7. The skill
+  measured PowerPoint only for text-box fit and table row heights
+  (`references/gotchas.md`). The skill measured the positions of chart labels and
+  annotations in LibreOffice only. No measurement shows the order of the legend of a
+  horizontal bar chart in PowerPoint. LibreOffice lists the last series first.
+- **Half-point sizes.** At some half-point sizes, LibreOffice draws a line wider than the
+  text ruler measures it. The build refuses a table cell or text line that the renderer
+  wraps (`renderer divergence`). The build cannot predict this before the render.
+- **Chart text spacing.** At small sizes, LibreOffice draws Carlito (the stand-in for
+  Calibri) chart labels with incorrect word spaces. It also draws Liberation Sans (the
+  stand-in for Arial) chart figures with uneven gaps between glyphs. For this reason, the
+  committee book in the gallery sets its chart text in Arial. Its bridge shows its figures
+  as a row of text above the plot (`category_row`).
+- **Leakage and stated figures give reports, not refusals.** The build lists each name,
+  figure and phrase of the reference that it finds in the new deck. It also warns if a
+  figure that the plan states is not on the page. Claude removes or explains each item in
+  the final report. No measurement supports the matching rules and thresholds of the
+  leakage report.
+- **Source lines.** The build warns about a data page with no source line in two cases:
+  - At least half of the data pages of the reference have a source line.
+  - The data does not show the habit of the reference.
+  The limits (`SOURCE_LINE_MAJORITY`, `SOURCE_LINE_MIN_PAGES` in `scripts/build_deck.py`)
+  are definitions, not measurements.
+- **Football-field ticks.** The football-field component starts each axis tick label at
+  its value. The last label aligns right at the end of the track. The component removes a
+  tick if its label does not fit its interval (`components/football_field/expand.py`).
+  Read the axis on each render.
+- **Hidden slides.** The skill reads hidden slides as evidence. The draft lists them. To
+  exclude a hidden slide, Claude deletes it from a copy of the reference.
+- **Scanned PDFs.** From the pixels of a scan, the skill gets the palette, ink, chrome,
+  margins and line pitch. The confidence of these values is at most 0.5
+  (`scripts/raster_style.py`). The skill gets no font data from a scan. Claude names the
+  font family from the image.
+- **The judge.** The judge compares a deck with its reference and with a panel of public
+  decks. `DEFAULT_WEIGHTS` in `scripts/fingerprint.py` gives its weights and the method
+  that fitted them. A deck that the judge files under its
+  reference is not necessarily a good deck. Claude must examine each render.
 
-| Claim | Measurement | Proof |
+## Evidence that you can run again
+
+Each row gives a result and the command that makes it again. Run the commands from the
+root of this repository. Some rows need the public reference decks. To download them, run
+`sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh`. These
+results come from Ubuntu 24.04 with LibreOffice 24.2.7.2 and the versions in INSTALL.md.
+
+| Result | Measurement | Command |
 |---|---|---|
-| The judge tells firms apart | 152 of 165 held-out slides over 8 firms filed correctly with the shipped weights, 151 with weights re-fitted in the same run, 132 with equal weights (chance bound 29; weights fitted on the other half of the same corpus, judged leave-one-slide-out, raster pages not scored). The three Mergers and Inquisitions books are one firm (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same style, not as rivals | `scripts/fingerprint.py`, the `DEFAULT_WEIGHTS` docstring (re-run with `fingerprint.py calibrate`); firms in `dev/oracles/calibration-firms.txt` |
-| The judge is not fooled by copying the master | a master-reuse deck, which inherits the reference master verbatim, is flagged as off-style | `dev/PORT_AUDIT.md`, row "Style fingerprint" |
-| The judge is not fooled by a wreck in the reference's clothes | Five decks a rater calls wrong (keybank's shapes at random positions, all stacked at one point, one page-sized text box a page, nine random boxes a page, every run repeated twelve times) each read overlap or overflow at 1.0 and fail the layout gate. Before those two components, four of them were filed under keybank at 0.013 to 0.192 | `dev/oracles/README.md`, "build_gaming.py"; `scripts/fingerprint.py`, the `DEFAULT_WEIGHTS` docstring |
-| The layout port is the predecessor's solver | 383 boxes over 14 specimen slides at three scales: maximum difference 0 EMU; validation findings agree on 14 of 14 | `dev/oracles/README.md`, "oracle_compare.py" |
-| The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback | `dev/oracles/ruler_agreement.txt` |
-| The gallery port is the predecessor's gallery | Component, candidate, cluster, crop and exemplar counts equal the predecessor's recorded manifests on three decks; crop rows match 12 of 12, 14 of 14 and 22 of 24; every exemplar skeleton identical | `dev/oracles/README.md`, "gallery_judge.py" |
-| The extractor tracks the predecessor's draft | Title, body, emphasis and caption sizes, surface and ink equal the predecessor's on jazz, keybank, netflix and exhibits; 47 of 160 compared values differ (h1/h2 sizes on two decks, rule and muted ink by deliberate change, spacing steps on two), re-runnable with `dev/oracles/diff_oracle.py` | `dev/PORT_AUDIT.md`, row "OOXML reader with inheritance" |
-| New pages read as the reference (judge only) | keybank: 4 generated pages with a novel football-field component, 0.083 against the reference with the reference's own pages at 0.055 to 0.372, every page fit, filed. A 17-page McKinsey board PDF (CalSTRS, 2024; a public board packet, not under `refs/`): 2 generated pages at 0.321 against a reference spread of 0.082 to 0.355: every page fit, not filed. A filed deck is necessary, not sufficient (the blind round above) | `dev/proofs/keybank-section.build.json`, `dev/proofs/mckinsey-pdf.build.json` (`judge.total`, `judge.reference_spread`, `judge.filed_under_reference`); the blind round in `dev/evals/README.md` |
-| The chain reproduces the reference's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: fit, 0.056, filed, inside the reference's own spread; the render matches the original to the eye. McKinsey PDF page 13: 0.100, filed, while the render lost the ring diagram and the block positions: the number does not see it | `dev/proofs/kb3-rt.build.json`; `dev/proofs/mckinsey-p13-roundtrip.md` |
-| PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders | `dev/PORT_AUDIT.md`, row "PDF triage" |
-| The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and the navy exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.09 in, body 11.7pt from a modal 14pt pitch against 12pt in the file | `dev/proofs/keybank-raster-oracle.md`, "Against the file" |
-
-The McKinsey pages are not filed; the judge's components carry the gap: fills 0.855, the
-size histogram 0.698 and the bold ratio 0.537 against the reference (`judge.components` in
-`dev/proofs/mckinsey-pdf.build.json`).
+| The four gallery decks build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report` |
+| A section in the look of a reference is filed under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
+| The judge refuses five wrong decks in the look of the reference | Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
+| The raster instrument reads a render back | The script renders keybank at 100 dpi and measures the pixels. The surface (FFFFFF) and the navy (113D63) are exact. The ink is 010101 against 000000 in the file. The left margin is within 0.01 in of the file, and the other margins are within 0.09 in. The body size estimate is 11.7pt against 12pt in the file. | `sh tools/measure/raster_keybank.sh`, then compare `raster/raster.md` with the draft of `scripts/extract_style.py` |
+| Chart positions agree with LibreOffice | The script reads 474 features of 15 chart configurations and a table. The largest offset from the prediction of `scripts/chart_geometry.py` is 1.07 px, and the mean is 0.236 px, at 1600 px wide. The script did not find 7 features within 7 px of the prediction. The script reports that a later series can cover such a feature. | `python3 -I tools/measure/chart_geometry_probe.py /abs/out/dir` |
 
 ## Repository layout
 
 ```
-.claude-plugin/marketplace.json   the marketplace (name pptx-skill); its one plugin's source is
-                                  plugins/designing-presentations of this repository (git-subdir)
-plugins/designing-presentations/  the plugin root, all that an install copies:
-  .claude-plugin/plugin.json      the plugin manifest, and icon.png, its listing icon
-  README.md                       the directory listing's description: what the plugin runs,
-                                  sends, fetches and writes
-  skills/designing-presentations/ the skill, self-contained: SKILL.md, references/, scripts/,
-                                  components/, examples/, refs/ (fetch.sh and MANIFEST.md)
-dev/                              development material, outside the plugin root, so never
-                                  installed: TARGET_SPEC.md, PORT_AUDIT.md, evals/, oracles/,
-                                  proofs/, showcase/ (the gallery decks' sources), tools/
-docs/showcase/                    the images above and the gallery decks' .pptx files
+.claude-plugin/marketplace.json   the marketplace (name pptx-skill), with one plugin
+plugins/designing-presentations/  the plugin root; an install copies only this folder
+  .claude-plugin/plugin.json      the plugin manifest; icon.png is the listing icon
+  README.md                       what the plugin runs, sends, fetches and writes
+  skills/designing-presentations/ the skill: SKILL.md, references/, scripts/,
+                                  components/, examples/, refs/
+showcase/                         the sources of the gallery decks, and the build script
+docs/showcase/                    the gallery images and .pptx files
+tools/package_skill.py            builds the upload zip for claude.ai and the API
+tools/make_icon.py                draws the plugin icon
+tools/measure/                    the measurement scripts in the evidence table
 ```
 
-[dev/README.md](dev/README.md) describes the development material.
+## Contribute
+
+1. Make your change.
+2. Build the four gallery decks again with `showcase/rebuild.sh` (see
+   [showcase/README.md](showcase/README.md)). Each build must pass.
+3. Run `claude plugin validate . --strict` from the root of this repository.
+4. Run `python3 tools/package_skill.py` after you commit. The packager reads the
+   committed files only.
 
 ## Licence
 
-MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill carries the same text as its
-`LICENSE.txt`. `scripts/confusable_letters.json` holds a subset of the Unicode confusables
-data under the Unicode License v3, whose notice it carries in full. The public reference
-decks `refs/fetch.sh` downloads belong to their publishers and are never committed or
-shipped (`refs/MANIFEST.md` names each source).
+MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill has the same text in its
+`LICENSE.txt`.
 
-No code or text of Anthropic's own pptx skill is included: everything here was written
-fresh, and what was carried over came from a predecessor system by the same author, each
-port's assumption recorded in `dev/PORT_AUDIT.md`.
+`scripts/confusable_letters.json` holds a subset of the Unicode confusables data under the
+Unicode License v3. The file includes the full notice of that licence.
+
+The public reference decks that `refs/fetch.sh` downloads belong to their
+publishers. This repository does not include them, and the plugin does not ship them.
+`refs/MANIFEST.md` names the source of each deck.

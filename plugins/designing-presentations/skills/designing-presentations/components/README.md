@@ -64,7 +64,7 @@ being a name nothing can reach.
 4. `component.py check`, look, fix, repeat; then `component.py admit --components DIR`.
 
 The `admitted.json` files shipped here were written by `component.py admit` into a work
-directory (keybank guide, round 8) and copied in by the maintainer; they name the sheet and
+directory (keybank guide) and copied in by the maintainer; they name the sheet and
 the reference by file name only.
 
 ## Merit case

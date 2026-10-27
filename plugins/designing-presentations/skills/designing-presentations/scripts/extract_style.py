@@ -112,7 +112,7 @@ def ground_picture(guide: dict, reference: str, folder: Path) -> None:
     over it) for guide.ground.image_path: --chrome draw paints it as every page's
     background, so the build's pages stand on the reference's ground and not on its flat
     surface colour. A picture, not a gradient fill: both renderers draw a bitmap alike,
-    where an authored gradFill's midpoint lands 20 points apart (validate --emit, E38)."""
+    where an authored gradFill's midpoint lands 20 points apart (validate --emit)."""
     import subprocess
     import tempfile
     ground = guide.get("ground")
@@ -163,37 +163,37 @@ def chrome_pictures(guide: dict, reference: str, folder: Path) -> None:
 
 
 # --- constants, with where each comes from -------------------------------------------
-SIZE_LEVEL_RATIO = 1.10  # deckgen tokens.py:199; asserted: the smallest classic type step is 1.125
-GAP_LEVEL_RATIO = 1.25  # deckgen tokens.py:200; asserted
-MIN_LEVEL_OBSERVATIONS = 2  # deckgen tokens.py:202; one observation is an exception, not a level
+SIZE_LEVEL_RATIO = 1.10  # asserted: the smallest classic type step is 1.125
+GAP_LEVEL_RATIO = 1.25  # asserted
+MIN_LEVEL_OBSERVATIONS = 2  # one observation is an exception, not a level
 #: two boxes this close touch: ooxml._pdf_box truncates a PDF box's origin and extent to whole
 #: EMU separately, so abutting boxes read up to 2 EMU apart (nycha's space.xs came out 1 EMU)
 ABUTTING_EMU = 2
-CASE_CONVENTION_SHARE = 0.8  # deckgen tokens.py:204; asserted
-RULE_LINE_MAX_WIDTH_EMU = 38100  # 3pt; deckgen tokens.py:210; PowerPoint's line-weight gallery steps
+CASE_CONVENTION_SHARE = 0.8  # asserted
+RULE_LINE_MAX_WIDTH_EMU = 38100  # 3pt; PowerPoint's line-weight gallery steps
 INK_CONTRAST_MIN = 4.5  # WCAG 2.x AA
 INK_MUTED_CONTRAST_MIN = 3.0  # WCAG 2.1 SC 1.4.11 non-text
-INK_INVERSE_CONTRAST_MAX = 2.0  # deckgen tokens.py:236; asserted
-RULE_CONTRAST_FLOOR = 1.05  # deckgen tokens.py:227; asserted
-SURFACE_MIN_BOX_FRACTION = 0.25  # deckgen tokens.py:220; asserted ('a panel or a sidebar')
-SEMANTIC_MIN_SATURATION = 0.2  # deckgen tokens.py:241; asserted
-POSITIVE_HUE = (90, 165)  # deckgen tokens.py:242; asserted hue bands
-NEGATIVE_HUE = (345, 15)  # deckgen tokens.py:243; asserted hue band, wrapping through 0 (reds)
-POSITION_DIAMETER_EMU = 76_200  # 6pt; deckgen shapes.py:39
-ARCHETYPE_IOU_THRESHOLD = 0.5  # PASCAL VOC match criterion; deckgen shapes.py:42
-MOTIF_RECURRENCE_FLOOR = RECURRENCE_FLOOR  # deckgen tokens.py:5754, defined once in ooxml.py (the PDF title slot reads it too)
-MOTIF_FULL_SPAN = 0.9  # deckgen tokens.py:5761
-MOTIF_RULE_ASPECT = 20  # deckgen tokens.py:5767
-ALIGNMENT_EDGE_MIN_MEMBERS = 3  # deckgen tokens.py:255: an edge of fewer members is coincidence, not discipline
-ALIGNMENT_EDGE_CAP = 64  # deckgen tokens.py:256: bounds the guide on very long decks; the port had 53, recorded nowhere
-EVIDENCE_CAP = 8  # deckgen tokens.py:250: provenance keeps this many refs as examples; `frequency` keeps the full count
+INK_INVERSE_CONTRAST_MAX = 2.0  # asserted
+RULE_CONTRAST_FLOOR = 1.05  # asserted
+SURFACE_MIN_BOX_FRACTION = 0.25  # asserted ('a panel or a sidebar')
+SEMANTIC_MIN_SATURATION = 0.2  # asserted
+POSITIVE_HUE = (90, 165)  # asserted hue bands
+NEGATIVE_HUE = (345, 15)  # asserted hue band, wrapping through 0 (reds)
+POSITION_DIAMETER_EMU = 76_200  # 6pt
+ARCHETYPE_IOU_THRESHOLD = 0.5  # PASCAL VOC match criterion
+MOTIF_RECURRENCE_FLOOR = RECURRENCE_FLOOR  # defined once in ooxml.py (the PDF title slot reads it too)
+MOTIF_FULL_SPAN = 0.9
+MOTIF_RULE_ASPECT = 20
+ALIGNMENT_EDGE_MIN_MEMBERS = 3  # an edge of fewer members is coincidence, not discipline
+ALIGNMENT_EDGE_CAP = 64  # bounds the guide on very long decks
+EVIDENCE_CAP = 8  # provenance keeps this many refs as examples; `frequency` keeps the full count
 # Asserted, unmeasured: a block counts as sitting at the kicker (above) or subtitle and
 # units-line (below) position when its gap to the title is within one title line pitch.
 TITLE_COMPANION_GAP_PITCHES = 1.0
 #: The title vocabulary the model reads titles in (an exhibit is described in words, never classified).
 VOCABULARY = plan.VOCABULARY
-MIN_SECONDARY_INK_COUNT = 2  # DEVIATION from deckgen: ink_muted/rule need two votes (keybank bound #113D63 on one run)
-# Product safety floor per family: layout.PRODUCT_SAFETY_FLOOR_PT (deckgen E45, 7.0pt for
+MIN_SECONDARY_INK_COUNT = 2  # ink_muted/rule need two votes (keybank bound #113D63 on one run)
+# Product safety floor per family: layout.PRODUCT_SAFETY_FLOOR_PT (7.0pt for
 # display, body, annotation and chart alike). Never generate below it.
 PRODUCT_SAFETY_FLOOR_PT = {fam: _layout.PRODUCT_SAFETY_FLOOR_PT for fam in ("body", "annotation", "display", "chart", "table")}
 CORE_TYPE_ROLES = ("type.title", "type.kicker", "type.h1", "type.h2", "type.body", "type.emphasis", "type.caption",
@@ -407,7 +407,7 @@ def hungarian_max(matrix: list[list[float]]) -> float:
 def slide_similarity(a: list[tuple], b: list[tuple], la: list[str] | None = None, lb: list[str] | None = None,
                      at_least: float | None = None, overlap=None) -> float:
     """Hungarian optimal assignment on pairwise IoU, scored over the larger set; role-wise when labelled.
-    deckgen shapes.py:432. With `at_least`, a pair an upper bound proves to fall below it
+    With `at_least`, a pair an upper bound proves to fall below it
     returns that bound instead of the exact score (leader clustering only compares).
     `overlap` scores a box pair (default iou; gallery.py passes its own, which scores two
     identical zero-area boxes 1, so x-ranges that only touch are still scored).
@@ -690,7 +690,7 @@ class Extractor:
         members: dict[float, list[Run]] = defaultdict(list)
         for r in runs:
             if r.row_class is not None:
-                continue  # table text binds to table roles below, like deckgen's _collect_table_text
+                continue  # table text binds to table roles below
             size = round(r.size_pt * 2) / 2
             pool.setdefault(size, Votes()).add(f"{r.surface}#{r.ref}", r.size_layer in ("master", "layout", "presentation", "theme"))
             members[size].append(r)
@@ -763,7 +763,7 @@ class Extractor:
             # a kicker sits between caption and body size: a tiny all-caps level is a footnote or a superscript
             if share >= CASE_CONVENTION_SHARE and levels[i].count >= MIN_LEVEL_OBSERVATIONS and cap_size <= levels[i].representative <= body_size * 1.5:
                 bind("type.kicker", i, "inferred")
-        # ladder interpolation (deckgen tokens.py:1872): an interior gap between two extracted
+        # ladder interpolation: an interior gap between two extracted
         # neighbours takes geometric steps; the size is the only derived member.
         ladder = ("type.footnote", "type.caption", "type.body", "type.h2", "type.h1", "type.title")
         ladder_sizes = {r: roles[r]["size_pt"] for r in ladder if r in roles}
@@ -1690,8 +1690,8 @@ class Extractor:
 
     # ---- shape language, imagery, floors ----
     def corner_radii(self) -> None:
-        """Votes the drawn roundRect radius over every slide-layer shape (deckgen
-        style/tokens.py: shape language is measured usage, so layout and master shapes,
+        """Votes the drawn roundRect radius over every slide-layer shape (shape
+        language is measured usage, so layout and master shapes,
         which walk whether or not a slide shows them, do not vote). Opened only when no
         slide-layer shape declares a preset, the one case the file cannot answer."""
         preset = [(s, sh) for s in self.slides for sh in s.shapes if sh.prst]
@@ -1786,7 +1786,7 @@ class Extractor:
                 # or absent, and its smallest body text is the only evidence of what it sets as
                 # running text, so the table floor is the body floor until tables.picture_text
                 # measures the pictures (layout.table_floor_pt lowers it there). Left open, it
-                # fell to the 7pt absolute floor with no evidence (round 8 verifier, keybank 12 to 7)
+                # fell to the 7pt absolute floor with no evidence (keybank 12 to 7)
                 vals = samples["body"]
                 inherit = True
             else:

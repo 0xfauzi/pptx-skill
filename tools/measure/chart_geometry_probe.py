@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure scripts/chart_geometry.py against LibreOffice renders.
 
-    python3 -I oracles/chart_geometry_probe.py OUT_DIR [--width 1600]
+    python3 -I tools/measure/chart_geometry_probe.py OUT_DIR [--width 1600]
 
 Writes one page per chart configuration through emit_pptx.write_chart (the emitter the
 build uses: manual inner plot layout, explicit axis min and max, cross_between), twice:
@@ -15,8 +15,8 @@ measured feature, the predicted pixel, the marker's measured pixel and the mark'
 measured pixel, and the worst offsets. A table page measures cell edges from the
 fitted column widths and row heights the same way.
 
-Needs no deckgen checkout. Nothing here is a unit test: it is the measurement the
-annotation layer's tolerance is quoted from (PORT_AUDIT.md).
+Nothing here is a unit test: it is the measurement the
+annotation layer's tolerance and references/chart-recipes.md quote.
 """
 
 from __future__ import annotations

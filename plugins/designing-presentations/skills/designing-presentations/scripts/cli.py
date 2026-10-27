@@ -98,7 +98,7 @@ def out_path(path: str | Path, what: str = "output") -> Path:
 RENAMED_FLAGS = {
     "--house-deck": ("--house-deck was removed: the skill takes one reference deck (the guide made from it, and --reference). When the "
                      "user gives several, use the one they name, or ask which to follow; nothing is pooled"),
-    "--houses-file": "--houses-file is now --firms-file (dev/oracles/calibration-firms.txt)",
+    "--houses-file": "--houses-file is now --firms-file",
 }
 
 

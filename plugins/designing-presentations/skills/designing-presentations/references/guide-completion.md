@@ -137,7 +137,7 @@ Many open `line_spacing` addresses (one per role) usually share one answer:
 and a named one keeps its own answer. It closes only open addresses. The number is a
 multiple of the size, and 1.0 is NOT single spacing: single spacing draws at 1.2 x the
 size, so a reference set single-spaced is answered `null` (or 1.2), and 1.0 sets every role
-tighter than the reference (round 6, jazz: answered 1.0, every role drew tighter).
+tighter than the reference (jazz: answered 1.0, every role drew tighter).
 
 The table lists the value each address takes when it is open; `--check` lists which are
 open. A `/tables` or `/charts` the draft observed is not open, and a patch for it is
@@ -272,7 +272,7 @@ reference's variety is re-measured over your list on every completion.
 document for CalSTRS, 2024, from a public board packet; it is not under `refs/`), each with its digest under
 `examples/digests/`. Both apply cleanly to the current extractor's drafts with nothing left
 open. They show the shape of an answer; they are not answers for another deck, and an
-evaluation on either deck holds them out (`dev/evals/holdout.py`).
+evaluation on either deck holds them out.
 `examples/no-reference.completion.json` answers a blank draft: a whole look chosen for a
 three-page deck with no reference, every answer with its why.
 `examples/no-reference-credit.completion.json` answers one for a dense two-page credit

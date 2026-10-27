@@ -1,5 +1,5 @@
 {
- "about": "Every file under examples/ and the reference deck it was made from, by sha256, so an evaluation can hold out the worked examples of the very deck it tests (dev/evals/holdout.py). A file made from no particular reference, or for a deck built with no reference at all (no-reference.*), is listed under independent. dev/evals/holdout.py refuses a skill tree holding an example file this list does not name. aliases are the words other skill files use for that deck: dev/evals/holdout.py lists every line of the held-out tree that still names one.",
+ "about": "Every file under examples/ and the reference deck it was made from, by sha256, so an evaluation can hold out the worked examples of the very deck it tests. A file made from no particular reference, or for a deck built with no reference at all (no-reference.*), is listed under independent. aliases are the words other skill files use for that deck.",
  "references": {
   "mi_keybank_first_niagara_fig_ma.pptx": {
    "sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad",

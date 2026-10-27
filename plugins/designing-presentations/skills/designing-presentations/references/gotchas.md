@@ -10,7 +10,7 @@
   page (`renderer divergence: text wrapped`, build-report.md).
 - LibreOffice 24.2.7 drops category labels on a horizontal bar chart whose band is
   shorter than one line of the label: 14 names at 8pt drew 7 at a band 0.99 of a line and
-  all 14 at 1.11, over six heights (round 8). It wraps a centred column label at its
+  all 14 at 1.11, over six heights. It wraps a centred column label at its
   spaces or runs it past the bar's sides, unpredictably ('First-lien / TLB 3.75x' wrapped,
   'Senior notes 1.25x' beside it ran over). A category label turned -90 degrees draws on
   one line in a slot narrower than its word. The build reads each chart's words off the
@@ -19,7 +19,7 @@
 - LibreOffice sets a line chart's `above` and `below` labels (no markers) a gap from their
   point that depends on the face and the size and does not grow with the size: 24,800 to
   41,900 EMU above and -18,900 to 43,100 EMU below over Liberation Sans, Carlito, Gelasio
-  and Inter at 6 to 14pt (dev/oracles/label_probe.py; Gelasio's tall word box overlaps its
+  and Inter at 6 to 14pt (`tools/measure/label_probe.py` in the source repository; Gelasio's tall word box overlaps its
   point). On a steep line the neighbouring segment then runs through the label. The build
   predicts that with the gap measured for the face and size (`LINE_LABEL_GAP_EMU`) and reads
   it off the render, holding the line to each face's measured ink band
@@ -28,7 +28,7 @@
   at every face and size measured, and never wraps or moves it: a label longer than the bar
   less that runs past the bar's end onto the plot. The build measures it and scores its ink
   there (`contrast`); an `inside_end` label ends 29,303 to 47,136 EMU short of the bar's end
-  (dev/oracles/label_probe.py).
+  (`tools/measure/label_probe.py` in the source repository).
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus

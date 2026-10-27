@@ -190,8 +190,7 @@ DEFAULT_LINE_PT = 2.25
 def line_strokes(geo: ChartGeometry) -> list[tuple[str, tuple, float]]:
     """(name, segment, width EMU) of every stroked segment of a line series, between
     consecutive points that both carry a number: a line chart's series and a combo chart's
-    line series alike (round 8 verifier: a target line through a column chart's labels was
-    not checked)."""
+    line series alike (a target line through a column chart's labels must be checked)."""
     if geo.family == "xy":
         return []
     out = []
@@ -744,7 +743,7 @@ def _resolve_one(ann: dict, kind: str, aid: str, host: dict, lab: Labeller, eg: 
         depth = lab.space(ann["depth_role"], where)
         # the bracket spans the marks it groups, not their category bands: two groups of
         # adjacent categories then keep the gap between their bars, and their brackets do not
-        # meet end to end (round 7: two brackets at one height read as one)
+        # meet end to end (two brackets at one height read as one)
         extent = a.get("marks", r)
         span = extent
         if side in ("above", "below"):
@@ -1403,7 +1402,7 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         return None
     how = ann.get("explained_by")
     if how is None:
-        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks; a blind rater read "
+        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks; a rater read "
                                     "an unlabelled red circle as \"a model's attempt to annotate\". Reference evidence: "
                                     f"{reference_evidence(guide, geometry, host['kind'])}. Answer this in the report (what the mark tells a reader "
                                     f"with no words beside it), or give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
@@ -1556,7 +1555,7 @@ def covers(fp: dict, rect: tuple) -> bool:
 
 def _parts_meet(fp: dict, other: dict) -> bool:
     """Whether two footprint parts share ink: against an outline only its strokes count,
-    never its interior (round 7: a label set inside an outlined exit zone was read as
+    never its interior (a label set inside an outlined exit zone was read as
     covering the zone, so the zone's words could only sit outside it)."""
     if "outline" in other:
         return any(covers(fp, strip) for strip in _outline_strips(other["outline"], other["width"]))
@@ -1686,7 +1685,7 @@ def pdf_turned_runs(pdf: str) -> list[list[tuple[tuple[float, float, float, floa
     """Every run of turned text the renderer drew, per page, as (EMU box, text): the
     characters set under one rotation, in the order the page draws them, a run ending where
     the next character's origin is not where the last one's advance left off. pdftotext
-    cuts a turned label into fragments on different lines (round 8: 'Jan 23' at -45 degrees
+    cuts a turned label into fragments on different lines ('Jan 23' at -45 degrees
     came out as 'Ja', 'n', '23'), so a turned label is only read whole from here."""
     try:
         import pdfplumber

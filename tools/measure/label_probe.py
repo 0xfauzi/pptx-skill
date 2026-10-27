@@ -2,7 +2,7 @@
 """Measure where LibreOffice sets chart data labels, and where their ink sits in the word box,
 per face and size.
 
-    python3 -I dev/oracles/label_probe.py OUT_DIR [--faces Arial,Calibri,Georgia,Inter] [--sizes 7,9,12]
+    python3 -I tools/measure/label_probe.py OUT_DIR [--faces Arial,Calibri,Georgia,Inter] [--sizes 7,9,12]
 
 One page per face and size, written through emit_pptx.write_chart (the build's emitter), four
 charts a page:
@@ -26,7 +26,7 @@ predicts both). Reported per face and size, in EMU and as a share of the size:
 
 The faces are named as a deck names them; fontconfig maps each to the face the renderer
 draws (Liberation Sans, Carlito, Gelasio), and the report prints that mapping. Nothing
-here is a unit test: it is the measurement those constants are quoted from (PORT_AUDIT.md).
+here is a unit test: it is the measurement those constants are quoted from.
 """
 
 from __future__ import annotations

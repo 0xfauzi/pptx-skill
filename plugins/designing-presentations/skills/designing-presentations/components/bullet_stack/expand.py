@@ -1,11 +1,11 @@
 """Bullet stack: a list of co-equal points, in one column or in two.
 
-Ported from deckgen fixtures/components/bullet_stack (seed 2A-3). Two arrangements:
+Two arrangements:
 `single_column` reads straight down; `two_column` is a flex ROW of two flex columns of
 ceil(n/2) items, filled DOWN the first column and then across, so the order the writer
 chose survives the reflow (filling across would reorder the argument).
 
-WHICH RULE PICKS THE VARIANT: deckgen's one selection rule, unchanged,
+WHICH RULE PICKS THE VARIANT: one selection rule,
 
     parts >= 2 and width // parts >= height      (parts = 2 columns)
 

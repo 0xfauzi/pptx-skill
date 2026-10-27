@@ -5,7 +5,7 @@ plugins/designing-presentations/.claude-plugin/icon.png at 512 x 512 px (the dir
 check takes a square PNG of 512 to 2048 px a side, under 2 MB), drawn at four times that
 size and reduced, so its edges are smooth.
 
-usage: python3 dev/tools/make_icon.py
+usage: python3 tools/make_icon.py
 """
 
 from pathlib import Path
@@ -39,7 +39,7 @@ def main() -> None:
         x0 = 0.18 + i * 0.13
         d.rectangle(box(x0, top, x0 + 0.09, base), fill=ACCENT if i == 3 else NAVY)
     d.rectangle(box(0.17, base, 0.83, base + 0.006), fill=SLATE)
-    out = Path(__file__).resolve().parents[2] / "plugins/designing-presentations/.claude-plugin/icon.png"
+    out = Path(__file__).resolve().parents[1] / "plugins/designing-presentations/.claude-plugin/icon.png"
     img.resize((SIDE, SIDE), Image.LANCZOS).save(out, optimize=True)
     print(out.name, out.stat().st_size, "bytes")
 

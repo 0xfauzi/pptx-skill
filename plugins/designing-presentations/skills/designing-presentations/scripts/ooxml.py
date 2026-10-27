@@ -3,9 +3,7 @@
 
 The one OOXML reader behind the skill's scripts (fingerprint, extract_style,
 gallery). zipfile + lxml only; entities are never resolved; member counts and
-sizes are capped. Inheritance order and colour arithmetic are ported (see
-dev/PORT_AUDIT.md); the reader is validated against the walker it was ported from on
-the corpus decks, not against itself.
+sizes are capped.
 
     ooxml.py deck.pptx                   # JSON dump of every slide's resolved runs and shapes
     ooxml.py triage ref.pdf [MAX_PAGES]  # per-page vector or raster, and the deck_class (PDF only)
@@ -43,8 +41,8 @@ REL_THEME = "http://schemas.openxmlformats.org/officeDocument/2006/relationships
 REL_SLIDE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide"
 REL_CHART = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"
 REL_TAGS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/tags"
-# roundRect's own guide value when the shape declares no adj (ECMA-376 presetShapeDefinitions;
-# deckgen style/tokens.py DEFAULT_ROUND_RECT_ADJ): the radius it draws is a format fact.
+# roundRect's own guide value when the shape declares no adj (ECMA-376
+# presetShapeDefinitions): the radius it draws is a format fact.
 DEFAULT_ROUND_RECT_ADJ = 16_667
 
 DEFAULT_CLR_MAP = {
@@ -75,10 +73,10 @@ MAX_ZIP_MEMBERS = 5000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
 #: the cost of parsing is the element count, not the byte size: a 718 KB package can inflate
 #: under the member cap to 62.9 MB of real elements, which held 768 MB and ran past five
-#: minutes. Measured, round 8: the largest of 39 packages (refs/files and deckgen's fixtures)
+#: minutes. Measured: the largest of 39 packages (refs/files and other public decks)
 #: holds 24,263 elements over all its XML parts (themes.pptx; the largest part 2,938, a jazz
 #: slide); a package of 991,964 validates in 4.4 to 6.7 s at 465 MB, where the 62.9 MB one
-#: took 22.8 s at 1,490 MB with no cap (dev/PORT_AUDIT.md, round 8). The cap is 41 times
+#: took 22.8 s at 1,490 MB with no cap. The cap is 41 times
 #: that largest package
 MAX_PACKAGE_ELEMENTS = 1_000_000
 EMU_PER_PT = 12700
@@ -349,8 +347,7 @@ _UNAPPLIED = {"gray", "red", "redOff", "redMod", "green", "greenOff", "greenMod"
 
 
 def apply_transforms(rgb: tuple[int, int, int], color_el: etree._Element) -> tuple[tuple[int, int, int], float]:
-    """PowerPoint's colour transforms in declaration order. Same arithmetic as
-    deckgen style/drawml.py _apply_transforms: tint/shade in RGB, lum/sat/hue in HLS
+    """PowerPoint's colour transforms in declaration order: tint/shade in RGB, lum/sat/hue in HLS
     (absolute, offset and modulation alike; hue in 60000ths of a degree), alpha set,
     offset and modulated, inv as 1 - each channel, comp as the hue turned half way.
     The rest are counted in UNAPPLIED_TRANSFORMS."""
@@ -626,7 +623,7 @@ class SlidePrint:
     chrome_runs: list[Run] = field(default_factory=list)
     tables: list[TableObs] = field(default_factory=list)
     charts: list[ChartObs] = field(default_factory=list)
-    hidden: bool = False  # p:sld show="0"; walked as evidence (deckgen rule), flagged so the agent can exclude it
+    hidden: bool = False  # p:sld show="0"; walked as evidence, flagged so the agent can exclude it
     page_class: str = "vector"  # pdf triage: vector | vector_with_image | raster_only | raster_ocr | raster_wrapper | other_size | blank
     image_cover: float = 0.0  # pdf: union area of page images over page area
     pdf_fills: list[tuple[tuple[int, int, int, int], str | None]] = field(default_factory=list)  # pdf: every filled area (rects, filled paths, images) as (box EMU, hex); None = colour unreadable (image, pattern, shading)
@@ -806,7 +803,7 @@ STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as on
 DRAWN_STRUCTURE_MIN = 3
 #: definition, unmeasured: this many charts of one form drawn at one size are one small multiple (one
 #: panel, one brief); two are left as two, since a pair of same-size charts is
-#: as often two exhibits with a brief each (round 7: investor's six sparklines under one brief)
+#: as often two exhibits with a brief each (six sparklines in one panel take one brief)
 SMALL_MULTIPLE_MIN = 3
 #: which reading of a page made a guide's exhibit facts: a guide whose pages carry another
 #: (or none) was read under a different definition, and plan.py refuses it by name
@@ -891,8 +888,8 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
     charts: list[dict] = []
     # SMALL_MULTIPLE_MIN or more charts of one form drawn at one size are one small multiple
     # (a column sparkline per tile): one panel and one brief, however many charts it repeats.
-    # Same-size charts of different forms are different exhibits (round 8 verifier: a column,
-    # a bar and a line chart in three equal slots were read as one)
+    # Same-size charts of different forms are different exhibits (a column, a bar and a
+    # line chart in three equal slots must not read as one)
     multiples: dict[tuple, list] = {}
     for sh in content:
         if sh.kind == "chart":
@@ -1005,7 +1002,7 @@ def chart_form(plots: list[dict] | None) -> str:
 
 def round_rect_radius(prst_geom: etree._Element, box: tuple[int, int, int, int]) -> int | None:
     """The corner radius a roundRect draws: adj / 100000 x min(w, h), adj pinned to
-    [0, 50000] as the preset definition pins it (deckgen style/tokens.py:5575-5600). An
+    [0, 50000] as the preset definition pins it. An
     absent adj draws the default; an adj that is not "val N" is unreadable, so None."""
     adj = DEFAULT_ROUND_RECT_ADJ
     for gd in prst_geom.iterfind(f"{_a('avLst')}/{_a('gd')}"):
@@ -1631,7 +1628,7 @@ class SlideWalker:
                                     run.color, run.color_layer = c, "table_style"
                             if style_text.get("b") == "on" and not run.bold:
                                 run.bold = True
-        # edges: upper cell's lnB wins over lower cell's lnT (measured in deckgen on PowerPoint re-saves); left lnR over right lnL
+        # edges: upper cell's lnB wins over lower cell's lnT (measured on PowerPoint re-saves); left lnR over right lnL
         def cell_border(tc: etree._Element | None, side: str) -> tuple[str | None, int] | None:
             if tc is None:
                 return None
@@ -2070,7 +2067,7 @@ def _pdf_family(fontname: str | None) -> tuple[str | None, bool]:
 
 PDF_TRIAGE_IMAGE_COVER = 0.4
 """A page whose images cover at least this share is a candidate scan. Measured on the 8
-public reference PDFs (dev/oracles/triage_probe.py, 2026-10-20): EDGAR browser prints
+public reference PDFs (re-run: tools/measure/triage_probe.py in the source repository): EDGAR browser prints
 embed the slide as one image at 0.47 to 0.69 of a letter page; Citi and the UF McKinsey
 scans sit at 1.0; vector decks with a photo or chart image reach 0.61 to 0.66 on single
 pages (jazz p5, p6) and the calstrs deck paints full-bleed background images under vector
@@ -2777,7 +2774,7 @@ def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | No
 
 RECURRENCE_FLOOR = 0.5
 """A position or a text is the deck's own when it recurs on at least half its pages
-(deckgen tokens.py:5754, MOTIF_RECURRENCE_FLOOR there; extract_style.py reads it from here)."""
+(extract_style.py reads it from here as MOTIF_RECURRENCE_FLOOR)."""
 TITLE_SLOT_DEPTH = 3
 """How many of a page's topmost text blocks may be its title: a disclaimer line or a
 section tag above the title (bcg pages 20 and 30) pushes it to second place."""

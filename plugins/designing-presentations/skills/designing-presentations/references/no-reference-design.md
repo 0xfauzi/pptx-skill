@@ -176,8 +176,8 @@ or the guide is wrong: fix one, so the two agree.
 
 ## What is unmeasured
 
-- Whether a look derived this way reads better to its audience than a stock one: no blind
-  round has rated no-reference decks against each other.
+- Whether a look derived this way reads better to its audience than a stock one: no rater
+  has rated no-reference decks against each other.
 - Legibility below 9pt on print and on projection; any face other than Arial and Calibri at
   the floor.
 - Where borrowing turns into costume: section 2 gives tests, not a measurement.

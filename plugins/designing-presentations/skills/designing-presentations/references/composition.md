@@ -13,7 +13,7 @@ say why in the report. Only measurable defects refuse. Counts are from 578 coded
 - Sidebars and takeaway boxes
 - Density
 - Conventions that belong to one reference
-- What a blind rater noticed on generated pages
+- What a rater noticed on generated pages
 
 ## Questions per page
 
@@ -92,12 +92,11 @@ three pitch books on one master; exhibit-only pages with no body text on 30 of 3
 row-label template for 7 appendix pages; one template across 6 recap pages and another
 across 5 segment tables.
 
-## What a blind rater noticed on generated pages
+## What a rater noticed on generated pages
 
 The rater's recorded notes, the evidence here: "Chart variety and layout variety in
 generated slides are low. Generally the same patterns with different colours"; "Logos.
-Generated slides have none". Claim titles on every page of a deck whose reference titles by topic were caught in the
-blind round too (dev/evals/README.md).
+Generated slides have none". Claim titles on every page of a deck whose reference titles by topic were caught too.
 
 Questions to put to a page, with counts where the corpus has them:
 

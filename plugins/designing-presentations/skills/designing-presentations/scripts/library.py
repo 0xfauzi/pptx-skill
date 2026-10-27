@@ -85,7 +85,7 @@ from PIL import Image
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 EXTERNAL_LIBRARY = SKILL_ROOT / "refs" / "library"
-RENDER_WIDTH_PX = 1600  # dev/TARGET_SPEC.md 10.1: all pages at 1600 px
+RENDER_WIDTH_PX = 1600  # all pages are rendered at 1600 px
 EMU_PER_INCH = 914_400
 MANIFEST_SCHEMA = 4  # 2: every file names the pages it derives from ("pages"); 3: tags are vocabulary slugs; 4: exhibits in words
 # The kinds that hold a picture of a page. Kept kinds need `--images yes`; a withheld render
@@ -94,9 +94,8 @@ KEPT_IMAGE_KINDS = frozenset({"page_image", "contact_sheet"})
 WITHHELD_KIND = "withheld_render"
 
 # --- vocabulary -------------------------------------------------------------------------------
-# Deck type and composition: the synthesis taxonomy that tagged the 578-page development
-# corpus (pagecraft synth/analyze_all.py: page_family); dev/TARGET_SPEC.md A.2 counts these
-# compositions under longer spellings. The corpus starter set uses exactly these strings.
+# Deck type and composition: the taxonomy that tagged a coded corpus of 578 pages.
+# The corpus starter set uses exactly these strings.
 # They are a coder's families for search, never a menu: each list ends in "other", whose
 # words (deck_type_as_recorded, composition_as_recorded) say what the page is.
 
@@ -135,9 +134,9 @@ DISCLAIMER_WORDS = re.compile(r"\b(disclaimer|important (information|notice)|for
 # a disclaimer page. Neither rule fires where the file cannot state tables and charts (a PDF).
 QUESTION_LEAD = re.compile(r"^[^.!?]*\w[^.!?]*\?")
 # Definition: a designer question opens with a sentence that ends in a question mark; a
-# follow-up after it ("Then re-sort each period.") is allowed, as in dev/TARGET_SPEC.md Appendix B.
+# follow-up after it ("Then re-sort each period.") is allowed.
 ASPECT_TOLERANCE = 0.02  # definition: 4:3 (1.333), letter (1.294) and 16:9 (1.778) stay apart
-PICK_TOP = 3  # dev/TARGET_SPEC.md 10.4 asks 3 to 5 examples per intent (external guidance, unmeasured)
+PICK_TOP = 3  # 3 to 5 examples per intent is external guidance, unmeasured
 
 
 class Refused(Exception):
@@ -804,12 +803,12 @@ def _corpus_problems(page: dict) -> list[str]:
 
 
 CORPUS_DECK_TYPE = {"investment bank": "investment bank", "consulting": "consulting", "asset manager market guide (JPM)": "chart book"}
-#: the development corpus's own spelling of a tag field, where it differs (its library.json is read as written)
+#: the coded corpus's own spelling of a tag field, where it differs (its library.json is read as written)
 CORPUS_FIELD = {"deck_type": "house_type"}
 
 
 def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
-    """The development corpus's curated pages (pagecraft library.json) as external entries.
+    """A coded corpus's curated pages (its library.json) as external entries.
     The corpus kept no deck files beside the images, so a deck's sha256 is null (no
     evidence) and the page size is the stored image's own aspect. Every page is checked
     before anything is copied (its deck id one safe name, its image a readable picture,
@@ -942,7 +941,7 @@ def pick(intent_text: str, composition: str | None, data_shape: str | None, aspe
         raise Refused("no_gallery", f"--gallery {gallery_dir} holds no gallery.py manifest.json")
     if gallery_dir is not None and not gallery.page_words(guide):
         # an untagged gallery ranks shape kinds only, and answered "no evidence" for every
-        # intent (round 7): a silence that is the missing guide's, not the reference's
+        # intent: a silence that is the missing guide's, not the reference's
         raise Refused("untagged_gallery", "--gallery needs --guide, the completed guide (step 2): its titles and digest records tag each page; "
                       "without them the overlap reads shape kinds only and reports no evidence for nearly every intent")
     if own is not None:

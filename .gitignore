@@ -13,7 +13,6 @@ dist/
 *.tmp
 *.refused.pptx
 *.build.json
-!dev/proofs/*.build.json
 # third-party reference decks: fetched by plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh, never committed
 plugins/designing-presentations/skills/designing-presentations/refs/files
 plugins/designing-presentations/skills/designing-presentations/refs/files/

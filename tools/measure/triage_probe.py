@@ -1,4 +1,9 @@
-"""Per-page facts for PDF triage: chars, image coverage, size histogram of the text layer, fonts."""
+"""Print per-page facts for PDF triage: chars, image coverage, size histogram of the text layer, fonts.
+
+    python3 -I tools/measure/triage_probe.py ref1.pdf [ref2.pdf ...]
+
+The script reads the first 12 pages of each PDF. It needs pdfplumber.
+"""
 import sys, collections, json
 import pdfplumber
 out = {}
