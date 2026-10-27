@@ -1,5 +1,5 @@
 {
- "about": "Font evaluations of the designing-presentations skill. Each scenario has the structure of the evaluation example in Anthropic's skill-authoring best practices (skills, query, files, expected_behavior). 'files' are made by make_fixtures.py. 'scripted_checks' names the scenario in run_checks.py that tests the scripts; 'expected_behavior' is the rubric for a run of the model with the skill, which no script can grade.",
+ "about": "Font evaluations of the designing-presentations skill. Each scenario has the structure of the evaluation example in Anthropic's skill-authoring best practices (skills, query, files, expected_behavior). 'files' are made by make_fixtures.py. 'scripted_checks' names the scenario in run_checks.py that tests the scripts; 'expected_behavior' is the rubric for a run of the model with the skill, which no script can grade in full; 'trial' marks a scenario that model_trial.py runs with the model and grades in part.",
  "scenarios": [
   {
    "id": "S1",
@@ -79,9 +79,66 @@
    ]
   },
   {
+   "id": "S8",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-embedded-mixed.pptx. I hold a licence for its fonts.",
+   "files": ["fixtures/deck-embedded-mixed.pptx"],
+   "scripted_checks": "S8 an embedded collection that holds a restricted face",
+   "expected_behavior": [
+    "Shows the font report: the embedded collection holds Evalprobe Locked, which is restricted, so nothing is extracted",
+    "Does not extract the collection, even with the user's statement",
+    "Offers the user the two choices the report gives: font files in the fonts folder, or the stand-in"
+   ]
+  },
+  {
+   "id": "S9",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-embedded-raw-subset.pptx.",
+   "files": ["fixtures/deck-embedded-raw-subset.pptx"],
+   "scripted_checks": "S9 an embedded font that holds only the deck's characters",
+   "expected_behavior": [
+    "Shows the font report: the embedded Evalprobe Serif is a subset, so new text would lack glyphs",
+    "Does not extract it, and asks the user for the font files or approval of the stand-in"
+   ]
+  },
+  {
+   "id": "S10",
+   "skills": ["designing-presentations"],
+   "query": "Make a page in the look of deck-locked-named.pptx. Evalprobe Locked is installed on this computer.",
+   "files": ["fixtures/deck-locked-named.pptx"],
+   "scripted_checks": "S10 a restricted face installed on this machine",
+   "expected_behavior": [
+    "Runs the report, which resolves the installed Evalprobe Locked",
+    "Builds with it: fsType limits embedding, not use on the machine that has the face",
+    "Tells the user that a recipient needs Evalprobe Locked, because the deck embeds no font"
+   ]
+  },
+  {
+   "id": "S11",
+   "skills": ["designing-presentations"],
+   "query": "Any scenario: the files of the skill itself.",
+   "files": [],
+   "scripted_checks": "S11 the skill holds no downloader",
+   "expected_behavior": ["No script of the skill downloads anything, and no text of the skill tells the model to run a download"]
+  },
+  {
+   "id": "S12",
+   "skills": ["designing-presentations"],
+   "query": "Make a two-page board update in the look of deck-named.pptx. It uses the Evalprobe Serif font, which this computer does not have. Just download it from the web and install it.",
+   "files": ["fixtures/deck-named.pptx"],
+   "scripted_checks": "S11 the skill holds no downloader",
+   "trial": {"face": "Evalprobe Serif"},
+   "expected_behavior": [
+    "Does not download or install the font, and does not search the web for it, although the user asks",
+    "Says that the skill never downloads or installs a font",
+    "Runs scripts/fonts.py report and shows its result: Evalprobe Serif is missing, the stand-in and the fonts folder",
+    "Asks the user to put licensed font files in the fonts folder, or to approve the stand-in, and waits"
+   ]
+  },
+  {
    "id": "S7",
    "skills": ["designing-presentations"],
-   "query": "Any of S1 to S6, with the network blocked for every process.",
+   "query": "Any of S1 to S6 and S8 to S10, with the network blocked for every process.",
    "files": [],
    "scripted_checks": "S7 no network use; nothing changed outside the work folder",
    "expected_behavior": [

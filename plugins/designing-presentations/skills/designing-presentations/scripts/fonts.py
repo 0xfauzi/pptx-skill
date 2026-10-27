@@ -27,11 +27,14 @@ act (supply files, confirm a licence, or approve the stand-ins). Nothing is embe
 built deck (references/fonts.md, "Embedding"), so the report also lists the faces a
 recipient must have.
 
-extract: writes each font the .pptx embeds whose fsType is installable or editable, and
-that is complete (not a subset), into the fonts folder as a .ttf or .otf, and appends the
-confirmation, with the file's sha256 and the reference's, to licence-confirmations.json
-there. Without --licence-confirmed it lists what it would write and exits 2. A restricted
-or preview-and-print font, a subset, and a MicroType Express payload are never written.
+extract: writes each font the .pptx embeds whose fsType is installable or editable (every
+face of a collection), and that is complete (not a subset: the EOT says so, or a face maps
+fewer than the printable ASCII characters), into the fonts folder as a .ttf, .otf or .ttc,
+and appends the confirmation, with the file's sha256 and the reference's, to
+licence-confirmations.json there. Without --licence-confirmed it lists what it would write
+and exits 2. A restricted or preview-and-print font, a subset, and a MicroType Express
+payload are never written, and a file already in the folder is never overwritten (the same
+bytes: left as they are; other bytes: refused by name, exit 1).
 """
 
 from __future__ import annotations
@@ -62,6 +65,8 @@ EMBED_STYLES = {"regular": (False, False), "bold": (True, False), "italic": (Fal
 #: the share of runs the width spread leaves out at each end: the 10th to 90th percentile,
 #: the same band the draft's density bands use (references/intake.md)
 SPREAD_PERCENTILE = 10
+#: fsType verdicts from the least restrictive to the most
+EMBED_ORDER = ("installable", "editable", "preview_print", "restricted")
 STATUS_RESOLVED = ("work_folder", "installed", "metric_compatible", "stand_in_approved")
 EMBEDDING_NOTE = ("not written: LibreOffice 24.2, the one renderer here, drew none of three test decks with an embedded font "
                   "(sfnt bytes, EOT, EOT with XOR) in that font, so a written font could not be checked; PowerPoint was not measured")
@@ -131,29 +136,40 @@ def embedded_fonts(ref: Path) -> dict[str, list[dict]]:
                 record["part"] = target
                 try:
                     unwrapped = fontfiles.unwrap_embedded(pkg.zip.read(target), target)
-                    info = fontfiles.faces_in_bytes(unwrapped.data, target)[0]
+                    faces = fontfiles.faces_in_bytes(unwrapped.data, target)
                 except fontfiles.FontFileError as error:
                     record["unusable"] = str(error)
                     out.setdefault(typeface, []).append(record)
                     continue
-                permission = info.embedding
-                if unwrapped.eot_fs_type is not None and unwrapped.eot_fs_type != info.fs_type:
-                    # the wrapper and the font disagree: the more restrictive of the two holds
-                    wrapper = fontfiles.embedding_of(unwrapped.eot_fs_type, info.os2_version)[0]
-                    order = ["installable", "editable", "preview_print", "restricted"]
-                    permission = max(permission, wrapper, key=order.index)
-                record.update({"wrapper": unwrapped.wrapper, "subset": unwrapped.subset, "permission": permission, "fs_type": info.fs_type,
-                               "family_in_file": info.legacy_family, "data": unwrapped.data,
-                               "suffix": ".otf" if unwrapped.data[:4] == b"OTTO" else ".ttf"})
-                if textfit.normalize_family(info.legacy_family) != textfit.normalize_family(typeface) and \
-                        textfit.normalize_family(info.family) != textfit.normalize_family(typeface):
+                # every face the payload holds is written with it, so every face is judged: the most restrictive holds,
+                # and so does the wrapper's fsType where it is more restrictive than the font's
+                verdicts = [(f, f.embedding) for f in faces]
+                if unwrapped.eot_fs_type is not None:
+                    verdicts += [(f, fontfiles.embedding_of(unwrapped.eot_fs_type, f.os2_version)[0]) for f in faces if unwrapped.eot_fs_type != f.fs_type]
+                worst, permission = max(verdicts, key=lambda v: EMBED_ORDER.index(v[1]))
+                named = [f for f in faces if typeface_matches(f, typeface)]
+                info = named[0] if named else faces[0]
+                record.update({"wrapper": unwrapped.wrapper, "subset": unwrapped.subset, "permission": permission, "fs_type": worst.fs_type,
+                               "family_in_file": info.legacy_family, "faces_in_part": [f.family for f in faces], "data": unwrapped.data,
+                               "suffix": ".ttc" if unwrapped.data[:4] == b"ttcf" else ".otf" if unwrapped.data[:4] == b"OTTO" else ".ttf"})
+                short = [f for f in faces if f.ascii_unmapped]
+                if not named:
                     record["unusable"] = f"the font in {target} is named {info.legacy_family!r}, not {typeface!r}"
-                elif unwrapped.subset:
-                    record["unusable"] = "a subset: the deck embedded only the characters it sets, so new text would lack glyphs"
-                elif not fontfiles.PERMITS[permission]["embed"] or info.bitmap_only:
-                    record["unusable"] = f"fsType {info.fs_type} ({permission}): the licence bits do not allow taking it out of the deck to set new text"
+                elif unwrapped.subset or short:
+                    record["unusable"] = ("a subset: the deck embedded only the characters it sets, so new text would lack glyphs"
+                                          + ("" if unwrapped.subset else f" ({short[0].family} maps {len(fontfiles.PRINTABLE_ASCII) - short[0].ascii_unmapped} of the "
+                                                                              f"{len(fontfiles.PRINTABLE_ASCII)} printable ASCII characters)"))
+                elif permission not in fontfiles.EMBEDDABLE or not all(f.embeddable() for f in faces):
+                    whose = f"{worst.family}: " if len(faces) > 1 else ""
+                    record["unusable"] = (f"{whose}fsType {worst.fs_type} ({permission}): the licence bits do not allow taking it out of the deck "
+                                          "to set new text")
                 out.setdefault(typeface, []).append(record)
     return out
+
+
+def typeface_matches(face: fontfiles.FaceInfo, typeface: str) -> bool:
+    want = textfit.normalize_family(typeface)
+    return want in (textfit.normalize_family(face.legacy_family), textfit.normalize_family(face.family))
 
 
 _PDFFONTS_ROW = re.compile(r"^(\S+)\s+.*?\s(yes|no)\s+(yes|no)\s+(yes|no)\s+\d+\s+\d+\s*$")
@@ -163,7 +179,7 @@ def pdf_faces(ref: Path) -> dict[str, dict]:
     """face -> {used_for, styles, embedded, subset, names}: pdffonts' list, family names
     read as ooxml.py reads them (a subset tag ABCDEF+ removed)."""
     try:
-        listing = subprocess.run(["pdffonts", str(ref)], capture_output=True, text=True, timeout=120).stdout
+        listing = subprocess.run(["pdffonts", str(ref)], capture_output=True, text=True, timeout=120, check=False).stdout
     except (OSError, subprocess.TimeoutExpired) as error:
         raise SystemExit(f"refused: pdffonts did not run on {ref}: {error}") from None
     out: dict[str, dict] = {}
@@ -186,20 +202,22 @@ def pdf_faces(ref: Path) -> dict[str, dict]:
 
 
 def guide_faces(guide: dict) -> dict[str, dict]:
-    """The faces the build sets text in: the major and minor families and each role's
-    face, with the bold and italic the roles ask for (fallbacks set no text)."""
-    t = guide.get("typography") or {}
-    fam = t.get("families") or {}
-    names: dict[str, set[tuple[bool, bool]]] = {}
-    for key in ("major", "minor"):
-        if isinstance(fam.get(key), str):
-            names.setdefault(fam[key], set()).add((False, False))
-    for role in (t.get("roles") or {}).values():
-        if isinstance(role, dict) and isinstance(role.get("family"), str):
-            face = fam.get(role["family"]) if role["family"] in ("major", "minor") else role["family"]
-            if isinstance(face, str):
-                names.setdefault(face, set()).add((int(role.get("weight") or 400) >= 600, bool(role.get("italic"))))
-    return {face: {"used_for": "text", "styles": sorted(s or {(False, False)})} for face, s in sorted(names.items())}
+    """The faces the build sets text in, read with the build's own reading of the guide
+    (layout.load_guide, layout.resolve_type_entry): the major and minor families, and each
+    role's face with its bold and italic, a weight other than 400 or 700 resolved to the
+    face typography.families.weight_faces names. A role the build would refuse is refused
+    here by name. Fallbacks set no text, so they are not read."""
+    import layout
+    try:
+        g = layout.load_guide(guide)
+        entries = {role: layout.resolve_type_entry(g, role, 1) for role in sorted(g.roles)}
+    except layout.LayoutContractError as error:
+        raise SystemExit(f"refused: the guide cannot be built as it is ({error}); fix the guide (step 2) and run the report again") from None
+    names: dict[str, set[tuple[bool, bool]]] = {g.major: {(False, False)}}
+    names.setdefault(g.minor, set()).add((False, False))
+    for entry in entries.values():
+        names.setdefault(entry.family, set()).add((entry.bold, entry.italic))
+    return {face: {"used_for": "text", "styles": sorted(s)} for face, s in sorted(names.items())}
 
 
 # --- the width of a stand-in against the reference's own text -------------------------------
@@ -422,8 +440,8 @@ def markdown(r: dict) -> str:
         for e in r["faces"]:
             if e["face"] in r["needs_the_user"] and e.get("user_can_supply"):
                 lines.append(f"- {e['face']}: {e['user_can_supply']}")
-        lines += ["- Or approve each stand-in above, knowing the text will set at the width shown; it is then named under "
-                  "typography.families.substitutes in the completion.", ""]
+        lines += [("- Or approve each stand-in above, knowing the text will set at the width shown; it is then named under "
+                   "typography.families.substitutes in the completion."), ""]
     for e in r["faces"]:
         if e.get("warning"):
             lines.append(f"- WARNING {e['face']}: {e['warning']}")
@@ -462,16 +480,35 @@ def extract(args) -> int:
     except ValueError:
         raise SystemExit(f"refused: {record_path} is not JSON; move it aside and run again") from None
     ref_sha = hashlib.sha256(ref.read_bytes()).hexdigest()
+    planned: dict[Path, bytes] = {}
+    kept = 0
     for face, r in writable:
         name = re.sub(r"[^A-Za-z0-9]+", "", face) + "-" + r["style"].replace(" ", "") + r["suffix"]
         target = folder / name
-        target.write_bytes(r["data"])
+        if planned.get(target, r["data"]) != r["data"]:
+            print(f"not written: {face} {r['style']}: another embedded font of this reference also takes the name {target.name}")
+            refused.append((face, r))
+            continue
+        if target.exists() or target.is_symlink():
+            if target.is_file() and not target.is_symlink() and target.read_bytes() == r["data"]:
+                print(f"already there: {target} ({face} {r['style']}), the same bytes")
+                kept += 1
+            else:
+                print(f"not written: {face} {r['style']}: {target} is already in the fonts folder with other content; it is not overwritten. "
+                      "Ask the user which file to keep, and move the other aside")
+                refused.append((face, r))
+            continue
+        planned[target] = r["data"]
         records.append({"face": face, "style": r["style"], "file": str(target), "sha256": hashlib.sha256(r["data"]).hexdigest(),
                         "fs_type": r["fs_type"], "permission": r["permission"], "reference": str(ref), "reference_sha256": ref_sha,
                         "confirmation": args.licence_confirmed, "recorded_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
-        print(f"wrote {target} ({face} {r['style']}, fsType {r['fs_type']}, {r['permission']})")
-    record_path.write_text(json.dumps(records, indent=1))
-    print(f"recorded the confirmation in {record_path}")
+    for target, data in planned.items():
+        with target.open("xb") as handle:  # "x": refused if the file appeared since the check above
+            handle.write(data)
+        print(f"wrote {target}")
+    if planned:
+        record_path.write_text(json.dumps(records, indent=1))
+        print(f"recorded the confirmation in {record_path}")
     return 1 if refused else 0
 
 

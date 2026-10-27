@@ -48,7 +48,7 @@ refusal before solving (a malformed spec) writes a report holding only `outputs.
 "refused before building"` and the refusal, and does not count against the build cap
 (review.md); the next passing build removes the `.refused`
 files. Leave `--others` alone: the
-judge's panel is every deck under `refs/files` (fetch once with `refs/fetch.sh`), the
+judge's panel is every deck under `refs/files` (the user fills it; never download it yourself), the
 reference's twin removed by hash, scans skipped, decks inside the reference's own spread
 reported as the same style (`same_style_on_panel`). The panel is not yours to choose.
 

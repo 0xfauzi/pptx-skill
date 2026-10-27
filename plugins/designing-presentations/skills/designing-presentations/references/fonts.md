@@ -49,17 +49,17 @@ it (`font refused`).
 
 ## The fonts folder
 
-`DECK_FONTS` names one folder, the work folder's `fonts` directory; `fonts.py` creates it.
-Every script reads it: `fonts.py` and the build's text ruler measure with its files, and
-LibreOffice draws with them, through a fontconfig configuration of that one process (a
-copy of the accepted files in a temporary folder, with its own cache). Nothing is
-installed and nothing outside the process changes. With `DECK_FONTS` unset, `fonts.py`
-refuses by name, and the build refuses a face that only that folder holds, naming the
-variable.
+`DECK_FONTS` names one folder, the work folder's `fonts` directory; `fonts.py` creates it,
+and until then every other script reads it as empty. Every script reads it: `fonts.py` and
+the build's text ruler measure with its files, and LibreOffice draws with them, through a
+fontconfig configuration that only the skill's own subprocesses get (a copy of the
+accepted files in the folder's `.run` directory, with its own cache). Nothing is installed
+and nothing outside the work folder changes. With `DECK_FONTS` unset, `fonts.py` refuses
+by name, and the build refuses a face that only that folder holds, naming the variable.
 
 The folder takes `.ttf`, `.otf` and `.ttc` files. Each file is read before use (size cap,
 every offset checked, never run); the report lists each file it did not use and why (not
-a font, a WOFF web font, a restricted fsType, a symbolic link).
+a font, a WOFF web font, a symbolic link, a file it cannot read).
 
 ## Reading the report
 
@@ -91,8 +91,9 @@ A .pptx lists embedded fonts in `p:embeddedFontLst` (ECMA-376 Part 1, 19.2.1.9 a
 19.2.1.10); each style's font part is the font itself or an Embedded OpenType (EOT)
 wrapper. `fontfiles.py` reads both, XOR-masked or not. It refuses by name a payload
 compressed with MicroType Express, and a subset (only the characters the deck set: new text
-would lack glyphs). A copy the fsType allows (below) is extracted only after the user
-confirms a licence:
+would lack glyphs). A font that maps fewer than the 95 printable ASCII characters is read as a
+subset too. A collection is judged by its most restrictive face. A copy the fsType allows
+(below) is extracted only after the user confirms a licence:
 
 ```bash
 python3 scripts/fonts.py extract "$REF"                                      # lists what it would write; exit 2
@@ -100,7 +101,9 @@ python3 scripts/fonts.py extract "$REF" --licence-confirmed "<the user's words>"
 ```
 
 The second form writes each allowed font into the fonts folder and appends the user's
-words, the file's sha256 and the reference's to `licence-confirmations.json` there. Pass
+words, the file's sha256 and the reference's to `licence-confirmations.json` there. It
+never overwrites a file: one with other bytes under the same name is refused by name;
+ask the user which file to keep. Pass
 the user's own confirmation, never your guess that they hold one.
 
 ## Faces in a PDF reference
@@ -112,13 +115,15 @@ supplies it, and its stand-in's width is measured against the PDF's own text.
 
 ## What fsType allows
 
-The OS/2 table's fsType (OpenType 1.9.1) decides, for every font file the skill touches:
+The OS/2 table's fsType (OpenType 1.9.1) states embedding rights: whether a font may go
+into a document, or come out of one. It does not limit a face installed on the machine or
+supplied by the user, which is measured and rendered whatever its fsType:
 
 | fsType | Measure and render | Embed or extract |
 |---|---|---|
 | 0 installable, 8 editable | yes | yes |
-| 4 preview and print | yes: the check images only | no |
-| 2 restricted, or no OS/2 table | no: not used at all | no |
+| 4 preview and print | yes | no |
+| 2 restricted, or no OS/2 table | yes | no |
 
 A file whose only outlines may not be embedded (bitmap-only, bit 9) is never extracted.
 
@@ -133,7 +138,8 @@ Tell the user each face a recipient may lack, and say it again in the final repo
 ## With no reference
 
 Run the report with `--guide` once the guide is complete: it checks every face the guide
-names (families, fallbacks, each role's face and its bold or italic). The faces are your
+names (families, each role's face and its bold or italic, and the face
+`weight_faces` names for a weight other than 400 or 700; fallbacks set no text). The faces are your
 choice; references/no-reference-design.md asks which faces the recipient has.
 
 ## What is unmeasured

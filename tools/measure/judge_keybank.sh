@@ -2,7 +2,7 @@
 # Build the keybank example section, then build five wrong decks and judge each one.
 #   sh tools/measure/judge_keybank.sh OUT_DIR
 # OUT_DIR must be an absolute path to an empty folder outside the skill.
-# Run refs/fetch.sh in the skill first: the script uses the keybank deck that it downloads.
+# Run plugins/designing-presentations/fetch-refs.sh first: the script uses the keybank deck that it downloads.
 # The script prints the judge result of the section and of each wrong deck.
 set -eu
 out=${1:?usage: judge_keybank.sh OUT_DIR}
@@ -10,7 +10,7 @@ case $out in /*) ;; *) echo "OUT_DIR must be an absolute path" >&2; exit 2 ;; es
 root=$(cd "$(dirname "$0")/../.." && pwd)
 skill=$root/plugins/designing-presentations/skills/designing-presentations
 ref=$skill/refs/files/mi_keybank_first_niagara_fig_ma.pptx
-[ -f "$ref" ] || { echo "no deck at $ref: run refs/fetch.sh in the skill" >&2; exit 2; }
+[ -f "$ref" ] || { echo "no deck at $ref: run plugins/designing-presentations/fetch-refs.sh" >&2; exit 2; }
 mkdir -p "$out/ref" "$out/out"
 
 cd "$skill"

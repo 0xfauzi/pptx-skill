@@ -14,10 +14,15 @@ OUT_DIR gets:
   fontsrc/EvalprobeSerif-Regular.ttf    fsType 0 (installable)
   fontsrc/EvalprobeSerif-Bold.ttf       fsType 0, the bold style (from the base font's bold)
   fontsrc/EvalprobeLocked-Regular.ttf   fsType 2 (restricted)
+  fontsrc/EvalprobeSemibold-Regular.ttf  fsType 0, the family a guide names for weight 600
   deck-installed.pptx         text in two installed faces (Liberation Serif, Liberation Sans)
   deck-named.pptx             text in Evalprobe Serif; nothing embedded
   deck-embedded-ok.pptx       Evalprobe Serif embedded as EOT (installable)
   deck-embedded-restricted.pptx  Evalprobe Locked embedded as EOT (restricted)
+  deck-embedded-mixed.pptx    a collection embedded as the font itself: face 0 Evalprobe
+                              Serif (installable), face 1 Evalprobe Locked (restricted)
+  deck-embedded-raw-subset.pptx  Evalprobe Serif embedded as the font itself, with a
+                              character map that holds only the characters the deck sets
   subset.pdf                  deck-named.pptx drawn by LibreOffice with Evalprobe Serif
                               visible to that one run only: the PDF holds a subset of it
 The embedded-font decks follow ECMA-376 Part 1, 19.2.1.9 and 19.2.1.10 (p:embeddedFontLst)
@@ -40,12 +45,15 @@ from xml.sax.saxutils import escape
 BASE_FACES = ("Liberation Serif", "DejaVu Serif")
 PROBE = "Evalprobe Serif"
 LOCKED = "Evalprobe Locked"
+SEMIBOLD = "Evalprobe Semibold"
+#: the text that deck() sets; the subset fixture maps these characters only
+DECK_TEXT = "Quarterly revenue rose 12% on wider margins, set in "
 EOT_XOR_FLAG = 0x10000000  # W3C EOT, Flags: TTEMBED_XORENCRYPTDATA
 
 
 def base_font(style: str = "") -> Path:
     for face in BASE_FACES:
-        out = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{fontformat}", face + style], capture_output=True, text=True, timeout=30).stdout
+        out = subprocess.run(["fc-match", "-f", "%{family}\t%{file}\t%{fontformat}", face + style], capture_output=True, text=True, timeout=30, check=False).stdout
         family, _, rest = out.partition("\t")
         path, _, fmt = rest.partition("\t")
         if family.split(",")[0] == face and fmt == "TrueType" and path.lower().endswith(".ttf"):
@@ -72,13 +80,17 @@ def name_table(family: str, style: str) -> bytes:
 def renamed(src: Path, family: str, fs_type: int, style: str = "Regular") -> bytes:
     """The sfnt with a new name table and fsType; checksums per the OpenType spec."""
     data = src.read_bytes()
-    tables = {}
-    for i in range(struct.unpack_from(">H", data, 4)[0]):
-        tag, _, off, length = struct.unpack_from(">4sIII", data, 12 + 16 * i)
-        tables[tag] = bytearray(data[off:off + length])
+    tables = {tag: bytearray(b) for tag, b in table_map(data).items()}
     tables[b"name"] = bytearray(name_table(family, style))
     struct.pack_into(">H", tables[b"OS/2"], 8, fs_type)
-    struct.pack_into(">I", tables[b"head"], 8, 0)
+    return rebuild(data, {tag: bytes(b) for tag, b in tables.items()})
+
+
+def rebuild(data: bytes, tables: dict[bytes, bytes]) -> bytes:
+    """An sfnt from its tables, with a new table directory and the checksums the spec asks for."""
+    head = bytearray(tables[b"head"])
+    struct.pack_into(">I", head, 8, 0)  # checkSumAdjustment is 0 while the checksums are summed
+    tables = {**tables, b"head": bytes(head)}
     tags = sorted(tables)
     power = max(i for i in range(16) if 2 ** i <= len(tags))
     header = data[:4] + struct.pack(">HHHH", len(tags), 16 * 2 ** power, power, 16 * len(tags) - 16 * 2 ** power)
@@ -91,6 +103,50 @@ def renamed(src: Path, family: str, fs_type: int, style: str = "Regular") -> byt
     head_at = struct.unpack_from(">I", directory, 16 * tags.index(b"head") + 8)[0]
     struct.pack_into(">I", font, head_at + 8, (0xB1B0AFBA - checksum(bytes(font))) & 0xFFFFFFFF)
     return bytes(font)
+
+
+def table_map(data: bytes) -> dict[bytes, bytes]:
+    out = {}
+    for i in range(struct.unpack_from(">H", data, 4)[0]):
+        tag, _, off, length = struct.unpack_from(">4sIII", data, 12 + 16 * i)
+        out[tag] = data[off:off + length]
+    return out
+
+
+def subsetted(font: bytes, text: str) -> bytes:
+    """The font with a cmap (format 4, Windows Unicode BMP) that maps only the characters of
+    `text`, as a subset embedded for one deck's text holds them. The glyph ids are 1, 2, ...:
+    the evaluation reads the character map, not the outlines."""
+    chars = sorted({ord(c) for c in text})
+    segments = [(c, c, i + 1) for i, c in enumerate(chars)] + [(0xFFFF, 0xFFFF, 0)]
+    n = len(segments)
+    power = max(i for i in range(16) if 2 ** i <= n)
+    ends = b"".join(struct.pack(">H", e) for _, e, _ in segments)
+    starts = b"".join(struct.pack(">H", s) for s, _, _ in segments)
+    deltas = b"".join(struct.pack(">h", ((g - s + 0x8000) % 0x10000) - 0x8000 if s != 0xFFFF else 1) for s, _, g in segments)
+    ranges = b"\0\0" * n
+    body = struct.pack(">HHH", 2 * n, 2 * 2 ** power, power) + struct.pack(">H", 2 * n - 2 * 2 ** power) + ends + b"\0\0" + starts + deltas + ranges
+    sub = struct.pack(">HHH", 4, 6 + len(body), 0) + body
+    cmap = struct.pack(">HH", 0, 1) + struct.pack(">HHI", 3, 1, 12) + sub
+    tables = table_map(font)
+    tables[b"cmap"] = cmap
+    return rebuild(font, tables)
+
+
+def collection(*fonts: bytes) -> bytes:
+    """A TrueType collection (version 1.0) of the fonts, each table offset moved to its place."""
+    header = 12 + 4 * len(fonts)
+    offsets, at = [], header
+    for f in fonts:
+        offsets.append(at)
+        at += len(f) + (-len(f) % 4)
+    out = b"ttcf" + struct.pack(">HHI", 1, 0, len(fonts)) + b"".join(struct.pack(">I", o) for o in offsets)
+    for f, base in zip(fonts, offsets):
+        d = bytearray(f)
+        for i in range(struct.unpack_from(">H", d, 4)[0]):
+            struct.pack_into(">I", d, 12 + 16 * i + 8, struct.unpack_from(">I", d, 12 + 16 * i + 8)[0] + base)
+        out += bytes(d) + b"\0" * (-len(f) % 4)
+    return out
 
 
 def eot(font: bytes, family: str, xor: bool = False) -> bytes:
@@ -121,7 +177,7 @@ def deck(path: Path, faces: list[str]) -> None:
     for i, face in enumerate(faces):
         box = slide.shapes.add_textbox(Inches(0.5), Inches(0.5 + 1.4 * i), Inches(9), Inches(1.2))
         run = box.text_frame.paragraphs[0].add_run()
-        run.text = f"Quarterly revenue rose 12% on wider margins, set in {face}"
+        run.text = DECK_TEXT + face
         run.font.name = face
         run.font.size = Pt(24)
     prs.save(str(path))
@@ -139,7 +195,7 @@ def embed(src: Path, dst: Path, family: str, blob: bytes) -> None:
             elif info.filename == "ppt/presentation.xml":
                 listing = (f'<p:embeddedFontLst><p:embeddedFont><p:font typeface="{escape(family)}" charset="0"/>'
                            '<p:regular r:id="rIdFont1"/></p:embeddedFont></p:embeddedFontLst>')
-                text = re.sub(r"(<p:notesSz[^>]*/>)", lambda m: m.group(1) + listing, data.decode(), count=1)
+                text = re.sub(r"(<p:notesSz[^>]*/>)", lambda m, listing=listing: m.group(1) + listing, data.decode(), count=1)
                 data = text.replace("<p:presentation ", '<p:presentation embedTrueTypeFonts="1" ', 1).encode()
             zout.writestr(info, data)
         zout.writestr("ppt/fonts/font1.fntdata", blob)
@@ -169,11 +225,14 @@ def main(out_dir: str) -> int:
     (out / "fontsrc" / "EvalprobeSerif-Regular.ttf").write_bytes(probe)
     (out / "fontsrc" / "EvalprobeLocked-Regular.ttf").write_bytes(locked)
     (out / "fontsrc" / "EvalprobeSerif-Bold.ttf").write_bytes(renamed(base_font(":bold"), PROBE, 0, "Bold"))
+    (out / "fontsrc" / "EvalprobeSemibold-Regular.ttf").write_bytes(renamed(base_font(":bold"), SEMIBOLD, 0))
     deck(out / "deck-installed.pptx", ["Liberation Serif", "Liberation Sans"])
     deck(out / "deck-named.pptx", [PROBE])
     deck(out / "deck-locked-named.pptx", [LOCKED])
     embed(out / "deck-named.pptx", out / "deck-embedded-ok.pptx", PROBE, eot(probe, PROBE))
     embed(out / "deck-locked-named.pptx", out / "deck-embedded-restricted.pptx", LOCKED, eot(locked, LOCKED))
+    embed(out / "deck-named.pptx", out / "deck-embedded-mixed.pptx", PROBE, collection(probe, locked))
+    embed(out / "deck-named.pptx", out / "deck-embedded-raw-subset.pptx", PROBE, subsetted(probe, DECK_TEXT + PROBE))
     subset_pdf(out / "deck-named.pptx", out / "fontsrc" / "EvalprobeSerif-Regular.ttf", out / "subset.pdf")
     print(f"fixtures in {out}, made from {base}")
     return 0

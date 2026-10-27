@@ -306,11 +306,11 @@ weights and figures of that page, but it uses new words for each text run.
   committee book in the gallery sets its chart text in Arial. Its bridge shows its figures
   as a row of text above the plot (`category_row`).
 - **No font embedding.** The built deck does not embed fonts. A recipient sees a font only
-  if the font is on their computer. Our test decks with an embedded font (the font file,
-  Embedded OpenType, and Embedded OpenType with XOR) did not show the font in
-  LibreOffice 24.2, so the skill cannot check an embedded font that it writes. No test
-  shows what PowerPoint does. `scripts/fonts.py report` lists the fonts that a recipient
-  needs.
+  if the font is on their computer. We made three test decks with an embedded font: the
+  font file, Embedded OpenType, and Embedded OpenType with XOR. LibreOffice 24.2 did not
+  show the font in these decks. Thus the skill cannot check an embedded font that it
+  writes. No test shows what PowerPoint does. `scripts/fonts.py report` lists the fonts
+  that a recipient needs.
 - **Leakage and stated figures give reports, not refusals.** The build lists each name,
   figure and phrase of the reference that it finds in the new deck. It also warns if a
   figure that the plan states is not on the page. Claude removes or explains each item in
@@ -340,13 +340,13 @@ weights and figures of that page, but it uses new words for each text run.
 
 Each row gives a result and the command that makes it again. Run the commands from the
 root of this repository. Some rows need the public reference decks. To download them, run
-`sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh`. These
+`sh plugins/designing-presentations/fetch-refs.sh`. These
 results come from Ubuntu 24.04 with LibreOffice 24.2.7.2 and the versions in INSTALL.md.
 
 | Result | Measurement | Command |
 |---|---|---|
 | The seven gallery decks about fictional organisations build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `board-transformation`, `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report`. Add `/abs/path/REF` for `transit-outlook` and `wildfire-plan` (showcase/README.md) |
-| The font scripts handle missing, embedded, restricted, subset and supplied fonts with no network use | The seven scenarios of `tools/evals/fonts/` pass. Each command runs with no network (`unshare -rn`), and `strace` and a Python audit hook find no network call. | `python3 -I tools/evals/fonts/run_checks.py /abs/empty/dir` |
+| The font scripts handle missing, embedded, restricted, subset and supplied fonts with no network use | The eleven scenarios of `tools/evals/fonts/` pass. Each command runs with no network (`unshare -rn`), and `strace` and a Python audit hook find no network call. | `python3 -I tools/evals/fonts/run_checks.py /abs/empty/dir` |
 | The judge files a section in the look of a reference under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
 | Only the layout check separates five wrong decks from the reference | The judge totals of the five wrong decks are 0.134 to 0.308, in the spread of the reference. So the style total alone files each wrong deck under the reference. Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
 | The raster instrument reads a render back | The script renders keybank at 100 dpi and measures the pixels. The surface (FFFFFF) and the navy (113D63) are exact. The ink is 010101 against 000000 in the file. The left margin is within 0.01 in of the file, and the other margins are within 0.09 in. The body size estimate is 11.7pt against 12pt in the file. | `sh tools/measure/raster_keybank.sh`, then compare `raster/raster.md` with the draft of `scripts/extract_style.py` |
@@ -386,6 +386,6 @@ MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill has the same text in 
 `scripts/confusable_letters.json` holds a subset of the Unicode confusables data under the
 Unicode License v3. The file includes the full notice of that licence.
 
-The public reference decks that `refs/fetch.sh` downloads belong to their
+The public reference decks that `fetch-refs.sh` downloads belong to their
 publishers. This repository does not include them, and the plugin does not ship them.
 `refs/MANIFEST.md` names the source of each deck.

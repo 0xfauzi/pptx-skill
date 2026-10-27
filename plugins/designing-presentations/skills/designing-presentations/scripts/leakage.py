@@ -160,7 +160,7 @@ def _twin_key(path: str | Path) -> str:
 
 
 def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
-    """The public decks of other firms (refs/files, fetched by refs/fetch.sh), each as
+    """The public decks of other firms (refs/files, which the user fills), each as
     its words normalised and joined (" w1 w2 ... ", one line break between strings),
     with the past decks and their twins (the same stem: a pptx and its PDF rendition)
     left out; and a note naming the basis. A finding is a term of the trade when its words
@@ -183,7 +183,7 @@ def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
             words = "\n".join(" " + " ".join(norm(w) for w in tokens(line)) + " " for x in strings for line in x.split("\n"))
             decks.append((f.name, words))
     note = (f"{len(decks)} public decks of other firms in {BACKGROUND_DIR}" + (f"; not read: {', '.join(unread)}" if unread else "") if decks
-            else f"not measured: no public decks in {BACKGROUND_DIR} (run refs/fetch.sh); terms of the trade cannot be told from this reference's own words")
+            else f"not measured: no public decks in {BACKGROUND_DIR} (the user fills it; nothing is downloaded); terms of the trade cannot be told from this reference's own words")
     return decks, note
 
 

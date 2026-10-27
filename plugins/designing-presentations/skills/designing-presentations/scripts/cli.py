@@ -7,7 +7,7 @@ skill by name. `component.py admit` writes its record to the user's components d
 (`--components`), never beside a shipped component. One maintenance command writes skill
 content and is the only exception: `library.py import` builds the
 git-ignored external library of public decks in `refs/library` (Library.guard_location
-refuses any other owner there). `refs/fetch.sh` fills the git-ignored `refs/files`.
+refuses any other owner there). The user fills the git-ignored `refs/files`.
 
 `run` calls a command's main and turns a closed stdout (`... | head`) into a quiet exit
 instead of a BrokenPipeError traceback.

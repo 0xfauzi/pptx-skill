@@ -1,9 +1,11 @@
 #!/bin/sh
-# Fetch the public reference decks listed in MANIFEST.md into refs/files/ (git-ignored).
-# Every URL and sha256 comes from the manifest; a file whose hash differs is reported and
-# renamed aside (*.mismatch), never silently kept. POSIX sh: run it with sh, dash or bash.
+# Fetch the public reference decks listed in the skill's refs/MANIFEST.md into the skill's
+# refs/files/ (git-ignored). Every URL and sha256 comes from the manifest; a file whose hash
+# differs is reported and renamed aside (*.mismatch), never silently kept. POSIX sh: run it
+# with sh, dash or bash. It is the user's own command: it lies outside the skill folder, so
+# the skill never ships it and never runs it (the skill downloads nothing).
 set -u
-cd "$(dirname "$0")" || exit 1
+cd "$(dirname "$0")/skills/designing-presentations/refs" || exit 1
 if command -v sha256sum > /dev/null 2>&1; then hash256() { sha256sum "$1" | cut -d' ' -f1; }
 elif command -v shasum > /dev/null 2>&1; then hash256() { shasum -a 256 "$1" | cut -d' ' -f1; }
 else echo "neither sha256sum nor shasum is installed; nothing can be checked"; exit 1
@@ -19,7 +21,7 @@ while IFS='|' read -r _ name url _pub _doc _fmt _pages sha _rest; do
   checked=$((checked + 1))
   if [ ! -s "files/$name" ]; then
     echo "fetch $name"
-    curl -sSL --max-time 300 -A "pptx-skill refs/fetch.sh" -o "files/$name" "$url" || { echo "FAILED $name"; bad=1; continue; }
+    curl -sSL --max-time 300 -A "pptx-skill fetch-refs.sh" -o "files/$name" "$url" || { echo "FAILED $name"; bad=1; continue; }
   fi
   got=$(hash256 "files/$name")
   if [ "$got" = "$sha" ]; then echo "ok    $name"; else echo "HASH MISMATCH $name: $got, manifest $sha"; mv "files/$name" "files/$name.mismatch"; bad=1; fi

@@ -18,21 +18,19 @@ returns, the one LibreOffice draws (resolve_measured); bold is never synthesised
 
 Font files: the installed folders (fontconfig's defaults and the standard macOS and Windows
 folders, STANDARD_FONT_ROOTS) and the work folder's fonts directory named by DECK_FONTS
-(work_fonts). Work-folder files are checked by fontfiles.py first and copied to a folder of
-this process; fontconfig reads that copy through a FONTCONFIG_FILE of this process only
-(font_env), so fc-match, LibreOffice and the rulers see the same faces and nothing is
-installed. A file whose fsType is restricted is never used. Nothing here downloads a font.
+(work_fonts). Work-folder files are checked by fontfiles.py first and copied into that
+folder's `.run` directory; fontconfig reads the copies through a FONTCONFIG_FILE given to
+this process's subprocesses only (font_env), so fc-match, LibreOffice and the rulers see
+the same faces and nothing is installed. Nothing here downloads a font.
 """
 
 from __future__ import annotations
 
-import atexit
+import hashlib
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
@@ -188,90 +186,101 @@ class WorkFonts:
     copies: dict[str, str]               # this process's copy -> the user's file
     faces: tuple[fontfiles.FaceInfo, ...]  # every face accepted, with the user's path
     rejected: tuple[tuple[str, str], ...]  # (the user's file, why it is not used)
-    config: str | None                   # the FONTCONFIG_FILE of this process, None with no file accepted
+    config: str | None                   # the FONTCONFIG_FILE of this set of files, None with no file accepted
 
 
 #: the record fonts.py extract keeps in the fonts folder; not a font, never read as one
 LICENCE_RECORD = "licence-confirmations.json"
+#: the fonts folder's own directory of checked copies, one subfolder per set of files
+RUN_DIR = ".run"
 
 
-def _system_fontconfig() -> str:
+def _system_fontconfig(folder: Path) -> str:
+    """fontconfig's own configuration, for the per-run one to include: FONTCONFIG_FILE when
+    the user set it (never a per-run configuration of this folder, which a subprocess of a
+    run inherits), else the standard paths."""
+    run = (folder / RUN_DIR).resolve()
     for candidate in (os.environ.get("FONTCONFIG_FILE"), *SYSTEM_FONTCONFIG):
-        if candidate and Path(candidate).is_file():
+        if candidate and Path(candidate).is_file() and not Path(candidate).resolve().is_relative_to(run):
             return candidate
     raise WorkFontsError(f"no fontconfig configuration found (FONTCONFIG_FILE, {', '.join(SYSTEM_FONTCONFIG)}): "
                          "the renderer cannot be shown the work folder's fonts")
 
 
+def _write_once(target: Path, data: bytes) -> None:
+    """Write `data` to `target` unless it already holds exactly that; through a temporary
+    name and a rename, so a run stopped midway leaves no partial file under the name."""
+    if target.is_file() and not target.is_symlink() and target.read_bytes() == data:
+        return
+    part = target.with_name(f".{target.name}.{os.getpid()}.part")
+    part.write_bytes(data)
+    os.replace(part, target)
+
+
 @lru_cache(maxsize=1)
 def work_fonts() -> WorkFonts | None:
     """The fonts the user supplied (or fonts.py extract wrote) in the folder DECK_FONTS
-    names, each read by fontfiles.py first; None when DECK_FONTS is unset. Accepted files
-    are copied to a folder of this process (removed at exit), and a fonts.conf there adds
-    that folder to fontconfig's own configuration, with its cache in the same folder: the
-    user's folder is never scanned by fontconfig, and nothing outside this process
-    changes."""
+    names, each read by fontfiles.py first; None when DECK_FONTS is unset, and no files
+    when the folder is not made yet. Accepted files are copied into the folder's `.run`
+    directory, in a subfolder named by the sha256 of the files and of the fontconfig
+    configuration it includes, beside a fonts.conf that adds that subfolder to fontconfig's
+    own configuration, with its cache there too. fontconfig never scans the user's files
+    themselves, nothing outside the work folder changes, the same files give the same paths
+    every run, and a run stopped by a signal leaves its copies only in the work folder."""
     value = os.environ.get(WORK_FONTS_ENV)
     if not value:
         return None
     folder = Path(value).expanduser()
     if not folder.is_absolute():
         raise WorkFontsError(f"{WORK_FONTS_ENV}={value!r} is not an absolute path: export {WORK_FONTS_ENV}=\"$DECK_WORK/fonts\"")
+    if not folder.exists():
+        return WorkFonts(folder, {}, (), (), None)  # fonts.py report makes it; until then it holds no file
     if not folder.is_dir():
-        raise WorkFontsError(f"{WORK_FONTS_ENV}={value} is not a folder: create it (mkdir -p \"{value}\") or unset {WORK_FONTS_ENV}")
-    accepted: list[tuple[Path, list[fontfiles.FaceInfo]]] = []
+        raise WorkFontsError(f"{WORK_FONTS_ENV}={value} is not a folder: name a folder (export {WORK_FONTS_ENV}=\"$DECK_WORK/fonts\")")
+    accepted: list[tuple[Path, bytes]] = []
+    faces: list[fontfiles.FaceInfo] = []
     rejected: list[tuple[str, str]] = []
     for path in sorted(folder.rglob("*")):
-        if path.name == LICENCE_RECORD or path.name.startswith(".") or (path.is_dir() and not path.is_symlink()):
+        rel = path.relative_to(folder)
+        if path.name == LICENCE_RECORD or any(part.startswith(".") for part in rel.parts) or (path.is_dir() and not path.is_symlink()):
             continue
         if path.suffix.lower() not in FONT_SUFFIXES:
             rejected.append((str(path), "not a .ttf, .otf or .ttc file"))
             continue
         try:
-            faces = fontfiles.read_faces(path)
+            faces += fontfiles.read_faces(path)
         except fontfiles.FontFileError as error:
             rejected.append((str(path), str(error)))
             continue
-        locked = [f.family for f in faces if not f.permits("measure")]
-        if locked:
-            rejected.append((str(path), f"fsType {faces[0].fs_type} ({faces[0].embedding}): the font's licence bits forbid its use here"))
-            continue
-        accepted.append((path, faces))
+        accepted.append((path, path.read_bytes()))
     if not accepted:
         return WorkFonts(folder, {}, (), tuple(rejected), None)
-    runtime = Path(tempfile.mkdtemp(prefix="deck-fonts-"))
-    atexit.register(shutil.rmtree, runtime, True)
-    (runtime / "fonts").mkdir()
+    system = _system_fontconfig(folder)
+    digests = [hashlib.sha256(data).hexdigest() for _, data in accepted]
+    run = folder / RUN_DIR / hashlib.sha256("\n".join([system, *digests]).encode()).hexdigest()[:16]
     copies: dict[str, str] = {}
-    for n, (path, _) in enumerate(accepted):
-        copy = runtime / "fonts" / f"{n:03d}{path.suffix.lower()}"
-        shutil.copyfile(path, copy)
-        copies[str(copy)] = str(path)
-    from xml.sax.saxutils import escape
-    config = runtime / "fonts.conf"
-    config.write_text('<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">\n<fontconfig>\n'
-                      f'  <cachedir>{escape(str(runtime / "cache"))}</cachedir>\n'
-                      f'  <include ignore_missing="no">{escape(_system_fontconfig())}</include>\n'
-                      f'  <dir>{escape(str(runtime / "fonts"))}</dir>\n</fontconfig>\n', encoding="utf-8")
-    faces = tuple(face for _, found in accepted for face in found)
-    return WorkFonts(folder, copies, faces, tuple(rejected), str(config))
+    try:
+        (run / "fonts").mkdir(parents=True, exist_ok=True)
+        for (path, data), digest in zip(accepted, digests):
+            copy = run / "fonts" / f"{digest[:16]}{path.suffix.lower()}"
+            _write_once(copy, data)
+            copies[str(copy)] = str(path)
+        from xml.sax.saxutils import escape
+        config = run / "fonts.conf"
+        _write_once(config, ('<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">\n<fontconfig>\n'
+                             f'  <cachedir>{escape(str(run / "cache"))}</cachedir>\n'
+                             f'  <include ignore_missing="no">{escape(system)}</include>\n'
+                             f'  <dir>{escape(str(run / "fonts"))}</dir>\n</fontconfig>\n').encode())
+    except OSError as error:
+        raise WorkFontsError(f"cannot write the checked copies into {folder / RUN_DIR} ({error}): the fonts folder must be writable") from None
+    return WorkFonts(folder, copies, tuple(faces), tuple(rejected), str(config))
 
 
 def font_env() -> dict[str, str]:
     """What a fontconfig or LibreOffice subprocess needs in its environment to see the work
-    folder's fonts: FONTCONFIG_FILE of this process, or nothing."""
+    folder's fonts: the FONTCONFIG_FILE of this set of files, or nothing."""
     work = work_fonts()
     return {"FONTCONFIG_FILE": work.config} if work and work.config else {}
-
-
-def _usable(path: Path) -> bool:
-    """An installed file whose every face fontfiles reads as restricted is never measured;
-    a file fontfiles cannot read is left to Pillow, as before (a system file is not
-    untrusted input, and an unread table is no evidence of a restriction)."""
-    try:
-        return any(f.permits("measure") for f in fontfiles.read_faces(path))
-    except fontfiles.FontFileError:
-        return True
 
 
 def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
@@ -285,7 +294,7 @@ def build_index(roots: tuple[str, ...] | None = None) -> FaceIndex:
     for root in roots:
         base = Path(root)
         if base.is_dir():
-            files += [p for p in sorted(base.rglob("*")) if p.suffix.lower() in FONT_SUFFIXES and p.is_file() and _usable(p)]
+            files += [p for p in sorted(base.rglob("*")) if p.suffix.lower() in FONT_SUFFIXES and p.is_file()]
     faces: dict[tuple[str, str], Face] = {}
     for path in files:
         try:

@@ -16,6 +16,8 @@ under the new family name Evalprobe Serif) and prints five measurements:
 4. fsType: the embedding permission of every installed font file (scripts/fontfiles.py).
 5. The width instrument: the test face read back from a PDF that LibreOffice drew in it,
    measured with the base font and with the default sans (scripts/fonts.py).
+6. Subsets: how many installed faces map all 95 printable ASCII characters, the faces
+   that do not, and the count for the subset fixture (fontfiles.PRINTABLE_ASCII).
 For each LibreOffice run it counts the files added to fontconfig's own cache folders
 (and removes them), and at the end it checks that those folders are as they were.
 """
@@ -35,8 +37,8 @@ REPO = Path(__file__).resolve().parents[2]
 SKILL = REPO / "plugins" / "designing-presentations" / "skills" / "designing-presentations"
 sys.path.insert(0, str(REPO / "tools" / "evals" / "fonts"))
 sys.path.insert(0, str(SKILL / "scripts"))
-import make_fixtures  # noqa: E402
 import fontfiles  # noqa: E402
+import make_fixtures  # noqa: E402
 
 CACHE_DIRS = (Path("/var/cache/fontconfig"), Path.home() / ".cache" / "fontconfig")
 
@@ -79,7 +81,7 @@ def main(out_dir: str) -> int:
     with tempfile.TemporaryDirectory(prefix="probe-") as tmp:
         t = Path(tmp)
         cfg = conf(t, only)
-        fc = lambda env: subprocess.run(["fc-match", "-f", "%{family}", face], capture_output=True, text=True, env={**os.environ, **env}, timeout=30).stdout
+        fc = lambda env: subprocess.run(["fc-match", "-f", "%{family}", face], capture_output=True, text=True, env={**os.environ, **env}, timeout=30, check=False).stdout
         result["1 fc-match"] = {"system": fc({}), "FONTCONFIG_FILE of one process": fc({"FONTCONFIG_FILE": str(cfg)}), "system again": fc({})}
         runs = {"no change": ({}, None), "FONTCONFIG_FILE": ({"FONTCONFIG_FILE": str(cfg)}, None),
                 "SAL_FONTPATH": ({"SAL_FONTPATH": str(only)}, None), "profile user/fonts": ({}, only)}
@@ -103,18 +105,27 @@ def main(out_dir: str) -> int:
             w.mkdir()
             result["3 embedded font drawn by LibreOffice"][name] = drawn(deck, w, {})
     counts: collections.Counter = collections.Counter()
-    files = [p for r in ("/usr/share/fonts", "/usr/local/share/fonts") for p in Path(r).rglob("*") if p.suffix.lower() in fontfiles.FONT_SUFFIXES]
+    files = [p for r in ("/usr/share/fonts", "/usr/local/share/fonts") for p in Path(r).rglob("*")
+             if p.suffix.lower() in fontfiles.FONT_SUFFIXES and not p.is_symlink()]
+    faces_read, short = 0, []
     for p in files:
         try:
             for f in fontfiles.read_faces(p):
                 counts[f"{f.embedding} (fsType {f.fs_type})"] += 1
+                faces_read += 1
+                if f.ascii_unmapped:
+                    short.append(f"{f.family}: {f.ascii_unmapped} unmapped")
         except fontfiles.FontFileError as error:
             counts[f"unreadable: {error}"] += 1
     result["4 fsType of installed faces"] = {"files": len(files), **dict(sorted(counts.items()))}
+    import zipfile
+    subset = zipfile.ZipFile(fix / "deck-embedded-raw-subset.pptx").read("ppt/fonts/font1.fntdata")
+    result["6 printable ASCII mapped"] = {"faces": faces_read, "map all 95": faces_read - len(short), "do not": sorted(short),
+                                         "subset fixture": [f.ascii_unmapped for f in fontfiles.faces_in_bytes(subset, "subset")]}
     import fonts as report
     import textfit
     ruler = textfit.default_ruler()
-    sans = subprocess.run(["fc-match", "-f", "%{family}\t%{file}", "sans-serif"], capture_output=True, text=True, timeout=30).stdout.split("\t")
+    sans = subprocess.run(["fc-match", "-f", "%{family}\t%{file}", "sans-serif"], capture_output=True, text=True, timeout=30, check=False).stdout.split("\t")
     result["5 width instrument (subset.pdf)"] = {
         "ruler": ruler.name,
         "base font (same glyphs)": report.pdf_width_difference(fix / "subset.pdf", face, str(make_fixtures.base_font()), ruler, None),

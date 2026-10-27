@@ -615,7 +615,7 @@ def reference_spread(slides: list[SlidePrint]) -> dict | None:
 
 def panel(others: list[str], reference: str) -> list[str]:
     """The comparison panel. Given explicitly, it is used as given; otherwise every deck
-    under refs/files (the public references refs/fetch.sh collects) except the reference
+    under refs/files (the public references the user collects) except the reference
     itself, because a pass against two alien decks and a fail against the reference's
     sister decks is the same deck, and the agent must not be the one choosing."""
     if others:

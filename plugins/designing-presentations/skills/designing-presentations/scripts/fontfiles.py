@@ -6,12 +6,20 @@ A font file from a reference or from the user is untrusted input. This module re
 only: it never hands a file to a renderer, never runs anything, caps the file size, checks
 every offset against the file length, and raises FontFileError with the reason. It reads
 the sfnt or TTC header and table directory, `name` (family, style, full and PostScript
-names), `OS/2` (version, weight, fsType, fsSelection) and `head` (macStyle).
+names), `OS/2` (version, weight, fsType, fsSelection), `head` (macStyle) and `cmap` (which
+printable ASCII characters the face maps).
 
 fsType (OpenType 1.9.1, OS/2 table: learn.microsoft.com/typography/opentype/spec/os2#fstype)
-decides what the skill may do with a face (PERMITS): installable (0) and editable (8):
-measure, render and embed; preview_print (4): measure and render the check images, never
-embed; restricted (2), or no OS/2 table: not used at all.
+"indicates font embedding licensing rights": it decides whether a face may be embedded in
+a document or taken out of one (EMBEDDABLE), not whether a face installed on this machine,
+or supplied by the user, may be used on it. Every face is measured and rendered;
+installable (0) and editable (8) may also be embedded and extracted; preview_print (4),
+restricted (2), and a face with no OS/2 table (no permission stated) never.
+
+A font embedded for one deck can hold only the characters that deck sets (a subset). The
+EOT wrapper can say so (TTEMBED_SUBSET); the font itself cannot, so a face that does not
+map every printable ASCII character (PRINTABLE_ASCII) is read as a subset: new text would
+lack glyphs.
 
 An embedded .pptx font part (ECMA-376 Part 1, 19.2.1.9 embeddedFont, 19.2.1.29 regular: a
 relationship id and nothing else, so no key and no obfuscation) holds either the sfnt bytes
@@ -51,13 +59,14 @@ EOT_MAGIC = 0x504C
 EOT_VERSIONS = frozenset({0x00010000, 0x00020001, 0x00020002})
 EOT_FIXED_HEADER = 82  # the fixed fields end at byte 80 and a 2-byte name size follows: no header is shorter
 
-#: what each fsType verdict lets the skill do with a face
-PERMITS = {
-    "installable": {"measure": True, "render": True, "embed": True},
-    "editable": {"measure": True, "render": True, "embed": True},
-    "preview_print": {"measure": True, "render": True, "embed": False},
-    "restricted": {"measure": False, "render": False, "embed": False},
-}
+#: the fsType verdicts that allow embedding a face, and so extracting it from a deck;
+#: fsType never limits use on the machine that has the face
+EMBEDDABLE = frozenset({"installable", "editable"})
+#: U+0020 to U+007E, the 95 printable ASCII characters. Of the 118 faces installed on the
+#: measuring machine, 113 map all 95; the 5 that do not set no Latin text (OpenSymbol, Noto
+#: Color Emoji, three Unifont supplementary-plane faces). A face embedded for one deck's text
+#: maps only the characters that text sets. Measured by tools/measure/font_probe.py, item 6.
+PRINTABLE_ASCII = frozenset(range(0x20, 0x7F))
 
 
 class FontFileError(ValueError):
@@ -81,10 +90,12 @@ class FaceInfo:
     embedding: str         # installable | editable | preview_print | restricted
     bitmap_only: bool
     no_subsetting: bool
+    ascii_unmapped: int    # printable ASCII characters the cmap does not map; 95 with no readable cmap
 
-    def permits(self, use: str) -> bool:
-        """measure, render or embed; bitmap-only embedding embeds no outline, so no embed."""
-        return PERMITS[self.embedding][use] and not (use == "embed" and self.bitmap_only)
+    def embeddable(self) -> bool:
+        """Whether fsType allows embedding the face, or extracting it from a deck;
+        bitmap-only embedding embeds no outline, so no."""
+        return self.embedding in EMBEDDABLE and not self.bitmap_only
 
 
 def embedding_of(fs_type: int | None, os2_version: int | None) -> tuple[str, bool, bool]:
@@ -181,6 +192,58 @@ def _names(r: _Reader, table: tuple[int, int]) -> dict[int, str]:
     return {k: v for k, (_, v) in best.items()}
 
 
+def _cmap_ascii(r: _Reader, table: tuple[int, int] | None) -> frozenset[int]:
+    """The printable ASCII characters a Unicode subtable of the cmap maps to a glyph other
+    than 0 (formats 4 and 12, the two the OpenType spec names for Unicode text). A table
+    that cannot be read maps nothing."""
+    if table is None:
+        return frozenset()
+    start, length = table
+    data = r.read(start, length)
+    if length < 4:
+        return frozenset()
+    count = struct.unpack_from(">H", data, 2)[0]
+    if 4 + 8 * count > length:
+        raise FontFileError(f"{r.label}: the cmap table's {count} subtables run past the table")
+    found: set[int] = set()
+    for i in range(count):
+        platform, encoding, at = struct.unpack_from(">HHI", data, 4 + 8 * i)
+        if not (platform == 0 or (platform == 3 and encoding in (1, 10))) or at + 4 > length:
+            continue
+        fmt = struct.unpack_from(">H", data, at)[0]
+        if fmt == 4 and at + 14 <= length:
+            sub_len, seg2 = struct.unpack_from(">H", data, at + 2)[0], struct.unpack_from(">H", data, at + 6)[0]
+            n = seg2 // 2
+            if at + sub_len > length or 16 + 8 * n > sub_len:
+                continue
+            ends, starts = at + 14, at + 16 + 2 * n
+            deltas, ranges = starts + 2 * n, starts + 4 * n
+            for k in range(n):
+                end, first = struct.unpack_from(">H", data, ends + 2 * k)[0], struct.unpack_from(">H", data, starts + 2 * k)[0]
+                delta, offset = struct.unpack_from(">h", data, deltas + 2 * k)[0], struct.unpack_from(">H", data, ranges + 2 * k)[0]
+                for c in range(max(first, 0x20), min(end, 0x7E) + 1):
+                    if offset == 0:
+                        glyph = (c + delta) & 0xFFFF
+                    else:
+                        g_at = ranges + 2 * k + offset + 2 * (c - first)
+                        if g_at + 2 > at + sub_len:
+                            continue
+                        glyph = struct.unpack_from(">H", data, g_at)[0]
+                        glyph = (glyph + delta) & 0xFFFF if glyph else 0
+                    if glyph:
+                        found.add(c)
+        elif fmt == 12 and at + 16 <= length:
+            sub_len, groups = struct.unpack_from(">I", data, at + 4)[0], struct.unpack_from(">I", data, at + 12)[0]
+            if at + sub_len > length or 16 + 12 * groups > sub_len:
+                continue
+            for k in range(groups):
+                first, end, glyph = struct.unpack_from(">III", data, at + 16 + 12 * k)
+                for c in range(max(first, 0x20), min(end, 0x7E) + 1):
+                    if glyph + c - first:
+                        found.add(c)
+    return frozenset(found & PRINTABLE_ASCII)
+
+
 def _face(r: _Reader, offset: int, index: int) -> FaceInfo:
     tables = _tables(r, offset)
     if b"name" not in tables:
@@ -201,9 +264,10 @@ def _face(r: _Reader, offset: int, index: int) -> FaceInfo:
         mac_style = r.u16(tables[b"head"][0] + 44)
         bold, italic = bool(mac_style & 0x01), bool(mac_style & 0x02)
     permission, bitmap_only, no_subsetting = embedding_of(fs_type, os2_version)
+    ascii_unmapped = len(PRINTABLE_ASCII - _cmap_ascii(r, tables.get(b"cmap")))
     return FaceInfo(r.label, index, family, names.get(17) or names.get(2) or "Regular", names.get(1) or family,
                     names.get(4) or "", names.get(6) or "", weight, bold, italic, os2_version, fs_type, permission,
-                    bitmap_only, no_subsetting)
+                    bitmap_only, no_subsetting, ascii_unmapped)
 
 
 def _faces(handle: BinaryIO, size: int, label: str) -> list[FaceInfo]:

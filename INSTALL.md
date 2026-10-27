@@ -72,19 +72,19 @@ missing (`needs face ...`):
    of this folder is in `DECK_FONTS`, for example `$DECK_WORK/fonts`.
 3. Run `scripts/fonts.py report` again.
 
-The skill uses the files in the fonts folder for one run at a time. It does not install
-them, and it does not change the fonts of your computer.
+The skill uses the files in the fonts folder only in its own processes. It keeps checked
+copies in the `.run` folder of the fonts folder. It does not install the files, and it
+does not change the fonts of your computer.
 
-If you prefer, you can install fonts on your computer yourself. These are the
-metric-compatible stand-ins for the Microsoft core fonts:
+These fonts are metric-compatible stand-ins for the Microsoft core fonts:
 
 - Liberation: Arial, Times New Roman, Courier New.
 - Carlito: Calibri.
 - Caladea: Cambria.
 
-On Debian and Ubuntu, the packages are
-`fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea`. On macOS, the Homebrew
-casks are `font-liberation font-carlito font-caladea`. Then run `fc-cache -f`.
+You can put their files in the fonts folder. You can also install them on your computer
+with the font tool of your system. That is your own action. Do not ask Claude to install a
+font: the skill never downloads or installs a font.
 
 ## Claude Code
 
@@ -194,7 +194,8 @@ The packager refuses these items, and it gives the name of each item:
 - A total size of more than 30 MB. This limit comes from the platform.claude.com skills
   guide, "Limits and constraints".
 
-The packager does not include the reference decks (`refs/files`, which git ignores).
+The packager does not include the reference decks (`refs/files`, which git ignores). It
+also does not include `fetch-refs.sh`, which is outside the skill folder.
 
 ## Claude API
 
@@ -221,23 +222,26 @@ Preflight shows which packages are missing.
 
 The build compares a new deck with a panel of public decks from other firms. The judge
 uses the panel to find what is rare, and the leakage check uses it as background. These
-decks belong to other publishers, so the skill does not include them. To download them
-into the folder `refs/files/` of the skill, run this command:
+decks belong to other publishers, so the skill does not include them. The skill never
+downloads them. You download them yourself. To download them into the folder
+`refs/files/` of the skill, run this command:
 
 ```sh
-sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh
+sh plugins/designing-presentations/fetch-refs.sh
 ```
 
-`fetch.sh` is a POSIX sh script. It needs curl and `sha256sum` or `shasum`. It checks
-each file against the sha256 in `refs/MANIFEST.md`. Git ignores `refs/files/`. Without the
-panel, the build still runs and reports that the panel is empty.
+`fetch-refs.sh` is a POSIX sh script in the plugin folder, outside the skill folder. It
+needs curl and `sha256sum` or `shasum`. It checks each file against the sha256 in
+`refs/MANIFEST.md`. Git ignores `refs/files/`. Without the panel, the build still runs and
+reports that the panel is empty. The PDF decks hold subsets of fonts. The skill never
+uses these subsets to set text.
 
 After a plugin install, the skill is in the cache folder. An update makes a new version
-folder that does not have the panel. So, after each update, run `fetch.sh` again in the
-folder of the new version:
+folder that does not have the panel. So, after each update, run `fetch-refs.sh` again in
+the folder of the new version:
 
 ```sh
-sh ~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/skills/designing-presentations/refs/fetch.sh
+sh ~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/fetch-refs.sh
 ```
 
 `claude plugin list` shows the installed version.

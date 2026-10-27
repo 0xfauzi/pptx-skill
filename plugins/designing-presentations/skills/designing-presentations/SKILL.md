@@ -426,7 +426,7 @@ around a refusal by changing the guide.
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
 | `components/` | the shipped components, read-only, and their contract (`components/README.md`); yours go in `"$DECK_WORK/components"` |
 | `examples/` | worked deck specs, plans, completions, digests (with a reference and with none) |
-| `refs/` | `fetch.sh` and `MANIFEST.md`: the judge's panel of public decks, fetched into the git-ignored `refs/files` |
+| `refs/` | `MANIFEST.md`: the judge's panel of public decks, in the git-ignored `refs/files` once the user has fetched them |
 
 Requirements (preflight.py checks them): Python 3.11+, lxml, Pillow, python-pptx, pdfplumber,
-LibreOffice, poppler, fontconfig, uharfbuzz when available. The judge's panel: `refs/fetch.sh`.
+LibreOffice, poppler, fontconfig, uharfbuzz when available. The judge's panel: `refs/files`, which the user fills; never download it yourself.

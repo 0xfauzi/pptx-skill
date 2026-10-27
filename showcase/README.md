@@ -93,16 +93,16 @@ shows its figures as a row of text above the plot.
 
 1. Install the requirements of the skill (see `INSTALL.md`).
 2. The grocery and parks decks need the Gelasio font (SIL Open Font License). Put your
-   copy of the Gelasio files in `WORK/fonts`, or install Gelasio yourself. The script
-   does not download fonts. If you install Gelasio yourself, make sure that
-   `fc-match Georgia` names Gelasio. If the skill does not find Gelasio, the font report
-   stops the build.
+   copy of the Gelasio files in `WORK/fonts`. If Gelasio is installed on your computer,
+   `fc-match Georgia` must name Gelasio. If the skill does not find Gelasio, the font
+   report stops the build. The script does not download or install fonts.
 3. The board deck and the wildfire plan need the Inter font (SIL Open Font License). Put
-   your copy of the Inter files in `WORK/fonts`, or install Inter yourself. For the
-   wildfire plan, install Inter yourself and make sure that `fc-match "Arial Narrow"` and
-   `fc-match "Segoe UI"` name Inter, as on the machine that built it. The fonts folder
-   does not change the font that fontconfig picks for a missing font. If fontconfig picks
-   a different font, the text measures differently, and the build can refuse pages.
+   your copy of the Inter files in `WORK/fonts`. The wildfire plan also needs a fontconfig
+   that names Inter for "Arial Narrow" and "Segoe UI", as on the machine that built it.
+   Run `fc-match "Arial Narrow"` and `fc-match "Segoe UI"` to examine this. The fonts
+   folder does not change the font that fontconfig picks for a missing font. If
+   fontconfig picks a different font, the text measures differently. Then the build can
+   refuse pages. Installing a font is your own action. Do not ask Claude to do it.
 4. For the transit outlook and the wildfire plan, download the reference file (see "The
    two reference decks"). Use an absolute path outside the skill folder.
 5. Make an empty work folder. Use an absolute path outside the skill folder.

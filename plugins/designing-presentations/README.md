@@ -55,8 +55,9 @@ reference page beside its new page, and its gallery lists each deck.
   location. So LibreOffice does not download a picture that a deck links to on the web
   (`scripts/render.py`, `offline_copy`).
 
-  Only one script downloads files: `refs/fetch.sh`.
-  It runs only when you start it. It downloads the public reference decks that
+  Only one script downloads files: `fetch-refs.sh`, in this plugin folder.
+  It is outside the skill folder, so the skill does not ship it and never runs it. It
+  runs only when you start it. It downloads the public reference decks that
   `refs/MANIFEST.md` lists, with curl, into the folder `refs/files/` of the skill. The
   sources are the sites of the publishers, Amazon S3, DocumentCloud and
   raw.githubusercontent.com. The script checks each file against its sha256. Without
@@ -64,7 +65,7 @@ reference page beside its new page, and its gallery lists each deck.
   empty.
 - **Writes:** in a work folder that you name. The scripts refuse an output path in the
   skill folder. There are two exceptions, and git ignores both: `refs/files/`, which
-  `refs/fetch.sh` fills, and `refs/library/`, a library that you build from those decks.
+  `fetch-refs.sh` fills, and `refs/library/`, a library that you build from those decks.
 
 ## Install
 
@@ -95,5 +96,5 @@ https://github.com/0xfauzi/pptx-skill/blob/main/INSTALL.md
 
 MIT (see `skills/designing-presentations/LICENSE.txt`). `scripts/confusable_letters.json`
 holds a subset of the Unicode confusables data under the Unicode License v3. The file
-includes the notice of that licence. The reference decks that `refs/fetch.sh` downloads
+includes the notice of that licence. The reference decks that `fetch-refs.sh` downloads
 belong to their publishers. They are not part of the plugin.

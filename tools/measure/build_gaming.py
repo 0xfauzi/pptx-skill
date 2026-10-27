@@ -2,7 +2,7 @@
 
     python3 -I tools/measure/build_gaming.py OUT_DIR keybank.pptx honest.pptx template.pptx
 
-keybank.pptx is the deck that refs/fetch.sh downloads (mi_keybank_first_niagara_fig_ma.pptx).
+keybank.pptx is the deck that plugins/designing-presentations/fetch-refs.sh downloads (mi_keybank_first_niagara_fig_ma.pptx).
 honest.pptx is a section built on that reference, for example from
 examples/keybank-section.deck.json. template.pptx is the output of
 `scripts/pptx_tools.py template keybank.pptx`. The script writes these decks:
