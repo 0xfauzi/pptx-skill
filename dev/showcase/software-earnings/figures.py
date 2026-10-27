@@ -160,8 +160,9 @@ assert below == [4, 5, 6, 7] and arr_yoy9[3] < yoy[3] and arr_yoy9[8] > yoy[8]
 put("quarters_arr_growth_under_revenue_growth_before_q3fy26", 5)  # Q2 FY25 to Q2 FY26
 assert all(arr_yoy9[i] < yoy[i] for i in range(3, 8)) and arr_yoy9[2] > yoy[2]
 # page 2's growth lines run Q2'25 to Q3'26: the five quarters behind and the crossing, the end labels on them
-gx = json.load(open("deck.json"))["slides"][1]["charts"]["gx"] if __import__("os").path.exists("deck.json") else None
-if gx is not None:
+if __import__("os").path.exists("deck.json"):
+    with open("deck.json") as spec:
+        gx = json.load(spec)["slides"][1]["charts"]["gx"]
     assert gx["categories"] == QS[3:] and gx["series"][0]["values"] == arr_yoy9[3:] and gx["series"][1]["values"] == yoy[3:]
 put("growth_lines_arr", arr_yoy9[3:]); put("growth_lines_revenue", yoy[3:])
 json.dump(OUT, open(sys.argv[1], "w"), indent=1) if len(sys.argv) > 1 else None
