@@ -112,7 +112,8 @@ line, bracket or mark with no label and no `explained_by`, with the reference's 
 such marks with and without words: answer it in the report); `briefs differ from the file's exhibits` (the
 plan's brief count and the written page's exhibit count differ; say which brief covers
 which exhibit. A row of three or more headline figures set as text, one figure to a box at
-one top and one size, larger than the page's body, is no exhibit of its own, so it never
+one top and one size, larger than the page's body, each with a currency, a unit, a decimal
+point or a thousands group (so a row of step numbers or years is not one), is no exhibit of its own, so it never
 needs a brief; where the plan briefs one exhibit more than the page counts and holds such a
 row, the row is read as that exhibit and the counts agree), `tieout` (a totals cell that does not equal its column), `no
 source line` (below), `renderer divergence: category interval` (a `label_interval` or
