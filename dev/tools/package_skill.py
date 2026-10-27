@@ -8,7 +8,8 @@ The zip holds the skill directory itself as its one top-level entry
 judge's panel the user fetches (refs/files, refs/library: third-party decks, never shipped)
 and bytecode caches. It refuses, by name, a skill whose frontmatter claude.ai or the API
 would reject (a key outside the six the Agent Skills specification defines, a name that is
-not the directory's, a description past 1,024 characters), any other symbolic link, a
+not the directory's or breaks the spec's name rule, a description past 1,024 characters
+or a compatibility past 500), any other symbolic link, a
 LICENSE.txt that differs from the repository's LICENSE, and a total past the API's 30 MB
 uncompressed. It prints what it wrote, the file count and both sizes.
 """
@@ -27,6 +28,9 @@ SKILL = ROOT / "skills" / "designing-presentations"
 #: API upload accepts (code.claude.com/docs/en/skills, Frontmatter reference)
 UPLOAD_KEYS = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}
 MAX_DESCRIPTION = 1024  # agentskills.io/specification; platform.claude.com Agent Skills overview
+MAX_COMPATIBILITY = 500  # agentskills.io/specification
+#: a name: lowercase letters, digits and single hyphens, not at either end, at most 64
+NAME = re.compile(r"^(?!-)(?!.*--)[a-z0-9-]{1,64}(?<!-)$")
 MAX_UPLOAD_BYTES = 30 * 1024 * 1024  # platform.claude.com skills guide: under 30 MB uncompressed
 LEFT_OUT = {"refs/files", "refs/library"}
 SKIP_PARTS = {"__pycache__", ".DS_Store"}
@@ -52,6 +56,10 @@ def main(argv: list[str]) -> int:
     problems = []
     if set(fm) - UPLOAD_KEYS:
         problems.append(f"frontmatter keys {sorted(set(fm) - UPLOAD_KEYS)} are not among the six an upload accepts {sorted(UPLOAD_KEYS)}")
+    if not NAME.match(fm.get("name", "")):
+        problems.append(f"name {fm.get('name')!r} is not 1 to 64 lowercase letters, digits and single hyphens")
+    if len(fm.get("compatibility", "")) > MAX_COMPATIBILITY:
+        problems.append(f"compatibility is {len(fm['compatibility'])} characters, over {MAX_COMPATIBILITY}")
     if fm.get("name") != SKILL.name:
         problems.append(f"name {fm.get('name')!r} is not the directory's name {SKILL.name!r}")
     if not 1 <= len(fm.get("description", "")) <= MAX_DESCRIPTION:
