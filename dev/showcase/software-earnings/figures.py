@@ -150,4 +150,8 @@ lt = {"Gross margin": (80.4, "80-82"), "Sales and marketing": (35.8, "28-30"), "
 assert lt["Operating margin"][0] == opm[-1] and lt["Free cash flow margin"][0] == fcfm[-1]
 put("long_term_targets", lt)
 put("op_margin_gap_to_target_low_pts", r1(25 - opm[-1]))
+below = [i for i in range(4, 8) if arr_yoy9[i] < yoy[i]]
+assert below == [4, 5, 6, 7] and arr_yoy9[3] < yoy[3] and arr_yoy9[8] > yoy[8]
+put("quarters_arr_growth_under_revenue_growth_before_q3fy26", 5)  # Q2 FY25 to Q2 FY26
+assert all(arr_yoy9[i] < yoy[i] for i in range(3, 8)) and arr_yoy9[2] > yoy[2]
 json.dump(OUT, open(sys.argv[1], "w"), indent=1) if len(sys.argv) > 1 else None

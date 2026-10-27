@@ -183,6 +183,28 @@
      "chosen_form": "small revenue-by-type table with a totals row",
      "why": "the reader checks the mix as figures; a three-row table ties to the revenue chart beside it",
      "marks": "the Q3 FY26 column in indigo; the total bold under a rule"
+    },
+    {
+     "reader_must_see": "that ARR growth has just moved ahead of revenue growth after five quarters behind it, the lead indicator turning first",
+     "comparison": "ARR growth against revenue growth, quarter by quarter over nine quarters",
+     "data": "two growth rates in percent over nine quarters, close together and crossing three times",
+     "forms_considered": [
+      {
+       "form": "two growth lines on one axis",
+       "reason": "chosen: the crossing and the gap between the two rates read as one picture"
+      },
+      {
+       "form": "a growth-gap column per quarter",
+       "reason": "shows the gap but hides each rate, which the notes beside it quote"
+      },
+      {
+       "form": "no growth chart beside the notes",
+       "reason": "the claim that ARR now leads would rest on two category rows read side by side"
+      }
+     ],
+     "chosen_form": "two growth lines on one axis",
+     "why": "the reader asks whether faster ARR growth will carry revenue growth with it; two lines show where ARR fell behind and where it crossed back",
+     "marks": "ARR in indigo and revenue in slate, each labelled at its first and last quarter; the caption names the crossing"
     }
    ]
   },

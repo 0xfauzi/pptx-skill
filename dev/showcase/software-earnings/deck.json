@@ -1958,6 +1958,34 @@
              "text": "ARR: annualised value of subscription contracts in force at quarter end. Net new ARR: the change in ARR over the quarter."
             }
            ]
+          },
+          {
+           "type": "element",
+           "id": "y_h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "ARR growth against revenue growth"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "y_u",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Y/Y (%), Q3'24 to Q3'26; ARR ahead after five quarters behind"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "gx",
+           "kind": "chart",
+           "weight": 1.0
           }
          ],
          "weight": 0.7
@@ -2150,6 +2178,147 @@
       "y": 0.04,
       "w": 0.88,
       "h": 0.74
+     }
+    },
+    "gx": {
+     "type": "LINE",
+     "categories": [
+      "Q3'24",
+      "Q4'24",
+      "Q1'25",
+      "Q2'25",
+      "Q3'25",
+      "Q4'25",
+      "Q1'26",
+      "Q2'26",
+      "Q3'26"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink_muted"
+     },
+     "series": [
+      {
+       "name": "ARR",
+       "values": [
+        26.5,
+        26.2,
+        24.3,
+        21.4,
+        21.1,
+        21.0,
+        21.0,
+        21.1,
+        22.2
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false,
+        "role": "type.data_label",
+        "number_format": "0.0",
+        "ink_role": "color.accent1"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "show": true,
+          "text": "26.5",
+          "position": "below"
+         }
+        },
+        {
+         "index": 8,
+         "label": {
+          "show": true,
+          "text": "ARR 22.2",
+          "position": "above"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Revenue",
+       "values": [
+        27.0,
+        25.0,
+        24.0,
+        23.0,
+        21.7,
+        21.4,
+        21.6,
+        21.4,
+        21.3
+       ],
+       "line_role": "color.accent3",
+       "line_width_pt": 1.5,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false,
+        "role": "type.data_label",
+        "number_format": "0.0",
+        "ink_role": "color.ink_muted"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "show": true,
+          "text": "27.0",
+          "position": "above"
+         }
+        },
+        {
+         "index": 8,
+         "label": {
+          "show": true,
+          "text": "Revenue 21.3",
+          "position": "below"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": false,
+        "role": "type.axis_label",
+        "ink_role": "color.ink_muted",
+        "rotation_deg": 0
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 19.0,
+       "max": 28.5,
+       "cross_between": "midpoint"
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.06,
+      "y": 0.06,
+      "w": 0.7,
+      "h": 0.78
      }
     }
    },
@@ -3162,7 +3331,7 @@
            "paragraphs": [
             {
              "role": "type.caption",
-             "text": "% of revenue; each step is the fall in that cost line's share of revenue (gross margin: its rise)"
+             "text": "% of revenue; each step is the fall in that cost line's share of revenue (gross margin: its rise); axis from 8%"
             }
            ]
           },
@@ -3743,8 +3912,8 @@
       },
       "value": {
        "visible": false,
-       "min": 0,
-       "max": 18.5,
+       "min": 8.0,
+       "max": 17.6,
        "cross_between": "between"
       }
      },
