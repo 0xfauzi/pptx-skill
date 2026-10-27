@@ -40,6 +40,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import zipfile
 from collections import Counter
 from datetime import datetime, timezone
@@ -887,6 +888,12 @@ def blank(out: str, width_emu: int, height_emu: int) -> dict:
     for part in prs.part.package.iter_parts():
         if part.partname == "/docProps/app.xml":
             part._blob = _EMPTY_APP_XML
+    # the stock master bullets levels 2 and 4 with an en dash; a dash reads as a minus sign
+    # beside figures, so every dash bullet becomes the plain bullet the other levels use
+    for master in prs.slide_masters:
+        for bu in master.element.iter(qn("a:buChar")):
+            if any(unicodedata.category(ch) == "Pd" for ch in bu.get("char") or ""):
+                bu.set("char", "\u2022")
     prs.save(out)
     return {"out": out, "width_emu": width_emu, "height_emu": height_emu, "layouts": [lay.name for lay in prs.slide_layouts]}
 
