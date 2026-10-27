@@ -1,6 +1,6 @@
 ---
 name: designing-presentations
-description: Designs and builds native, editable PowerPoint presentations, either in the look of a reference the user supplies (a company template, a past deck, any .pptx, or a vector or scanned PDF) or, with no reference, in a look reasoned out from the reader, the subject and the data with full design latitude. Reads a reference's look as roles with provenance, reasons out every exhibit from what the reader must see, measures text fit with the real fonts, emits slides on the reference's masters or on a blank package, and refuses only what is measurably wrong. Use when the user asks for a pitch book, board deck, consulting deck, CIM, investor or management presentation, or any .pptx pages; wants slides in the look of a deck or PDF they attach; wants to extend or edit an existing deck; or wants a presentation designed with no reference at all.
+description: Designs native, editable PowerPoint (.pptx) decks in the look of a .pptx or PDF reference the user supplies, or with none. Use to create, extend or edit slides, a pitch book or a board deck.
 license: MIT (LICENSE.txt)
 compatibility: Needs Python 3.11+ with lxml, Pillow, python-pptx and pdfplumber, plus LibreOffice, poppler and fontconfig for renders (uharfbuzz optional). scripts/preflight.py reports what is missing and how to install it; the skill installs nothing.
 ---

@@ -387,7 +387,7 @@ Apply all of the following.
   ("anthropic", "claude"). Prefer gerund form. Do not reuse the name of another skill the
   agent may have; a generic name such as `pptx` is likely to collide. A suitable name:
   `building-company-style-decks`.
-- `description`: at most 1024 characters, third person, says what the skill does and when
+- `description`: at most 200 characters (claude.ai's limit, the strictest; the API and the specification allow 1,024), third person, says what the skill does and when
   to use it, with the key terms a user would say (pitch book, board deck, CIM, consulting
   deck, company template, reference style, no reference, brand guidelines, past decks, reference deck,
   .pptx, PDF reference).
