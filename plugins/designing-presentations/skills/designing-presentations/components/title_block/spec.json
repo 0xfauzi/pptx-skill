@@ -18,7 +18,7 @@
  "size_domain_emu": {
   "width": [2743200, 9144000],
   "height": [914400, 6858000],
-  "source": "the size domain of the seed this component was made from"
+  "source": "the size domain of the seed"
  },
  "variants": {
   "with_kicker": "flex column: kicker, title, hairline. Chosen whenever the data carries a kicker.",

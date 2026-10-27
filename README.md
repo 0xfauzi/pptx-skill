@@ -21,12 +21,16 @@ defect they can measure.
 Form S-1 of Anthropic, PBC, with no reference. The bank, Halden & Rowe, is fictional. The
 deck is an unofficial demonstration and is not investment advice.*
 
-[![Two more pages from the S-1 decks: a compute commitments page from an initiation report and a scenarios page from an investment committee pre-read](docs/showcase/strip.png)](#gallery)
+![Page 4 of an initiation report built from a public S-1: a bar chart of compute contracts with floors and ceilings, and three tables of contract terms, aggregates and funding](docs/showcase/initiation-page-4.png)
 
-*Pages from the other two S-1 decks in the gallery. The left page is page 4 of the
-initiation report of a fictional broker. The right page is page 5 of the investment
-committee pre-read of a fictional fund. Each image is the LibreOffice render of the .pptx
-file that the build wrote.*
+*Page 4 of the initiation report in the gallery below. The broker, Keswick Research, is
+fictional.*
+
+![Page 5 of an investment committee pre-read built from a public S-1: a scenarios table with labelled assumptions, and a bar chart of the multiple of entry value at three entry prices](docs/showcase/committee-page-5.png)
+
+*Page 5 of the investment committee pre-read in the gallery below. The fund, Marlow Street
+Capital, is fictional. Each image is the LibreOffice render of the .pptx file that the
+build wrote.*
 
 ## What the skill can do
 
@@ -51,8 +55,8 @@ file that the build wrote.*
 - **Use logos and icons.** The skill can use pictures from your files, pictures from the
   reference, and small SVG icons in the colours of the deck.
 - **Measure text fit.** The skill measures each text box, table cell and label in the
-  font that the renderer will draw. It uses HarfBuzz, or Pillow if HarfBuzz is not
-  installed. If the machine does not have the font that a page names, and the guide names
+  font that the renderer will draw. It uses HarfBuzz, or Pillow if the machine does not
+  have HarfBuzz. If the machine does not have the font that a page names, and the guide names
   no stand-in font, the build refuses the page. If a page does not fit, the report tells you what
   to change.
 - **Refuse defects that it can measure.** The build refuses a page that has one of these
@@ -126,7 +130,7 @@ does not track and any content that an upload would reject. INSTALL.md lists the
 ### Claude API
 
 Upload the same folder through the Skills API. INSTALL.md gives the commands. The
-container of the API has no network access and cannot install packages. Thus the skill
+container of the API has no network access and cannot install packages. So the skill
 can run there only if the container already has the packages that the skill needs.
 `scripts/preflight.py` shows which packages are missing.
 
@@ -179,8 +183,9 @@ The skill built these three decks from the public Form S-1 of Anthropic, PBC, fi
   investment advice."
 - Valuations, forecasts, probabilities, sizes and price limits are illustrative
   assumptions of the fictional firm. The decks label them as assumptions.
-- A separate reviewer checked each figure against the filing. The builder then corrected
-  the errors that the reviewer found.
+- Each page names the section of the S-1 that its figures come from. You can check
+  each figure against the filing. If a figure on a page is different from the S-1, the S-1
+  is correct.
 
 The build sources of these three decks are not in this repository.
 
@@ -270,8 +275,8 @@ results come from Ubuntu 24.04 with LibreOffice 24.2.7.2 and the versions in INS
 | Result | Measurement | Command |
 |---|---|---|
 | The four gallery decks build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report` |
-| A section in the look of a reference is filed under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
-| The judge refuses five wrong decks in the look of the reference | Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
+| The judge files a section in the look of a reference under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
+| Only the layout check separates five wrong decks from the reference | The judge totals of the five wrong decks are 0.134 to 0.308, in the spread of the reference. So the style total alone files each wrong deck under the reference. Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
 | The raster instrument reads a render back | The script renders keybank at 100 dpi and measures the pixels. The surface (FFFFFF) and the navy (113D63) are exact. The ink is 010101 against 000000 in the file. The left margin is within 0.01 in of the file, and the other margins are within 0.09 in. The body size estimate is 11.7pt against 12pt in the file. | `sh tools/measure/raster_keybank.sh`, then compare `raster/raster.md` with the draft of `scripts/extract_style.py` |
 | Chart positions agree with LibreOffice | The script reads 474 features of 15 chart configurations and a table. The largest offset from the prediction of `scripts/chart_geometry.py` is 1.07 px, and the mean is 0.236 px, at 1600 px wide. The script did not find 7 features within 7 px of the prediction. The script reports that a later series can cover such a feature. | `python3 -I tools/measure/chart_geometry_probe.py /abs/out/dir` |
 

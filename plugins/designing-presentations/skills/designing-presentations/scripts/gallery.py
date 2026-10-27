@@ -122,7 +122,7 @@ class GalleryRefused(Exception):
 
 @dataclass(frozen=True)
 class Leaf:
-    ref: str  # spelling spTree/sp[3](id=6), position among ALL container children
+    ref: str  # spelling: spTree/sp[3](id=6), position among ALL container children
     shape_ref: str  # ooxml.py's spelling (sp[id=6]), the key a guide's evidence carries
     kind: str  # shape | connector | image | table | chart | graphic
     role: str  # placeholder type, or "none"
@@ -221,7 +221,7 @@ def _ink_reach(element: etree._Element, shape: ooxml.Shape) -> tuple[int, bool]:
 def join_deck(path: Path) -> Deck:
     """ooxml.py's per-slide shapes (placeholder geometry inherited, group transforms
     applied) joined, in document order, to the XML leaf each came from, for the
-    facts ooxml.py does not record: the ref spelling, the a:r count, and the
+    facts ooxml.py does not record: ref spelling, the a:r count, and the
     ink reach. Any disagreement between the two walks refuses the deck."""
     prints = ooxml.fingerprint_deck(str(path))
     if not prints:
@@ -318,8 +318,7 @@ def join_pdf(path: Path, chrome: Sequence[Box]) -> tuple[Deck, list[int]]:
 
 
 def content_leaves(slide: Slide) -> list[Leaf]:
-    """Leaves with geometry, chrome dropped, sorted by ref: the shape join
-    sorts its keys, and that order fixes which member names a component."""
+    """Leaves with geometry, chrome dropped, sorted by ref: that order fixes which member names a component."""
     return sorted((leaf for leaf in slide.leaves if leaf.bounds is not None and not leaf.chrome), key=lambda leaf: leaf.ref)
 
 
@@ -746,7 +745,7 @@ def render_pages(deck_path: Path, out: Path, width: int) -> tuple[list[Path], di
 
 
 def render_fidelity(fonts: dict[str, dict[str, object]]) -> str:
-    """The worst-family verdict. A metric alias (Liberation, Carlito,
+    """Worst-family verdict. A metric alias (Liberation, Carlito,
     Caladea) keeps the layout faithful and the letterforms not; an unrelated
     substitute changes text extents too; a deck that vouches for nothing is unknown.
     A face proven to draw bullet glyphs only (render.font_report bullets_only) sets no
@@ -1148,8 +1147,8 @@ def manifest_markdown(
 
 # --- pick: the images a page's design call carries ---------------------------------------------
 
-EXEMPLAR_PICK = 2  # exemplar budget
-CROP_PICK = 3  # an image budget per call (5, provisional) less the two exemplars
+EXEMPLAR_PICK = 2
+CROP_PICK = 3
 _WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z]+|[a-z]+|\d+")
 
 
@@ -1231,7 +1230,7 @@ def rank(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> tupl
 
 
 def pick(gallery_dir: Path, intent_text: str, guide: dict | None = None) -> str:
-    """rank() printed as an exemplars block and a gallery block."""
+    """rank() printed."""
     exemplars, crops = rank(gallery_dir, intent_text, guide)
     tagged = bool(page_words(guide))
     lines = [f"intent words: {' '.join(sorted(words(intent_text)))}",

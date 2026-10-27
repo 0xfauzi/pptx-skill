@@ -3,7 +3,7 @@
 The skill is the folder `plugins/designing-presentations/skills/designing-presentations/`.
 This document calls it the skill folder.
 
-The skill runs Python scripts and LibreOffice on the machine where Claude works. Thus that
+The skill runs Python scripts and LibreOffice on the machine where Claude works. So that
 machine must have the requirements below. The skill installs nothing. The script `scripts/preflight.py` checks each requirement and
 prints the install command for each missing item. You run the commands.
 
@@ -21,17 +21,17 @@ prints the install command for each missing item. You run the commands.
 
 The table shows the versions that we tested this release on (Ubuntu 24.04).
 
-| Requirement | Necessary for | Tested version |
+| Requirement | What it does | Tested version |
 |---|---|---|
-| Python 3.11 or later | all scripts | 3.13.16 |
-| lxml | reading and writing OOXML | 6.1.3 |
-| Pillow | images, crops, the fallback text ruler | 12.3.0 |
-| python-pptx | writing the deck | 1.0.2 |
-| pdfplumber | reading PDF references | 0.11.10 (pdfminer.six 20260107) |
-| uharfbuzz (optional) | the better text ruler; without it, the Pillow ruler measures, and the build report says so | 0.57.0 |
-| LibreOffice (`soffice`) | rendering .pptx to PDF; all render checks read this render | 24.2.7.2 |
-| poppler (`pdftoppm`, `pdftotext`, `pdffonts`) | rasterising pages, reading the words that a render drew | 24.02.0 |
-| fontconfig (`fc-match`, `fc-query`) | finding the installed font for each font name | 2.15.0 |
+| Python 3.11 or later | Runs all scripts. | 3.13.16 |
+| lxml | Reads and writes OOXML. | 6.1.3 |
+| Pillow | Reads and writes images and crops. Gives the fallback text ruler. | 12.3.0 |
+| python-pptx | Writes the deck. | 1.0.2 |
+| pdfplumber | Reads PDF references. | 0.11.10 (pdfminer.six 20260107) |
+| uharfbuzz (optional) | Gives the better text ruler. Without it, the Pillow ruler measures, and the build report tells you. | 0.57.0 |
+| LibreOffice (`soffice`) | Renders .pptx to PDF. All render checks read this render. | 24.2.7.2 |
+| poppler (`pdftoppm`, `pdftotext`, `pdffonts`) | Rasterises pages. Reads the words that a render drew. | 24.02.0 |
+| fontconfig (`fc-match`, `fc-query`) | Finds the installed font for each font name. | 2.15.0 |
 
 The references of the skill give renderer measurements from LibreOffice 24.2.7.
 Another version can draw differently. If it does, the render checks of the build show
@@ -126,7 +126,7 @@ plugin in its cache:
 ```
 
 If you set `CLAUDE_CODE_PLUGIN_CACHE_DIR`, the cache is in that folder. If you set
-`CLAUDE_CONFIG_DIR`, the cache is in `$CLAUDE_CONFIG_DIR/plugins`. Thus, for this
+`CLAUDE_CONFIG_DIR`, the cache is in `$CLAUDE_CONFIG_DIR/plugins`. For this
 release, the skill is at this path:
 
 ```
@@ -207,7 +207,7 @@ curl -X POST https://api.anthropic.com/v1/skills \
 Then put the `skill_id` from the response in the `container.skills` of a Messages
 request: `{"type": "custom", "skill_id": "...", "version": "latest"}`. Also add the code
 execution tool to the request. The container of the API has no network access and cannot
-install packages. Thus the skill can do only what the installed packages let it do.
+install packages. So the skill can do only what the installed packages let it do.
 Preflight shows which packages are missing.
 
 ## The judge's panel (optional)
@@ -226,7 +226,7 @@ each file against the sha256 in `refs/MANIFEST.md`. Git ignores `refs/files/`. W
 panel, the build still runs and reports that the panel is empty.
 
 After a plugin install, the skill is in the cache folder. An update makes a new version
-folder that does not have the panel. Thus, after each update, run `fetch.sh` again in the
+folder that does not have the panel. So, after each update, run `fetch.sh` again in the
 folder of the new version:
 
 ```sh

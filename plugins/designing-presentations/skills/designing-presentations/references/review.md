@@ -39,9 +39,7 @@ pages would. Then change the specs and build again. Never a score.
 4. The reference: side by side with the reference's best pages, what differs? Title register and
    length, where the claim sits, how dense, how the reference marks emphasis, whether it draws
    gridlines and legends, how much it labels.
-5. What a rater noticed on generated pages (composition.md, "What a rater
-   noticed"): low chart and layout variety, missing logos, claim titles where the reference titles by topic,
-   and a "random red circle with no label". Put the questions there to this page against
+5. Put the questions to this page against
    the reference's own pages and counts: a card grid for content that is not a comparison, big
    numbers with no base or population, corners, centred text, three of everything,
    uniform spacing, one composition repeated where pages are not siblings.

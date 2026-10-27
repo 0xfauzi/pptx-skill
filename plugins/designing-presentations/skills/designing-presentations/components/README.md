@@ -66,10 +66,3 @@ being a name nothing can reach.
 The `admitted.json` files shipped here were written by `component.py admit` into a work
 directory (keybank guide) and copied in by the maintainer; they name the sheet and
 the reference by file name only.
-
-## Merit case
-
-A server-side generator runs model-written component code in a sandbox because a server executes code a
-model wrote for strangers. Here the model writes and runs the code in its own session,
-which is already the sandbox, so the contract tests, the held-out case and the render
-review are kept and the container is not.

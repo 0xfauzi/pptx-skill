@@ -365,9 +365,7 @@ and `overflow` each below 0.2 of their span; `overflow_where` names each shape),
 page fit with a valid package. `judge.components` names what is off (`size_hist`,
 `fills`, `text_colors`, `margins`, `kinds`). `judge.cannot_judge` replaces the distances
 when the reference has no type evidence (a scan): the verdict is yours, from the renders.
-The judge does not track a reader's eye: decks filed at 0.068 and 0.085
-were caught on every page, and one the judge could not file fooled the rater 4 of 5
-times. A filed deck is necessary, not sufficient, and is not thereby finished. A deck
+The judge does not track a reader's eye. A filed deck is necessary, not sufficient, and is not thereby finished. A deck
 nearer another panel deck than its reference shows in `judge.components` which components
 carry the distance: fix what it names, or say in the report why it stands.
 

@@ -125,15 +125,14 @@ def open_presentation(path: str):
 EMU_PER_PT = 12700
 HEX_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
-# The origin tag every generated slide carries (one p:tag in its own tags part). Measured:
-# the part coming back out of a PowerPoint save with the p:tag intact.
+# The origin tag every generated slide carries (one p:tag in its own tags part).
 ORIGIN_TAG_NAME = "pptx-skill"
 ORIGIN_TAG_VALUE = "generated"
 # The thinnest stroke PowerPoint still inks: at 0.25pt it lays 0.48px where LibreOffice
-# lays 1.27px (measured); at 0.5pt both are above one pixel.
+# lays 1.27px; at 0.5pt both are above one pixel.
 RULE_WEIGHT_FLOOR_EMU = 6350
 # Chart plot groups whose schema carries c:varyColors (ECMA-376 21.2.2). The element
-# defaults to TRUE and the two renderers read the default oppositely (measured).
+# defaults to TRUE and the two renderers read the default oppositely.
 VARY_COLORS_GROUPS = {"barChart", "bar3DChart", "lineChart", "line3DChart", "pieChart", "pie3DChart", "ofPieChart", "doughnutChart",
                       "areaChart", "area3DChart", "scatterChart", "radarChart", "bubbleChart"}
 # Children that precede c:varyColors in those groups' sequences.
@@ -559,7 +558,7 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
 # name. A bracket or brace is drawn opening toward what it spans: `rot` 90 turns
 # leftBracket's spine to the top (a bracket above a span) and rightBracket's to the bottom
 # (below it). PRESETS_DRAWN_BEFORE are the ones the emitter wrote before any preset could
-# be named, drawn in the round proofs' LibreOffice renders; no preset has been measured
+# be named; no preset has been measured
 # against PowerPoint, and one outside this set has not been looked at in either renderer,
 # so the build reports it as renderer-unmeasured (build_deck.unmeasured_presets).
 PRESETS_DRAWN_BEFORE = frozenset({"rect", "roundRect", "ellipse", "chevron", "homePlate", "rightArrow", "leftArrow", "downArrow", "upArrow",
@@ -2622,9 +2621,8 @@ def _origin_tag_xml() -> bytes:
 
 
 def write_origin_tag(slide) -> str:
-    """One User Defined Tags part per generated slide, referenced from p:cSld/p:custDataLst
-    (measured:
-    the part surviving a PowerPoint save with its p:tag intact). python-pptx writes the
+    """One User Defined Tags part per generated slide, referenced from p:cSld/p:custDataLst.
+    python-pptx writes the
     part's content type into [Content_Types].xml and the relationship into the slide's
     rels on save. p:custDataLst follows p:spTree in CT_CommonSlideData's sequence."""
     package = slide.part.package

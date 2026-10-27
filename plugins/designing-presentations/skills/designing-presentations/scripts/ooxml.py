@@ -73,7 +73,7 @@ MAX_ZIP_MEMBERS = 5000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
 #: the cost of parsing is the element count, not the byte size: a 718 KB package can inflate
 #: under the member cap to 62.9 MB of real elements, which held 768 MB and ran past five
-#: minutes. Measured: the largest of 39 packages (refs/files and other public decks)
+#: minutes. Measured: the largest of 39 packages
 #: holds 24,263 elements over all its XML parts (themes.pptx; the largest part 2,938, a jazz
 #: slide); a package of 991,964 validates in 4.4 to 6.7 s at 465 MB, where the 62.9 MB one
 #: took 22.8 s at 1,490 MB with no cap. The cap is 41 times
@@ -803,7 +803,7 @@ STRUCTURE_PANELS_MAX = 3  # definition, unmeasured: 3 panels and more read as on
 DRAWN_STRUCTURE_MIN = 3
 #: definition, unmeasured: this many charts of one form drawn at one size are one small multiple (one
 #: panel, one brief); two are left as two, since a pair of same-size charts is
-#: as often two exhibits with a brief each (six sparklines in one panel take one brief)
+#: as often two exhibits with a brief each (six sparklines under one brief)
 SMALL_MULTIPLE_MIN = 3
 #: which reading of a page made a guide's exhibit facts: a guide whose pages carry another
 #: (or none) was read under a different definition, and plan.py refuses it by name
@@ -889,7 +889,7 @@ def exhibit_facts(print_: SlidePrint, is_chrome) -> dict:
     # SMALL_MULTIPLE_MIN or more charts of one form drawn at one size are one small multiple
     # (a column sparkline per tile): one panel and one brief, however many charts it repeats.
     # Same-size charts of different forms are different exhibits (a column, a bar and a
-    # line chart in three equal slots must not read as one)
+    # line chart in three equal slots were read as one)
     multiples: dict[tuple, list] = {}
     for sh in content:
         if sh.kind == "chart":
@@ -2067,7 +2067,7 @@ def _pdf_family(fontname: str | None) -> tuple[str | None, bool]:
 
 PDF_TRIAGE_IMAGE_COVER = 0.4
 """A page whose images cover at least this share is a candidate scan. Measured on the 8
-public reference PDFs (re-run: tools/measure/triage_probe.py in the source repository): EDGAR browser prints
+public reference PDFs: EDGAR browser prints
 embed the slide as one image at 0.47 to 0.69 of a letter page; Citi and the UF McKinsey
 scans sit at 1.0; vector decks with a photo or chart image reach 0.61 to 0.66 on single
 pages (jazz p5, p6) and the calstrs deck paints full-bleed background images under vector
@@ -2774,7 +2774,7 @@ def _pdf_text(page, sp: SlidePrint, scale: float, painted: dict[tuple, int] | No
 
 RECURRENCE_FLOOR = 0.5
 """A position or a text is the deck's own when it recurs on at least half its pages
-(extract_style.py reads it from here as MOTIF_RECURRENCE_FLOOR)."""
+(extract_style.py reads it from here)."""
 TITLE_SLOT_DEPTH = 3
 """How many of a page's topmost text blocks may be its title: a disclaimer line or a
 section tag above the title (bcg pages 20 and 30) pushes it to second place."""

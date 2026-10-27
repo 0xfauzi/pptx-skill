@@ -10,19 +10,17 @@ Three arrangements: `horizontal` sets the figures side by side on one line with 
 label beneath its figure; `stacked` turns the row on its side into label-left,
 figure-right lines; `panel` sets each figure and its label in a filled tile. Panels are
 reached only by asking for them (`data["variant"]`): big-number or KPI panels are on 8 of
-578 coded corpus pages, none of them bank pages (references/composition.md), and a
-rater named "icon + number + label tiles" a generated-deck tell; a figure alone in
+578 coded corpus pages, none of them bank pages (references/composition.md); a figure alone in
 a tile must carry its base in its label, so the report asks of what, and for whom.
 
-WHICH RULE PICKS THE VARIANT when none is asked: the bullet_stack rule, with parts = the
+WHICH RULE PICKS THE VARIANT when none is asked: parts = the
 metric count,
 
     parts >= 2 and width // parts >= height
 
 AND, added here, every figure must measure onto one line in its horizontal column
 (guide["_api"]["text_width_emu"] plus the ruler's fit epsilon, against the column
-width after the gutters). A figure is never wrapped: a box that passes the
-aspect test but cannot hold the widest figure gets `stacked`. The choice and its reason
+width after the gutters). A figure is never wrapped: a box that cannot hold the widest figure gets `stacked`. The choice and its reason
 are in the report. `horizontal` or `panel` with fewer than two metrics is refused.
 
 All arrangements are flex, not grid: grid tracks are uniform

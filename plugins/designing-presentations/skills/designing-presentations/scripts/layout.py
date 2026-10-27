@@ -110,11 +110,7 @@ EMU_PER_POINT = 12_700
 EMU_PER_HUNDREDTH_POINT = 127
 #: The one font grid; 0.5 pt lands on sz.
 FONT_QUANTUM_PT = Fraction(1, 2)
-#: Runaway bounds, never design limits. MAX_NODES and MAX_GRID_TRACKS are
-#: inherited. A MAX_TREE_DEPTH of 5 measured shape containment (depth 3 on
-#: three reference decks plus 2 of headroom), not this
-#: tree's layout regions, and refused a component placed three regions down (root > body
-#: > col > component > its rows); the depth bound here is a finite guard against a
+#: Runaway bounds, never design limits. The depth bound here is a finite guard against a
 #: runaway tree, and the build reports each page's deepest chain (Spec.deepest).
 MAX_TREE_DEPTH, MAX_NODES, MAX_GRID_TRACKS = 12, 400, 64
 #: What the emit gate forgives between two
@@ -128,14 +124,13 @@ DEFAULT_CELL_INSET_EMU = 45_720
 POWERPOINT_LINE_HEIGHT_RATIO = 1.2
 REQUESTED_SPACING_SLACK_EMU = 254
 NUMERIC_VALUE_KINDS = frozenset({"number", "percent", "currency", "date"})
-#: 0.01 steps from 0.99 down to 0.10, a
-#: single measured step; the floor stops the descent first.
+#: 0.01 steps from 0.99 down to 0.10; the floor stops the descent first.
 SCALE_LADDER = tuple(Fraction(n, 100) for n in range(99, 9, -1))
 MARGIN_ROLE = "space.margin"
 #: Whole-string mean advance for capacity, labelled in the output as such.
 REFERENCE_ALPHABET = "the quick brown fox jumps over the lazy dog 0123456789 ($%,.)"
 #: What PowerPoint draws when the attribute is absent: b/i off, spcBef/spcAft/spc
-#: zero, and single spacing = 1.2 x size (measured: 1.2002 em
+#: zero, and single spacing = 1.2 x size (1.2002 em
 #: on 7 families, 1.2000 exact in cells).
 _ABSENT_TYPE_VALUES = {
     "line_spacing": 1.2, "weight": 400, "italic": False, "space_before_pt": 0.0,
@@ -1367,14 +1362,14 @@ def wrapped_lines(ctx: Context, text: str, budget: int, kind: DrawnRole) -> tupl
 
 def required_line_box_emu(size_hundredths: int, requested_spacing_hundredths: int | None) -> int:
     """PowerPoint's line box in a cell: exact at 1.2 x size with no a:lnSpc, an
-    upper bound (never exceeded on 200 measured cases) with an explicit a:spcPts."""
+    upper bound (never exceeded on 200 cases) with an explicit a:spcPts."""
     natural = POWERPOINT_LINE_HEIGHT_RATIO * size_hundredths * EMU_PER_HUNDREDTH_POINT
     requested = 0.0 if requested_spacing_hundredths is None else requested_spacing_hundredths * EMU_PER_HUNDREDTH_POINT + REQUESTED_SPACING_SLACK_EMU
     return round(max(natural, requested))
 
 def required_row_height_emu(line_counts: Sequence[int], size_hundredths: int, requested_spacing_hundredths: int | None, inset_top: int, inset_bottom: int) -> int:
     """a:tr/@h is a MINIMUM: PowerPoint realises lines x line_box + marT + marB
-    (measured, 114 graded cases), so this is what the row is declared at."""
+    (114 graded cases), so this is what the row is declared at."""
     return max(line_counts, default=0) * required_line_box_emu(size_hundredths, requested_spacing_hundredths) + inset_top + inset_bottom
 
 def _spread_surplus(keys: list[str], natural: dict[str, int], surplus: int) -> dict[str, int]:
@@ -1676,7 +1671,7 @@ def _attempt(ctx: Context, scale: Fraction) -> Attempt:
 
 def descend(ctx: Context) -> Outcome:
     """Solve at 1.00; when every violation is scale-fixable, bisect the admitted
-    candidates down to the floor (fit is monotone in s, measured); else Unfittable."""
+    candidates down to the floor (fit is monotone in s); else Unfittable."""
     candidates = floor_admitted_candidates(ctx.guide, ctx.spec)
     if not candidates:
         breaches = table_floor_breaches(ctx.guide, ctx.spec)

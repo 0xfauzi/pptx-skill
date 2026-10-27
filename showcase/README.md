@@ -8,12 +8,12 @@ persons and figures are fictional.
 
 | Deck | Pages | Fonts | Sources |
 |---|---|---|---|
-| `lbo-committee-book` | 6 | Calibri; Arial for chart text | `model.py` (the LBO model), `build_spec.py` (writes `deck/deck.json` and prints each stated figure), `plan.json`, `completion.json` |
+| `lbo-committee-book` | 6 | Calibri, with Arial for chart text | `model.py` (the LBO model), `build_spec.py` (writes `deck/deck.json` and prints each stated figure), `plan.json`, `completion.json` |
 | `grocery-strategy` | 5 | Georgia titles, Arial | `figures.py` (writes `data.json` and prints each stated figure), `make_deck.py` (writes `deck/deck.json`), `plan.json`, `completion.json` |
 | `software-earnings` | 5 | Arial | `figures.py` (checks and prints each stated figure), `deck.json` (the spec, written by hand), `plan.json`, `completion.json` |
 | `parks-annual-report` | 5 | Georgia titles, Arial | `figures.py`, `deck.json`, `plan.json`, `completion.json` |
 
-The decks name only fonts that PowerPoint has on Windows and macOS. Thus the .pptx files
+The decks name only fonts that PowerPoint has on Windows and macOS. So the .pptx files
 open as built. The build measures each font with the installed font or with its
 metric-compatible stand-in (`METRIC_ALIAS_CLASSES` in `scripts/textfit.py`):
 
@@ -25,8 +25,9 @@ The font list in INSTALL.md includes Liberation Sans and Carlito. It does not in
 Gelasio.
 
 The LBO deck sets its chart text in Arial. At the small sizes that the deck uses,
-LibreOffice draws Carlito chart labels with incorrect word spaces. Arial chart figures
-also have uneven gaps between glyphs. For this reason, the bridge of the committee book
+LibreOffice draws Carlito chart labels with incorrect word spaces. LibreOffice also draws
+Arial chart figures in Liberation Sans, the stand-in for Arial, with uneven gaps between
+glyphs. For this reason, the bridge of the committee book
 shows its figures as a row of text above the plot.
 
 ## Build a deck again
@@ -69,12 +70,12 @@ python3 showcase/sheet.py docs/showcase/grocery-strategy.png 1632 1 GROCERY/out/
 the name and work folder of that deck. It makes an image of all pages of the deck in one
 column. Then copy `WORK/out/deck.pptx` to `docs/showcase/<deck>.pptx`.
 
-The top-level README images `hero.png` and `strip.png` come from the three S-1 decks. Their
-build sources are not in this repository. These commands made the images from the page
-renders of those builds:
+The top-level README images `hero.png`, `initiation-page-4.png` and `committee-page-5.png`
+come from the three S-1 decks. Their build sources are not in this repository. These
+commands made the images from the page renders of those builds:
 
 ```sh
 python3 showcase/sheet.py docs/showcase/hero.png 1632 1 PITCHBOOK/renders/slide-01.png
-python3 showcase/sheet.py docs/showcase/strip.png 1632 2 RESEARCH/renders/slide-04.png \
-  COMMITTEE/renders/slide-05.png
+python3 showcase/sheet.py docs/showcase/initiation-page-4.png 1632 1 RESEARCH/renders/slide-04.png
+python3 showcase/sheet.py docs/showcase/committee-page-5.png 1632 1 COMMITTEE/renders/slide-05.png
 ```

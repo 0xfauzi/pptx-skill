@@ -16,8 +16,7 @@ The roles, the gap and the hairline are open through `data["roles"]` and `data["
 report, with the variant and why.
 
 Kicker over title, not beside it: setting one text beside another needs a flex weight
-for kicker against title, and no source gives that ratio (a 2x2 grid gave the
-hairline half the band's height).
+for kicker against title.
 
 The column gap is space.xs, not space.sm: on keybank (title 24pt, two lines in
 the 8,229,600 x 1,143,000 band) the two space.sm gaps left the block 102,473 EMU over

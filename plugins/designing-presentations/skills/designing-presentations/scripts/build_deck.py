@@ -617,7 +617,7 @@ def unmeasured_presets(elements: list[dict]) -> list[dict]:
     from emit_pptx import PRESETS_DRAWN_BEFORE
     seen = sorted({(el.get("prst") or "rect", el["id"]) for el in elements if el["kind"] == "rect" and (el.get("prst") or "rect") not in PRESETS_DRAWN_BEFORE})
     return [{"kind": "renderer-unmeasured preset", "severity": "warning",
-             "detail": f"{nid}: prst {prst!r} has not been drawn in either renderer by this skill's proofs: check its render, and open the deck in "
+             "detail": f"{nid}: prst {prst!r} has not been drawn in either renderer: check its render, and open the deck in "
                        "PowerPoint before release (references/review.md), since the two renderers may draw it differently"} for prst, nid in seen]
 
 
@@ -1670,13 +1670,13 @@ def chart_text_drawn(emit_pages: list[dict], words: list[list[tuple]], turned: l
 
 
 #: Measured, LibreOffice 24.2.7, a line series with no markers, 12 points a
-#: chart (tools/measure/label_probe.py in the source repository): per face the renderer draws and per size, the gap from
+#: chart: per face the renderer draws and per size, the gap from
 #: an `above` label's word box (pdftotext's) to its point and from its point to a `below`
 #: label's box, the middle of the 12 points' range (each range is 560 EMU or less). The gap
 #: does not grow with the size; it moves by up to 12,000 EMU between neighbouring sizes. At a
 #: size not measured the face's smallest gap is taken (the label nearest its point, which a
 #: neighbouring segment crosses first), and on a face not measured the smallest of all. With
-#: a marker the gap is unmeasured. An earlier reading of Inter 9pt (37,411 to 38,050 and 38,908 to
+#: a marker the gap is unmeasured. Inter 9pt (37,411 to 38,050 and 38,908 to
 #: 39,379) is reproduced here (37,489 to 38,048, 38,816 to 39,375).
 LINE_LABEL_GAP_EMU: dict[str, dict[float, tuple[int, int]]] = {
     "Liberation Sans": {6: (39_900, 33_000), 7: (37_200, 31_300), 8: (34_600, 39_000), 9: (41_200, 36_600), 10: (38_500, 34_900),
@@ -1742,12 +1742,11 @@ def predicted_line_labels(el: dict, ctx: L.Context) -> dict[str, tuple]:
 
 
 #: A word box runs the face's ascent to descent; the ink sits inside it. Measured,
-#: on LibreOffice's render of chart labels rasterised at 600 dpi (tools/measure/
-#: label_probe.py in the source repository, 6 to 14pt, 254 to 256 words a face): per face the renderer draws, the
+#: on LibreOffice's render of chart labels rasterised at 600 dpi (6 to 14pt, 254 to 256 words a face): per face the renderer draws, the
 #: smallest share of the box above the ink (top), and below it for words with no descender
 #: and with one ('Aug'), over every size; the shares move by 0.03 or less between sizes.
 #: Liberation Sans's descender reaches 0.002 past the box's bottom (under a pixel), kept.
-#: An earlier reading of Inter at 9pt and about 110 dpi read 0.17, 0.21 and 0.06; at 600 dpi Inter's
+#: Inter at 9pt and about 110 dpi read 0.17, 0.21 and 0.06; at 600 dpi Inter's
 #: descender inset is 0.018, so the old band left the descender's bottom out. A line is held
 #: to the ink band, never to the empty ascent and descent (investor p3: a cohort line ran
 #: under '1.47x' through its box's descent). A face not measured takes the smallest of each.
@@ -2071,7 +2070,7 @@ def general_text(value: float) -> str | None:
 
 
 #: Measured, LibreOffice 24.2.7, a horizontal clustered bar chart, labels on one
-#: line (tools/measure/label_probe.py in the source repository; Liberation Sans, Carlito, Gelasio and Inter at 6, 7, 8,
+#: line (Liberation Sans, Carlito, Gelasio and Inter at 6, 7, 8,
 #: 9, 10, 11, 12 and 14pt, 4 bars each): an `inside_base` label's word box starts 35,801 EMU
 #: past the bar's base at every face and size; an `inside_end` label's ends 29,303 to 47,136
 #: EMU short of the bar's end, varying with face and size. The smallest is kept, the
@@ -2176,8 +2175,8 @@ def overflow_neighbours(el: dict, si: int, over: dict[int, tuple[float, float]])
 
 def bar_category_bands(elements: list[dict], ctx: L.Context) -> list[str]:
     """Each horizontal bar chart whose category band is shorter than one line of its
-    category labels: LibreOffice then drops labels to keep the rest apart (measured, round
-    8, LibreOffice 24.2.7, 14 names at 8pt: a band 0.99 of a line drew 7 of 14 names, 1.11
+    category labels: LibreOffice then drops labels to keep the rest apart (measured,
+    LibreOffice 24.2.7, 14 names at 8pt: a band 0.99 of a line drew 7 of 14 names, 1.11
     of a line drew all 14, over six heights). The band is the plot's height over the
     category count (the chart frame's when no plot_area is fixed: an upper bound, so a
     band under a line there is short for certain)."""

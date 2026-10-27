@@ -132,11 +132,7 @@ capacity; preflight now says `NOT measurable here` for such a face, on a line th
 stand-in is named (the exit code stays 0; `missing` is kept for what stops the workflow).
 
 **What you may install.** Nothing, on your own. Preflight prints the commands; the user
-runs them, or tells you to. Fonts and Python packages are machine-wide: in one round on a
-shared machine an agent installed Verdana (Microsoft's `verdan32.exe`, unpacked with
-`cabextract` into `/usr/local/share/fonts/verdana`), another Gelasio (into
-`/usr/local/share/fonts/gelasio`), and a third `uharfbuzz` with pip, and every other
-session's renders, fc-match answers and fit budgets moved under it. A proprietary face
+runs them, or tells you to. Fonts and Python packages are machine-wide. A proprietary face
 (Verdana, Georgia and the rest of Microsoft's core fonts) is also a licence the user
 accepts, not you. What you may do without asking: name, under
 `/typography/families/substitutes`, the stand-in fc-match already draws (below). Say in

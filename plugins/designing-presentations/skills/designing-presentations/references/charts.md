@@ -81,7 +81,7 @@ changes because of something that happened, a total over a stack when the claim 
 total, a box round the one answer on a recommendation. Ask where your claim lives, then
 ask how this reference marks such a place (its digest says, in its own words, what it marks and
 how). A mark elsewhere is decoration; a mark that says nothing about what it marks reads
-as a model's attempt to annotate (a rater, on an unlabelled red circle). The build
+as a model's attempt to annotate. The build
 draws a mark with no label and no `explained_by` and warns, with the reference's own count of
 such marks beside it; the report answers the warning. An `explained_by` that names something
 not on the page is refused (`annotation explanation not found`, annotate.py).

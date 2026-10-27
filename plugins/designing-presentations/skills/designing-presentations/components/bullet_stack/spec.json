@@ -15,7 +15,7 @@
  "size_domain_emu": {
   "width": [2743200, 9144000],
   "height": [1600200, 6858000],
-  "source": "the size domain of the seed this component was made from"
+  "source": "the size domain of the seed"
  },
  "variants": {
   "single_column": "flex column of one text element per item, read straight down",

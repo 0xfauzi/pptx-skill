@@ -47,8 +47,7 @@ consulting 317, chart book 30), one coder per page, good to about plus or minus 
 - Measured on generated sections: a planner told to write claim titles wrote 19 with a
   median of 80 characters against a reference median of 35; only 4 fit within the
   reference's longest, and 17 of 22 held pages were held because the title overran its
-  band. The rater caught every generated page in exactly the two firms
-  where claim titles met a topic-title reference.
+  band.
 
 ## Where the claim lives when the title is a topic
 

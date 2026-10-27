@@ -190,7 +190,7 @@ DEFAULT_LINE_PT = 2.25
 def line_strokes(geo: ChartGeometry) -> list[tuple[str, tuple, float]]:
     """(name, segment, width EMU) of every stroked segment of a line series, between
     consecutive points that both carry a number: a line chart's series and a combo chart's
-    line series alike (a target line through a column chart's labels must be checked)."""
+    line series alike."""
     if geo.family == "xy":
         return []
     out = []
@@ -1402,8 +1402,7 @@ def explanation(ann: dict, kind: str, host: dict, by_id: dict, guide: dict, wher
         return None
     how = ann.get("explained_by")
     if how is None:
-        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks; a rater read "
-                                    "an unlabelled red circle as \"a model's attempt to annotate\". Reference evidence: "
+        raise AnnotationUnexplained(f"{where}: an unlabelled {kind} ({geometry}) says nothing on the page about what it marks. Reference evidence: "
                                     f"{reference_evidence(guide, geometry, host['kind'])}. Answer this in the report (what the mark tells a reader "
                                     f"with no words beside it), or give it a label, or explained_by: {EXPLAINED_EXAMPLE}")
     shapes = ({"text", "quote"}, {"annotation"}, {"legend"}, {"footnote"}, {"reference_precedent"})

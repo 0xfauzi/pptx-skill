@@ -38,12 +38,12 @@ except ImportError:  # the stock sandbox ships Pillow; uharfbuzz is optional
 EMU_PER_POINT = 12_700
 
 #: Width shrink before wrapping, per ruler, so no box is optimistic against
-#: PowerPoint, measured. HarfBuzz: 13 + 20,221. Pillow x128:
-#: "shrink 5,933 EMU -> 0 optimistic boxes".
+#: PowerPoint. HarfBuzz: (13 + 20,221). Pillow x128:
+#: ("shrink 5,933 EMU -> 0 optimistic boxes").
 FIT_EPSILON_HARFBUZZ_EMU = 20_234
 FIT_EPSILON_PILLOW_EMU = 5_933
 
-#: The converged Pillow scale: at x1 only 306/600 boxes agree, at x128 539/600.
+#: Converged Pillow scale: at x1 only 306/600 boxes agree, at x128 539/600.
 PILLOW_SCALE = 128
 
 #: A 7.5 in page at 1 pt holds about 450 lines.
@@ -271,7 +271,7 @@ def break_opportunities(text: str) -> tuple[int, ...]:
     return tuple(stops)
 
 def wrap_text(text: str, budget_units: float, advance: Advance) -> tuple[WrappedLine, ...]:
-    """Greedy wrap under the measured rules: break after space or hyphen, trailing
+    """Greedy wrap: break after space or hyphen, trailing
     spaces free, a token wider than the line breaks between characters, every
     candidate line measured as one string."""
     return wrap_spans(text, budget_units, lambda a, b: advance(text[a:b]))
@@ -297,7 +297,7 @@ def wrap_spans(text: str, budget_units: float, span: Callable[[int, int], float]
         chosen_advance = 0.0
         # Advance is monotone in prefix length: exponential probe then binary
         # search bound the longest prefix that could fit, so no stop past it
-        # is ever shaped (measured: 9.55 s per call without this).
+        # is ever shaped (9.55 s per call without this).
         end_of_text = stops[-1]
         width = 16
         upper = min(position + width, end_of_text)
@@ -414,10 +414,10 @@ class HarfBuzzRuler:
         return round(units / self._font(path)[1] * size_pt * EMU_PER_POINT)
 
 class PillowRuler:
-    """The measured Pillow configuration: x128 scale, BASIC layout, getlength.
+    """Decided Pillow configuration: x128 scale, BASIC layout, getlength.
 
     BASIC is pinned explicitly because a RAQM-enabled Pillow would otherwise
-    shape through a different engine than the one that was scored. Pillow's BASIC
+    shape through a different engine than the one scored. Pillow's BASIC
     engine applies legacy kern pairs at 1/64 magnitude and ignores GPOS; its 5,933 EMU shrink is what
     makes it one-sided despite that.
     """
@@ -472,8 +472,7 @@ def ruler_named(name: str) -> Ruler:
 def ruler_pin() -> dict:
     """What a draft records of its measurement: the ruler this machine runs now. Every
     later command on that guide measures with it (ruler_for), so a package installed
-    mid-session (a second agent's pip install of uharfbuzz moved every fit budget of a
-    session that had planned on Pillow) never changes the instrument under a deck."""
+    mid-session never changes the instrument under a deck."""
     return {"ruler": default_ruler().name,
             "basis": "pinned when the draft was extracted; every capacity, survey and build on this guide measures with this ruler"}
 

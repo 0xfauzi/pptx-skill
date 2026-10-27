@@ -182,8 +182,6 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
 MARGIN_SIDES = ("left", "right", "top", "bottom")
 #: a spacing step is answered in EMU; one under a point (12,700 EMU) is a value written in
 #: points or pixels (6 meant as 6 pt is 6 EMU, 0.0005 pt), refused rather than stored.
-#: In the guides built for this repo's proofs, observed steps (a zero margin aside) start at
-#: 27,432 EMU (2.2 pt).
 MIN_STEP_EMU = 12_700
 STEP_UNIT_HINT = "a step is EMU (12,700 per point, 91,440 per 0.1 in): was it written in points or pixels?"
 #: the spacing steps the round trip (import_slide) and the components read by name
@@ -583,7 +581,7 @@ def title_register(guide: dict, value) -> dict:
 #: that later steps hold the reference to (a data page, chart text the reference sets); nothing
 #: in a record is chosen from a list
 #: least words; marks takes any words, since what an exhibit marks may be nothing ("nothing
-#: ringed" must not be refused as too short)
+#: ringed" was refused as too short)
 EXHIBIT_TEXT = {"what": 1, "message": plan.BRIEF_MIN_WORDS, "how_drawn": plan.BRIEF_MIN_WORDS, "marks": 1}
 EXHIBIT_FLAGS = ("chart_or_table", "axis_labels", "value_labels")
 EXHIBIT_KEYS = {"candidate", *EXHIBIT_TEXT, *EXHIBIT_FLAGS, "why"}

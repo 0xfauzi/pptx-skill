@@ -510,8 +510,7 @@ value on the primary axis (`{"value": v}`; a line at a secondary value is
 `{"value": v, "axis": "secondary_value"}`).
 
 Proven on: the Netflix pitchbook's page 5 rebuilt on its own guide (data read back from
-the page's picture). Measured by
-`tools/measure/chart_geometry_probe.py` (in the source repository) with a line on 0..100 and columns on a secondary
+the page's picture). Measured with a line on 0..100 and columns on a secondary
 0..40: every bar edge and point within 0.64 px of chart_geometry at 1600 px.
 
 ```json
@@ -650,7 +649,7 @@ covers the neighbouring rows; `"pad_role": "none"` is the box on the cell edges.
 ### A mark says what it means
 
 A ring, box, band, line or bracket with no words reads as decoration or as a model's
-attempt to annotate (a rater on an unlabelled red circle). Each one carries a
+attempt to annotate. Each one carries a
 `label`, or names under `explained_by` exactly one thing that explains it, or neither:
 then it is drawn and warned `annotation unexplained`, with the reference's own count beside
 it (the outline, fill, line or bracket marks its files draw on that kind of host, with
@@ -707,7 +706,7 @@ And warns, under `problems`, to be answered in the report:
 Positions are computed in EMU from `plot_area`, the axis scale, `gap_width`, `overlap`
 and the series count (`scripts/chart_geometry.py`), and were measured against
 LibreOffice 24.2 renders of 13 chart configurations and a table (408 features, worst
-1.07 px, mean 0.24 px at 1600 px: `tools/measure/chart_geometry_probe.py` in the source repository). Whether
+1.07 px, mean 0.24 px at 1600 px). Whether
 PowerPoint places the inner plot rectangle the same way is not measured.
 
 Proven on: `examples/keybank-annotations.deck.json`, four pages rebuilt from corpus

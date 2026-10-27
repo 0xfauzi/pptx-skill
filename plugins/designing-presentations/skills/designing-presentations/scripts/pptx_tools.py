@@ -62,7 +62,7 @@ from emit_pptx import ORIGIN_TAG_NAME, open_presentation  # noqa: E402  the prod
 from layout import PRODUCT_SAFETY_FLOOR_PT, table_floor_pt  # noqa: E402  the build's own floors: one rule for both gates
 from ooxml import Package, PackageRefused, _apply_transform, group_child_transform, resolve_target, visual_extent, xfrm_box, xfrm_rotation  # noqa: E402  one reader
 R_NS = qn("r:id")[1:].partition("}")[0]
-# 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (measured).
+# 0.5pt: the thinnest stroke PowerPoint still inks above one pixel.
 RULE_WEIGHT_FLOOR_EMU = 6350
 # Every DrawingML stroke: a:ln on shapes and charts, the six table cell borders.
 LINE_TAGS = ("a:ln", "a:lnL", "a:lnR", "a:lnT", "a:lnB", "a:lnTlToBr", "a:lnBlToTr")
@@ -267,7 +267,7 @@ def _drop_slide(prs, index: int) -> None:
 
     A custom show that names the slide holds a second reference, and python-pptx's
     drop_rel declines while any reference remains: the part would survive and collide
-    with the next added slide's partname (seen on a reference deck). A custom show's entry for the removed slide means nothing, so it goes
+    with the next added slide's partname. A custom show's entry for the removed slide means nothing, so it goes
     first; the show keeps its other slides, and a show left with none goes with it."""
     root = prs.part._element
     sld_id_lst = prs.slides._sldIdLst
@@ -674,7 +674,7 @@ def emit_checks(pkg, slide_parts: list[str], guide: dict | None, parse) -> tuple
                     problems.append(f"{cp}: c:{etree.QName(g).localname} writes no c:varyColors: the element defaults to true and PowerPoint paints one series in five theme colours where LibreOffice paints one")
             _check_strokes(cp, croot, guide_widths, problems, info)
             for grad in croot.iter(qn("a:gradFill")):
-                problems.append(f"{cp}: a:gradFill in a chart part: the two renderers draw a gradient differently")
+                problems.append(f"{cp}: a:gradFill in a chart part")
                 break
             _check_sizes(cp, croot.iter(), floors["chart"], "chart family", problems, info)
     return problems, info

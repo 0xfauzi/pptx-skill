@@ -19,7 +19,7 @@
 - LibreOffice sets a line chart's `above` and `below` labels (no markers) a gap from their
   point that depends on the face and the size and does not grow with the size: 24,800 to
   41,900 EMU above and -18,900 to 43,100 EMU below over Liberation Sans, Carlito, Gelasio
-  and Inter at 6 to 14pt (`tools/measure/label_probe.py` in the source repository; Gelasio's tall word box overlaps its
+  and Inter at 6 to 14pt (Gelasio's tall word box overlaps its
   point). On a steep line the neighbouring segment then runs through the label. The build
   predicts that with the gap measured for the face and size (`LINE_LABEL_GAP_EMU`) and reads
   it off the render, holding the line to each face's measured ink band
@@ -27,8 +27,7 @@
 - LibreOffice sets an `inside_base` label on a horizontal bar 35,801 EMU past the bar's base,
   at every face and size measured, and never wraps or moves it: a label longer than the bar
   less that runs past the bar's end onto the plot. The build measures it and scores its ink
-  there (`contrast`); an `inside_end` label ends 29,303 to 47,136 EMU short of the bar's end
-  (`tools/measure/label_probe.py` in the source repository).
+  there (`contrast`); an `inside_end` label ends 29,303 to 47,136 EMU short of the bar's end.
 - Line pitch is 1.2 times the size, font independent (7 families); font tables are wrong by
   up to 20%.
 - Table row heights in the file are minimums; PowerPoint realises lines x 1.2 x size plus
