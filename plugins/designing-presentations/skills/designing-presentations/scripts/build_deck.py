@@ -3256,7 +3256,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"])
     ap.add_argument("--plan", default=None, help="the section plan (plan.py): realised compositions are compared with the planned ones")
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
-    ap.add_argument("--computed", action="append", default=[], help="figures your own arithmetic produced from the user's data, as text; "
+    ap.add_argument("--computed", action="extend", nargs="+", default=[], metavar="FILE", help="figures your own arithmetic produced from the user's data, as text; "
                     "a past deck's figure that matches one is listed under leakage.declared_computed instead of as distinctive")
     ap.add_argument("--components", default=None, help="your components directory (a work directory): components a page names are read "
                     "there and in the skill's components/, and your admissions there come first")

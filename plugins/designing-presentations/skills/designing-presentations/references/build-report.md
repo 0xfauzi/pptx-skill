@@ -262,8 +262,9 @@ half its pages or more, and the template's own text), and every word of a `--bri
 raster reference the past deck's copy of a footer is OCR text that never reads as chrome
 there). Pictures are compared by hash, the template's own excepted.
 
-`--computed FILE` takes the figures your own arithmetic produced from the user's data, as
-text (the output of the script that computes and asserts every stated figure). A past
+`--computed FILE [FILE ...]` takes the figures your own arithmetic produced from the user's
+data, as text: the output of the script that computes and asserts every stated figure, in
+one file or several (named after one flag, or one flag each). A past
 deck's figure that also appears there is listed once under `declared_computed`, with the
 past page it coincides with, instead of as distinctive: a computed 1.6% that a reference
 also prints is a coincidence you can name. A figure matches on its value and its unit
