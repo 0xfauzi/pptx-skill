@@ -24,8 +24,9 @@ digits, the second 0 or 5: 10%, 15%, $1,000, 4.0x) and a year carry no informati
 where they came from. Those are listed once under `low`, with what to do; everything else
 is `distinctive`, listed per page, rarest first (most words no public deck uses).
 
-Not reported: chrome, which is any text a past deck repeats on at least CHROME_SHARE of its
-pages (the bank name in the footer, a confidentiality line) and the text the template
+Chart text (titles, categories, series names, cached values) is compared like other page
+text. Not reported: chrome, which is any text outside a chart that a past deck repeats on at
+least CHROME_SHARE of its pages (the bank name in the footer, a confidentiality line) and the text the template
 itself draws; and anything found in a --brief file (the user's brief and data, as text).
 A figure found in a --computed file (the output of the model's own arithmetic over the
 user's data, as text) is not distinctive either, and not silent: it is listed under
@@ -48,7 +49,6 @@ import hashlib
 import json
 import re
 import sys
-import zipfile
 from pathlib import Path
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
@@ -57,7 +57,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 PHRASE_WORDS = 5  # unmeasured
 CHROME_SHARE = 0.5  # unmeasured: repeated on half the pages or more is the reference's furniture
 _TOKEN = re.compile(r"[$€£]?\d[\d,.]*%?x?|[A-Za-z][A-Za-z&'\-]*")
-_FIGURE = re.compile(r"^[$€£]\d|\d\d%$|^\d{3,}|\d[.,]\d")
+#: a figure token: a currency, a unit (% or x, one digit or more: 7%, 13x), three digits or
+#: more, or a decimal
+_FIGURE = re.compile(r"^[$€£]\d|\d%$|\dx$|^\d{3,}|\d[.,]\d")
 #: a figure: its currency, its number (thousands groups only as three digits after a comma,
 #: so a JSON list [36,24] reads as two numbers, never as 3624) and its unit. A unit is part
 #: of the value: a count of 36 is not 36%, so a bare number never stands for a percentage
@@ -86,18 +88,30 @@ def norm(word: str) -> str:
     return word.casefold().rstrip(".,")
 
 
-def page_texts(path: str) -> list[list[str]]:
-    """The text each page draws, as a list of strings (paragraphs, cells), slide layer only
-    for a .pptx (master and layout text is the template's), every word for a PDF."""
+def page_parts(path: str) -> list[tuple[list[str], list[str]]]:
+    """Per page, (its text strings: title, paragraphs, cells; its chart strings: each chart's
+    title, categories, series names and cached values, where comps and client names go).
+    Slide layer only for a .pptx (master and layout text is the template's); a PDF's words
+    are all text (a PDF states no charts)."""
     if path.lower().endswith(".pdf"):
         import annotate
-        return [[" ".join(w for _, w in words)] for words in annotate.pdf_words(path)]
+        return [([" ".join(w for _, w in words)], []) for words in annotate.pdf_words(path)]
     from pptx_tools import slide_text
     out = []
     for e in slide_text(path):
         strings = [e["title"] or ""] + [b["text"] for b in e["blocks"]] + [c for t in e["tables"] for row in t["rows"] for c in row]
-        out.append([s for s in strings if s])
+        charted: list[str] = []
+        for c in e.get("charts") or []:
+            charted += [c["title"] or "", *c["categories"]]
+            for ser in c["series"]:
+                charted += [ser["name"] or "", *(v for v in ser["values"] if v is not None)]
+        out.append(([x for x in strings if x], [x for x in charted if x]))
     return out
+
+
+def page_texts(path: str) -> list[list[str]]:
+    """The strings each page draws, its charts' included (page_parts)."""
+    return [text + charted for text, charted in page_parts(path)]
 
 
 def features(strings: list[str]) -> dict[str, set[tuple[str, ...]]]:
@@ -159,6 +173,9 @@ def background(past: list[str]) -> tuple[list[tuple[str, str]], str]:
             if f.suffix.lower() not in (".pptx", ".pdf") or _twin_key(f) in skip or str(f.resolve()) in skip:
                 continue
             try:
+                if f.suffix.lower() == ".pptx":
+                    import ooxml
+                    ooxml.Package(str(f))  # the zip caps first: a public deck is untrusted too
                 strings = [x for page in page_texts(str(f)) for x in page]
             except Exception as error:  # noqa: BLE001 - an unreadable public deck is left out, and named in the note
                 unread.append(f"{f.name} ({type(error).__name__})")
@@ -211,14 +228,30 @@ def rarity(kind: str, key: tuple, text: str, decks: list[tuple[str, str]], vocab
 
 
 def media_hashes(path: str) -> dict[str, str]:
+    """sha256 of every ppt/media member, read through ooxml.Package (member and size caps,
+    refused by name over them) and hashed in blocks, never read whole."""
     if not path.lower().endswith(".pptx"):
         return {}
-    with zipfile.ZipFile(path) as z:
-        return {hashlib.sha256(z.read(n)).hexdigest(): n for n in z.namelist() if n.startswith("ppt/media/")}
+    import ooxml
+    pkg = ooxml.Package(path)
+    out = {}
+    with pkg.zip as z:
+        for n in sorted(pkg.names):
+            if n.startswith("ppt/media/"):
+                h = hashlib.sha256()
+                with z.open(n) as f:
+                    for block in iter(lambda f=f: f.read(1 << 20), b""):
+                        h.update(block)
+                out[h.hexdigest()] = n
+    return out
 
 
 def leakage(new: str, past: list[str], briefs: list[str] | None = None, template: str | None = None, page_ids: list | None = None,
             computed: list[str] | None = None, furniture: list[str] | None = None) -> dict:
+    import ooxml
+    for deck in [new, *past, *([template] if template else [])]:
+        if deck.lower().endswith(".pptx"):
+            ooxml.Package(deck)  # the zip caps, before any reader opens an untrusted deck (PackageRefused names it)
     briefs = briefs or []
     computed = computed or []
     computed_text = [Path(c).read_text(errors="replace") for c in computed]
@@ -235,8 +268,10 @@ def leakage(new: str, past: list[str], briefs: list[str] | None = None, template
     past_pages: list[tuple[str, int, dict]] = []
     chrome_counts = {}
     for deck in past:
-        pages = [features(s) for s in page_texts(deck)]
-        chrome = chrome_of(pages)
+        parts = page_parts(deck)
+        pages = [features(text + charted) for text, charted in parts]
+        # chrome is furniture: a chart's data is content however often it repeats
+        chrome = chrome_of([features(text) for text, _ in parts])
         chrome_counts[Path(deck).name] = {k: len(v) for k, v in chrome.items()}
         for k, v in chrome.items():
             excluded[k] |= v

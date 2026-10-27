@@ -162,10 +162,14 @@ def parse_pages(spec: str) -> set[int]:
 
 
 def deck_pages(items: list[str] | None) -> dict[str, set[int] | None]:
-    """ID:PAGES items; a bare ID means every page of that deck."""
+    """ID:PAGES items; a bare ID means every page of that deck. "ID:" with nothing after the
+    colon is a page list left empty ("ID:$PAGES" with PAGES unset), refused, never read as
+    every page."""
     out: dict[str, set[int] | None] = {}
     for item in items or []:
-        deck_id, _, pages = item.partition(":")
+        deck_id, colon, pages = item.partition(":")
+        if colon and not pages.strip():
+            raise Refused("bad_pages", f"{item!r}: nothing after the colon; write ID:PAGES (2,5-7), or the bare ID for every page")
         if not pages or (deck_id in out and out[deck_id] is None):
             out[deck_id] = None
         else:
@@ -287,25 +291,47 @@ def withdraw_images(lib: Library, deck_id: str) -> tuple[int, int]:
     return gone, changed
 
 
+#: a deck id is one path component (it names LIB/pages/ID and LIB/work/ID) and a key of
+#: ID:PAGES: letters, digits, dot, dash, underscore and space, starting with a letter or digit
+DECK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._ -]{0,127}")
+
+
+def deck_id_error(deck_id: object) -> str | None:
+    if not isinstance(deck_id, str) or not DECK_ID.fullmatch(deck_id) or deck_id.endswith((" ", ".")):
+        return (f"deck id {deck_id!r} is not one safe name: letters, digits, '.', '-', '_' and spaces, starting with a letter or digit "
+                "(it names the deck's folders under the library, so no '/', '..' or ':')")
+    return None
+
+
 def permit(lib: Library, deck: Path | None, deck_id: str, owner: str, source_type: str, images: bool, by: str, basis: str,
-           licence: str | None) -> tuple[dict, str | None]:
+           licence: str | None, save: bool = True) -> tuple[dict, str | None]:
+    bad = deck_id_error(deck_id)
+    if bad:
+        raise Refused("bad_deck_id", f"{bad}; pass --id")
     if lib.manifest["owner"] not in (None, owner):
         raise Refused("owner_mismatch", f"{lib.root} belongs to {lib.manifest['owner']!r}; one company's library is never shared with another")
     if source_type == "company" and owner == "external":
         raise Refused("company_deck_external_owner", "a company deck enters that company's library, not the external one")
     lib.guard_location(owner)
     pages = page_count(deck) if deck else None
+    digest = sha256(deck) if deck else None
+    twin = next((i for i, r in lib.manifest["decks"].items() if digest is not None and i != deck_id and r.get("sha256") == digest), None)
+    if twin is not None:
+        # one deck, one record, one permission: a second id would never be built or named
+        raise Refused("deck_already_permitted", f"{deck.name} is already permitted as {twin!r} (same sha256); permit again with --id {twin} "  # type: ignore[union-attr]
+                      "to change its permission")
     lib.manifest["owner"] = owner
     record = lib.manifest["decks"].setdefault(deck_id, {})
     note = None
     if not images and record.get("permission", {}).get("keep_images"):
         gone, changed = withdraw_images(lib, deck_id)
         note = f"{deck_id}: image permission withdrawn; {gone} kept image files deleted, {changed} entries now carry no image"
-    record.update({"file_name": deck.name if deck else None, "sha256": sha256(deck) if deck else None, "source_type": source_type,
+    record.update({"file_name": deck.name if deck else None, "sha256": digest, "source_type": source_type,
                    "pages": pages, "permission": {"keep_images": images, "by": by, "basis": basis, "licence_basis": licence}})
     record.setdefault("excluded_pages", [])
     record.setdefault("excluded", False)
-    lib.save()
+    if save:
+        lib.save()
     return record, note
 
 
@@ -359,16 +385,17 @@ def without_pages(deck: Path, pages: set[int], tmp: Path) -> Path:
     return out
 
 
-def page_facts(deck: Path, excluded: set[int]) -> tuple[dict[int, dict], tuple[int, int]]:
+def page_facts(deck: Path, excluded: set[int]) -> tuple[dict[int, dict], dict[int, tuple[int, int]]]:
     """What the file states about each page that is not excluded, read through ooxml.py
     (pptx parts or the PDF reader). Nothing here is a judgement about the page. A PDF
     states no tables or charts: their counts are None there, not zero."""
     prints = ooxml.fingerprint_deck(str(deck))
     if not prints:
         raise Refused("no_pages", f"{deck.name} has no pages")
-    size = (prints[0].width, prints[0].height)
     prints = [sp for sp in prints if sp.index + 1 not in excluded]
-    return facts_of(prints, None if gallery.is_pdf(deck) else ooxml.Package(str(deck))), size
+    # each page's own size: a PDF's pages need not share one
+    sizes = {sp.index + 1: (sp.width, sp.height) for sp in prints}
+    return facts_of(prints, None if gallery.is_pdf(deck) else ooxml.Package(str(deck))), sizes
 
 
 def facts_of(prints: list, pkg) -> dict[int, dict]:
@@ -521,11 +548,14 @@ def build(lib: Library, decks: list[Path], keep: dict, skip: dict, exclude: dict
 def build_deck(lib: Library, deck_id: str, record: dict, deck: Path, excluded: set[int], keep: dict, skip: dict, coder: str,
                tmp: Path) -> list[str]:
     report = []
-    facts, (w, h) = page_facts(deck, excluded)
+    facts, sizes = page_facts(deck, excluded)
     if len(facts) + len(excluded) != record["pages"]:
         raise Refused("page_count_mismatch", f"{deck_id}: {len(facts)} pages read and {len(excluded)} excluded against {record['pages']} at permit")
-    size = {"width_in": round(w / EMU_PER_INCH, 3), "height_in": round(h / EMU_PER_INCH, 3), "aspect": round(w / h, 3),
-            "measured_from": "the deck's page size"}
+
+    def size_of(w: int, h: int) -> dict:
+        return {"width_in": round(w / EMU_PER_INCH, 3), "height_in": round(h / EMU_PER_INCH, 3), "aspect": round(w / h, 3),
+                "measured_from": "the page's own size"}
+    size = size_of(*sizes[min(sizes)]) if sizes else None  # the record's: its first page read
     triage = propose(list(facts.values())) + [{"page": p, "proposal": None, "evidence": None} for p in sorted(excluded)]
     triage.sort(key=lambda r: r["page"])
     for row in triage:
@@ -567,7 +597,7 @@ def build_deck(lib: Library, deck_id: str, record: dict, deck: Path, excluded: s
         target = (page_dir if keep_images else work) / f"p-{p:03d}.png"
         shutil.copyfile(drawn[p], target)
         rel = lib.add_file(target, deck_id, "page_image" if keep_images else WITHHELD_KIND, [p])
-        entry = stub(deck_id, p, record, size, facts[p]["layout"], fidelity, rel if keep_images else None, coder)
+        entry = stub(deck_id, p, record, size_of(*sizes[p]), facts[p]["layout"], fidelity, rel if keep_images else None, coder)
         prior = kept.get(p)
         if prior is not None and prior.get("source_sha256") == record["sha256"]:
             entry.update({k: prior[k] for k in TAG_FIELDS})
@@ -781,40 +811,70 @@ CORPUS_FIELD = {"deck_type": "house_type"}
 def import_corpus(lib: Library, source: Path, by: str, basis: str) -> list[str]:
     """The development corpus's curated pages (pagecraft library.json) as external entries.
     The corpus kept no deck files beside the images, so a deck's sha256 is null (no
-    evidence) and the page size is the stored image's own aspect."""
+    evidence) and the page size is the stored image's own aspect. Every page is checked
+    before anything is copied (its deck id one safe name, its image a readable picture,
+    a relative path read from the corpus file's own folder), and one refusal names every
+    problem: nothing is imported unless all of it is."""
     payload = json.loads(source.read_text())
     pages = payload.get("pages") if isinstance(payload, dict) else None
     if not isinstance(pages, list) or not all(isinstance(p, dict) for p in pages):
         raise Refused("corpus_unreadable", f"{source} has no pages list of objects")
-    unknown = [problem for p in pages for problem in _corpus_problems(p)]
-    if unknown:
-        raise Refused("corpus_unreadable", f"nothing imported; {len(unknown)} corpus exhibits refused: {'; '.join(unknown)}")
-    lines = []
+    problems = [problem for p in pages for problem in _corpus_problems(p)]
+    images: list[tuple[Path, int, int]] = []
     for page in pages:
-        deck_id = page["deck"]
-        if deck_id not in lib.manifest["decks"]:
-            permit(lib, None, deck_id, "external", "external", True, by, basis, None)
-        record = lib.manifest["decks"][deck_id]
-        image = Path(page["path"])
-        target = lib.root / "pages" / deck_id / f"p-{page['page']:03d}.png"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(image, target)
-        with Image.open(target) as im:
-            wpx, hpx = im.size
-        rel = lib.add_file(target, deck_id, "page_image", [page["page"]])
-        size = {"width_in": None, "height_in": None, "aspect": round(wpx / hpx, 3),
-                "measured_from": f"the stored image ({wpx} x {hpx} px); the corpus kept no page size"}
-        entry = stub(deck_id, page["page"], record, size, None, "no evidence: rendered by the corpus readers", rel, page["reader"])
-        entry["source_sha256"] = None
-        entry["look_at"] = rel
-        recorded = page[CORPUS_FIELD["deck_type"]]
-        entry.update({k: page[CORPUS_FIELD.get(k, k)] for k in TAG_FIELDS})
-        entry["exhibits"] = [{k: v for k, v in ex.items() if k not in CORPUS_LIST_TAGS} for ex in page["exhibits"]]
-        entry["deck_type"] = CORPUS_DECK_TYPE.get(recorded, "other")
-        if entry["deck_type"] != recorded:
-            entry["deck_type_as_recorded"] = recorded
-        lib.pages = [e for e in lib.pages if e["entry_id"] != entry["entry_id"]] + [entry]
-        lines.append(f"{entry['entry_id']}: {'; '.join(check_entry(entry)) or 'ok'}")
+        where = f"{page.get('deck')}-p{page.get('page')}"
+        bad = deck_id_error(page.get("deck"))
+        if bad:
+            problems.append(f"{where}: {bad}")
+        if not (isinstance(page.get("page"), int) and not isinstance(page.get("page"), bool) and page["page"] >= 1):
+            problems.append(f"{where}: page {page.get('page')!r} is not a page number")
+        missing = [f for f in ("reader", CORPUS_FIELD["deck_type"], *(CORPUS_FIELD.get(k, k) for k in TAG_FIELDS)) if f not in page]
+        if missing:
+            problems.append(f"{where}: {sorted(set(missing))} missing")
+        raw = page.get("path")
+        image = (source.parent / raw) if isinstance(raw, str) and not Path(raw).is_absolute() else Path(raw) if isinstance(raw, str) else None
+        try:
+            if image is None:
+                raise OSError("no path")
+            with Image.open(image) as im:
+                im.verify()
+            with Image.open(image) as im:
+                images.append((image, *im.size))
+        except Exception as error:  # noqa: BLE001  an unreadable image is a named problem, never a traceback
+            problems.append(f"{where}: path {raw!r} is not a readable image ({type(error).__name__}: {error})")
+            images.append((Path(), 0, 0))
+    if problems:
+        raise Refused("corpus_unreadable", f"nothing imported; {len(problems)} problem(s): {'; '.join(problems)}")
+    lines = []
+    copied: list[Path] = []
+    try:
+        for page, (image, wpx, hpx) in zip(pages, images, strict=True):
+            deck_id = page["deck"]
+            if deck_id not in lib.manifest["decks"]:
+                permit(lib, None, deck_id, "external", "external", True, by, basis, None, save=False)
+            record = lib.manifest["decks"][deck_id]
+            target = lib.root / "pages" / deck_id / f"p-{page['page']:03d}.png"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(image, target)
+            copied.append(target)
+            rel = lib.add_file(target, deck_id, "page_image", [page["page"]])
+            size = {"width_in": None, "height_in": None, "aspect": round(wpx / hpx, 3),
+                    "measured_from": f"the stored image ({wpx} x {hpx} px); the corpus kept no page size"}
+            entry = stub(deck_id, page["page"], record, size, None, "no evidence: rendered by the corpus readers", rel, page["reader"])
+            entry["source_sha256"] = None
+            entry["look_at"] = rel
+            recorded = page[CORPUS_FIELD["deck_type"]]
+            entry.update({k: page[CORPUS_FIELD.get(k, k)] for k in TAG_FIELDS})
+            entry["exhibits"] = [{k: v for k, v in ex.items() if k not in CORPUS_LIST_TAGS} for ex in page["exhibits"]]
+            entry["deck_type"] = CORPUS_DECK_TYPE.get(recorded, "other")
+            if entry["deck_type"] != recorded:
+                entry["deck_type_as_recorded"] = recorded
+            lib.pages = [e for e in lib.pages if e["entry_id"] != entry["entry_id"]] + [entry]
+            lines.append(f"{entry['entry_id']}: {'; '.join(check_entry(entry)) or 'ok'}")
+    except BaseException:
+        for target in copied:  # the manifest is not saved: no file stays that it does not list
+            target.unlink(missing_ok=True)
+        raise
     lib.save()
     return lines
 

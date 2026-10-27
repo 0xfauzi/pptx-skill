@@ -4,12 +4,13 @@ fontconfig, HarfBuzz, and the faces a reference uses.
 
     preflight.py [--reference REF.pptx|REF.pdf]
 
-Each line is ok, missing (the workflow cannot run; the install command follows) or
-optional (the workflow runs, and says what it does without it). With --reference, every
-face the reference names is looked up with fc-match: a face drawn by an unrelated
-substitute cannot be measured, and the build refuses text set in it until it is
-installed or a metric-compatible stand-in is named in the guide. Exit 0 when nothing
-required is missing.
+Each line is ok, missing (the workflow cannot run; the install command follows),
+optional (the workflow runs, and says what it does without it) or, for a face, needs.
+With --reference, every face the reference names is looked up with fc-match: a face drawn
+by an unrelated substitute, or with no file to measure it, reads needs: the workflow runs,
+and the build refuses text set in that face until it is installed or a metric-compatible
+stand-in is named in the guide. A symbol face (bullet and tick glyphs) is never measured
+as text and reads ok. Exit 0 when nothing missing; a needs line does not change the exit.
 """
 
 from __future__ import annotations
@@ -92,11 +93,12 @@ def main(argv: list[str]) -> int:
             symbol = face.lower().startswith(SYMBOL_FACES)  # bullet and tick glyphs: drawn, never measured as text
             if measured is None and symbol:
                 measures = "a symbol face: its glyphs are bullets and marks, not measured text"
+            bad = bad and not symbol
             unmeasured = measured is None and not e.get("bullets_only") and not symbol
             faces_ok = faces_ok and not bad and not unmeasured
             note = ("bullet glyphs only, moves no text" if e.get("bullets_only") else
                     "an unrelated face: do not read text fit off its renders" if bad else fidelity)
-            print(f"{'missing' if bad or unmeasured else 'ok':8} face {face}: drawn as {e.get('rendered_with')} ({note}); {measures}")
+            print(f"{'needs' if bad or unmeasured else 'ok':8} face {face}: drawn as {e.get('rendered_with')} ({note}); {measures}")
     if missing_pip or optional_pip or missing_apt:
         print("\nfor the user to run (or to tell you to); never run them yourself: packages are machine-wide (references/intake.md, What you may install)")
     if missing_pip:

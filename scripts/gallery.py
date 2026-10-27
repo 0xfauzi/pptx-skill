@@ -142,6 +142,14 @@ class Slide:
     hidden: bool
     leaves: tuple[Leaf, ...]  # document (z) order
     generated: bool = False  # emit_pptx's origin tag: rendered (the page sequence needs it), never a crop or exemplar
+    #: this page's own size: a PDF's pages need not share one (a McKinsey file holds 1008x612
+    #: and 960x540 pt pages), so every box on it is scaled and clamped by these
+    width_emu: int = 0
+    height_emu: int = 0
+
+    def emu_per_px(self, raster_w: int) -> float:
+        """The scale of this page's render, raster_w pixels across (a pixel is square)."""
+        return self.width_emu / raster_w
 
 
 @dataclass(frozen=True)
@@ -248,7 +256,7 @@ def join_deck(path: Path) -> Deck:
                     ink_emu=reach,
                 )
             )
-        slides.append(Slide(print_.index, print_.part, root.get("show") == "0", tuple(leaves), print_.generated))
+        slides.append(Slide(print_.index, print_.part, root.get("show") == "0", tuple(leaves), print_.generated, print_.width, print_.height))
     if prints[0].width <= 0 or prints[0].height <= 0:
         raise GalleryRefused("no_page_size", "the deck declares no usable p:sldSz")
     return Deck(path, prints[0].width, prints[0].height, tuple(slides))
@@ -304,7 +312,7 @@ def join_pdf(path: Path, chrome: Sequence[Box]) -> tuple[Deck, list[int]]:
                  ink_emu=(sh.line_w_emu or 0) // 2 if sh.line else 0)
             for sh in p.shapes
         )
-        slides.append(Slide(p.index, f"page{p.index + 1}", False, leaves))
+        slides.append(Slide(p.index, f"page{p.index + 1}", False, leaves, False, p.width, p.height))
     evidence = [p.index for p in prints if p.page_class in ("vector", "vector_with_image")]
     return Deck(path, prints[0].width, prints[0].height, tuple(slides)), evidence
 
@@ -441,7 +449,7 @@ def components(deck: Deck, slides: Sequence[Slide], gap_emu: int) -> list[Compon
             boxes = [extents[i] for i in indices]
             left, top = min(b[0] for b in boxes), min(b[1] for b in boxes)
             right, bottom = max(b[0] + b[2] for b in boxes), max(b[1] + b[3] for b in boxes)
-            if right <= 0 or bottom <= 0 or left >= deck.width_emu or top >= deck.height_emu:
+            if right <= 0 or bottom <= 0 or left >= slide.width_emu or top >= slide.height_emu:
                 continue
             found.append(Component(slide, tuple(keys[i] for i in indices), (left, top, right - left, bottom - top)))
     return found
@@ -541,29 +549,39 @@ def select(
 
 # --- cropping --------------------------------------------------------------------------------
 
-def crop_box(component: Component, pad_floor_emu: int, deck: Deck) -> Box:
+def _page_sizes(deck: Deck) -> dict:
+    """Said when the pages differ in size: the raster figures are the first page's, and each
+    crop is cut and clamped by its own page's size."""
+    sizes = sorted({(s.width_emu, s.height_emu) for s in deck.slides})
+    return {"page_sizes_emu": [list(v) for v in sizes], "note": "the first page's raster; each page is rendered raster_w wide at its own "
+            "aspect, and every crop is scaled and clamped by its own page's size"} if len(sizes) > 1 else {}
+
+
+def crop_box(component: Component, raster_w: int) -> Box:
     """The component box grown by the pad and clamped to the page. Each member's
     ink pad is bounded by THAT member's own longest side: dist and blurRad are
     unbounded values off an untrusted file, and one declared 100-inch shadow
     otherwise turns every crop on the slide into the whole slide."""
     pad = max((min(leaf.ink_emu, max(extent_of(leaf)[2], extent_of(leaf)[3])) for leaf in component.members), default=0)
-    pad = max(pad_floor_emu, pad)
+    page = component.slide
+    pad = max(math.ceil(CROP_PAD_MIN_RASTER_PX * page.emu_per_px(raster_w)), pad)  # the floor judged on this page's render
     x, y, w, h = component.box
-    left = min(max(0, x - pad), deck.width_emu)
-    top = min(max(0, y - pad), deck.height_emu)
-    right = min(deck.width_emu, x + w + pad)
-    bottom = min(deck.height_emu, y + h + pad)
+    left = min(max(0, x - pad), page.width_emu)
+    top = min(max(0, y - pad), page.height_emu)
+    right = min(page.width_emu, x + w + pad)
+    bottom = min(page.height_emu, y + h + pad)
     return left, top, max(0, right - left), max(0, bottom - top)
 
 
-def cut(page_png: Path, box: Box, deck: Deck, target: Path) -> tuple[int, int]:
-    """EMU to pixels by the page's own scale per axis, clamped to the image."""
+def cut(page_png: Path, box: Box, page: Slide, target: Path) -> tuple[int, int]:
+    """EMU to pixels by the page's own scale per axis (its own size, not the deck's first
+    page's), clamped to the image."""
     with Image.open(page_png) as image:
         width_px, height_px = image.size
-        left = round(box[0] * width_px / deck.width_emu)
-        top = round(box[1] * height_px / deck.height_emu)
-        right = round((box[0] + box[2]) * width_px / deck.width_emu)
-        bottom = round((box[1] + box[3]) * height_px / deck.height_emu)
+        left = round(box[0] * width_px / page.width_emu)
+        top = round(box[1] * height_px / page.height_emu)
+        right = round((box[0] + box[2]) * width_px / page.width_emu)
+        bottom = round((box[1] + box[3]) * height_px / page.height_emu)
         left, top = max(0, min(width_px - 1, left)), max(0, min(height_px - 1, top))
         right, bottom = max(left + 1, min(width_px, right)), max(top + 1, min(height_px, bottom))
         image.crop((left, top, right, bottom)).save(target, format="PNG")
@@ -790,7 +808,9 @@ def read_sources(deck_path: Path, guide_path: Path | None, include_generated: bo
     if not sources and pdf and not any(slide.generated for slide in shown):
         in_range = [slide for slide in shown if pages is None or pages[0] <= slide.index + 1 <= pages[1]]
         if raster_pages and in_range:
-            return pdf, deck, shown, in_range, [], skipped, gap_emu, evidence, gutter, True
+            # every page is read whole; a page outside --pages is still a page not read
+            not_read = sorted(s.index + 1 for s in deck.slides if s not in in_range)
+            return pdf, deck, shown, in_range, not_read, skipped, gap_emu, evidence, gutter, True
         raise GalleryRefused("no_vector_pages", f"triage reads none of the {len(shown)} pages as vector: a raster reference (a scan or a printed deck) "
                                                 "has no shapes to crop. Read its pages with raster_style.py and the page images; the exhibit digest "
                                                 "still runs (gallery.py digest), on whole pages")
@@ -844,8 +864,6 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
     if pdf:
         rendered = render.rasterize(deck_path, out / "pages", 110, [s.index + 1 for s in sources], width)
         page_of = dict(zip([s.index for s in sources], rendered, strict=True))
-    emu_per_px = deck.width_emu / raster_w
-    pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
     shutil.rmtree(out / "crops", ignore_errors=True)
     (out / "crops").mkdir(parents=True)
     found = [] if whole_pages else components(deck, sources, gap_emu)
@@ -872,9 +890,9 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
             extents = [extent_of(leaf) for leaf in body]
             left, top = min(e[0] for e in extents), min(e[1] for e in extents)
             right, bottom = max(e[0] + e[2] for e in extents), max(e[1] + e[3] for e in extents)
-            box = crop_box(Component(slide, tuple(body), (left, top, right - left, bottom - top)), pad_floor, deck)
+            box = crop_box(Component(slide, tuple(body), (left, top, right - left, bottom - top)), raster_w)
             target = out / "crops" / f"p{n:03d}-content.png"
-            size = cut(page_of[slide.index], box, deck, target)
+            size = cut(page_of[slide.index], box, slide, target)
             inside = [leaf for leaf in slide.leaves if leaf.bounds is not None and (leaf.chrome or leaf.role in ("title", "ctrTitle"))
                       and _overlaps(extent_of(leaf), box)]
             entry["content_crop"] = {"file": f"crops/{target.name}", "pixel_size": list(size),
@@ -882,14 +900,14 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         k = 0
         for c in by_slide.get(slide.index, []):
             drawn = any(kind in NON_TEXT_KINDS for kind in c.kinds) or any(leaf.runs == 0 for leaf in c.members)
-            box = crop_box(c, pad_floor, deck)
+            box = crop_box(c, raster_w)
             # the gallery's two filters: substantive, and big enough to read (MIN_CROP_AREA_PX)
-            if not (is_substantive(c) and drawn and is_legible(box, emu_per_px)) or all(leaf.role in ("title", "ctrTitle") for leaf in c.members):
+            if not (is_substantive(c) and drawn and is_legible(box, slide.emu_per_px(raster_w))) or all(leaf.role in ("title", "ctrTitle") for leaf in c.members):
                 continue
             k += 1
             cid = f"p{n:03d}-c{k}"
             target = out / "crops" / f"{cid}.png"
-            size = cut(page_of[slide.index], box, deck, target)
+            size = cut(page_of[slide.index], box, slide, target)
             entry["candidates"].append({"id": cid, "file": f"crops/{target.name}", "pixel_size": list(size),  # type: ignore[union-attr]
                                         "box_in": [round(v / EMU_PER_INCH, 2) for v in box], "kinds": dict(Counter(c.kinds))})
         stub_pages.append(entry)
@@ -900,7 +918,7 @@ def digest(deck_path: Path, out: Path, width: int, guide_path: Path | None, incl
         "reference": deck_path.name,
         "reference_sha256": _sha256(deck_path),
         "render_fidelity": render_fidelity(fonts),
-        "raster": {"width_px": raster_w, "height_px": raster_h, "px_per_pt": round(raster_w / (deck.width_emu / 12700), 2)},
+        "raster": {"width_px": raster_w, "height_px": raster_h, "px_per_pt": round(raster_w / (deck.width_emu / 12700), 2), **_page_sizes(deck)},
         "sample_policy": ("every page, whole (a raster reference: no shapes to crop)" if whole_pages else "every evidence page") + (f" in {pages[0]}-{pages[1]}" if pages else ""),
         "pages_not_read": excluded,
         "generated_slides_skipped": skipped,
@@ -952,8 +970,7 @@ def build(
     fidelity = render_fidelity(fonts)
     # The raster preserves the page aspect and a pixel is square, so one scale
     # serves both axes; the floor and the pad are judged on the image actually sent.
-    emu_per_px = deck.width_emu / raster_w
-    pad_floor = math.ceil(CROP_PAD_MIN_RASTER_PX * emu_per_px)
+    emu_per_px = deck.width_emu / raster_w  # the first page's; each crop is judged on its own page's
 
     found = components(deck, sources, gap_emu)
     if not found:
@@ -962,8 +979,8 @@ def build(
         raise GalleryRefused("too_many_components", f"{len(found)} components against {MAX_COMPONENTS}: pass --pages to read a range of the deck")
     groups = [normalized_members(c) for c in found]
     labels = [member_labels(c) for c in found]
-    boxes = [crop_box(c, pad_floor, deck) for c in found]
-    survives = [is_substantive(c) and is_legible(boxes[i], emu_per_px) for i, c in enumerate(found)]
+    boxes = [crop_box(c, raster_w) for c in found]
+    survives = [is_substantive(c) and is_legible(boxes[i], c.slide.emu_per_px(raster_w)) for i, c in enumerate(found)]
     clusters = leader_clusters(groups, labels=labels, threshold=COMPONENT_SIMILARITY_TAU)
     chosen = select(found, clusters, groups, labels, lambda i: survives[i], pool_max, evidence)
     if not chosen:
@@ -983,7 +1000,7 @@ def build(
         component, box = candidate.component, boxes[candidate.index]
         gallery_id = f"crop-{position + 1:02d}"
         target = out / "crops" / f"{gallery_id}.png"
-        size = cut(page_of[component.slide.index], box, deck, target)
+        size = cut(page_of[component.slide.index], box, component.slide, target)
         text = caption(candidate, box)
         crops.append(
             {
@@ -1045,7 +1062,7 @@ def build(
         "reference_sha256": _sha256(deck_path),
         "render_fidelity": fidelity,
         "fonts": fonts,
-        "raster": {"width_px": raster_w, "height_px": raster_h, "emu_per_px": emu_per_px},
+        "raster": {"width_px": raster_w, "height_px": raster_h, "emu_per_px": emu_per_px, **_page_sizes(deck)},
         "parameters": {
             "component_gap_emu_ceiling": COMPONENT_GAP_EMU,
             "component_similarity_tau": COMPONENT_SIMILARITY_TAU,

@@ -7,7 +7,8 @@ The skill ships worked examples (a completion, a digest, deck specs, build proof
 from public reference decks. An evaluation that tests the skill on one of those decks
 would grade the examples, not the skill. This writes the skill tree to DIR (outside the
 skill, new or empty) without every example examples/PROVENANCE.json ties to a reference
-given here, matched by the reference file's sha256, never by its name. It refuses a skill
+given here, matched by the reference file's sha256, or by its twin's stem (the same deck in
+another format: the PDF of a pptx whose examples PROVENANCE.json lists). It refuses a skill
 tree holding an example file PROVENANCE.json does not name (it could not say whether that
 file is made from the deck under test). It prints, as JSON, what it held out and every
 line of the copied text that still names a held-out deck by an alias (reference files
@@ -91,9 +92,12 @@ def main(argv: list[str]) -> int:
             raise Refused(f"--reference {ref}: no such file")
         tested[sha256(path)] = path.name
     held: dict[str, list[str]] = {}
-    aliases = [a.lower() for a in args.alias]
+    # a tested deck's own name is always searched for, and its twin (the same stem in another
+    # format: the PDF of a pptx) is the same deck, by the rule the panel below uses
+    tested_stems = {Path(t).stem.lower() for t in tested.values()}
+    aliases = [a.lower() for a in args.alias] + sorted(tested_stems)
     for name, entry in prov["references"].items():
-        if entry["sha256"] in tested:
+        if entry["sha256"] in tested or Path(name).stem.lower() in tested_stems:
             held[name] = entry["examples"]
             aliases += [a.lower() for a in entry.get("aliases") or []] + [Path(name).stem.lower()]
     left_out = {str(Path("examples") / f) for files in held.values() for f in files}
@@ -117,7 +121,7 @@ def main(argv: list[str]) -> int:
             if not f.is_file():
                 continue
             # by bytes, or by name: the same deck in another format (a PDF of the pptx under test)
-            if sha256(f) in tested or f.stem.lower() in {Path(t).stem.lower() for t in tested.values()} | set(aliases):
+            if sha256(f) in tested or f.stem.lower() in tested_stems | set(aliases):
                 withheld.append(f.name)
                 continue
             shutil.copy2(f, copied / f.name)  # a copy: a link names the folder, or shares the panel's bytes for writing

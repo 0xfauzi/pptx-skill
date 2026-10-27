@@ -90,7 +90,11 @@ python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
   pixel, chrome as pixels holding one colour on half the pages (with `chrome-mask.png`),
   margins by ink extents, line pitch by autocorrelation with a body size estimate.
   `raster.patch.json` applies through `complete_guide.py` with provenance
-  `raster_inference` at confidence 0.5; `raster.md` names the dpi and size band. Faces
+  `raster_inference` at confidence 0.5: the colour roles, and the margins when all four
+  sides carry ink. Chrome is not in it: the candidates (kind, box, colour) are listed in
+  `/notes/raster_chrome` and `raster.json`, and you write `/chrome` from the page images in
+  the shape `complete_guide.py` asks for (which kind each is, its text and text style, the
+  pages it is on). `raster.md` names the dpi and size band. Faces
   cannot be read from pixels: name the family yourself from the page images. The body
   estimate was within 0.3pt on a deck rendered and re-measured, and within the stated band
   on a 104 dpi scan. A raster draft has no levels table, so a type role beyond the five it
@@ -123,7 +127,9 @@ what this machine draws it as AND what the solver measures it with, and prints t
 commands for what is missing. The two differ on a PDF: the page renders draw a face the
 file embeds exactly, while the solver needs an installed file. Bain's Verdana and
 McKinsey's Georgia rendered `exact` from their PDFs and every page was refused at
-capacity; preflight now says `NOT measurable here` for such a face.
+capacity; preflight now says `NOT measurable here` for such a face, on a line that reads
+`needs`: the workflow runs, and text set in that face is refused until it is installed or a
+stand-in is named (the exit code stays 0; `missing` is kept for what stops the workflow).
 
 **What you may install.** Nothing, on your own. Preflight prints the commands; the user
 runs them, or tells you to. Fonts and Python packages are machine-wide: in one round on a

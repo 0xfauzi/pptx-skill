@@ -759,9 +759,10 @@ class TypeEntry:
 
     @property
     def pitch_emu(self) -> int:
-        """Baseline-to-baseline advance: exactly the a:spcPts the file writes,
-        measured font-independent (deckgen measure_bridge.py:492)."""
-        return round(self.line_spacing * self.size_pt * EMU_PER_POINT)
+        """Baseline-to-baseline advance: exactly the a:spcPts the file writes (whole
+        hundredths of a point, _entry_hints), measured font-independent (deckgen
+        measure_bridge.py:492)."""
+        return hundredths(self.line_spacing * self.size_pt) * EMU_PER_HUNDREDTH_POINT
 
     @property
     def spacing_emu(self) -> int:

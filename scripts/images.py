@@ -1014,6 +1014,14 @@ def _package(ref: str):
         raise ImageRefused(f"{ref}: not a readable .pptx package ({type(error).__name__}: {error})") from None
 
 
+def _slide_parts(pkg, ref: str) -> list[str]:
+    """The slide parts in presentation order, or ImageRefused when the list cannot be read."""
+    try:
+        return pkg.slide_parts()
+    except (KeyError, etree.XMLSyntaxError) as error:
+        raise ImageRefused(f"{ref}: the slide list cannot be read ({type(error).__name__}: {error})") from None
+
+
 def _pdf(ref: str):
     import pdfplumber
     try:
@@ -1029,11 +1037,13 @@ def list_pictures(ref: str) -> list[dict]:
         pkg = _package(ref)
         with pkg.zip:
             uses: dict[str, list[int]] = {}
-            for n in sorted(pkg.names):
-                m = re.fullmatch(r"ppt/slides/_rels/slide(\d+)\.xml\.rels", n)
-                if not m:
+            # slides numbered in presentation order (Package.slide_parts), the numbering every
+            # other command and the renders use: a part's file name is not its place in the deck
+            for number, slide in enumerate(_slide_parts(pkg, ref), 1):
+                folder, _, base = slide.rpartition("/")
+                n = f"{folder}/_rels/{base}.rels"
+                if n not in pkg.names:
                     continue
-                slide = f"ppt/slides/slide{m.group(1)}.xml"
                 try:
                     info = pkg.root(n).getroottree().docinfo
                     rels = pkg.rels(slide)
@@ -1043,7 +1053,7 @@ def list_pictures(ref: str) -> list[dict]:
                     raise ImageRefused(f"{ref}: {n} declares a DOCTYPE; a package part takes none (OPC), and its entities are not read")
                 for _, target in rels.values():
                     if target.startswith("ppt/media/"):
-                        uses.setdefault(target, []).append(int(m.group(1)))
+                        uses.setdefault(target, []).append(number)
             for n in sorted(pkg.names):
                 if not n.startswith("ppt/media/"):
                     continue
@@ -1152,9 +1162,10 @@ def _picture_box(ref: str, pic_id: str, slide: int) -> tuple[int, int, tuple[flo
     """(width EMU, height EMU, srcRect l, t, r, b as fractions) of picture `pic_id` drawn on
     `slide` of a .pptx: the box the reference displays it in, so its pixels map to points."""
     pkg = _package(ref)
-    part = f"ppt/slides/slide{slide}.xml"
-    if part not in pkg.names:
-        raise ImageRefused(f"--slide {slide}: the deck has no {part}")
+    parts = _slide_parts(pkg, ref)
+    if not 1 <= slide <= len(parts):
+        raise ImageRefused(f"--slide {slide}: the deck has slides 1-{len(parts)} (numbered in presentation order)")
+    part = parts[slide - 1]
     ns = {"p": "http://schemas.openxmlformats.org/presentationml/2006/main",
           "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
           "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"}

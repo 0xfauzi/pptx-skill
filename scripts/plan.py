@@ -531,10 +531,25 @@ def _mixed_scripts(text: str) -> list[str]:
     word reads the same and is another word to a comparison)."""
     out = []
     for word in re.findall(r"[^\W\d_]+", unicodedata.normalize("NFKC", text)):
-        scripts = {unicodedata.name(ch, "?").split(" ")[0] for ch in word}
+        scripts = {_script_of(ch) for ch in word} - {None}
         if len(scripts) > 1:
             out.append(word)
     return out
+
+
+#: scripts written together in one word of one language: Japanese sets kanji beside kana
+#: (棒グラフ, bar graph), so Han, Hiragana and Katakana are one script for this check
+_SCRIPT_GROUPS = {"CJK": "JAPANESE_OR_CHINESE", "HIRAGANA": "JAPANESE_OR_CHINESE", "KATAKANA": "JAPANESE_OR_CHINESE",
+                  "KATAKANA-HIRAGANA": "JAPANESE_OR_CHINESE", "IDEOGRAPHIC": "JAPANESE_OR_CHINESE", "HALFWIDTH": "JAPANESE_OR_CHINESE"}
+#: letters that belong to no one script (a modifier apostrophe, U+02BC, in Donʼt; a combining mark)
+_NO_SCRIPT = ("MODIFIER", "COMBINING")
+
+
+def _script_of(ch: str) -> str | None:
+    first = unicodedata.name(ch, "?").split(" ")[0]
+    if first in _NO_SCRIPT:
+        return None
+    return _SCRIPT_GROUPS.get(first, first)
 
 
 def _form_key(form: str) -> str:

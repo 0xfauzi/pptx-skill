@@ -24,8 +24,10 @@ PowerPoint):
   start on the origin side; stacked: bar = slot / (1 + g), series stacked from the
   crossing value, positive and negative values on separate stacks; 100% stacked: each
   value over the category's sum of absolute values;
-- bars grow from where the category axis crosses (c:crosses autoZero, which
-  python-pptx writes): 0 clamped into lo..hi;
+- bars grow from where the category axis crosses (axes.value.crosses, written as
+  c:crosses or c:crossesAt): absent or auto_zero is 0 clamped into lo..hi, min and max
+  the scale's ends, a number that value (measured: min 50, max 150, crosses 100 draws an
+  80 bar from 100 down to 80 in LibreOffice);
 - a combo chart (a series with its own `plot_type`, or `axis: "secondary"`): each series
   is placed by its own plot group (bars cluster and stack only with the series of their
   own type and axis) on its own value axis (`axes.secondary_value` on the right, its own
@@ -35,6 +37,22 @@ PowerPoint):
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+
+def axis_crossing(crosses, lo: float, hi: float) -> float:
+    """Where the category axis crosses a value axis of scale lo..hi, as a value: `crosses` as
+    the spec writes it (emit_pptx writes it as c:crosses or c:crossesAt): absent or
+    "auto_zero" is 0 clamped into lo..hi, "min" and "max" the scale's ends, a number itself.
+    The one reading the geometry and the emitter's label check both use."""
+    if crosses in (None, "auto_zero"):
+        return min(max(0.0, lo), hi)
+    if crosses == "min":
+        return lo
+    if crosses == "max":
+        return hi
+    if not _num(crosses):
+        raise GeometryRefused(f"crosses {crosses!r} is not auto_zero, min, max or a number")
+    return float(crosses)
 
 
 class GeometryRefused(ValueError):
@@ -191,8 +209,10 @@ class ChartGeometry:
         return "y", p.top + (1 - t) * p.height
 
     def crossing_value(self, axis: str = "value") -> float:
+        """The value bars grow from: where the category axis crosses this value axis, as the
+        spec writes it (axis_crossing). `crosses` is written on the primary axes only."""
         lo, hi = self.scale(axis)
-        return min(max(0.0, lo), hi)
+        return axis_crossing(self._axis(axis).get("crosses") if axis == "value" else None, lo, hi)
 
     # --- categories ---------------------------------------------------------------------
 

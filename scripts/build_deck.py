@@ -80,7 +80,7 @@ import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
 from chart_geometry import bar_thickness, plot_rect  # noqa: E402
-from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, Guide as EmitGuide, paragraph_align, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_defaults_taken, table_header_bold, table_roles, table_row_styles  # noqa: E402
+from emit_pptx import EMPHASIS_EXAMPLE, HEX_RE, run_style, OLD_EMPHASIS_KEYS, TABLE_STYLE_KEYS, Guide as EmitGuide, paragraph_align, _point_label_shown, chart_label_inks, chrome_hex, chrome_on_page, chrome_text, emit as emit_slides, table_defaults_taken, table_header_bold, table_roles, table_row_styles  # noqa: E402
 from extract_style import ARCHETYPE_IOU_THRESHOLD, contrast as contrast_ratio, leader_clusters, slide_similarity, union_area  # noqa: E402
 from ooxml import EMU_PER_INCH, paragraphs_words, visual_extent  # noqa: E402
 
@@ -1289,19 +1289,6 @@ def tieouts_of(elements: list[dict]) -> list[dict]:
     return out
 
 
-def _label_shown(series: dict, index: int) -> bool:
-    """Whether the series draws a data label at `index`: its own point label, or the
-    series' labels shown and not hidden at that point."""
-    point = next((p for p in series.get("points") or [] if p.get("index") == index), {})
-    own = point.get("label")
-    if isinstance(own, dict):
-        if own.get("show") is False:
-            return False
-        if own.get("text") or own.get("show"):
-            return True
-    return bool((series.get("labels") or {}).get("show"))
-
-
 def bridge_ties(elements: list[dict]) -> list[dict]:
     """A chart that declares `bridge: {"deltas", "totals"}` is checked two ways: every
     total equals the running sum of the steps before it, and every category's DRAWN
@@ -1317,8 +1304,13 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
             continue
         where = el.get("id", "chart")
         cats = el.get("categories") or []
-        deltas = [float(v) for v in decl.get("deltas") or []]
-        totals = {int(i) for i in decl.get("totals") or []}
+        raw = decl.get("deltas") or []
+        if not all(isinstance(v, int | float) and not isinstance(v, bool) for v in raw) or not all(
+                isinstance(i, int) and not isinstance(i, bool) for i in decl.get("totals") or []):
+            out.append({"chart": where, "detail": "bridge declaration: deltas are numbers, one per category, and totals are category indexes"})
+            continue
+        deltas = [float(v) for v in raw]
+        totals = set(decl.get("totals") or [])
         if "STACKED" not in str(el.get("type")) or len(deltas) != len(cats) or not totals <= set(range(len(cats))):
             out.append({"chart": where, "detail": f"bridge declaration needs a stacked type, one delta per category ({len(deltas)} for {len(cats)}) and totals inside 0..{len(cats) - 1}"})
             continue
@@ -1335,7 +1327,9 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
             up = down = 0.0
             lo = hi = None
             for s in el["series"]:
-                v = float(s["values"][i])
+                v = s["values"][i]
+                # a blank adds nothing to its stack (chart_geometry.bar_values reads it the same way)
+                v = float(v) if isinstance(v, int | float) and not isinstance(v, bool) else 0.0
                 fill = next((p.get("fill_role", s.get("fill_role")) for p in s.get("points") or [] if p.get("index") == i), s.get("fill_role"))
                 a, b = (up, up + v) if v >= 0 else (down + v, down)
                 if v >= 0:
@@ -1347,7 +1341,7 @@ def bridge_ties(elements: list[dict]) -> list[dict]:
             if lo is None and d == 0 and i not in totals:
                 # a zero step is content (a multiple in and out at 10.0x): it draws no bar, so
                 # the reader finds it only by a label at that category
-                if not any(_label_shown(s, i) for s in el["series"]):
+                if not any(_point_label_shown(s, i) for s in el["series"]):  # the emitter's own reading
                     out.append({"chart": where, "severity": "warning", "detail": f"{cats[i]!r} is a zero step and draws no bar; "
                                 "label it (a point label such as \"0.0\" or \"no change\") so it reads as a step that is zero, not a missing one"})
                 continue

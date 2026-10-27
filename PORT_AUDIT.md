@@ -789,3 +789,80 @@ of 106 example renders identical (the 5 that differ are the no-reference books' 
 and 15 of 27 genre renders; the reports differ by the earlier parts of round 8.
 
 ruff 0.16.9 over the tree: 144 findings on main and 144 here, the same set.
+
+### Round 8, part 4: the bug scan's reproduced defects on cfcd04c
+
+Each re-reproduced on main (a2d1091) and on cfcd04c (`r8x/b9/brk/head`, the tree as
+committed) from the scan's probe files (`r8x/b9/in/`) or a fresh extraction, fixed at the
+cause, then broken in a copy (`r8x/b9/brk/<id>`) to show the defect return. Proof lines
+are in `r8x/b9/proofs.txt`.
+
+| Item | Before | Now | Fix broken |
+|---|---|---|---|
+| 1 Bars ignore `crosses` | `chart_geometry` grew bars from 0 clamped to min: bar A 4114800..5486400 for values [80,130], min 50, max 150, crosses 100; LibreOffice at 96 dpi (9525 EMU/px) draws rows 336-431 and 192-335 | `axis_crossing`: absent/auto_zero 0 clamped, min, max, or the number; bar A 3200400..4114800, bar B 1828800..3200400, exactly the render; `bars_across_labels` reads the same function | bars at 5486400 again |
+| 2 validate skips graphic frames | `.//a:xfrm` never finds a frame's `p:xfrm`: off.pptx reported shape 4 only | `xfrm_box` (spPr, grpSpPr or p:xfrm): shapes 2, 3, 4 | shape 4 only |
+| 3 Absolute targets in `--emit` | `"ppt/" + Target.replace("../", "")`: rel_abs chart_parts 0, ok | one resolver, `ooxml.resolve_target`, used by Package.rels, validate and emit_checks: chart_parts 1, varyColors reported | chart_parts 0 |
+| 4 duplicate keeps old r:ids | chart2.xml r:id rId7, its rels rId1; validate ok | `_copy_part` maps each rId to the one `relate_to` returns and rewrites every r-namespace attribute (`_remap_rids`, also the slide's); validate now checks every part's r:ids against its own .rels | rId7 vs rId1, now reported by validate |
+| 5 duplicate drops notes | copy had no notes | `_copy_notes`: the source notes' shape tree into the copy's own notes slide | no notes |
+| 6 validate zip bomb | 857 MB RSS, XMLSyntaxError traceback | validate reads through `ooxml.Package` (member and size caps, entity-free parser); every part that does not parse is a problem by name; `sniff` opens the package the same way, so every command refuses an over-cap file before python-pptx reads it: 57 MB, "refused: ... declares 419431239 bytes" | 857 MB |
+| 7 Vertical rule on the left edge | x 1000000 | x + w//2, 1100000 | 1000000 |
+| 8 Indent 0 read as missing | marL 91440 indent -91440, "no measured indent was given" | `is None`: marL 0 indent 0, no default listed | 91440 |
+| 9 Undefined bullet level | level 1 silently took level 0's glyph and hanging | `guide.take(..., look=True)`: listed, refused with no reference | silent PASS |
+| 10 Chrome role typo | complete rc 0, build PASS, band undrawn | `chrome_hex` resolves through `Guide.hex` (unknown role refused by name); `chrome_entries` checks fill_role and line_role against the guide's roles | both pass |
+| 11 Blank in a bridge stack | TypeError traceback, no report (main too) | a blank adds nothing to its stack; deltas and totals that are not numbers are a named problem | TypeError |
+| 12 Labels without `show` | "zero step unlabelled" on a labelled step (main had no zero-step reading) | build_deck reads `emit_pptx._point_label_shown`, the emitter's own | warning again |
+| 13 clean keeps stale .rels | slide9.xml.rels kept, validate failed | a .rels is kept exactly when its source part is | stale rels kept |
+| 14 delete removes every custom show | "Board cut" over slide 1 gone | only the removed slide's entries go; a show left empty goes with them | show gone |
+| 15 Subtitle as title | 'TITLE' in 'SUBTITLE' | TITLE and CENTER_TITLE placeholders only | subtitle as title |
+| 16 Group children in child space | shape 3 past the slide | `_page_shapes` maps each child through `ooxml.group_child_transform` | shape 3 again |
+| 17 `foreign` advertised, does nothing | docstring and CHART_KEYS offered it | removed from both; the key is refused by name | ignored again |
+| 18 Pitch 64 EMU short | 132 of 660 (line_spacing, size) pairs charged a pitch other than the one written | `pitch_emu = hundredths(ls x size) x 127`, the written value: 0 | 132 |
+| 19 picture_text on tables null | TypeError (main too) | recorded (keybank image9 7.4pt); a later /tables answer keeps it | TypeError |
+| 20 raster.patch.json refused | /chrome 43 problems, margins shape | the patch holds what complete_guide accepts: colour roles, the margins in its shape when all four sides carry ink (raster_inference kept), chrome candidates as `/notes/raster_chrome`; intake.md says so | refused again |
+| 21 --pages mines an OCR layer | type.body 8.0 observed on deutsche bank pages 1-18 | the raster branch when no page of the range is type evidence | 8.0 again |
+| 22 --pages outside the deck | IndexError | "refused: --pages 30-40: ... has pages 1-18" | IndexError |
+| 23 --pages ignored on a .pptx | 15 slides read for 5-6 | the range applies to every format; empty range refused (with --max-pages named) | 15 |
+| 24 spacing KeyError 'left' | traceback | space.margin from the sides measured; neither side: the step opens | KeyError |
+| 25 Exact line spacing dropped | None, "no paragraph declared a:lnSpc" | spcPts read as points / size: 1.167 for 14pt on 12pt | None |
+| 26 Cell margins | only four-side declarations read; absence became 45720 | each side declared or the schema default (marL/marR 91440, marT/marB 45720): 91440, and a declared marL 0 is 0; no cell, the address opens; spacing votes only declared sides; the emitter reads a padding as layout does (role first, a stated 0 kept) | 45720 |
+| 27 Nested group scale | (0, 0, 1000, 1000) | `group_child_transform` composes the parent's map: (0, 0, 2000, 2000) | 1000 |
+| 28 images.py numbering by part name | list [5], textsize --slide 3 refused | presentation order (`Package.slide_parts`): [3], measured | refused |
+| 29 Band colour the text's | band 000000 (bucket D0D0D0) | a band's fill is the modal colour of its pixels; the darkest fifth stays for rules | 000000 |
+| 30 line_spacing unchecked | -14.0 stored, '1.2x' ValueError, bulk 0 stored | one check in `shape_error`, alone, as a role member or in members: positive finite or null | -14.0 |
+| 31 PDF hairline | 100pt stroke | a 0 w hairline has no width recorded | 100pt |
+| 32 scrgbClr and transforms | 808080 for linear 50%; satOff, hueOff, alphaMod, inv, comp ignored | linear encoded to sRGB (BCBCBC); hue, hueOff, sat, satOff, lum, alphaMod, alphaOff, inv, comp applied; gray, red/green/blue and gamma (space not stated) counted and named in the draft's notes | 808080 |
+| 33 Zero hanging bound to a step | hanging_indent_role space.margin, so a 0.5in hanging | no step for 0 or a first-line indent (noted); the emitter reads hanging_emu, the glyph minimum still applies | space.margin |
+| 34 preflight 'missing' with exit 0 (and 50) | six faces 'missing', exit 0; Wingdings 2 'missing' | a face line reads `needs` (the docstring and intake.md say the workflow runs and the exit stays 0); a symbol face is ok | missing again |
+| 35 Legacy .ppt | BadZipFile traceback | `ooxml.PackageRefused` (a `cli.Refused`): "not a .pptx package"; cli.run prints any Refused by name, cap refusals too | traceback |
+| 36 Gap level dropped | 950000 lost, sm and md interpolated | middle levels placed in order, one slot each: 300000 (interpolated), 900000, 950000, 1000000 | a level lost |
+| 37 out_path and the symlink's target | cfcd04c allowed /home/user/pptx-skill/refs/files/g.json | the folders the skill's own symlinks resolve to are the skill too | allowed |
+| 38 PDF pages of another size | crop 6874002 EMU tall on a 6858000 page, 982x796 px | each page carries its own size; crops are padded, clamped and cut by it: 6858000, 1029x900 | 980x794 |
+| 39 Leakage blind to charts | clean | `slide_text` reads charts (title, categories, series names, cached values; `text` prints them); leakage compares them, and chart data is never chrome: 21 distinctive | clean |
+| 40 Holdout on a twin | held nothing, 0 naming lines | a tested deck's twin (same stem) holds out its examples; the tested stems are always searched: the jazz pptx examples held, 73 lines | nothing, 0 |
+| 41 permit --id path | wrote outside the library, then ValueError | a deck id is one safe name, refused before anything | ValueError |
+| 42 import not atomic | files outside the library, half a library | every page checked first (id, page, fields, readable image, path from the corpus folder); a failure while copying removes what was copied and saves nothing | half a library |
+| 43 'ID:' | whole deck excluded | bad_pages | excluded |
+| 44 One deck, two ids | beta accepted, unreachable | deck_already_permitted | accepted |
+| 45 Library page size | 1.647 on 16:9 pages | each page's own size | 1.647 |
+| 46 Leakage zip bomb | 1614 MB RSS, normal verdict | every .pptx (new, past, template, the public panel) opened under ooxml.Package's caps first; media hashed in blocks: refused, 51 MB | 1588 MB |
+| 47 Figures without a decimal | 23x, 13x, 7% dropped | any number with % or x | dropped |
+| 48 Raster digest pages_not_read | [] | every page outside --pages | [] |
+| 49 Two-script check | 棒グラフ and Donʼt flagged | Han, Hiragana and Katakana are one script; modifier and combining letters belong to none; Latin with Cyrillic or Greek still flagged | flagged |
+
+Rebuilt from a FRESH extraction on main, on cfcd04c and here (`r8x/b9/run.sh` with
+`FIDC=r8x/fidc`, `r8x/b9/genre.sh`; the default `fr2/fidc` bcg completion is stale and is
+refused on all three trees, `/titles/register`, so the fidelity half was run again with
+`r8x/fidc`, `r8x/b9/fid.sh`): the 29 example result lines and the 10 genre lines are identical
+on all three (keybank-roundtrip-slide3 refused everywhere, as before). Against cfcd04c every
+guide and plan check is identical, all 27 genre renders and 105 of 106 example renders are
+pixel-identical; the one that differs is fid-bcg-p15, whose three vertical rules now sit at
+their boxes' middle (x + 6350 EMU, item 7). The build reports differ only in leakage, from
+items 39 and 47: fid-bcg-p24 four more distinctive (figures 140, 265, 967 and the name
+'total nys private sector', read from the build's own charts), and low findings added on
+fid-bcg-p24, fid-netflix-p5 (2015, 'past year', from netflix's charts), keybank annotations
+(5%), section (3%, 5%) and roundtrip-slide3 (1%, 2%). Against main, 100 of 106 renders are
+identical (the no-reference books' title band, as at cfcd04c, and fid-bcg-p15's rules) and
+15 of 27 genre renders, as at cfcd04c.
+
+ruff 0.16.9: 143 findings here, 144 at cfcd04c and 144 on main; the one gone is a PERF102 in
+extract_style.py's spacing slot loop, rewritten by item 36; no new finding.

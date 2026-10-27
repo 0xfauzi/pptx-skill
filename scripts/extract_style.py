@@ -541,6 +541,10 @@ class Extractor:
         self.slides: list[SlidePrint] = fingerprint_deck(path, max_pages)
         self._stage("read", f"{len(self.slides)} slides")
         self.notes: list[str] = []
+        import ooxml
+        if ooxml.UNAPPLIED_TRANSFORMS:
+            self.notes.append(f"colour transforms this reader does not apply, counted where they occur ({dict(ooxml.UNAPPLIED_TRANSFORMS)}): "
+                              "each colour that carries one is read without it; look at the renders before trusting such a colour")
         generated = [s.index + 1 for s in self.slides if s.generated]
         self.generated_skipped = 0 if include_generated else len(generated)
         if generated and include_generated:
@@ -553,6 +557,15 @@ class Extractor:
                 raise SystemExit(f"{path}: every slide is generated ({len(generated)}); pass --include-generated to read them anyway")
         if not self.slides:
             raise SystemExit(f"{path}: no slides")
+        if pages is not None:
+            # the range applies to a .pptx as to a PDF; an empty range is refused, never read as the deck
+            lo, hi = pages
+            read = [s.index + 1 for s in self.slides]
+            self.slides = [s for s in self.slides if lo <= s.index + 1 <= hi]
+            if not self.slides:
+                cap = f" (--max-pages {max_pages} read only those)" if max_pages else ""
+                raise SystemExit(f"refused: --pages {lo}-{hi}: {path} has pages {min(read)}-{max(read)}{cap}; no page of the range is in it")
+            self.notes.append(f"pages restricted to {lo}-{hi} by --pages")
         self.is_pdf = self.slides[0].source == "pdf"
         self.unresolved: list[dict] = []
         self.guide: dict = {}
@@ -571,14 +584,11 @@ class Extractor:
                                   if slot.get("marked") else
                                   f"title evidence: no position holds a top block on {slot.get('needed', 0)} of {slot.get('pages', 0)} vector pages, "
                                   "so no block is a title and type.title stays open")
-            if pages is not None:
-                lo, hi = pages
-                self.slides = [s for s in self.slides if lo <= s.index + 1 <= hi]
-                self.notes.append(f"pages restricted to {lo}-{hi} by --pages")
             dropped = [s.index + 1 for s in self.slides if not is_type_evidence(s)]
             evidence = [s for s in self.slides if is_type_evidence(s)]
-            if self.triage["deck_class"] == "raster" and pages is None:
+            if (self.triage["deck_class"] == "raster" and pages is None) or not evidence:
                 # the text layer is a wrapper or OCR: nothing on these pages is type evidence
+                # (a --pages range of raster pages included: TYPE_EVIDENCE_CLASSES decides, not the range)
                 self.raster = True
                 size_in = self.triage.get("slide_size_in")
                 if size_in:
@@ -880,7 +890,11 @@ class Extractor:
                 case = "title"
         align_map = {"l": "left", "ctr": "center", "r": "right", "just": "justify"}
         aligns = [align_map[m.align] for m in members if m.align in align_map]
-        lnspc = [m.line_spacing for m in members if m.line_spacing is not None and m.line_spacing > 0]
+        # a:spcPct reads as a multiple, a:spcPts as minus its points (ooxml g_lnspc): exact
+        # spacing is the multiple points / size of the run it sets, the value the emitter writes
+        # back as spcPts = multiple x size
+        lnspc = [m.line_spacing if m.line_spacing > 0 else round(-m.line_spacing / m.size_pt, 3)
+                 for m in members if m.line_spacing is not None and m.line_spacing != 0 and (m.line_spacing > 0 or m.size_pt > 0)]
         faces = Counter(m.family for m in members if m.family)
         inks = Counter(m.color for m in members if m.color)
         return {
@@ -1122,9 +1136,9 @@ class Extractor:
                         if 0 < inset < 2 * EMU_PER_INCH:
                             pool.setdefault(float(inset), Votes()).add(f"{sid}#{sh.ref}/bodyPr", False)
             for t in s.tables:
-                for m in t.cell_margins_emu:
+                for m in t.cell_margins_declared:  # a declared inset is a choice; a schema default is not a gap level
                     for inset in m:
-                        if 0 < inset < 2 * EMU_PER_INCH:
+                        if inset is not None and 0 < inset < 2 * EMU_PER_INCH:
                             pool.setdefault(float(inset), Votes()).add(f"{sid}#{t.ref}/tcPr", False)
             # a margin is where the content stops short of the page edge: a band, picture or
             # rule that runs to an edge (a full-page ground, a half-page photo) bleeds and says
@@ -1145,13 +1159,18 @@ class Extractor:
             lo, hi = chosen[0].representative, chosen[-1].representative
             slots[0] = {"emu": round(lo), "provenance": observed(chosen[0].evidence, chosen[0].count, False, chosen[0].share, "inferred")}
             slots[4] = {"emu": round(hi), "provenance": observed(chosen[-1].evidence, chosen[-1].count, False, chosen[-1].share, "inferred")}
-            for lv in chosen[1:-1]:
+            # each observed middle level takes the slot its log position names, in order and one
+            # slot each: two that want one slot share the free slots around it, so no observed
+            # level is dropped for an interpolated one (at most three middle levels, three slots)
+            middle = chosen[1:-1]
+            places: list[int] = []
+            for lv in middle:
                 pos = math.log(lv.representative / lo) / math.log(hi / lo) if hi > lo else 0.0
-                idx = min(3, max(1, round(pos * 4)))
-                while idx < 4 and slots[idx] is not None:
-                    idx += 1
-                if idx < 4 and slots[idx] is None:
-                    slots[idx] = {"emu": round(lv.representative), "provenance": observed(lv.evidence, lv.count, False, lv.share, "inferred")}
+                places.append(max(min(3, max(1, round(pos * 4))), (places[-1] + 1) if places else 1))
+            for k in range(len(places) - 1, -1, -1):
+                places[k] = min(places[k], 3 - (len(places) - 1 - k))
+            for lv, idx in zip(middle, places):
+                slots[idx] = {"emu": round(lv.representative), "provenance": observed(lv.evidence, lv.count, False, lv.share, "inferred")}
             for i in range(1, 4):
                 if slots[i] is None:
                     prev_i = max(j for j in range(i) if slots[j] is not None)
@@ -1178,9 +1197,14 @@ class Extractor:
                     p[float(v)].add("slide", False)
                 lv = sorted(cluster_levels(p, None, float(POSITION_DIAMETER_EMU)), key=lambda l: (-l.count, l.representative))[0]
                 margins[name] = {"emu": round(lv.representative), "slides": lv.count, "min_emu": min(vals), "median_emu": round(statistics.median(vals))}
-        if margins:
-            side = min((margins["left"], margins.get("right", margins["left"])), key=lambda m: m["emu"])
+        across = [margins[k] for k in ("left", "right") if k in margins]
+        if across:
+            # the narrower side measured; a side every box bleeds off says nothing and is left out
+            side = min(across, key=lambda m: m["emu"])
             steps["space.margin"] = {"emu": side["emu"], "provenance": observed(["per-slide content extent"], side["slides"], False, side["slides"] / len(self.slides), "inferred")}
+        elif margins:
+            self.open("/spacing/steps/space.margin", "no content box stops short of the left or right page edge (every one bleeds off it), "
+                      "so no side margin is measured", {"measured_sides": sorted(margins)})
         self.guide["spacing"] = {"steps": steps, "margins": margins, "baseline_emu": None,
                                  "gap_levels": [{"emu": round(lv.representative), "votes": lv.count} for lv in sorted(levels, key=lambda lv: lv.representative)]}
         self.open("/spacing/baseline_emu", "a baseline grid is not observable in OOXML; leave null unless the renders show one",
@@ -1606,10 +1630,14 @@ class Extractor:
                 continue
             m = modal([(c, w) for c, w in rules])
             edges[klass] = ({"width_emu": m[1], "width_pt": round(m[1] / EMU_PER_PT, 2), "color_role": self.role_of(m[0]), "color_hex": m[0]} if m and m[0] else {"width_emu": 0, "none": True})
+        # the horizontal inset the cells draw (marL, declared or the schema's 91440 default), the
+        # one padding the layout charges; a table with no cell leaves it open
         margins = [m for t in obs for m in t.cell_margins_emu]
-        pad = modal([m[0] for m in margins]) if margins else 45720
+        pad = modal([m[0] for m in margins]) if margins else None
+        if pad is None:
+            self.open("/tables/cell_padding_emu", "the tables hold no cell to read an inset from")
         steps = self.guide.get("spacing", {}).get("steps", {})
-        nearest_step = min(steps, key=lambda n: abs(steps[n]["emu"] - pad)) if steps else None
+        nearest_step = min(steps, key=lambda n: abs(steps[n]["emu"] - pad)) if steps and pad is not None else None
         col_align_by_type: dict[str, Counter] = {"numeric": Counter(), "text": Counter()}
         for t in obs:
             for a, num in zip(t.col_aligns, t.col_numeric):
@@ -1811,8 +1839,15 @@ class Extractor:
         for lvl, b in self._bullets.items():
             for src, dst in (("mar_l_emu", "indent_role"), ("hanging_emu", "hanging_indent_role")):
                 v = b.get(src)
-                if v and steps:
+                if v is not None and v > 0 and steps:
                     b[dst] = min(steps, key=lambda n: abs(steps[n]["emu"] - v))
+                elif dst == "hanging_indent_role" and v is not None:
+                    # an observed hanging of 0 (or a first-line indent, negative) is no step: the
+                    # emitter reads hanging_emu itself, and a step would hang the indent's width
+                    b[dst] = None
+                    if v < 0:
+                        self.notes.append(f"bullet level {lvl}: a first-line indent of {-v} EMU (a:pPr indent > 0); a bulleted level is "
+                                          "drawn with a hanging indent at least the glyph's width, so this is not reproduced")
                 elif b.get("mar_l_emu") and steps and dst == "hanging_indent_role":
                     b[dst] = b.get("indent_role")
         # bind role inks and chrome colours to roles (after colour roles exist)
@@ -2144,7 +2179,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("-o", "--out", default=None, help="guide JSON (default: <stem>.style.json next to the reference)")
     ap.add_argument("--report", default=None, help="evidence digest markdown (default: alongside the JSON)")
     ap.add_argument("--max-pages", type=int, default=None)
-    ap.add_argument("--pages", default=None, help="PDF page range to treat as the deck, 1-based inclusive, e.g. 7-60 (after reading the triage)")
+    ap.add_argument("--pages", default=None, help="page range to treat as the deck, 1-based inclusive, e.g. 7-60 (a PDF: after reading the triage)")
     ap.add_argument("--include-generated", action="store_true", help="count slides carrying the pptx-skill origin tag as evidence (skipped by default)")
     args = ap.parse_args(argv)
     import cli

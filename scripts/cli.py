@@ -20,14 +20,35 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+
+class Refused(ValueError):
+    """A named refusal raised below a command's main (an unreadable or over-cap reference,
+    say): `run` prints it as "refused: ..." and exits non-zero, never a traceback."""
+
+
 SKILL_DIR = Path(__file__).resolve().parent.parent
 WORK_ENV = "DECK_WORK"
 
 
+def _skill_roots() -> set[Path]:
+    """The skill directory, and the folders its own symlinks point at (refs/files may be a
+    symlink to a folder elsewhere): writing there is writing into the skill, by whichever
+    path. Symlinks are looked for two levels down, where the skill keeps them."""
+    roots = {SKILL_DIR, Path(os.path.abspath(Path(__file__).parent.parent))}
+    for top in (SKILL_DIR, *(p for p in SKILL_DIR.iterdir() if p.is_dir() and not p.is_symlink())):
+        try:
+            entries = list(top.iterdir())
+        except OSError:
+            continue
+        roots.update(e.resolve() for e in entries if e.is_symlink())
+    return roots
+
+
 def inside_skill(path: str | Path) -> bool:
-    """Inside the skill as written or as resolved: refs/files may be a symlink to a
-    folder elsewhere, and a path through it is still a path into the skill."""
-    skill = {SKILL_DIR, Path(os.path.abspath(Path(__file__).parent.parent))}
+    """Inside the skill as written or as resolved, or inside a folder one of the skill's own
+    symlinks points at (refs/files): a path into that folder is a path into the skill
+    whether it is written through the symlink or to the folder itself."""
+    skill = _skill_roots()
     as_written = Path(os.path.abspath(Path(path).expanduser()))
     return any(p == s or s in p.parents for p in (as_written, as_written.resolve()) for s in skill)
 
@@ -104,6 +125,8 @@ def run(main: Callable[[list[str]], int | None]) -> None:
         raise SystemExit(f"refused: {error.strerror or error}: {name!r}; {UNSET_HINT}") from None
     except Exception as error:
         from textfit import RulerUnavailableError
+        if isinstance(error, Refused):
+            raise SystemExit(f"refused: {error}") from None
         if isinstance(error, RulerUnavailableError):
             raise SystemExit(f"refused: {error}") from None  # the guide's pinned ruler, named
         raise

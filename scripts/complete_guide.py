@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import re
 import sys
 from collections import Counter
@@ -172,7 +173,8 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/composition", '{"archetypes": [{"archetype_id": "arch-1", "slides": [page numbers], "description": "<the arrangement in words>"}], "why"}', None),
     (r"/notes/[^/]+", "a string", None),
     (r"/reference/page", '{"width_emu": int, "height_emu": int, "why": "..."} (a guide made with no reference: the page size you choose)', None),
-    (r"/spacing/margins", '{"left": {"emu": int}, "right": {"emu": int}, "top": {"emu": int}, "bottom": {"emu": int}} (EMU, 0 or more)', None),
+    (r"/spacing/margins", ('{"left": {"emu": int}, "right": {"emu": int}, "top": {"emu": int}, "bottom": {"emu": int}} (EMU, 0 or more; '
+                           'each side may add "why", and raster_style.py\'s "provenance": "raster_inference" with its "confidence")'), None),
     (r"/typography/bullets", ('{"<level>": {"glyph": "<glyph>", "font": "<face>", "indent_role": "space.<step>", "hanging_indent_role": '
                               '"space.<step>"}}, or {} for text set without bullets'), None),
 )
@@ -213,6 +215,17 @@ def shape_error(path: str, value) -> str | None:
         if null is None:
             return f"{path}: null is not an answer here; write {shape}"
         return None
+    # a line spacing, alone or as a member of a role, is a positive finite multiple of the
+    # size (layout charges pitch = line_spacing x size): one check for every way it is written
+    if path.endswith("/line_spacing"):
+        spacing = [value]
+    elif isinstance(value, dict) and "line_spacing" in value and re.fullmatch(r"/typography/roles/[^/]+(/members)?", path):
+        spacing = [value["line_spacing"]] if value["line_spacing"] is not None else []
+    else:
+        spacing = []
+    for v in spacing:
+        if isinstance(v, bool) or not isinstance(v, int | float) or not math.isfinite(v) or v <= 0:
+            return f"{path}: line_spacing {v!r} is not a multiple of the size; write a positive number, e.g. 1.2 (null: single spacing)"
     if path in ("/tables", "/charts"):
         if not isinstance(value, dict):
             return f"{path}: expected {shape}"
@@ -243,7 +256,8 @@ def shape_error(path: str, value) -> str | None:
             isinstance(value.get(k), int) and not isinstance(value.get(k), bool) and value[k] >= 914400 for k in ("width_emu", "height_emu"))):
         return f"/reference/page: expected {shape}; each side a whole number of EMU, one inch (914400) or more"
     if path == "/spacing/margins" and (not isinstance(value, dict) or set(value) != set(MARGIN_SIDES) or not all(
-            isinstance(v, dict) and set(v) <= {"emu", "why"} and isinstance(v.get("emu"), int) and not isinstance(v["emu"], bool) and v["emu"] >= 0
+            isinstance(v, dict) and set(v) <= {"emu", "why", "provenance", "confidence"} and v.get("provenance", "raster_inference") == "raster_inference"
+            and isinstance(v.get("emu"), int) and not isinstance(v["emu"], bool) and v["emu"] >= 0
             for v in value.values())):
         return f"/spacing/margins: expected {shape}, all four sides"
     if path == "/continuation":
@@ -394,8 +408,13 @@ def floor_for(guide: dict, role: str, fam: str | None = None) -> float:
     return max(float(observed) if observed else 0.0, float(absolute))
 
 
+def color_role_names(guide: dict) -> set[str]:
+    """The colour roles a reference to a role may name: the guide's roles and extra roles."""
+    return set((guide.get("color", {}).get("roles") or {}).keys()) | set((guide.get("extra_roles") or {}).keys())
+
+
 def check_color_refs(guide: dict, value, where: str) -> None:
-    roles = set((guide.get("color", {}).get("roles") or {}).keys()) | set((guide.get("extra_roles") or {}).keys())
+    roles = color_role_names(guide)
     if isinstance(value, dict):
         for k, v in value.items():
             if k.endswith("_role") and isinstance(v, str) and v.startswith("color."):
@@ -932,6 +951,10 @@ def chrome_entries(guide: dict, value) -> list[dict]:
         for key in ("fill_hex", "line_hex"):
             if ch.get(key) is not None and not (isinstance(ch[key], str) and HEX_RE.match(ch[key])):
                 errors.append(f"{where}: {key} is a hex colour")
+        for key in ("fill_role", "line_role"):
+            if ch.get(key) is not None and ch[key] not in color_role_names(guide):
+                errors.append(f"{where}: {key} {ch[key]!r}{plan.nearest(ch[key], sorted(color_role_names(guide)))} is not a colour role in the guide "
+                              f"({sorted(color_role_names(guide))}); the emitter would draw nothing for it")
         if ch.get("anchor") is not None and ch["anchor"] not in CHROME_ANCHORS:
             errors.append(f"{where}: anchor {ch['anchor']!r} not in {list(CHROME_ANCHORS)}")
         style = ch.get("text_style")
@@ -1016,7 +1039,11 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         raise PatchError(err)
     parts = [p for p in path.split("/") if p]
     if path == PICTURE_TEXT:
-        guide.setdefault("tables", {})["picture_text"] = picture_text(guide, value)
+        # a draft whose reference has no native table writes tables: null; the pictures'
+        # measured size is recorded there all the same (keybank: every table is a picture)
+        if not isinstance(guide.get("tables"), dict):
+            guide["tables"] = {}
+        guide["tables"]["picture_text"] = picture_text(guide, value)
         return
     if parts[0] == "color" and parts[1] == "roles" and value is None:
         guide["color"]["roles"].pop(parts[2], None)
@@ -1132,7 +1159,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         guide["reference"]["page"] = {"width_emu": w, "height_emu": h, "width_in": round(w / 914400, 3), "height_in": round(h / 914400, 3),
                                       "orientation": "landscape" if w >= h else "portrait", "provenance": model_prov(value.get("why") or "")}
     elif path == "/spacing/margins":
-        guide["spacing"]["margins"] = {side: {"emu": v["emu"], "provenance": model_prov(v.get("why") or "completion")} for side, v in value.items()}
+        guide["spacing"]["margins"] = {side: {"emu": v["emu"], "provenance": model_prov(v.get("why") or "completion", v)} for side, v in value.items()}
     elif path == "/composition":
         guide["composition"] = composition_answer(value)
     elif path == "/titles/register":
@@ -1145,6 +1172,8 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         check_color_refs(guide, value, path)
         if path == "/tables" and isinstance(value, dict):
             value.setdefault("provenance", model_prov("completion"))
+            if isinstance(guide.get("tables"), dict) and "picture_text" in guide["tables"]:
+                value = {**value, "picture_text": guide["tables"]["picture_text"]}  # measured, answered apart
         if path == "/description" and "not_seen" in value:
             value = {**value, "not_seen": not_seen(guide, value["not_seen"])}
         if path == "/typography/families/substitutes":

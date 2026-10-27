@@ -45,6 +45,7 @@ from pathlib import Path
 
 from lxml import etree
 from pptx import Presentation
+from pptx.enum.shapes import PP_PLACEHOLDER
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.packuri import PackURI
 from pptx.oxml.ns import qn
@@ -55,8 +56,9 @@ EMU_PER_PT = 12700
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from emit_pptx import ORIGIN_TAG_NAME  # noqa: E402  one definition, the producer's
-from ooxml import visual_extent  # noqa: E402  the area a rotated shape covers, one definition
 from layout import PRODUCT_SAFETY_FLOOR_PT, table_floor_pt  # noqa: E402  the build's own floors: one rule for both gates
+from ooxml import Package, PackageRefused, _apply_transform, group_child_transform, resolve_target, visual_extent, xfrm_box, xfrm_rotation  # noqa: E402  one reader
+R_NS = qn("r:id")[1:].partition("}")[0]
 # 0.5pt: the thinnest stroke PowerPoint still inks above one pixel (deckgen E38 class 5).
 RULE_WEIGHT_FLOOR_EMU = 6350
 # Every DrawingML stroke: a:ln on shapes and charts, the six table cell borders.
@@ -105,15 +107,16 @@ def sniff(path: str) -> None:
         raise SystemExit(f"{path}: a PDF; this command reads .pptx (extract_style.py and render.py read PDFs)")
     if head[:2] != b"PK":
         raise SystemExit(f"{path}: not a zip, so not a .pptx")
-    with zipfile.ZipFile(path) as z:
-        if "ppt/presentation.xml" not in z.namelist():
-            raise SystemExit(f"{path}: a zip without ppt/presentation.xml; not a presentation")
+    try:
+        pkg = Package(path)  # the member and size caps, before python-pptx reads a byte
+    except PackageRefused as exc:
+        raise SystemExit(f"refused: {exc}") from None
+    if "ppt/presentation.xml" not in pkg.names:
+        raise SystemExit(f"{path}: a zip without ppt/presentation.xml; not a presentation")
 
 
 def slide_count(path: str) -> int:
-    with zipfile.ZipFile(path) as z:
-        pres = etree.fromstring(z.read("ppt/presentation.xml"))
-    return len(list(pres.iter(qn("p:sldId"))))
+    return len(list(Package(path).root("ppt/presentation.xml").iter(qn("p:sldId"))))
 
 
 def check_slide_numbers(path: str, numbers: list[int]) -> None:
@@ -131,26 +134,62 @@ def _soft_breaks_as_spaces(text: str) -> str:
     return re.sub(r"(?<=-)\v", "", text).replace("\v", " ")
 
 
+#: the placeholders that hold a slide's title; a subtitle is a block
+TITLE_PLACEHOLDERS = frozenset({PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE})
+
+
 def slide_text(path: str) -> list[dict]:
     prs = Presentation(path)
     out = []
     for i, slide in enumerate(prs.slides, 1):
-        entry: dict = {"slide": i, "layout": slide.slide_layout.name, "origin": slide_origin(slide), "title": None, "blocks": [], "tables": [], "notes": None}
+        entry: dict = {"slide": i, "layout": slide.slide_layout.name, "origin": slide_origin(slide), "title": None, "blocks": [], "tables": [], "charts": [], "notes": None}
         for shape in _leaf_shapes(slide.shapes):
             if shape.has_text_frame and shape.text_frame.text.strip():
                 text = "\n".join(_soft_breaks_as_spaces(p.text) for p in shape.text_frame.paragraphs)
-                if shape.is_placeholder and shape.placeholder_format.type is not None and "TITLE" in str(shape.placeholder_format.type) and entry["title"] is None:
+                if shape.is_placeholder and shape.placeholder_format.type in TITLE_PLACEHOLDERS and entry["title"] is None:
                     entry["title"] = text
                 else:
                     entry["blocks"].append({"name": shape.name, "text": text})
             if shape.has_table:
                 rows = [[_soft_breaks_as_spaces(cell.text) for cell in row.cells] for row in shape.table.rows]
                 entry["tables"].append({"name": shape.name, "rows": rows})
+            if getattr(shape, "has_chart", False):
+                entry["charts"].append(chart_text(shape))
         if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None:
             notes = slide.notes_slide.notes_text_frame.text.strip()
             entry["notes"] = notes or None
         out.append(entry)
     return out
+
+
+def _value_text(v) -> str | None:
+    """A cached chart value as text, written the way a number is written: 1234.7, 12."""
+    if v is None:
+        return None
+    v = float(v)
+    return str(int(v)) if v.is_integer() and abs(v) < 1e15 else repr(v)
+
+
+def chart_text(shape) -> dict:
+    """The words and figures a chart draws from its cached data: its title, its category
+    labels, and each series' name and values (the chart's own cache, as the file holds it)."""
+    chart = shape.chart
+    categories: list[str] = []
+    for plot in chart.plots:
+        for c in plot.categories:
+            label = str(c.label if hasattr(c, "label") else c)
+            if label not in categories:
+                categories.append(label)
+    series = []
+    for plot in chart.plots:
+        for ser in plot.series:
+            try:
+                values = list(ser.values)
+            except (AttributeError, KeyError, ValueError):
+                values = []
+            series.append({"name": ser.name, "values": [_value_text(v) for v in values]})
+    title = chart.chart_title.text_frame.text if chart.has_title and chart.chart_title.has_text_frame else None
+    return {"name": shape.name, "title": title or None, "categories": categories, "series": series}
 
 
 def print_text(entries: list[dict]) -> None:
@@ -164,6 +203,10 @@ def print_text(entries: list[dict]) -> None:
         for t in e["tables"]:
             for row in t["rows"]:
                 print(" | ".join(row))
+        for c in e.get("charts") or []:
+            print(f"[chart {c['name']}]" + (f" {c['title']}" if c["title"] else "") + (f": {' | '.join(c['categories'])}" if c["categories"] else ""))
+            for ser in c["series"]:
+                print(f"  {ser['name']}: {' | '.join(v if v is not None else '' for v in ser['values'])}")
         if e["notes"]:
             print(f"[notes] {e['notes']}")
         print()
@@ -224,13 +267,22 @@ def _drop_slide(prs, index: int) -> None:
     A custom show that names the slide holds a second reference, and python-pptx's
     drop_rel declines while any reference remains: the part would survive and collide
     with the next added slide's partname (deckgen render/emit/master.py found this on a
-    reference deck). Custom shows over removed slides mean nothing, so they go first."""
+    reference deck). A custom show's entry for the removed slide means nothing, so it goes
+    first; the show keeps its other slides, and a show left with none goes with it."""
     root = prs.part._element
-    for custom_shows in root.findall(qn("p:custShowLst")):
-        root.remove(custom_shows)
     sld_id_lst = prs.slides._sldIdLst
     sld_id = list(sld_id_lst)[index]
     rid = sld_id.get(qn("r:id"))
+    for custom_shows in root.findall(qn("p:custShowLst")):
+        for show in custom_shows.findall(qn("p:custShow")):
+            for sld_lst in show.findall(qn("p:sldLst")):
+                for entry in sld_lst.findall(qn("p:sld")):
+                    if entry.get(qn("r:id")) == rid:
+                        sld_lst.remove(entry)
+            if not show.findall(f"{qn('p:sldLst')}/{qn('p:sld')}"):
+                custom_shows.remove(show)
+        if not len(custom_shows):
+            root.remove(custom_shows)
     prs.part.drop_rel(rid)
     if rid in prs.part.rels:
         raise SystemExit(f"slide relationship {rid} is referenced more than once in presentation.xml; refusing to leave a colliding part")
@@ -297,11 +349,9 @@ def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
             rid_map[rel.rId] = new.part.relate_to(new_part, rel.reltype)
         else:
             rid_map[rel.rId] = new.part.relate_to(target, rel.reltype)
-    for el in new._element.iter():
-        for attr in (qn("r:embed"), qn("r:link"), qn("r:id"), qn("r:pict")):
-            v = el.get(attr)
-            if v in rid_map:
-                el.set(attr, rid_map[v])
+    _remap_rids(new._element, rid_map)
+    if src.has_notes_slide:
+        _copy_notes(src.notes_slide, new.notes_slide)
     # unique shape ids within the slide
     used: set[int] = set()
     for cnv in new._element.iter(qn("p:cNvPr")):
@@ -324,9 +374,42 @@ def duplicate(path: str, out: str, slide_no: int, after: int | None) -> dict:
     return {"out": out, "copied_slide": slide_no, "new_position": target_index + 1, "slides": len(Presentation(out).slides)}
 
 
+def _remap_rids(root: etree._Element, rid_map: dict[str, str]) -> None:
+    """Re-point every relationship-id attribute (r:id, r:embed, r:link, r:pict, r:dm, ...) of a
+    copied tree at the ids its new part's relationships hold."""
+    prefix = "{" + R_NS + "}"
+    for el in root.iter():
+        if not isinstance(el.tag, str):
+            continue
+        for attr, v in el.attrib.items():
+            if attr.startswith(prefix) and v in rid_map:
+                el.set(attr, rid_map[v])
+
+
+def _copy_notes(src_notes, new_notes) -> None:
+    """The copy's notes slide gets the source notes' shape tree (text and formatting), its
+    other relationships (a picture in the notes) re-pointed; the notes master and the slide
+    it belongs to are the new notes slide's own."""
+    tree = new_notes.shapes._spTree
+    for child in list(tree):
+        if child.tag not in (qn("p:nvGrpSpPr"), qn("p:grpSpPr")):
+            tree.remove(child)
+    for child in src_notes.shapes._spTree:
+        if child.tag not in (qn("p:nvGrpSpPr"), qn("p:grpSpPr")):
+            tree.append(copy.deepcopy(child))
+    rid_map: dict[str, str] = {}
+    for rel in src_notes.part.rels.values():
+        if rel.reltype in (RT.NOTES_MASTER, RT.SLIDE):
+            continue
+        rid_map[rel.rId] = (new_notes.part.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref) if rel.is_external
+                            else new_notes.part.relate_to(rel.target_part, rel.reltype))
+    _remap_rids(new_notes._element, rid_map)
+
+
 def _copy_part(prs, part):
-    """A byte-level copy of a part under a fresh partname, with its own relationships
-    copied (chart -> embedded workbook, colors, style)."""
+    """A copy of a part under a fresh partname, with its own relationships copied (chart ->
+    embedded workbook, colors, style) and its r:id attributes re-pointed at the ids those
+    copies get: the source's ids need not be the ones a fresh part assigns."""
     from pptx.opc.package import Part
 
     partname = part.partname
@@ -339,20 +422,34 @@ def _copy_part(prs, part):
         if candidate not in existing:
             break
         n += 1
-    new = Part(PackURI(candidate), part.content_type, prs.part.package, copy.deepcopy(part.blob))
-    if hasattr(part, "_element"):
-        new._blob = etree.tostring(part._element, xml_declaration=True, encoding="UTF-8", standalone=True)
+    new = Part(PackURI(candidate), part.content_type, prs.part.package, b"")
+    rid_map: dict[str, str] = {}
     for rel in part.rels.values():
         if rel.is_external:
-            new.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref)
+            rid_map[rel.rId] = new.rels.get_or_add_ext_rel(rel.reltype, rel.target_ref)
         else:
             # the chart's workbook, colours and style are its own: a shared workbook would
             # make an edit of one chart's data in PowerPoint rewrite the other's
-            new.relate_to(_copy_part(prs, rel.target_part), rel.reltype)
+            rid_map[rel.rId] = new.relate_to(_copy_part(prs, rel.target_part), rel.reltype)
+    if hasattr(part, "_element"):
+        root = copy.deepcopy(part._element)
+        _remap_rids(root, rid_map)
+        new._blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+    else:
+        new._blob = bytes(part.blob)
     return new
 
 
 # --- clean ----------------------------------------------------------------------------------------------
+
+
+def _rels_source(name: str) -> str | None:
+    """The partname a .rels member describes ("/" for the package's _rels/.rels), None for a
+    member that is not a .rels: a .rels is kept exactly when its source part is."""
+    folder, _, base = name.rpartition("_rels/")
+    if not base.endswith(".rels") or (folder and not folder.endswith("/")):
+        return None
+    return "/" + folder + base.removesuffix(".rels") if base != ".rels" else "/"
 
 
 def clean(path: str, out: str) -> dict:
@@ -360,12 +457,12 @@ def clean(path: str, out: str) -> dict:
     [Content_Types].xml. python-pptx already drops unreachable parts on save; this handles
     packages edited by hand whose stale parts python-pptx would carry as unknown blobs."""
     prs = Presentation(path)
-    reachable = {str(p.partname) for p in prs.part.package.iter_parts()}
+    reachable = {str(p.partname) for p in prs.part.package.iter_parts()} | {"/"}  # "/": the package itself, source of _rels/.rels
     with zipfile.ZipFile(path) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
         kept = dropped = 0
         for info in zin.infolist():
             name = "/" + info.filename
-            if info.filename == "[Content_Types].xml" or info.filename.endswith(".rels") or name in reachable:
+            if info.filename == "[Content_Types].xml" or name in reachable or _rels_source(info.filename) in reachable:
                 zout.writestr(info, zin.read(info.filename))
                 kept += 1
             else:
@@ -405,10 +502,6 @@ def undrawn_paragraphs(path: str, pdf: Path) -> list[str]:
                 if len(key) >= 6 and key not in haystack:
                     out.append(f"slide {i}: paragraph {key!r}... in {shape.name!r} did not draw")
     return out
-
-
-def _safe_xml(data: bytes) -> etree._Element:
-    return etree.fromstring(data, parser=etree.XMLParser(resolve_entities=False, huge_tree=False))
 
 
 def _edge_bytes(tc: etree._Element, side: str) -> bytes:
@@ -508,7 +601,7 @@ def _check_sizes(part: str, nodes, floor_pt: float, where: str, problems: list[s
             problems.append(f"{part}: run sz={sz} ({int(sz) / 100:g}pt) is below the {where} floor {floor_pt:g}pt")
 
 
-def emit_checks(z: zipfile.ZipFile, names: set[str], slide_parts: list[str], guide: dict | None) -> tuple[list[str], dict]:
+def emit_checks(pkg, slide_parts: list[str], guide: dict | None, parse) -> tuple[list[str], dict]:
     """The emitter read-back (module docstring): what the saved bytes carry that the two
     renderers draw differently, read off the package alone."""
     problems: list[str] = []
@@ -517,22 +610,18 @@ def emit_checks(z: zipfile.ZipFile, names: set[str], slide_parts: list[str], gui
     guide_widths = _guide_rule_widths_emu(guide)
     floors = info["floors"]
     for sp in slide_parts:
-        if sp not in names:
+        root = parse(sp) if sp in pkg.names else None
+        if root is None:
             continue
-        root = _safe_xml(z.read(sp))
-        rels_name = sp.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels"
-        rels = _safe_xml(z.read(rels_name)) if rels_name in names else None
         chart_parts: list[str] = []
-        if rels is not None:
-            for rel in rels:
-                kind = (rel.get("Type") or "").rsplit("/", 1)[-1]
-                target = "ppt/" + (rel.get("Target") or "").replace("../", "")
-                if kind == "chart" and target in names:
-                    chart_parts.append(target)
-                if kind == "tags" and target in names:
-                    tag_root = _safe_xml(z.read(target))
-                    if any(t.get("name") == ORIGIN_TAG_NAME for t in tag_root.iter(qn("p:tag"))):
-                        info["generated_slides"] += 1
+        for kind, target in pkg.rels(sp).values():
+            kind = kind.rsplit("/", 1)[-1]
+            if kind == "chart" and target in pkg.names:
+                chart_parts.append(target)
+            if kind == "tags" and target in pkg.names:
+                tag_root = parse(target)
+                if tag_root is not None and any(t.get("name") == ORIGIN_TAG_NAME for t in tag_root.iter(qn("p:tag"))):
+                    info["generated_slides"] += 1
         # shared table edges, byte for byte on both declaring cells (E38 class 4)
         for tbl in root.iter(qn("a:tbl")):
             info["tables"] += 1
@@ -574,7 +663,9 @@ def emit_checks(z: zipfile.ZipFile, names: set[str], slide_parts: list[str], gui
                 if re.fullmatch(r"\s*\d+\s*", text):
                     problems.append(f"{sp}: slide-number placeholder carries the literal {text.strip()!r} instead of a slidenum field: the number is wrong after any reorder")
         for cp in chart_parts:
-            croot = _safe_xml(z.read(cp))
+            croot = parse(cp)
+            if croot is None:
+                continue
             info["chart_parts"] += 1
             area = croot.find(".//" + qn("c:plotArea"))
             groups = [g for g in area if etree.QName(g).localname in VARY_COLORS_GROUPS] if area is not None else []
@@ -589,124 +680,162 @@ def emit_checks(z: zipfile.ZipFile, names: set[str], slide_parts: list[str], gui
     return problems, info
 
 
+def _page_shapes(tree: etree._Element, transform=None):
+    """Every drawn shape of a shape tree with the map from its coordinates to the page: a
+    shape inside a group is placed in the group's child space (ooxml.group_child_transform)."""
+    for el in tree:
+        if not isinstance(el.tag, str):
+            continue
+        local = etree.QName(el).localname
+        if local == "grpSp":
+            yield from _page_shapes(el, group_child_transform(el, transform))
+        elif local == "AlternateContent":
+            # the branch a reader without the extension draws
+            fallback = next((c for c in el if isinstance(c.tag, str) and etree.QName(c).localname == "Fallback"), None)
+            if fallback is not None:
+                yield from _page_shapes(fallback, transform)
+        elif local in ("sp", "pic", "graphicFrame", "cxnSp"):
+            yield el, transform
+
+
 def validate(path: str, render: bool, emit: bool = False, guide: dict | None = None) -> dict:
+    """Package checks off the zip, read through ooxml.Package: its member and size caps (an
+    over-cap file is refused before anything is read), its entity-disabled parser, and its one
+    relationship resolver. A part that does not parse is a problem by name."""
     problems: list[str] = []
     info: dict = {"file": path}
-    with zipfile.ZipFile(path) as z:
-        names = set(z.namelist())
-        if "[Content_Types].xml" not in names:
-            problems.append("missing [Content_Types].xml")
+    try:
+        pkg = Package(path)
+    except PackageRefused as exc:
+        return {**info, "problems": [f"refused to read: {exc}"], "ok": False}
+    names = pkg.names
+    unparsed: set[str] = set()
+
+    def parse(part: str) -> etree._Element | None:
+        try:
+            return pkg.root(part)
+        except etree.XMLSyntaxError as exc:
+            if part not in unparsed:
+                unparsed.add(part)
+                problems.append(f"{part}: not well-formed XML ({exc})")
+            return None
+
+    if "[Content_Types].xml" not in names:
+        problems.append("missing [Content_Types].xml")
+    else:
+        ct = parse("[Content_Types].xml")
+        ct = ct if ct is not None else []
+        defaults = {(d.get("Extension") or "").lower() for d in ct if d.tag.endswith("Default")}
+        overrides = {o.get("PartName") for o in ct if o.tag.endswith("Override")}
+        for n in names:
+            if n.endswith("/") or n == "[Content_Types].xml":
+                continue
+            ext = n.rsplit(".", 1)[-1].lower() if "." in n else ""
+            if "/" + n not in overrides and ext not in defaults:
+                problems.append(f"part without content type: {n}")
+    # every relationship target must exist, once per Id
+    declared: dict[str, set[str]] = {}
+    for n in sorted(names):
+        if not n.endswith(".rels"):
+            continue
+        rels = parse(n)
+        if rels is None:
+            continue
+        folder = n.rsplit("/_rels/", 1)[0] if "/_rels/" in n else ""
+        source = (folder + "/" if folder else "") + n.rsplit("/", 1)[-1].removesuffix(".rels")
+        ids = [rel.get("Id") for rel in rels]
+        declared[source] = set(ids)
+        for rid in sorted({i for i in ids if ids.count(i) > 1}):
+            problems.append(f"{n}: relationship Id {rid} is declared {ids.count(rid)} times")
+        for rel in rels:
+            if rel.get("TargetMode") == "External":
+                continue
+            target = rel.get("Target") or ""
+            if resolve_target(folder, target) not in names:
+                problems.append(f"{n}: {rel.get('Id')} -> {target} missing")
+    # every relationship id an XML part names must be declared in its own .rels: a copy
+    # that keeps an r:id its relationships do not hold points at nothing
+    for n in sorted(names):
+        if not n.endswith(".xml") or n == "[Content_Types].xml":
+            continue
+        root = parse(n)
+        if root is None:
+            continue
+        dangling = sorted({v for el in root.iter() if isinstance(el.tag, str)
+                           for k, v in el.attrib.items() if k.startswith("{" + R_NS + "}") and v not in declared.get(n, set())})
+        if dangling:
+            problems.append(f"{n}: names relationship id(s) {dangling} that its .rels does not declare")
+    # every slide needs its layout and every layout its master, or the text, layouts and
+    # duplicate commands crash on the same file that validated
+    for n in sorted(names):
+        for folder, kind_name, needs in (("ppt/slides/slide", "slides", "slideLayout"), ("ppt/slideLayouts/slideLayout", "slideLayouts", "slideMaster")):
+            if n.startswith(folder) and n.endswith(".xml"):
+                rels_name = n.replace(f"ppt/{kind_name}/", f"ppt/{kind_name}/_rels/") + ".rels"
+                rels = parse(rels_name) if rels_name in names else None
+                kinds = [r.get("Type", "").rsplit("/", 1)[-1] for r in rels] if rels is not None else []
+                if kinds.count(needs) != 1:
+                    problems.append(f"{n}: {kinds.count(needs)} {needs} relationships (needs exactly one)")
+    # slide list consistency and per-slide shape ids
+    pres = parse("ppt/presentation.xml") if "ppt/presentation.xml" in names else None
+    if pres is None:
+        problems.append("ppt/presentation.xml missing or unreadable")
+        pres = etree.Element(qn("p:presentation"))
+    rid_to_target = {rid: target for rid, (_, target) in pkg.rels("ppt/presentation.xml").items()} if "ppt/_rels/presentation.xml.rels" not in unparsed else {}
+    seen_ids: set[str] = set()
+    slide_parts = []
+    for sld in pres.iter(qn("p:sldId")):
+        sid = sld.get("id")
+        if sid in seen_ids:
+            problems.append(f"duplicate slide id {sid}")
+        seen_ids.add(sid)
+        rid = sld.get(qn("r:id"))
+        if rid not in rid_to_target:
+            problems.append(f"sldId {sid} has no relationship {rid}")
         else:
-            ct = etree.fromstring(z.read("[Content_Types].xml"))
-            defaults = {d.get("Extension").lower() for d in ct if d.tag.endswith("Default")}
-            overrides = {o.get("PartName") for o in ct if o.tag.endswith("Override")}
-            for n in names:
-                if n.endswith("/") or n == "[Content_Types].xml":
-                    continue
-                ext = n.rsplit(".", 1)[-1].lower() if "." in n else ""
-                if "/" + n not in overrides and ext not in defaults:
-                    problems.append(f"part without content type: {n}")
-        # every relationship target must exist
-        for n in names:
-            if not n.endswith(".rels"):
+            slide_parts.append(rid_to_target[rid])
+    info["slides"] = len(slide_parts)
+    sz = pres.find(qn("p:sldSz"))
+    for sp in slide_parts:
+        if sp not in names:
+            problems.append(f"slide part missing: {sp}")
+            continue
+        root = parse(sp)
+        if root is None:
+            continue
+        ids = [c.get("id") for c in root.iter(qn("p:cNvPr"))]
+        dup = {i for i in ids if ids.count(i) > 1}
+        if dup:
+            problems.append(f"{sp}: duplicate shape ids {sorted(dup)}")
+        tree = root.find(f"{qn('p:cSld')}/{qn('p:spTree')}")
+        for el, transform in (_page_shapes(tree) if tree is not None else ()):
+            box = xfrm_box(el)  # p:spPr/a:xfrm on a shape, p:xfrm on a graphic frame
+            if box is None:
                 continue
-            folder = n.rsplit("/_rels/", 1)[0] if "/_rels/" in n else ""
-            rels = etree.fromstring(z.read(n))
-            for rel in rels:
-                if rel.get("TargetMode") == "External":
-                    continue
-                target = rel.get("Target") or ""
-                if target.startswith("/"):
-                    resolved = target[1:]
-                else:
-                    parts = (folder.split("/") if folder else [])
-                    for piece in target.split("/"):
-                        if piece == "..":
-                            if parts:
-                                parts.pop()
-                        elif piece and piece != ".":
-                            parts.append(piece)
-                    resolved = "/".join(parts)
-                if resolved not in names:
-                    problems.append(f"{n}: {rel.get('Id')} -> {target} missing")
-        # every slide needs its layout and every layout its master, or the text, layouts and
-        # duplicate commands crash on the same file that validated
-        for n in names:
-            if n.startswith("ppt/slides/slide") and n.endswith(".xml"):
-                rels_name = n.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels"
-                kinds = []
-                if rels_name in names:
-                    kinds = [r.get("Type", "").rsplit("/", 1)[-1] for r in etree.fromstring(z.read(rels_name))]
-                if kinds.count("slideLayout") != 1:
-                    problems.append(f"{n}: {kinds.count('slideLayout')} slideLayout relationships (needs exactly one)")
-            if n.startswith("ppt/slideLayouts/slideLayout") and n.endswith(".xml"):
-                rels_name = n.replace("ppt/slideLayouts/", "ppt/slideLayouts/_rels/") + ".rels"
-                kinds = [r.get("Type", "").rsplit("/", 1)[-1] for r in etree.fromstring(z.read(rels_name))] if rels_name in names else []
-                if kinds.count("slideMaster") != 1:
-                    problems.append(f"{n}: {kinds.count('slideMaster')} slideMaster relationships (needs exactly one)")
-        # slide list consistency and per-slide shape ids
-        pres = etree.fromstring(z.read("ppt/presentation.xml"))
-        pres_rels = etree.fromstring(z.read("ppt/_rels/presentation.xml.rels"))
-        rid_to_target = {r.get("Id"): r.get("Target") for r in pres_rels}
-        seen_ids: set[str] = set()
-        slide_parts = []
-        for sld in pres.iter(qn("p:sldId")):
-            sid = sld.get("id")
-            if sid in seen_ids:
-                problems.append(f"duplicate slide id {sid}")
-            seen_ids.add(sid)
-            rid = sld.get(qn("r:id"))
-            if rid not in rid_to_target:
-                problems.append(f"sldId {sid} has no relationship {rid}")
-            else:
-                slide_parts.append("ppt/" + rid_to_target[rid].lstrip("/").removeprefix("ppt/"))
-        info["slides"] = len(slide_parts)
-        for sp in slide_parts:
-            if sp not in names:
-                problems.append(f"slide part missing: {sp}")
+            cnv = el.find(".//" + qn("p:cNvPr"))
+            shape_id = cnv.get("id") if cnv is not None else "?"
+            if box[2] < 0 or box[3] < 0:
+                problems.append(f"{sp}: negative extent on shape {shape_id}")
+            if sz is None:
                 continue
-            root = etree.fromstring(z.read(sp))
-            ids = [c.get("id") for c in root.iter(qn("p:cNvPr"))]
-            dup = {i for i in ids if ids.count(i) > 1}
-            if dup:
-                problems.append(f"{sp}: duplicate shape ids {sorted(dup)}")
-            for tag in ("p:sp", "p:pic", "p:graphicFrame", "p:cxnSp"):
-                for el in root.iter(qn(tag)):
-                    xfrm = el.find(".//" + qn("a:xfrm"))
-                    if xfrm is not None:
-                        ext = xfrm.find(qn("a:ext"))
-                        off = xfrm.find(qn("a:off"))
-                        if ext is not None and (int(ext.get("cx", "0")) < 0 or int(ext.get("cy", "0")) < 0):
-                            problems.append(f"{sp}: negative extent on shape {el.find('.//' + qn('p:cNvPr')).get('id') if el.find('.//' + qn('p:cNvPr')) is not None else '?'}")
-                        if off is not None:
-                            sz = pres.find(qn("p:sldSz"))
-                            if sz is not None and ext is not None:
-                                w, h = int(sz.get("cx")), int(sz.get("cy"))
-                                # the page area the shape covers: off and ext are the box before
-                                # xfrm/@rot turns it about its centre (a label up the page edge
-                                # declares a box that runs off the slide and draws inside it)
-                                x, y, cx, cy = visual_extent((int(off.get("x", "0")), int(off.get("y", "0")), int(ext.get("cx", "0")), int(ext.get("cy", "0"))),
-                                                             int(xfrm.get("rot") or 0))
-                                # a title box a tenth of an inch above the slide is how three of five
-                                # real references are built; it is a warning, not a broken package
-                                tol = 91440 if el.find(qn("p:txBody")) is not None else 9525
-                                if x + cx > w + tol or y + cy > h + tol or x < -tol or y < -tol:
-                                    problems.append(f"{sp}: shape {el.find('.//' + qn('p:cNvPr')).get('id') if el.find('.//' + qn('p:cNvPr')) is not None else '?'} extends past the slide")
-            for gf in root.iter(qn("p:graphicFrame")):
-                for ch in gf.iter(qn("c:chart")):
-                    pass
-        # charts parse
-        for n in names:
-            if n.startswith("ppt/charts/chart") and n.endswith(".xml"):
-                try:
-                    croot = etree.fromstring(z.read(n))
-                    if croot.find(".//" + qn("c:plotArea")) is None:
-                        problems.append(f"{n}: no plotArea")
-                except etree.XMLSyntaxError as exc:
-                    problems.append(f"{n}: {exc}")
-        if emit:
-            emit_problems, info["emit"] = emit_checks(z, names, slide_parts, guide)
-            problems.extend(emit_problems)
+            w, h = int(sz.get("cx")), int(sz.get("cy"))
+            # the page area the shape covers: its box mapped out of any group's child space,
+            # then turned about its centre by xfrm/@rot (a label up the page edge declares
+            # a box that runs off the slide and draws inside it)
+            x, y, cx, cy = visual_extent(_apply_transform(box, transform), xfrm_rotation(el))
+            # a title box a tenth of an inch above the slide is how three of five
+            # real references are built; it is a warning, not a broken package
+            tol = 91440 if el.find(qn("p:txBody")) is not None else 9525
+            if x + cx > w + tol or y + cy > h + tol or x < -tol or y < -tol:
+                problems.append(f"{sp}: shape {shape_id} extends past the slide")
+    # charts parse
+    for n in sorted(names):
+        if n.startswith("ppt/charts/chart") and n.endswith(".xml"):
+            croot = parse(n)
+            if croot is not None and croot.find(".//" + qn("c:plotArea")) is None:
+                problems.append(f"{n}: no plotArea")
+    if emit:
+        emit_problems, info["emit"] = emit_checks(pkg, slide_parts, guide, parse)
+        problems.extend(emit_problems)
     try:
         Presentation(path)
     except Exception as exc:  # noqa: BLE001

@@ -28,6 +28,7 @@ from lxml import etree
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cli  # Refused: a named refusal, never a traceback
 from emit_pptx import ORIGIN_TAG_NAME, ORIGIN_TAG_VALUE  # noqa: E402  the producer of the tag this reader reads
 
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -65,6 +66,9 @@ BODY_TYPES = {"body", "subTitle"}
 CHROME_TYPES = {"dt", "ftr", "sldNum"}
 DEFAULT_SIZE_PT = 18.0  # ECMA-376 default when no level declares sz
 DEFAULT_LINE_WIDTH_EMU = 9525  # 0.75pt, ECMA-376 default for a:ln without w
+#: a:tcPr cell margins and the schema default each side draws when it is not declared (ECMA-376 21.1.3.17)
+CELL_MARGIN_SIDES = ("marL", "marR", "marT", "marB")
+CELL_MARGIN_DEFAULTS = {"marL": 91440, "marR": 91440, "marT": 45720, "marB": 45720}
 #: zip-bomb bounds on an untrusted package, asserted and unmeasured: a reference past either
 #: is refused by name, never read in part
 MAX_ZIP_MEMBERS = 5000
@@ -91,19 +95,26 @@ def _local(el: etree._Element) -> str:
 # --- package ----------------------------------------------------------------------
 
 
+class PackageRefused(cli.Refused):
+    """An untrusted package this reader will not open: not a zip, or over a zip-bomb cap."""
+
+
 class Package:
     """The zip, parsed on demand, with relationship lookups. Untrusted input:
     entities are not resolved and member counts and sizes are capped."""
 
     def __init__(self, path: str) -> None:
         self.path = path
-        self.zip = zipfile.ZipFile(path)
+        try:
+            self.zip = zipfile.ZipFile(path)
+        except zipfile.BadZipFile:
+            raise PackageRefused(f"{path} is not a .pptx package (not a zip; a legacy .ppt must be saved as .pptx first)") from None
         infos = self.zip.infolist()
         if len(infos) > MAX_ZIP_MEMBERS:
-            raise ValueError(f"{path}: {len(infos)} members exceeds {MAX_ZIP_MEMBERS}")
+            raise PackageRefused(f"{path}: {len(infos)} members exceeds {MAX_ZIP_MEMBERS}")
         for info in infos:
             if info.file_size > MAX_MEMBER_BYTES:
-                raise ValueError(f"{path}: {info.filename} exceeds {MAX_MEMBER_BYTES} bytes")
+                raise PackageRefused(f"{path}: {info.filename} declares {info.file_size} bytes uncompressed, over the {MAX_MEMBER_BYTES} byte cap")
         self.names = set(self.zip.namelist())
         self._roots: dict[str, etree._Element] = {}
         self._rels: dict[str, dict[str, tuple[str, str]]] = {}
@@ -124,12 +135,7 @@ class Package:
             for rel in self.root(rels_part):
                 if rel.get("TargetMode") == "External":
                     continue
-                target = rel.get("Target") or ""
-                if not target.startswith("/"):
-                    target = _resolve_relative(folder, target)
-                else:
-                    target = target[1:]
-                out[rel.get("Id") or ""] = (rel.get("Type") or "", target)
+                out[rel.get("Id") or ""] = (rel.get("Type") or "", resolve_target(folder, rel.get("Target") or ""))
         self._rels[part] = out
         return out
 
@@ -150,7 +156,12 @@ class Package:
         return out
 
 
-def _resolve_relative(folder: str, target: str) -> str:
+def resolve_target(folder: str, target: str) -> str:
+    """A relationship Target as a zip member name: an absolute Target ("/ppt/charts/chart1.xml")
+    from the package root, a relative one from the folder of the part that declares it. The
+    one resolver every reader of relationships uses."""
+    if target.startswith("/"):
+        folder, target = "", target[1:]
     parts = folder.split("/") if folder else []
     for piece in target.split("/"):
         if piece == "..":
@@ -214,13 +225,38 @@ def _clamp(v: float) -> float:
     return max(0.0, min(1.0, v))
 
 
+#: colour transforms read off a reference that this reader does not apply, by name and count:
+#: their arithmetic is not stated precisely enough to compute (gray names no luminance weights;
+#: red/green/blue and gamma do not say which space they act in), so the colour is resolved
+#: without them and the extractor reports them, never in silence
+UNAPPLIED_TRANSFORMS: Counter = Counter()
+#: transforms that take no val (ECMA-376 20.1.2.3)
+_FLAG_TRANSFORMS = {"inv", "comp", "gray"}
+_UNAPPLIED = {"gray", "red", "redOff", "redMod", "green", "greenOff", "greenMod", "blue", "blueOff", "blueMod", "gamma", "invGamma"}
+
+
 def apply_transforms(rgb: tuple[int, int, int], color_el: etree._Element) -> tuple[tuple[int, int, int], float]:
     """PowerPoint's colour transforms in declaration order. Same arithmetic as
-    deckgen style/drawml.py _apply_transforms: tint/shade in RGB, lum/sat/hue in HLS."""
+    deckgen style/drawml.py _apply_transforms: tint/shade in RGB, lum/sat/hue in HLS
+    (absolute, offset and modulation alike; hue in 60000ths of a degree), alpha set,
+    offset and modulated, inv as 1 - each channel, comp as the hue turned half way.
+    The rest are counted in UNAPPLIED_TRANSFORMS."""
     r, g, b = (c / 255.0 for c in rgb)
     alpha = 1.0
     for child in color_el:
+        if not isinstance(child.tag, str):
+            continue
         name = _local(child)
+        if name in _UNAPPLIED:
+            UNAPPLIED_TRANSFORMS[name] += 1
+            continue
+        if name == "inv":
+            r, g, b = 1 - r, 1 - g, 1 - b
+            continue
+        if name == "comp":
+            h, l, s = colorsys.rgb_to_hls(r, g, b)
+            r, g, b = colorsys.hls_to_rgb((h + 0.5) % 1.0, l, s)
+            continue
         raw = child.get("val")
         if raw is None:
             continue
@@ -232,20 +268,43 @@ def apply_transforms(rgb: tuple[int, int, int], color_el: etree._Element) -> tup
             r, g, b = r * amount + (1 - amount), g * amount + (1 - amount), b * amount + (1 - amount)
         elif name == "shade":
             r, g, b = r * amount, g * amount, b * amount
-        elif name in ("lumMod", "lumOff", "satMod", "hueMod"):
+        elif name in ("lum", "lumMod", "lumOff", "sat", "satMod", "satOff", "hue", "hueMod", "hueOff"):
             h, l, s = colorsys.rgb_to_hls(r, g, b)
-            if name == "lumMod":
+            turn = float(raw) / 60000.0 / 360.0  # hue and hueOff: 60000ths of a degree
+            if name == "lum":
+                l = _clamp(amount)
+            elif name == "lumMod":
                 l = _clamp(l * amount)
             elif name == "lumOff":
                 l = _clamp(l + amount)
+            elif name == "sat":
+                s = _clamp(amount)
             elif name == "satMod":
                 s = _clamp(s * amount)
+            elif name == "satOff":
+                s = _clamp(s + amount)
+            elif name == "hue":
+                h = turn % 1.0
+            elif name == "hueOff":
+                h = (h + turn) % 1.0
             else:
                 h = (h * amount) % 1.0
             r, g, b = colorsys.hls_to_rgb(h, l, s)
         elif name == "alpha":
             alpha = _clamp(amount)
+        elif name == "alphaMod":
+            alpha = _clamp(alpha * amount)
+        elif name == "alphaOff":
+            alpha = _clamp(alpha + amount)
+        else:
+            UNAPPLIED_TRANSFORMS[name] += 1
     return (round(_clamp(r) * 255), round(_clamp(g) * 255), round(_clamp(b) * 255)), alpha
+
+
+def _linear_to_srgb(c: float) -> float:
+    """IEC 61966-2-1 encoding of a linear channel (0..1)."""
+    c = _clamp(c)
+    return 12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
 
 
 PRESET_COLORS = {"black": "000000", "white": "FFFFFF", "red": "FF0000", "green": "008000",
@@ -267,7 +326,8 @@ def resolve_color(color_el: etree._Element, theme: Theme | None, clr_map: dict[s
             base = _hex_rgb(v)
     elif kind == "scrgbClr":
         try:
-            base = tuple(round(255 * float(color_el.get(k, "0")) / 100000.0) for k in ("r", "g", "b"))  # type: ignore[assignment]
+            # scRGB is linear (gamma 1.0, ECMA-376 20.1.2.3.30): encoded to sRGB like every other hex here
+            base = tuple(round(255 * _linear_to_srgb(float(color_el.get(k, "0")) / 100000.0)) for k in ("r", "g", "b"))  # type: ignore[assignment]
         except ValueError:
             base = None
     elif kind == "hslClr":
@@ -403,7 +463,11 @@ class TableObs:
     data_fills: list[str | None] = field(default_factory=list)
     band_fills: list[str | None] = field(default_factory=list)
     edges: dict[str, list[tuple[str | None, int]]] = field(default_factory=dict)  # class -> [(color, width_emu) | None-colour means no line]
+    #: per cell, the inset it draws (marL, marR, marT, marB): each side as declared on a:tcPr,
+    #: else the schema's default for that side (ECMA-376 21.1.3.17: 91440, 91440, 45720, 45720)
     cell_margins_emu: list[tuple[int, int, int, int]] = field(default_factory=list)
+    #: per cell, the sides a:tcPr declares (None where it declares none): evidence of a choice
+    cell_margins_declared: list[tuple[int | None, int | None, int | None, int | None]] = field(default_factory=list)
     col_aligns: list[str] = field(default_factory=list)
     col_numeric: list[float] = field(default_factory=list)  # share of data cells that parse as a figure
 
@@ -1368,11 +1432,15 @@ class SlideWalker:
                     obs.header_fills.append(fill)
                 elif row_class == "data":
                     (obs.band_fills if (flags["bandRow"] and data_index % 2 == 0) else obs.data_fills).append(fill)
-                if tcpr is not None and all(tcpr.get(m) for m in ("marL", "marR", "marT", "marB")):
+                declared: list[int | None] = []
+                for m in CELL_MARGIN_SIDES:
+                    raw = tcpr.get(m) if tcpr is not None else None
                     try:
-                        obs.cell_margins_emu.append(tuple(int(tcpr.get(m)) for m in ("marL", "marR", "marT", "marB")))  # type: ignore[arg-type]
+                        declared.append(int(raw) if raw is not None else None)
                     except ValueError:
-                        pass
+                        declared.append(None)
+                obs.cell_margins_declared.append(tuple(declared))  # type: ignore[arg-type]
+                obs.cell_margins_emu.append(tuple(CELL_MARGIN_DEFAULTS[m] if v is None else v for m, v in zip(CELL_MARGIN_SIDES, declared)))  # type: ignore[arg-type]
                 txb = tc.find(_a("txBody"))
                 if txb is not None:
                     runs_before = len(self.print.runs)
@@ -1541,23 +1609,7 @@ class SlideWalker:
                 continue
             ref = shape_ref(sp)
             if local == "grpSp":
-                box = xfrm_box(sp)
-                xfrm = sp.find(f"{_p('grpSpPr')}/{_a('xfrm')}")
-                child_t = transform
-                if box and xfrm is not None:
-                    choff = xfrm.find(_a("chOff"))
-                    chext = xfrm.find(_a("chExt"))
-                    if choff is not None and chext is not None:
-                        try:
-                            cx, cy = int(chext.get("cx", "0")), int(chext.get("cy", "0"))
-                            ox, oy = int(choff.get("x", "0")), int(choff.get("y", "0"))
-                            sx = box[2] / cx if cx else 1.0
-                            sy = box[3] / cy if cy else 1.0
-                            abs_box = _apply_transform(box, transform)
-                            child_t = (abs_box[0] - ox * sx, abs_box[1] - oy * sy, sx, sy)
-                        except ValueError:
-                            child_t = transform
-                self.walk_tree(sp, layer, sink, with_text, surface, child_t)
+                self.walk_tree(sp, layer, sink, with_text, surface, group_child_transform(sp, transform))
                 continue
             box = self._box_of(sp, ph, layer)
             if box is not None:
@@ -1623,6 +1675,28 @@ class SlideWalker:
             if tree is not None:
                 self.walk_tree(tree, layer, self.print.chrome, False, part)
         return self.print
+
+
+def group_child_transform(grp: etree._Element, parent: tuple[float, float, float, float] | None) -> tuple[float, float, float, float] | None:
+    """The map (ox, oy, sx, sy) from a group's child coordinates to the page: its off/ext
+    against its chOff/chExt, composed with the map of the group it sits in, so a resized
+    group inside a resized group scales by both. The parent's map when the group declares
+    no child frame."""
+    box = xfrm_box(grp)
+    xfrm = grp.find(f"{_p('grpSpPr')}/{_a('xfrm')}")
+    choff = xfrm.find(_a("chOff")) if xfrm is not None else None
+    chext = xfrm.find(_a("chExt")) if xfrm is not None else None
+    if box is None or choff is None or chext is None:
+        return parent
+    try:
+        cx, cy = int(chext.get("cx", "0")), int(chext.get("cy", "0"))
+        ox, oy = int(choff.get("x", "0")), int(choff.get("y", "0"))
+    except ValueError:
+        return parent
+    px, py, psx, psy = parent if parent is not None else (0.0, 0.0, 1.0, 1.0)
+    sx = (box[2] / cx if cx else 1.0) * psx
+    sy = (box[3] / cy if cy else 1.0) * psy
+    return px + box[0] * psx - ox * sx, py + box[1] * psy - oy * sy, sx, sy
 
 
 def _apply_transform(box: tuple[int, int, int, int], t: tuple[float, float, float, float] | None) -> tuple[int, int, int, int]:
@@ -2652,7 +2726,11 @@ def fingerprint_pdf(path: str, max_pages: int | None = None) -> list[SlidePrint]
                 thin = min(rw, rh) <= 2.0
                 lw = float(rect.get("linewidth") or 0) if stroke else None
                 sp.shapes.append(Shape("line" if thin else "shape", box, None if thin else fill,
-                                       (fill if thin and fill else stroke), int((lw if lw else min(rw, rh)) * scale) if (thin or stroke) else None,
+                                       (fill if thin and fill else stroke),
+                                       # a stroke's own width; a thin filled rect is drawn as a line its
+                                       # height thick; a 0 w hairline (the thinnest the device draws) has no
+                                       # width in points, so none is recorded
+                                       int(lw * scale) if (stroke and lw) else int(min(rw, rh) * scale) if thin else None,
                                        None, False, None, "slide", ref=f"r{k}", paint_order=painted.get(_pdf_key(rect), 0)))
             for k, line in enumerate(page.lines):
                 lw = float(line.get("linewidth") or 1.0)

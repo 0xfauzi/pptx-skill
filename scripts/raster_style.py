@@ -10,7 +10,8 @@ cropped to the slide box the triage found (the image inside an EDGAR print, or t
 itself for a scan). A directory of PNGs is measured as given, one page per file, and
 --page-emu says what size the pages stand for.
 
-Every value is inference from pixels: the patch it writes carries provenance
+Every value is inference from pixels: the patch it writes (colour roles and margins in
+complete_guide.py's own shapes, chrome candidates as notes) carries provenance
 raster_inference at confidence <= 0.5, and the report names the dpi, because a 72 dpi
 print bounds how finely a size can be read (a 12pt line is 12 px tall). Faces cannot be
 read from pixels; the report leaves /typography/families open.
@@ -232,9 +233,8 @@ def chrome_mask(pages: list[Image.Image], surface_hex: str) -> tuple[list[list[i
     return mask, {"width": w, "height": h, "colour": colour}
 
 
-def darkest_colour(pages: list[Image.Image], box_px: tuple[float, float, float, float], w: int, h: int) -> str:
-    """Modal colour of the darkest fifth of the pixels under a chrome box, at full resolution:
-    a 0.75pt rule is one anti-aliased pixel row at 100 dpi, so a mean would be a blend."""
+def _box_samples(pages: list[Image.Image], box_px: tuple[float, float, float, float], w: int, h: int) -> list[tuple[int, int, int]]:
+    """Full-resolution pixels under a chrome box (mask coordinates), from up to eight pages."""
     samples: list[tuple[int, int, int]] = []
     for im in pages[: min(len(pages), 8)]:
         sx, sy = im.width / w, im.height / h
@@ -244,13 +244,31 @@ def darkest_colour(pages: list[Image.Image], box_px: tuple[float, float, float, 
         for y in range(y0, y1):
             for x in range(x0, x1, max(1, (x1 - x0) // 200)):
                 samples.append(px[x, y])
+    return samples
+
+
+def _modal_hex(samples: list[tuple[int, int, int]]) -> str:
+    bucket = Counter(_bucket(c) for c in samples).most_common(1)[0][0]
+    members = [c for c in samples if _bucket(c) == bucket]
+    return _hex(tuple(round(sum(c[i] for c in members) / len(members)) for i in range(3)))
+
+
+def darkest_colour(pages: list[Image.Image], box_px: tuple[float, float, float, float], w: int, h: int) -> str:
+    """Modal colour of the darkest fifth of the pixels under a chrome box, at full resolution:
+    a 0.75pt rule is one anti-aliased pixel row at 100 dpi, so a mean would be a blend. For a
+    rule or a mark's ink only: under a band the darkest fifth is the text set on it."""
+    samples = _box_samples(pages, box_px, w, h)
     if not samples:
         return "000000"
     samples.sort(key=_luma)
-    dark = samples[: max(1, len(samples) // 5)]
-    bucket = Counter(_bucket(c) for c in dark).most_common(1)[0][0]
-    members = [c for c in dark if _bucket(c) == bucket]
-    return _hex(tuple(round(sum(c[i] for c in members) / len(members)) for i in range(3)))
+    return _modal_hex(samples[: max(1, len(samples) // 5)])
+
+
+def fill_colour(pages: list[Image.Image], box_px: tuple[float, float, float, float], w: int, h: int) -> str:
+    """A band's fill: the modal colour of all its pixels at full resolution (what covers most
+    of it), the bucket refined by the mean of its members."""
+    samples = _box_samples(pages, box_px, w, h)
+    return _modal_hex(samples) if samples else "000000"
 
 
 def chrome_entries(mask: list[list[int]], meta: dict, page_emu: tuple[int, int], pages: list[Image.Image]) -> list[dict]:
@@ -270,8 +288,9 @@ def chrome_entries(mask: list[list[int]], meta: dict, page_emu: tuple[int, int],
             hexes = _hex(colours.most_common(1)[0][0])
             height_emu = int((y - y0) * sy)
             kind = "rule" if (y - y0) <= max(2, h * 0.01) else "band"
+            colour_of = darkest_colour if kind == "rule" else fill_colour
             entries.append({"kind": kind, "orientation": "horizontal", "box_emu": [0, int(y0 * sy), page_emu[0], height_emu],
-                            "hex": darkest_colour(pages, (0, y0, w, y), w, h), "hex_bucket": hexes,
+                            "hex": colour_of(pages, (0, y0, w, y), w, h), "hex_bucket": hexes,
                             "anchor": "top" if y0 < h / 2 else "bottom"})
             for yy in range(y0, y):
                 for x in range(w):
@@ -288,8 +307,9 @@ def chrome_entries(mask: list[list[int]], meta: dict, page_emu: tuple[int, int],
             colours = Counter(meta["colour"].get((xx, y)) for y in range(h) for xx in range(x0, x) if mask[y][xx])
             hexes = _hex(colours.most_common(1)[0][0])
             kind = "rule" if (x - x0) <= max(2, w * 0.01) else "band"
+            colour_of = darkest_colour if kind == "rule" else fill_colour
             entries.append({"kind": kind, "orientation": "vertical", "box_emu": [int(x0 * sx), 0, int((x - x0) * sx), page_emu[1]],
-                            "hex": darkest_colour(pages, (x0, 0, x, h), w, h), "hex_bucket": hexes,
+                            "hex": colour_of(pages, (x0, 0, x, h), w, h), "hex_bucket": hexes,
                             "anchor": "left" if x0 < w / 2 else "right"})
             for y in range(h):
                 for xx in range(x0, x):
@@ -439,20 +459,34 @@ def measure(pages: list[Image.Image], page_emu: tuple[int, int], dpi: int) -> di
             "margins": marg, "line_pitch": pitch, "mask": (mask, meta)}
 
 
+MARGIN_SIDES = ("left", "right", "top", "bottom")
+
+
 def patch_from(m: dict) -> dict:
+    """The addresses complete_guide.py accepts as measured here, in its own shapes: colour
+    roles, and the margins when all four sides carry ink (a side with none is left to you).
+    Chrome is not in the patch: a pixel component is not yet a chrome entry (which kind it is,
+    its text and text style, the pages it is on are read off the page images), so the
+    candidates are listed in /notes/raster_chrome and raster.json for you to write /chrome."""
     patch: dict = {}
     for role, spec in m["color_roles"].items():
         patch[f"/color/roles/{role}"] = {"hex": spec["hex"], "provenance": "raster_inference", "confidence": 0.5,
                                          "why": f"raster_inference: {spec['share']:.1%} of painted area at {m['dpi']} dpi"}
-    if m["margins"]:
-        patch["/spacing/margins"] = {side: {"emu": v["emu"], "pages": v["pages"], "provenance": "raster_inference", "confidence": 0.5}
+    if m["margins"] and set(m["margins"]) == set(MARGIN_SIDES):
+        patch["/spacing/margins"] = {side: {"emu": int(v["emu"]), "provenance": "raster_inference", "confidence": 0.5,
+                                            "why": f"raster_inference: ink extents on {v['pages']} of {m['pages']} pages"}
                                      for side, v in m["margins"].items()}
+    elif m["margins"]:
+        patch["/notes/raster_margins"] = (f"raster_style measured margins on {sorted(m['margins'])} only (a side with no ink on any page is "
+                                          f"not measured): {({k: v['emu'] for k, v in m['margins'].items()})} EMU; answer /spacing/margins yourself")
     if m["chrome"]:
-        patch["/chrome"] = [{**c, "provenance": "raster_inference", "confidence": 0.5} for c in m["chrome"]]
+        patch["/notes/raster_chrome"] = ("raster_style chrome candidates (raster.json chrome, chrome-mask.png), not chrome entries: "
+                                         + "; ".join(f"{c['kind']} {c.get('anchor')} box_emu {c['box_emu']} hex {c['hex']}" for c in m["chrome"][:12])
+                                         + ("; ..." if len(m["chrome"]) > 12 else "") + ". Write /chrome in its own shape from the page images")
     est = m["line_pitch"].get("body_size_pt_estimate")
     if est:
-        patch["/notes"] = (f"raster_style: body size estimate {est}pt from a {m['line_pitch']['pitch_pt_modal']}pt line pitch "
-                           f"(confidence 0.4; set /typography/roles/type.body yourself after looking at the pages)")
+        patch["/notes/raster_body_size"] = (f"raster_style: body size estimate {est}pt from a {m['line_pitch']['pitch_pt_modal']}pt line pitch "
+                                            f"(confidence 0.4; set /typography/roles/type.body yourself after looking at the pages)")
     return patch
 
 

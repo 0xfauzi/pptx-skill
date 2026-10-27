@@ -7,8 +7,8 @@
 layouts, theme and chrome stay, so every inherited value is the reference's (master
 reuse: PowerPoint opens and re-saves such a package without repair). The spec carries TOKEN ROLES and content only. A colour is a role name in
 the guide (`color.ink`, `color.accent2`, `color.extra_3`), a text style is a type role
-(`type.body`); a literal hex or point size in the spec is refused unless the element is
-marked `"foreign": true`. Boxes are integer EMU from the layout solver.
+(`type.body`); a literal hex or point size in the spec is refused (a colour the guide
+lacks is added to it as a role first). Boxes are integer EMU from the layout solver.
 
 Spec shape (one slide shown):
 {
@@ -99,7 +99,7 @@ from pptx.util import Emu, Pt
 
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from chart_geometry import chart_family  # noqa: E402
+from chart_geometry import axis_crossing, chart_family  # noqa: E402
 
 # the solver's own rules for case and header cells: it measured this text
 from layout import (  # noqa: E402
@@ -346,7 +346,11 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
         p_pr.set("indent", "0")
     else:
         bullets = guide.g.get("typography", {}).get("bullets", {})
-        entry = bullets.get(str(level)) or bullets.get(level) or bullets.get("0") or {}
+        entry = bullets.get(str(level)) or bullets.get(level)
+        if entry is None:
+            entry = bullets.get("0") or {}
+            if entry:
+                guide.take(where, f"bullet level {level}: level 0's glyph and hanging indent (the guide's typography.bullets define no level {level})", look=True)
         glyph = entry.get("glyph")
         if not glyph:
             glyph = "\u2022"
@@ -356,12 +360,20 @@ def _paragraph_props(p, spec: dict, guide: Guide, para: dict, where: str = "text
         # the level); the file carries that marL, so the literal breaks were computed for the
         # column that is written. The hanging indent is the level's own step from the guide.
         indent = para.get("indent_emu")
-        if not indent:
+        if indent is None:  # a measured 0 is written as 0
             role = para.get("indent_role") or ("space.sm" if "space.sm" in guide.spacing else None)
             indent = guide.space(role, 228600)
             guide.take(where, f"bullet level {level}: indent {indent} EMU ({role or 'no spacing step: 0.25 in'}; no measured indent was given)", look=role is None)
-        hanging_role = entry.get("hanging_indent_role") or entry.get("indent_role")
-        hanging = guide.space(hanging_role, indent) if hanging_role else indent
+        # the level's hanging step; else the hanging the reference was observed to draw
+        # (extract_style: hanging_emu, 0 when it hangs none, a first-line indent below 0);
+        # else the indent itself
+        hanging_role = entry.get("hanging_indent_role") or (None if entry.get("hanging_emu") is not None else entry.get("indent_role"))
+        if hanging_role:
+            hanging = guide.space(hanging_role, indent)
+        elif entry.get("hanging_emu") is not None:
+            hanging = max(0, int(entry["hanging_emu"]))
+        else:
+            hanging = indent
         # the glyph needs its own width plus a word space: a 5pt step on a 12pt body would
         # leave 0.8pt between the square and the text (reviewed on a dark PDF reference)
         hanging = max(hanging, int(size * 12700 * 0.9))
@@ -503,8 +515,11 @@ def write_rule(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) ->
         x1, y1, x2, y2 = (int(v) for v in el["points"])
         line = _without_theme_style(slide.shapes.add_connector(1, Emu(x1), Emu(y1), Emu(x2), Emu(y2)))
     else:
-        horizontal = w >= h
-        line = _without_theme_style(slide.shapes.add_connector(1, Emu(x), Emu(y + (h // 2 if horizontal else 0)), Emu(x + w if horizontal else x), Emu(y + (h // 2) if horizontal else y + h)))
+        if w >= h:  # horizontal: at the box's vertical middle
+            ends = (x, y + h // 2, x + w, y + h // 2)
+        else:  # vertical: at the box's horizontal middle
+            ends = (x + w // 2, y, x + w // 2, y + h)
+        line = _without_theme_style(slide.shapes.add_connector(1, *(Emu(v) for v in ends)))
     line.name = el.get("id", "rule")
     role = el.get("line_role")
     if not role:
@@ -1037,7 +1052,11 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
     if heights and not el.get("fit_cell"):
         raise SpecError(f"{el.get('id', 'table')}: fitted row heights without the solver's cell sizes ('fit_cell'); rows fitted at one size and written at another overflow")
     # the inset the fitter charged at the page's scale; the guide's scale-1 inset otherwise
-    pad = int(el["fit_padding_emu"]) if el.get("fit_padding_emu") is not None else int(guide.tables.get("cell_padding_emu") or guide.space(guide.tables.get("cell_padding_role"), DEFAULT_CELL_INSET_EMU))
+    # otherwise as layout.fit_table reads it: a role wins over EMU, and a stated 0 is 0
+    pad_role = el.get("cell_padding_role") or guide.tables.get("cell_padding_role")
+    pad_emu = guide.tables.get("cell_padding_emu")
+    pad = (int(el["fit_padding_emu"]) if el.get("fit_padding_emu") is not None else
+           guide.space(pad_role, DEFAULT_CELL_INSET_EMU) if pad_role else int(pad_emu) if pad_emu is not None else DEFAULT_CELL_INSET_EMU)
     header_spec, cell_spec = table_roles(el, guide)
     align_by_kind = guide.tables.get("alignment_by_column_type") or {}
     totals = bool(el.get("totals_last_row"))
@@ -1115,7 +1134,7 @@ def write_table(slide, el: dict, guide: Guide, box: tuple[int, int, int, int]) -
 # reads back what it did not decide. c:varyColors val=0 is the one value written without
 # being asked for: it is file safety, not design (E38 class 10, below).
 
-CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title", "foreign",
+CHART_KEYS = {"id", "kind", "box", "type", "categories", "series", "number_format", "text", "axes", "gap_width", "overlap", "legend", "plot_fill_role", "title",
               "plot_area",
               "bridge"}  # bridge: a declaration the build's tie-out reads; nothing here draws from it
 SERIES_KEYS = {"name", "values", "number_format", "fill_role", "line_role", "line_width_pt", "labels", "points", "marker", "smooth",
@@ -2154,11 +2173,16 @@ def bars_across_labels(el: dict) -> set[int]:
         return set()
     c = val.get("crosses", "auto_zero")
     values = [v for s in el.get("series") or [] if s.get("axis") != "secondary" for v in s.get("values") or [] if isinstance(v, int | float)]
-    if c == "auto_zero":
-        lo = val.get("min")
+    lo, hi = val.get("min"), val.get("max")
+    if c in ("min", "max"):
+        return set()  # not measured: nothing is claimed
+    if c == "auto_zero" and (lo is None or hi is None):
+        # an auto-scaled axis spans zero exactly when some value is below it
         c = 0 if (lo is not None and lo < 0) or (lo is None and any(v < 0 for v in values)) else None
-    if not isinstance(c, int | float) or isinstance(c, bool):
-        return set()
+    elif lo is not None and hi is not None:
+        c = axis_crossing(c, lo, hi)  # the geometry's own reading
+    if not isinstance(c, int | float) or isinstance(c, bool) or (lo is not None and c <= lo):
+        return set()  # bars grow up from the bottom edge: none reaches below the labels
     return {si for si, s in enumerate(el.get("series") or []) if s.get("axis") != "secondary" and str(s.get("plot_type") or el["type"]).startswith(("COLUMN_", "BAR_"))
             and any(isinstance(v, int | float) and v < c for v in s.get("values") or [])}
 
@@ -2282,11 +2306,12 @@ def picture_file(path, where: str) -> str:
 
 def chrome_hex(ch: dict, guide: Guide, part: str) -> str | None:
     """An entry's observed `<part>_hex`, else the hex of its `<part>_role` (part: fill or
-    line). None when the entry names neither: nothing is chosen for it."""
+    line), a role the guide does not hold refused by name (Guide.hex). None when the entry
+    names neither: nothing is chosen for it."""
     if ch.get(f"{part}_hex"):
         return ch[f"{part}_hex"]
     role = ch.get(f"{part}_role")
-    return guide.colors[role]["hex"] if role in guide.colors else None
+    return guide.hex(role, where=f"chrome {ch.get('chrome_id')} {part}_role") if role else None
 
 
 CHROME_TEXT_KINDS = ("label", "page_number", "footer", "date")
@@ -2823,8 +2848,9 @@ def emit(spec: dict, template: str, guide_data: dict, out: str, chrome: str) -> 
             box = tuple(int(v) for v in el["box"])
             if any(v < 0 for v in box[2:]):
                 raise SpecError(f"{el.get('id')}: negative extent")
-            if el.get("foreign"):
-                pass
+            if "foreign" in el:
+                raise SpecError(f"{el.get('id')}: 'foreign' exempts nothing: a colour is a role in the guide (add a colour the guide lacks "
+                                "under /extra_roles) and a size is a type role; remove the key")
             kind = el["kind"]
             if kind == "text":
                 write_text(slide, el, guide, box, shape=title_ph if el is title_el else None)
