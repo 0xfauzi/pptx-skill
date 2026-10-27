@@ -156,6 +156,16 @@ class Package:
         infos = self.zip.infolist()
         if len(infos) > MAX_ZIP_MEMBERS:
             raise PackageRefused(f"{path}: {len(infos)} members exceeds {MAX_ZIP_MEMBERS}")
+        # one member per part name, compared case-insensitively as OPC compares part names:
+        # zipfile reads the last copy under a name, other readers the first, so a part
+        # checked here could be a different part from the one read later
+        first: dict[str, str] = {}
+        for info in infos:
+            prior = first.get(info.filename.lower())
+            first[info.filename.lower()] = info.filename
+            if prior is not None:
+                raise PackageRefused(f"{path}: the zip holds {info.filename} twice (as {prior!r} and {info.filename!r}); "
+                                     "readers disagree on which copy is the part, so it is not read")
         for info in infos:
             if info.file_size > MAX_MEMBER_BYTES:
                 raise PackageRefused(f"{path}: {info.filename} declares {info.file_size} bytes uncompressed, over the {MAX_MEMBER_BYTES} byte cap")
@@ -207,7 +217,13 @@ class Package:
                 raise PackageRefused(f"{path}: {rels_part} is not well-formed XML; the relationships it holds cannot be read")
             folder = rels_part.rpartition("/_rels/")[0] if "/_rels/" in rels_part else ""
             for rel in self.root(rels_part):
-                if rel.get("TargetMode") == "External":
+                mode = rel.get("TargetMode")
+                if mode not in (None, "Internal", "External"):
+                    # the schema's two values, compared exactly as python-pptx compares them;
+                    # LibreOffice reads "external" as External and python-pptx as Internal
+                    raise PackageRefused(f"{path}: {rels_part} gives relationship {rel.get('Id')} TargetMode={mode!r}, "
+                                         "neither 'Internal' nor 'External'; readers disagree on what it names, so it is not read")
+                if mode == "External":
                     continue
                 target = resolve_target(folder, rel.get("Target") or "")
                 if target in self.names and target not in self.xml_parts and is_xml(target):
