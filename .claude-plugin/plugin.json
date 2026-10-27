@@ -1,0 +1,14 @@
+{
+  "name": "designing-presentations",
+  "displayName": "Designing presentations",
+  "version": "0.8.0",
+  "description": "Designs native, editable PowerPoint decks in the look of a reference deck or PDF, or with no reference, with text fit measured on the real fonts and measurable defects refused.",
+  "author": {
+    "name": "0xfauzi",
+    "url": "https://github.com/0xfauzi"
+  },
+  "homepage": "https://github.com/0xfauzi/pptx-skill",
+  "repository": "https://github.com/0xfauzi/pptx-skill",
+  "license": "MIT",
+  "keywords": ["powerpoint", "pptx", "presentations", "pitch-book", "slides", "design", "libreoffice"]
+}

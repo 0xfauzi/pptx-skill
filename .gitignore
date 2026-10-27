@@ -1,10 +1,23 @@
+# caches
 __pycache__/
 *.pyc
-node_modules/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
 .venv/
+node_modules/
+.DS_Store
+# outputs: builds, renders and work directories never belong in the repository
 out/
+dist/
 *.tmp
-refs/files/
+*.refused.pptx
+*.build.json
+!dev/proofs/*.build.json
+# third-party reference decks: fetched by skills/designing-presentations/refs/fetch.sh, never committed
+skills/designing-presentations/refs/files
+skills/designing-presentations/refs/files/
+skills/designing-presentations/refs/library/
+*.mismatch
+# local Claude Code state and worktrees
 .claude/
-refs/files
-refs/library/
