@@ -1,0 +1,736 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "2025_NNR_figure_slides.pptx",
+ "reference_sha256": "16bfa7025c03c68dbb3e12d6631b71f8eff87ba931cb4a017d6694b8dda5ab68",
+ "render_fidelity": "unknown_substitution",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1350,
+  "px_per_pt": 2.5
+ },
+ "sample_policy": "every evidence page in 2-10",
+ "pages_not_read": [
+  1,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56,
+  57,
+  58,
+  59,
+  60,
+  61,
+  62,
+  63,
+  64,
+  65,
+  66,
+  67,
+  68,
+  69,
+  70,
+  71,
+  72,
+  73,
+  74,
+  75,
+  76,
+  77,
+  78,
+  79,
+  80,
+  81,
+  82,
+  83,
+  84,
+  85,
+  86,
+  87,
+  88,
+  89,
+  90
+ ],
+ "generated_slides_skipped": [],
+ "record_template": {
+  "candidate": "<a candidate id on this page, or null>",
+  "what": "<what the exhibit is, in your words: its form and what it is made of>",
+  "message": "<the one thing a reader takes from it>",
+  "how_drawn": "<how the reference draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
+  "marks": "<what the reference marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim lives, and whether words beside the mark say what it marks; or that it marks nothing and how the claim still reads>",
+  "chart_or_table": "<true when it is a chart or a table, drawn natively or pasted as a picture: the pages the source-line habit is counted over>",
+  "axis_labels": "<true when it sets axis or category labels>",
+  "value_labels": "<true when it sets values on its marks>",
+  "why": "<optional>"
+ },
+ "source_line": "on every page holding a chart or a table: true or false, read off the page; null elsewhere",
+ "pages": [
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     2047,
+     1314
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=2)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p002-c1",
+     "file": "crops/p002-c1.png",
+     "pixel_size": [
+      1153,
+      829
+     ],
+     "box_in": [
+      2.74,
+      1.49,
+      6.41,
+      4.61
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p002-c1",
+     "what": "pasted horizontal bar chart picture of people using each substance in the past month",
+     "message": "alcohol dwarfs every other substance, and illicit drugs other than marijuana are small",
+     "how_drawn": "bars sorted within two groups, light blue for nicotine or alcohol and teal for illicit drugs, legend above, values in millions at the bar ends, value axis below with a bold title, no gridlines",
+     "marks": "nothing ringed; colour separates the two substance groups named in the legend",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2159,
+     1316
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=2)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p003-c1",
+     "file": "crops/p003-c1.png",
+     "pixel_size": [
+      1938,
+      636
+     ],
+     "box_in": [
+      1.28,
+      2.16,
+      10.77,
+      3.53
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p003-c1",
+     "what": "pasted pie of users against non users with a boxed breakout bar chart of products joined by leader lines",
+     "message": "about a fifth of people used nicotine, mostly cigarettes and vaping",
+     "how_drawn": "grey remainder slice and teal user slice labelled in bold words with millions and percent; breakout bars teal for tobacco and light blue for vaping with values at bar ends, legend above, box outline round the breakout",
+     "marks": "the user slice is exploded into the breakout via two leader lines; nothing else marked",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     1987,
+     1316
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=2)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      1135,
+      861
+     ],
+     "box_in": [
+      3.09,
+      1.48,
+      6.31,
+      4.79
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p004-c1",
+     "what": "pasted 100 percent stacked column chart picture of product type mix by age group",
+     "message": "young people mostly vape only, older adults mostly use tobacco only",
+     "how_drawn": "blue, green and yellow segments with values centred inside at one decimal, stacked legend above, value axis 0 to 100 titled along the left, total category set apart by a gap and bold label",
+     "marks": "the total column is set apart with extra space and a bold label; no ring",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2362,
+     1305
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=7)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p005-c1",
+     "file": "crops/p005-c1.png",
+     "pixel_size": [
+      733,
+      229
+     ],
+     "box_in": [
+      4.07,
+      6.04,
+      4.07,
+      1.27
+     ],
+     "kinds": {
+      "table": 1,
+      "image": 4
+     }
+    },
+    {
+     "id": "p005-c2",
+     "file": "crops/p005-c2.png",
+     "pixel_size": [
+      1335,
+      706
+     ],
+     "box_in": [
+      2.46,
+      1.64,
+      7.42,
+      3.92
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture; table (3+ panels)",
+    "kinds": "picture; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p005-c2",
+     "what": "pasted line chart picture with markers, one line per age group across survey years, nicotine product use 2022 to 2025",
+     "message": "how each age group's rate moved over the survey years and whether the change was significant",
+     "how_drawn": "four series in navy triangles, blue circles, green squares and maroon pentagons; total population line bold navy; value axis titled turned along the left, no gridlines, light grey panel ground; legend at right headed 'Age Group' in grey with a trend icon after each entry",
+     "marks": "nothing ringed; the trend icon beside each legend entry (black circle with arrow, or hollow minus) carries the significance claim, and the total's legend entry is bold",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p005-c1",
+     "what": "native table of the plotted estimates with a grey header row and a Trend column of icons and words",
+     "message": "the exact percentages behind every point and the trend verdict per group",
+     "how_drawn": "grey 767171 header with white bold labels, white body rows without rules, a grey rule under the last row, the total row bold, numbers centred at one decimal, an icon picture laid over each trend cell beside the word",
+     "marks": "the total row set bold and the Decreased or Increased words bold while No Change stays regular, so significant changes stand out",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2362,
+     1305
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=7)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p006-c1",
+     "file": "crops/p006-c1.png",
+     "pixel_size": [
+      796,
+      229
+     ],
+     "box_in": [
+      3.72,
+      6.04,
+      4.42,
+      1.27
+     ],
+     "kinds": {
+      "table": 1,
+      "image": 4
+     }
+    },
+    {
+     "id": "p006-c2",
+     "file": "crops/p006-c2.png",
+     "pixel_size": [
+      1336,
+      707
+     ],
+     "box_in": [
+      2.46,
+      1.64,
+      7.42,
+      3.93
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture; table (3+ panels)",
+    "kinds": "picture; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p006-c2",
+     "what": "pasted line chart picture with markers, one line per age group across survey years, tobacco product use 2021 to 2025",
+     "message": "how each age group's rate moved over the survey years and whether the change was significant",
+     "how_drawn": "four series in navy triangles, blue circles, green squares and maroon pentagons; total population line bold navy; value axis titled turned along the left, no gridlines, light grey panel ground; legend at right headed 'Age Group' in grey with a trend icon after each entry",
+     "marks": "nothing ringed; the trend icon beside each legend entry (black circle with arrow, or hollow minus) carries the significance claim, and the total's legend entry is bold",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p006-c1",
+     "what": "native table of the plotted estimates with a grey header row and a Trend column of icons and words",
+     "message": "the exact percentages behind every point and the trend verdict per group",
+     "how_drawn": "grey 767171 header with white bold labels, white body rows without rules, a grey rule under the last row, the total row bold, numbers centred at one decimal, an icon picture laid over each trend cell beside the word",
+     "marks": "the total row set bold and the Decreased or Increased words bold while No Change stays regular, so significant changes stand out",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 7,
+   "page_png": "pages/slide-07.png",
+   "content_crop": {
+    "file": "crops/p007-content.png",
+    "pixel_size": [
+     2362,
+     1305
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=7)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p007-c1",
+     "file": "crops/p007-c1.png",
+     "pixel_size": [
+      796,
+      229
+     ],
+     "box_in": [
+      3.72,
+      6.04,
+      4.42,
+      1.27
+     ],
+     "kinds": {
+      "table": 1,
+      "image": 4
+     }
+    },
+    {
+     "id": "p007-c2",
+     "file": "crops/p007-c2.png",
+     "pixel_size": [
+      1336,
+      707
+     ],
+     "box_in": [
+      2.46,
+      1.64,
+      7.42,
+      3.93
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture; table (3+ panels)",
+    "kinds": "picture; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p007-c2",
+     "what": "pasted line chart picture with markers, one line per age group across survey years, cigarette use 2021 to 2025",
+     "message": "how each age group's rate moved over the survey years and whether the change was significant",
+     "how_drawn": "four series in navy triangles, blue circles, green squares and maroon pentagons; total population line bold navy; value axis titled turned along the left, no gridlines, light grey panel ground; legend at right headed 'Age Group' in grey with a trend icon after each entry",
+     "marks": "nothing ringed; the trend icon beside each legend entry (black circle with arrow, or hollow minus) carries the significance claim, and the total's legend entry is bold",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p007-c1",
+     "what": "native table of the plotted estimates with a grey header row and a Trend column of icons and words",
+     "message": "the exact percentages behind every point and the trend verdict per group",
+     "how_drawn": "grey 767171 header with white bold labels, white body rows without rules, a grey rule under the last row, the total row bold, numbers centred at one decimal, an icon picture laid over each trend cell beside the word",
+     "marks": "the total row set bold and the Decreased or Increased words bold while No Change stays regular, so significant changes stand out",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 8,
+   "page_png": "pages/slide-08.png",
+   "content_crop": {
+    "file": "crops/p008-content.png",
+    "pixel_size": [
+     2362,
+     1305
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=7)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p008-c1",
+     "file": "crops/p008-c1.png",
+     "pixel_size": [
+      740,
+      229
+     ],
+     "box_in": [
+      4.07,
+      6.04,
+      4.11,
+      1.27
+     ],
+     "kinds": {
+      "table": 1,
+      "image": 4
+     }
+    },
+    {
+     "id": "p008-c2",
+     "file": "crops/p008-c2.png",
+     "pixel_size": [
+      1336,
+      707
+     ],
+     "box_in": [
+      2.46,
+      1.64,
+      7.42,
+      3.93
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture; table (3+ panels)",
+    "kinds": "picture; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p008-c2",
+     "what": "pasted line chart picture with markers, one line per age group across survey years, nicotine vaping 2022 to 2025",
+     "message": "how each age group's rate moved over the survey years and whether the change was significant",
+     "how_drawn": "four series in navy triangles, blue circles, green squares and maroon pentagons; total population line bold navy; value axis titled turned along the left, no gridlines, light grey panel ground; legend at right headed 'Age Group' in grey with a trend icon after each entry",
+     "marks": "nothing ringed; the trend icon beside each legend entry (black circle with arrow, or hollow minus) carries the significance claim, and the total's legend entry is bold",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p008-c1",
+     "what": "native table of the plotted estimates with a grey header row and a Trend column of icons and words",
+     "message": "the exact percentages behind every point and the trend verdict per group",
+     "how_drawn": "grey 767171 header with white bold labels, white body rows without rules, a grey rule under the last row, the total row bold, numbers centred at one decimal, an icon picture laid over each trend cell beside the word",
+     "marks": "the total row set bold and the Decreased or Increased words bold while No Change stays regular, so significant changes stand out",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 9,
+   "page_png": "pages/slide-09.png",
+   "content_crop": {
+    "file": "crops/p009-content.png",
+    "pixel_size": [
+     1987,
+     1316
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=2)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p009-c1",
+     "file": "crops/p009-c1.png",
+     "pixel_size": [
+      1324,
+      818
+     ],
+     "box_in": [
+      2.41,
+      1.66,
+      7.36,
+      4.55
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p009-c1",
+     "what": "pasted nested circles picture showing alcohol, binge and heavy alcohol users as proportional discs",
+     "message": "heavy drinkers are a quarter of binge drinkers who are under half of all drinkers",
+     "how_drawn": "teal outer disc, light blue middle disc, red inner disc, white heading inside the outer disc, leader lines from bold labels at left ending in white dots, percentages of the parent group in brackets",
+     "marks": "leader lines with dots tie each label to its disc; nothing else marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 10,
+   "page_png": "pages/slide-10.png",
+   "content_crop": {
+    "file": "crops/p010-content.png",
+    "pixel_size": [
+     2362,
+     1305
+    ],
+    "also_draws": [
+     {
+      "ref": "spTree/sp[2](id=7)",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p010-c1",
+     "file": "crops/p010-c1.png",
+     "pixel_size": [
+      796,
+      229
+     ],
+     "box_in": [
+      3.72,
+      6.04,
+      4.42,
+      1.27
+     ],
+     "kinds": {
+      "table": 1,
+      "image": 4
+     }
+    },
+    {
+     "id": "p010-c2",
+     "file": "crops/p010-c2.png",
+     "pixel_size": [
+      1336,
+      707
+     ],
+     "box_in": [
+      2.46,
+      1.64,
+      7.42,
+      3.93
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture; table (3+ panels)",
+    "kinds": "picture; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p010-c2",
+     "what": "pasted line chart picture with markers, one line per age group across survey years, alcohol use 2021 to 2025",
+     "message": "how each age group's rate moved over the survey years and whether the change was significant",
+     "how_drawn": "four series in navy triangles, blue circles, green squares and maroon pentagons; total population line bold navy; value axis titled turned along the left, no gridlines, light grey panel ground; legend at right headed 'Age Group' in grey with a trend icon after each entry",
+     "marks": "nothing ringed; the trend icon beside each legend entry (black circle with arrow, or hollow minus) carries the significance claim, and the total's legend entry is bold",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p010-c1",
+     "what": "native table of the plotted estimates with a grey header row and a Trend column of icons and words",
+     "message": "the exact percentages behind every point and the trend verdict per group",
+     "how_drawn": "grey 767171 header with white bold labels, white body rows without rules, a grey rule under the last row, the total row bold, numbers centred at one decimal, an icon picture laid over each trend cell beside the word",
+     "marks": "the total row set bold and the Decreased or Increased words bold while No Change stays regular, so significant changes stand out",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  }
+ ]
+}

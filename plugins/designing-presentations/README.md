@@ -20,16 +20,18 @@ The scripts refuse a page that has a defect they can measure. These are examples
 - A bridge that does not tie.
 - A label that the renderer wrapped, dropped or covered.
 
-![Page 1 of an IPO pitch book built from a public S-1: six headline figures, an annotated quarterly revenue chart with margin and growth rows, the offering terms and summary financials](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/hero.png)
+![Twelve pages from ten decks that the skill built: pitch book, LBO committee book, three pages of a board deck, strategy pre-read, initiation report, quarterly results, committee pre-read, two pages in the look of US government decks, a roadmap and an annual report](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/range.png)
 
-![Page 4 of an initiation report built from a public S-1: a bar chart of compute contracts with floors and ceilings, and three tables of contract terms, aggregates and funding](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/initiation-page-4.png)
+The image shows twelve pages from ten decks that the skill built. Two pages use the look of
+a public US government deck as their reference. The other pages have no reference. Each
+page is the LibreOffice render of the .pptx file that the build wrote.
 
-![Page 5 of an investment committee pre-read built from a public S-1: a scenarios table with labelled assumptions, and a bar chart of the multiple of entry value at three entry prices](https://raw.githubusercontent.com/0xfauzi/pptx-skill/main/docs/showcase/committee-page-5.png)
-
-The skill built these pages with no reference, from the public Form S-1 of Anthropic, PBC.
-The bank, the broker and the fund are fictional. The decks are unofficial demonstrations.
-Anthropic did not prepare them and has no affiliation with them. They are not investment
-advice. Each image is the LibreOffice render of the .pptx file that the build wrote.
+Three decks use figures from the public Form S-1 of Anthropic, PBC. These decks are
+unofficial demonstrations. Anthropic did not prepare them and has no affiliation with them.
+They are not investment advice. The organisations on the other pages are fictional, and
+their figures are illustrative. The
+[README of the repository](https://github.com/0xfauzi/pptx-skill#readme) shows each
+reference page beside its new page, and its gallery lists each deck.
 
 ## What the plugin runs, sends, fetches and writes
 

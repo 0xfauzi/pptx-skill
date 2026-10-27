@@ -1,0 +1,540 @@
+{
+ "/look_brief": {
+  "audience": "Corrin Medical's board: non-executive directors including a former device-company chief executive, an audit chair who checks every figure, and two investor directors who will be asked to approve $165m of spend",
+  "occasion": "an eight-page board pre-read sent a week ahead and read on laptops and tablets at the reader's pace, then put on the boardroom screen while the chief executive takes questions; every page has to stand alone without the speaker",
+  "subject_world": "device makers live by quality-system conventions: the ISO 14971 risk matrix with its acceptable, ALARP and unacceptable zones, numbered steps in instructions for use, design-control gates as milestones and the boxed label codes on packaging. The deck borrows the conventions that do a job here: the three-zone risk matrix, numbered process steps, gates named M1 to M6 on the roadmap. It leaves out red crosses, stethoscopes, hospital photography and clinical blue gradients, which would be costume",
+  "data_character": "a full transformation case: eight KPIs with baselines and targets, a seven-step process with six costed pain points, seven plants with capacity and headcount, fourteen initiatives scored on value and ease, a seven-step EBITDA bridge with three years of phasing and a cash case, a 13-row roadmap with six milestones and three dependencies, a two-level organisation, and nine risks scored before and after mitigation; one dominant exhibit per page, each with a supporting table or panel",
+  "density": {
+   "target": "dense, banker-grade: one dominant exhibit plus one supporting table or panel per page, tables of 7 to 14 rows at 7.5pt, a claim title of up to two lines and a source line on every page",
+   "why": "directors read the pre-read line by line before approving spend and want each claim and the figures behind it on one page; a sparse deck would push the evidence into an appendix they will not open"
+  },
+  "look": "clinical-plain and numerate: white pages, near-black Inter, one deep petrol blue for Corrin's own figures and target state, a grey-blue for today's baseline, a burnt orange that marks only where the reader must look; hairline-ruled tables, a petrol rule under a sentence title, and a footer carrying the Corrin mark",
+  "colour_meanings": {
+   "color.accent1": "Corrin's own figures, the target state and the page structure: the title rule, table heads, totals in the bridge, the delivery phase, retained sites, initiatives started in the plan",
+   "color.accent2": "the preparatory stage of a plan: the design phase of an initiative on the roadmap",
+   "color.accent3": "today's baseline and context that recedes: FY2025 values, deferred initiatives",
+   "color.emphasis": "where the reader must look: pain points, the step that dominates the cycle, sites that close and their transfers, the strategic bets, milestones and gates, new units, the transformation levers' bracket",
+   "color.positive": "an increase in the bridge and nothing else: a mid petrol, kin to Corrin's own colour",
+   "color.negative": "a decrease in the bridge and nothing else: a warm grey, so a headwind recedes beside the levers",
+   "color.zone_low": "the acceptable zone of the risk matrix",
+   "color.zone_mid": "the ALARP zone of the risk matrix: reduce as far as practicable",
+   "color.zone_high": "the unacceptable zone of the risk matrix"
+  },
+  "type_ladder": "built down from the densest page, the risk register beside two 5x5 matrices: nine risks with owner and mitigation fit only at 7.5pt cells, so table text is 7.5pt; footnotes and source lines a half step under at 7pt, on the absolute floor; axis and data labels and units lines at 7.5pt; every sentence, in a panel or under a table, at one body size of 8pt so prose never jumps size beside a table; run-in heads at 9pt; exhibit heads at 10.5pt in petrol; KPI figures at 20pt; an 18pt claim title that fits one line or two full ones",
+  "rejected": [
+   {
+    "what": "topic titles such as 'Order to cash'",
+    "why": "a board pre-read is read without the speaker, so each title states the claim the page proves"
+   },
+   {
+    "what": "a navy and teal 'medical' gradient band behind every title",
+    "why": "it is costume: it says healthcare and carries no information, and it costs a line of title height"
+   },
+   {
+    "what": "red-amber-green status colours outside the risk matrix",
+    "why": "green and red would mean good and bad on one page and zone on another; burnt orange alone marks where to look"
+   },
+   {
+    "what": "a colour per workstream on the roadmap",
+    "why": "four hues would give colour four new meanings; the workstream is in the row label code"
+   },
+   {
+    "what": "gridlines on the bridge and the matrix",
+    "why": "every bar and point carries its value or code, and the matrix midlines are the only lines that mean something"
+   },
+   {
+    "what": "photographs of plants and products",
+    "why": "a board deciding a restructuring reads them as distance from the decision"
+   },
+   {
+    "what": "green and red bridge steps",
+    "why": "they bring two hues used nowhere else, and red beside the orange look-here colour reads as a second alarm; mid petrol up and warm grey down stay inside the palette"
+   },
+   {
+    "what": "pastel risk zones",
+    "why": "at 7.5pt on a laptop the pale fills washed out; the zones are the message of the risk page, so they are set at mid tone"
+   }
+  ]
+ },
+ "/reference/page": {
+  "width_emu": 12192000,
+  "height_emu": 6858000,
+  "why": "16:9 at 13.333 x 7.5 in: read on laptops and tablets, then shown on the boardroom screen"
+ },
+ "/typography/families": {
+  "major": "Inter",
+  "minor": "Inter"
+ },
+ "/typography/roles/type.title": {
+  "size_pt": 18,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 1.05,
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "a sentence claim on at most two lines, the first thing read"
+ },
+ "/typography/roles/type.kicker": {
+  "size_pt": 8,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.accent1",
+  "tracking_pt": 0.5,
+  "why": "the workstream the page belongs to, above the title in petrol"
+ },
+ "/typography/roles/type.h1": {
+  "size_pt": 10.5,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.accent1",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "an exhibit head in petrol, a step and a half over body"
+ },
+ "/typography/roles/type.h2": {
+  "size_pt": 9,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "space_before_pt": 0,
+  "space_after_pt": 1,
+  "why": "a run-in head at body size in side panels and boxes"
+ },
+ "/typography/roles/type.body": {
+  "size_pt": 8,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 1.15,
+  "space_before_pt": 0,
+  "space_after_pt": 3,
+  "why": "every sentence on the page, in a panel or under a table, half a step over the 7.5pt tables so prose and tables read as one texture"
+ },
+ "/typography/roles/type.emphasis": {
+  "size_pt": 8,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "a bold run inside body text"
+ },
+ "/typography/roles/type.caption": {
+  "size_pt": 7.5,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "the units line under an exhibit head and labels in diagrams"
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 7,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "definitions at the foot, on the 7pt floor"
+ },
+ "/typography/roles/type.source_line": {
+  "size_pt": 7,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "the source on every page, set like a footnote"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 7.5,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.accent1",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "bold petrol heads over a rule, at the cell size"
+ },
+ "/typography/roles/type.table_cell": {
+  "size_pt": 7.5,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "the densest text: the nine-row risk register fits at 7.5pt"
+ },
+ "/typography/roles/type.axis_label": {
+  "size_pt": 7.5,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "chart axis and category text, quieter than the values"
+ },
+ "/typography/roles/type.data_label": {
+  "size_pt": 7.5,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "values on marks, bold so the figure is read before the bar"
+ },
+ "/typography/roles/type.kpi": {
+  "size_pt": 20,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.accent1",
+  "line_spacing": 1.0,
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "the FY2028 target on each KPI tile, the largest figure on the summary page"
+ },
+ "/typography/roles/type.step": {
+  "size_pt": 8,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_inverse",
+  "line_spacing": 1.05,
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "a process step or org box label set on a filled shape"
+ },
+ "/typography/roles/type.cell_tag": {
+  "size_pt": 7.5,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 1.0,
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "risk codes inside matrix cells with no paragraph spacing"
+ },
+ "/typography/bullets": {
+  "0": {
+   "glyph": "\u2022",
+   "font": "Inter",
+   "indent_role": "space.md",
+   "hanging_indent_role": "space.md"
+  }
+ },
+ "/color/roles/color.surface": {
+  "hex": "FFFFFF",
+  "why": "white pages that read on screens and print cleanly"
+ },
+ "/color/roles/color.surface_alt": {
+  "hex": "EEF2F4",
+  "why": "a cool pale grey for panels and tiles, light enough that 7.5pt ink reads on it"
+ },
+ "/color/roles/color.ink": {
+  "hex": "17232D",
+  "why": "a near-black with a little blue, softer than pure black"
+ },
+ "/color/roles/color.ink_muted": {
+  "hex": "56636D",
+  "why": "secondary text above 4.5:1 on white and on the panel grey"
+ },
+ "/color/roles/color.accent1": {
+  "hex": "0E4D5E",
+  "why": "a deep petrol blue for Corrin's figures, target state and structure"
+ },
+ "/color/roles/color.accent2": {
+  "hex": "7FAAB6",
+  "why": "a lighter petrol for the design phase of a plan, related to the delivery colour"
+ },
+ "/color/roles/color.accent3": {
+  "hex": "A3AFB7",
+  "why": "a grey-blue for today's baseline and context that recedes"
+ },
+ "/color/roles/color.rule": {
+  "hex": "C9D2D8",
+  "why": "hairlines between table rows and diagram connectors"
+ },
+ "/color/roles/color.positive": {
+  "hex": "3B7A8C",
+  "why": "a mid petrol for increases in the bridge, inside the palette"
+ },
+ "/color/roles/color.negative": {
+  "hex": "8C8178",
+  "why": "a warm grey for decreases in the bridge, distinct from the cool baseline grey"
+ },
+ "/color/roles/color.emphasis": {
+  "hex": "C4541C",
+  "why": "a burnt orange that marks where to look, above 4:1 on white"
+ },
+ "/extra_roles/color.ink_inverse": {
+  "hex": "FFFFFF",
+  "why": "text on petrol, orange and red fills"
+ },
+ "/extra_roles/color.zone_low": {
+  "hex": "B9DCC4",
+  "why": "the acceptable zone of the risk matrix, a mid green that holds 7.5pt ink and does not wash out"
+ },
+ "/extra_roles/color.zone_mid": {
+  "hex": "F3D27E",
+  "why": "the ALARP zone of the risk matrix, a mid amber"
+ },
+ "/extra_roles/color.zone_high": {
+  "hex": "EA9A88",
+  "why": "the unacceptable zone of the risk matrix, a mid red-coral that still holds near-black ink"
+ },
+ "/extra_roles/color.land": {
+  "hex": "DDE4E8",
+  "why": "land on the plant map, a neutral that lets the sites read"
+ },
+ "/spacing/steps": {
+  "space.xs": 27432,
+  "space.sm": 54864,
+  "space.md": 100584,
+  "space.lg": 164592,
+  "space.xl": 274320,
+  "space.margin": 411480,
+  "space.gutter": 228600
+ },
+ "/spacing/margins": {
+  "left": {
+   "emu": 411480
+  },
+  "right": {
+   "emu": 411480
+  },
+  "top": {
+   "emu": 320040
+  },
+  "bottom": {
+   "emu": 502920
+  }
+ },
+ "/chrome": [
+  {
+   "chrome_id": "chrome-1",
+   "kind": "rule",
+   "box_in": [
+    0.45,
+    1.13,
+    12.433,
+    0.01
+   ],
+   "line_role": "color.accent1",
+   "line_width_pt": 1.0,
+   "anchor": "slide_top",
+   "why": "a petrol rule closes the title band, the one structural line every page shares"
+  },
+  {
+   "chrome_id": "chrome-2",
+   "kind": "rule",
+   "box_in": [
+    0.45,
+    7.0,
+    12.433,
+    0.01
+   ],
+   "line_role": "color.rule",
+   "line_width_pt": 0.5,
+   "anchor": "slide_bottom",
+   "why": "a hairline separates the footer from the content"
+  },
+  {
+   "chrome_id": "chrome-3",
+   "kind": "logo",
+   "box_in": [
+    0.45,
+    7.08,
+    0.22,
+    0.22
+   ],
+   "image_path": "@WORK@/img/corrin-mark.png",
+   "anchor": "slide_bottom",
+   "why": "the Corrin mark identifies the deck on every page"
+  },
+  {
+   "chrome_id": "chrome-4",
+   "kind": "label",
+   "box_in": [
+    0.72,
+    7.1,
+    1.3,
+    0.18
+   ],
+   "text": "Corrin Medical",
+   "text_style": {
+    "family": "Inter",
+    "size_pt": 9,
+    "bold": true,
+    "ink_hex": "0E4D5E"
+   },
+   "anchor": "slide_bottom",
+   "why": "the wordmark beside the mark"
+  },
+  {
+   "chrome_id": "chrome-5",
+   "kind": "footer",
+   "box_in": [
+    2.1,
+    7.12,
+    9.0,
+    0.16
+   ],
+   "text": "Board of Directors  |  Corrin 2028 operating transformation  |  18 December 2025  |  Illustrative figures for a fictional company",
+   "text_style": {
+    "family": "Inter",
+    "size_pt": 7,
+    "bold": false,
+    "ink_hex": "56636D"
+   },
+   "anchor": "slide_bottom",
+   "why": "every page says whose pack it is, the meeting, and that its figures are illustrative"
+  },
+  {
+   "chrome_id": "chrome-6",
+   "kind": "page_number",
+   "box_in": [
+    12.383,
+    7.12,
+    0.5,
+    0.16
+   ],
+   "text": "<page number>",
+   "text_style": {
+    "family": "Inter",
+    "size_pt": 7,
+    "bold": false,
+    "ink_hex": "56636D"
+   },
+   "anchor": "slide_bottom",
+   "why": "directors refer to pages by number in the meeting"
+  }
+ ],
+ "/tables": {
+  "header_fill_role": null,
+  "header_ink_role": "color.accent1",
+  "header_bold": true,
+  "banding_role": null,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.accent1"
+   },
+   "row_interior": {
+    "width_pt": 0.5,
+    "color_role": "color.rule"
+   },
+   "table_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.accent1"
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "none": true
+   }
+  },
+  "cell_padding_role": "space.xs",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": true,
+  "totals_bold": true,
+  "banding_phase": 0,
+  "merged_cell_convention": "span_labels",
+  "why": "no header fill: petrol bold heads over a petrol rule, hairlines between rows, a closing rule; dense and quiet"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent1",
+   "color.accent3",
+   "color.emphasis"
+  ],
+  "per_kind": {
+   "column": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "none"
+   },
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 0.0,
+    "legend_position": "none"
+   },
+   "scatter": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "none"
+   }
+  },
+  "why": "labelled marks instead of gridlines and legends; petrol leads, grey recedes, orange points"
+ },
+ "/description": {
+  "summary": "Clinical-plain and numerate: white pages, near-black Inter, deep petrol for Corrin's figures and target state, grey-blue for today, burnt orange only where the reader must look.",
+  "typography": "Inter throughout on an 18, 10.5, 9, 8, 7.5, 7pt ladder with 20pt KPI figures; one 8pt body size for every sentence; bold for titles, heads and values.",
+  "color": "Petrol is Corrin and the target, grey-blue is today, orange is look-here; mid petrol up and warm grey down only in the bridge; three mid-tone zone fills only in the risk matrix.",
+  "layout": "0.45in margins, a kicker and claim title over a petrol rule, one dominant exhibit beside or over a supporting table, a footer with the Corrin mark.",
+  "tables": "No header fill, petrol bold heads over a petrol rule, hairlines between rows, a closing rule, figures right-aligned.",
+  "imagery": "line icons in petrol for the process steps; two inset maps drawn from public-domain outlines; no photographs",
+  "motifs": "the petrol title rule; numbered orange badges keyed between an exhibit and its table",
+  "not_seen": [
+   "photographs",
+   "gradients",
+   "header fills",
+   "banding"
+  ],
+  "tone": "plain, quantified, decision-led"
+ },
+ "/continuation": {
+  "contd_mark": "(continued)",
+  "why": "a page that splits repeats its title with (continued) and its table heads"
+ }
+}

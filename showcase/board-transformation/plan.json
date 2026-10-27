@@ -1,0 +1,554 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {
+   "id": "p1-summary",
+   "intent": "the decision asked of the board and the eight commitments behind it",
+   "message": "Corrin 2028 adds $104m of EBITDA and releases $146m of working capital by FY2028; the board is asked to approve the programme, two plant exits and the $165m it costs",
+   "composition": "new:panel-beside-tile-grid",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each of eight operating measures today and the FY2028 target it commits to, with the page that proves it",
+     "comparison": "each measure's FY2025 baseline against its FY2028 target",
+     "data": "eight measures in mixed units, each with a baseline, a target and a change, stated at the precision each measure is managed to",
+     "forms_considered": [
+      {
+       "form": "KPI tiles with target, baseline and change",
+       "reason": "chosen: eight unlike units cannot share an axis, and a tile gives each its own figure and change"
+      },
+      {
+       "form": "one table of measures by year",
+       "reason": "carries the figures but reads as an appendix on the page a director opens first"
+      },
+      {
+       "form": "slope chart of baseline to target",
+       "reason": "mixed units would need eight scales, so the slopes compare nothing"
+      }
+     ],
+     "chosen_form": "KPI tiles with target, baseline and change",
+     "why": "the summary page is read first and fast; a target per tile with its baseline beside it answers what we commit to without arithmetic",
+     "marks": "the target figure large in petrol; the change in bold petrol over the FY2025 baseline in grey; four bars on one scale per tile, FY2025 grey, the FY2026 and FY2027 interim targets light petrol and FY2028 petrol, each with its value; the owner and the initiatives that deliver it at the foot; each tile names its proof page"
+    },
+    {
+     "reader_must_see": "where in the pack each part of the case is proved",
+     "comparison": "each page against its subject",
+     "data": "seven pages, each with a number and a one-line subject",
+     "forms_considered": [
+      {
+       "form": "contents table with page numbers",
+       "reason": "chosen: directors refer to pages by number in the meeting"
+      },
+      {
+       "form": "bulleted agenda",
+       "reason": "loses the page numbers that the tiles point to"
+      }
+     ],
+     "chosen_form": "contents table with page numbers",
+     "why": "it ties the tiles' page references to the pages and gives the pack its order",
+     "marks": "page numbers in bold petrol"
+    },
+    {
+     "reader_must_see": "what the programme costs in each year and when cumulative cash turns positive",
+     "comparison": "cost against net cash, year by year",
+     "data": "two cost lines and their total over three years, then net and cumulative cash",
+     "forms_considered": [
+      {
+       "form": "small table",
+       "reason": "chosen: five rows of figures the audit chair checks"
+      },
+      {
+       "form": "stacked column",
+       "reason": "the cash turn needs the cumulative line, which a table states exactly"
+      }
+     ],
+     "chosen_form": "small table",
+     "why": "the approval is for money, so its phasing sits beside the ask",
+     "marks": "the cost total and cumulative cash bold; 2027, where cash turns positive, in petrol"
+    }
+   ]
+  },
+  {
+   "id": "p2-o2c",
+   "intent": "where value and cash leak in the order-to-cash cycle today",
+   "message": "Order-to-cash takes 70 days, 25 beyond contract terms; six pain points cost $28m a year",
+   "composition": "new:flow-band-over-table-and-chart",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the seven steps in order, the days and manual touch at each, and which steps carry a pain point",
+     "comparison": "each step's days and manual share today against the FY2028 target, step against step",
+     "data": "seven ordered steps, each with two day counts and two percentages, six of them with a numbered pain point",
+     "forms_considered": [
+      {
+       "form": "chevron process flow with an aligned metric table",
+       "reason": "chosen: the sequence is the point, and the figures line up under the step they describe"
+      },
+      {
+       "form": "swimlane diagram by function",
+       "reason": "shows hand-offs but needs four lanes the data does not use"
+      },
+      {
+       "form": "table of steps only",
+       "reason": "loses the flow a director recognises at a glance"
+      }
+     ],
+     "chosen_form": "chevron process flow with an aligned metric table",
+     "why": "a board member sees the cycle left to right and reads each step's figures in the column under it",
+     "marks": "numbered orange badges beside the steps that carry a pain point, keyed to the pain-point table; the Collect chevron and its 58.8 days in orange because one step holds 84% of the cycle"
+    },
+    {
+     "reader_must_see": "what each pain point is, what it costs a year and which initiative fixes it",
+     "comparison": "pain points against each other by annual cost, summing to the total",
+     "data": "six numbered pain points with evidence, a cost in $m and an initiative code, plus a total",
+     "forms_considered": [
+      {
+       "form": "numbered pain-point table with a total",
+       "reason": "chosen: evidence, cost and fix read in one row and the total ties"
+      },
+      {
+       "form": "callouts on the flow",
+       "reason": "six callouts would bury the flow under text"
+      }
+     ],
+     "chosen_form": "numbered pain-point table with a total",
+     "why": "the numbers key each row to its step, and the cost column ranks them",
+     "marks": "the numbers in orange as on the flow; the largest cost, pricing errors, in bold"
+    },
+    {
+     "reader_must_see": "how much of the 70 days is contract terms and how much is avoidable, today and at target, and where the avoidable days arise",
+     "comparison": "FY2025 against FY2028 target, terms against delay",
+     "data": "two years, each split into 45 days of terms and the avoidable rest; the avoidable rest split into collection past terms and processing in the other steps",
+     "forms_considered": [
+      {
+       "form": "two stacked horizontal bars with a split table beneath",
+       "reason": "chosen: the bar shows terms against avoidable delay at a glance; the table carries the split the bar cannot label at FY2028's small sizes"
+      },
+      {
+       "form": "three-segment bars",
+       "reason": "the FY2028 segments of 2.5 and 3.5 days are too thin to label"
+      },
+      {
+       "form": "bar of days by step",
+       "reason": "repeats the metric table above"
+      }
+     ],
+     "chosen_form": "two stacked horizontal bars with a split table beneath",
+     "why": "the board needs the avoidable share, not the whole cycle, and the table names where the avoidable days sit",
+     "marks": "avoidable delay in orange with its days labelled; terms in a pale outlined bar, so grey keeps its one meaning of the FY2025 baseline"
+    },
+    {
+     "reader_must_see": "where the avoidable days arise, today and at target",
+     "comparison": "collection past terms against processing, FY2025 against FY2028",
+     "data": "two sources of delay over two years and their total",
+     "forms_considered": [
+      {
+       "form": "table under the bar",
+       "reason": "chosen: FY2028's segments are too thin to label on the bar"
+      },
+      {
+       "form": "third bar segment",
+       "reason": "unreadable at 2.5 and 3.5 days"
+      }
+     ],
+     "chosen_form": "table under the bar",
+     "why": "it names the split the bar cannot",
+     "marks": "FY2028 in bold petrol"
+    }
+   ]
+  },
+  {
+   "id": "p3-footprint",
+   "intent": "the plant footprint today and after consolidation",
+   "message": "Two plant exits lift network utilisation from 64% to 84% and save $29m a year",
+   "composition": "new:map-beside-table",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "where the seven plants are, which two close and where their lines move",
+     "comparison": "closing sites against receiving sites, by geography",
+     "data": "seven sites with a location, a status and three transfers between them",
+     "forms_considered": [
+      {
+       "form": "two inset maps, North America and Europe, with named site marks and transfer arrows",
+       "reason": "chosen: each cluster is drawn large enough to read its transfers, with no ocean between them"
+      },
+      {
+       "form": "one map spanning both continents",
+       "reason": "tried: 40% of it was Atlantic and Canada, the clusters were tiny and the Tuttlingen arrow barely visible"
+      },
+      {
+       "form": "network diagram without geography",
+       "reason": "shows transfers but not why the receiving plants were chosen"
+      }
+     ],
+     "chosen_form": "two inset maps, North America and Europe, with named site marks and transfer arrows",
+     "why": "a director reads the footprint as a map first and the numbers key every site to its row in the table",
+     "marks": "closing sites as orange dots named in orange, with orange transfer arrows; retained sites as petrol dots named in ink; a key under the maps"
+    },
+    {
+     "reader_must_see": "each plant's capacity, utilisation and headcount now and in FY2028, with its action",
+     "comparison": "FY2025 against FY2028 per plant, and the network total",
+     "data": "seven plants by product, capacity, utilisation and headcount in two years, an action, and network totals",
+     "forms_considered": [
+      {
+       "form": "plant table with network totals",
+       "reason": "chosen: the figures a director checks per site, with the total that ties"
+      },
+      {
+       "form": "utilisation dumbbell chart",
+       "reason": "shows the rise but drops capacity and headcount"
+      }
+     ],
+     "chosen_form": "plant table with network totals",
+     "why": "utilisation rises because capacity is removed; only a table shows both together",
+     "marks": "closing rows in orange; FY2028 columns in bold petrol; the network row bold"
+    },
+    {
+     "reader_must_see": "which line moves where and when, one transfer at a time",
+     "comparison": "the three transfers against each other in time",
+     "data": "three transfers with lines, source, receiver, validation and cut-over",
+     "forms_considered": [
+      {
+       "form": "table",
+       "reason": "chosen: five facts per transfer"
+      },
+      {
+       "form": "arrows on the map only",
+       "reason": "the map carries where, not when"
+      }
+     ],
+     "chosen_form": "table",
+     "why": "the timing is the risk",
+     "marks": "closing plants in orange"
+    },
+    {
+     "reader_must_see": "what each footprint initiative saves, costs and how fast it pays back",
+     "comparison": "the three initiatives against each other and the lever total",
+     "data": "three initiatives with saving, cost and payback",
+     "forms_considered": [
+      {
+       "form": "table with a total row",
+       "reason": "chosen: payback is a ratio a director checks"
+      },
+      {
+       "form": "bar of payback",
+       "reason": "three bars carry less than the three figures"
+      }
+     ],
+     "chosen_form": "table with a total row",
+     "why": "it ties the title's $29m to the $68m spent",
+     "marks": "savings in bold petrol; the two exits in orange"
+    }
+   ]
+  },
+  {
+   "id": "p4-priority",
+   "intent": "which initiatives go first and which are deferred",
+   "message": "Four strategic bets hold 46% of the value and 64% of the cost; two quick wins start now",
+   "composition": "new:matrix-beside-table",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "every initiative placed by value and ease, which quadrant it falls in, and that the strategic bets are the costly ones",
+     "comparison": "initiatives against each other on two scores, and against the two thresholds",
+     "data": "fourteen initiatives, each with a run-rate value in $m, an ease score of 1 to 5 and a cost to achieve; none sits on a threshold",
+     "forms_considered": [
+      {
+       "form": "2x2 scatter with quadrant thresholds, markers sized by cost in three steps",
+       "reason": "chosen: two scores at once, with cost read from marker size and exactly from the table"
+      },
+      {
+       "form": "bubble chart sized by cost",
+       "reason": "the threshold lines and quadrant names are annotations, which do not draw on a bubble chart; three marker sizes carry cost on a scatter"
+      },
+      {
+       "form": "ranked bar of value",
+       "reason": "drops ease, which decides sequence"
+      }
+     ],
+     "chosen_form": "2x2 scatter with quadrant thresholds, markers sized by cost in three steps",
+     "why": "the quadrants are the prioritisation and the title is about cost share, so cost must be on the exhibit",
+     "marks": "threshold lines at ease 3 and $8m; quadrants named inside each corner; strategic bets in orange, other initiatives in petrol, deferred in grey; a size key"
+    },
+    {
+     "reader_must_see": "each initiative's value, cost, ease, quadrant and wave",
+     "comparison": "initiatives by lever, summing to the bridge's levers",
+     "data": "fourteen initiatives by lever with value, cost, ease and wave, and totals",
+     "forms_considered": [
+      {
+       "form": "initiative table grouped by lever",
+       "reason": "chosen: the figures behind each point, totalled to the $103m and $165m"
+      },
+      {
+       "form": "labels on the scatter",
+       "reason": "fourteen names would collide in the dense lower right"
+      }
+     ],
+     "chosen_form": "initiative table grouped by lever",
+     "why": "codes on the chart keep it legible and the table carries the names and figures",
+     "marks": "strategic bets' codes and quadrant in orange; other codes in petrol; the total row bold"
+    },
+    {
+     "reader_must_see": "what each dollar of EBITDA costs by lever",
+     "comparison": "levers against each other",
+     "data": "four levers with EBITDA, cost and their ratio",
+     "forms_considered": [
+      {
+       "form": "table",
+       "reason": "chosen: a ratio per lever"
+      },
+      {
+       "form": "bar of the ratio",
+       "reason": "four bars carry less than the ratio with its two parts"
+      }
+     ],
+     "chosen_form": "table",
+     "why": "it shows where the cost sits",
+     "marks": "the two levers costing over $2 per $1 in orange"
+    }
+   ]
+  },
+  {
+   "id": "p5-bridge",
+   "intent": "how EBITDA gets from FY2025 to the FY2028 target, and the cash case",
+   "message": "Volume offsets inflation and run costs; four levers add $103m, taking EBITDA to $290m",
+   "composition": "new:wide-chart-over-two-tables",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each step from $186m to $290m, which are levers and which are headwinds, and the cost to achieve each lever",
+     "comparison": "each step's size against the others and against the start and end totals",
+     "data": "a start total, volume, two headwinds, four levers and an end total, with a cost under each lever",
+     "forms_considered": [
+      {
+       "form": "waterfall bridge with a cost row",
+       "reason": "chosen: the board reads a bridge as a story from start to end and the costs sit under their levers"
+      },
+      {
+       "form": "table of the bridge",
+       "reason": "ties out but hides the relative size of the steps"
+      },
+      {
+       "form": "stacked column by year",
+       "reason": "shows phasing, which the table below carries, not the steps"
+      }
+     ],
+     "chosen_form": "waterfall bridge with a cost row",
+     "why": "the claim is the sum of steps; the bridge draws it and ties it",
+     "marks": "totals in dark petrol, increases in mid petrol, decreases in warm grey; volume and the headwinds first so the levers finish the climb; an orange bracket over the four levers labelled +$103m; the cost row in petrol under the levers; a grey bracket over volume and the two headwinds labelled +$1m"
+    },
+    {
+     "reader_must_see": "how the run-rate builds year by year and when cumulative cash turns positive",
+     "comparison": "2026, 2027 and 2028 against each other, savings against costs",
+     "data": "three years of run-rate components, EBITDA, margin, costs, working capital and cumulative cash",
+     "forms_considered": [
+      {
+       "form": "two year-by-year tables, EBITDA build and cash case",
+       "reason": "chosen: figures a CFO checks, with totals"
+      },
+      {
+       "form": "cumulative cash line chart",
+       "reason": "shows the crossing but drops the components"
+      }
+     ],
+     "chosen_form": "two year-by-year tables, EBITDA build and cash case",
+     "why": "the audit chair recomputes the bridge and the payback from these rows",
+     "marks": "run-rate EBITDA and net cash rows bold; 2027 cumulative cash, where it turns positive, in petrol"
+    }
+   ]
+  },
+  {
+   "id": "p6-roadmap",
+   "intent": "when each initiative runs, its milestones and dependencies",
+   "message": "Seven initiatives start by April 2026; the two plant exits run back to back to June 2028",
+   "composition": "new:wide-gantt-over-milestone-strip",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each initiative's design and delivery months, the six milestones and the three dependencies",
+     "comparison": "initiatives against each other in time, and each dependency's start against its predecessor's finish",
+     "data": "twelve initiatives with a start, a design length and a delivery length in months, six dated milestones, three dependencies",
+     "forms_considered": [
+      {
+       "form": "Gantt chart ordered by start, with milestone diamonds, quarter ticks and a column naming each waiting delivery",
+       "reason": "chosen: time, overlap and sequence on one axis; a waiting delivery is named on its own row"
+      },
+      {
+       "form": "Gantt with dependency arrows",
+       "reason": "tried: with rows ordered by start the linked rows are not adjacent, and arrows crossing other bars read as stray marks"
+      },
+      {
+       "form": "table of start and end dates",
+       "reason": "the reader cannot see overlap or sequence"
+      }
+     ],
+     "chosen_form": "Gantt chart ordered by start, with milestone diamonds, quarter ticks and a column naming each waiting delivery",
+     "why": "a director checks that the plant exits do not overlap and that enablers land first",
+     "marks": "design phase in light petrol, delivery in petrol; milestones as orange diamonds keyed M1 to M6 with every code to the right; quarter ticks; dependencies named in orange beside the rows that wait"
+    },
+    {
+     "reader_must_see": "what each milestone means and when it falls",
+     "comparison": "milestones in date order",
+     "data": "six milestones with a code, a date and a description",
+     "forms_considered": [
+      {
+       "form": "milestone strip under the chart",
+       "reason": "chosen: the codes on the chart are spelt out below in order"
+      },
+      {
+       "form": "labels on the diamonds",
+       "reason": "six descriptions would collide on the top row"
+      }
+     ],
+     "chosen_form": "milestone strip under the chart",
+     "why": "keeps the chart legible and the gates readable",
+     "marks": "codes in orange as on the diamonds"
+    }
+   ]
+  },
+  {
+   "id": "p7-opmodel",
+   "intent": "the new operating model and what changes in it",
+   "message": "Five new units and two fewer layers cut G&A from 11.6% to 9.4% of revenue",
+   "composition": "new:org-chart-over-strip",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "who reports to the chief executive, what sits under each, and which units are new or moved",
+     "comparison": "new and moved units against unchanged ones",
+     "data": "a chief executive, six direct reports, a staff office and fifteen units under them, each new, moved or unchanged",
+     "forms_considered": [
+      {
+       "form": "two-level org chart with new units marked",
+       "reason": "chosen: reporting lines are the decision"
+      },
+      {
+       "form": "RACI table",
+       "reason": "answers who decides, not who reports to whom"
+      },
+      {
+       "form": "before and after charts side by side",
+       "reason": "halves the size of both on one page; the marks carry the change"
+      }
+     ],
+     "chosen_form": "two-level org chart with new units marked",
+     "why": "the board approves the structure, which only a chart shows",
+     "marks": "every new unit, the CQRO's included, in a white box with an orange outline and an orange 'New'; moved units in petrol outline; connectors from each head to its units; a key under the chart"
+    },
+    {
+     "reader_must_see": "the measurable change in layers, spans, headcount and cost",
+     "comparison": "FY2025 against FY2028",
+     "data": "six measures in two years",
+     "forms_considered": [
+      {
+       "form": "two-column table",
+       "reason": "chosen: six figures a director checks"
+      },
+      {
+       "form": "KPI tiles",
+       "reason": "repeats the summary page's form"
+      }
+     ],
+     "chosen_form": "two-column table",
+     "why": "compact and exact beside the governance text",
+     "marks": "FY2028 column in bold petrol; the G&A share row label bold"
+    }
+   ]
+  },
+  {
+   "id": "p8-risk",
+   "intent": "the risks to delivery and how mitigation moves them",
+   "message": "Mitigation brings all nine risks to ALARP or below; the two worst come from line transfers",
+   "composition": "new:paired-matrices-beside-register",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "where each risk sits before and after mitigation on likelihood and severity, and that none stays in the unacceptable zone",
+     "comparison": "each risk before against after mitigation, on one scale",
+     "data": "nine risks, each scored 1 to 5 on likelihood and severity twice",
+     "forms_considered": [
+      {
+       "form": "two 5x5 risk matrices side by side",
+       "reason": "chosen: same scale and zones, so the move out of the red zone is seen at once"
+      },
+      {
+       "form": "one matrix with arrows from before to after",
+       "reason": "nine arrows would cross and collide"
+      },
+      {
+       "form": "table of scores",
+       "reason": "the reader must map scores to zones"
+      }
+     ],
+     "chosen_form": "two 5x5 risk matrices side by side",
+     "why": "the ISO 14971 matrix is the device board's own convention, and pairing them shows the effect of mitigation",
+     "marks": "zones in mid-tone green, amber and red; one risk code per line in each cell; likelihood and severity named on the grids; a zone key"
+    },
+    {
+     "reader_must_see": "each risk, its owner, its mitigation and its scores",
+     "comparison": "risks against each other by score before and after",
+     "data": "nine risks with an owner, a mitigation and two scores",
+     "forms_considered": [
+      {
+       "form": "risk register table",
+       "reason": "chosen: the board minutes each owner and mitigation"
+      },
+      {
+       "form": "notes beside the matrices",
+       "reason": "nine notes would not fit beside the cells"
+      }
+     ],
+     "chosen_form": "risk register table",
+     "why": "the codes tie each cell to its row",
+     "marks": "R1 and R2 codes in orange; before and after scores shaded by zone; mitigation cost per risk, $14m in all"
+    },
+    {
+     "reader_must_see": "how many risks sit in each zone before and after, and how far total exposure falls",
+     "comparison": "before against after",
+     "data": "counts in three zones and the summed score",
+     "forms_considered": [
+      {
+       "form": "small table",
+       "reason": "chosen: four rows"
+      },
+      {
+       "form": "stacked bar",
+       "reason": "the counts are small integers best read as figures"
+      }
+     ],
+     "chosen_form": "small table",
+     "why": "it states the matrices' result in figures",
+     "marks": "zone names shaded in their zone colours"
+    },
+    {
+     "reader_must_see": "what signal will warn the board before each main risk lands, and who acts",
+     "comparison": "risks against each other",
+     "data": "eight indicators with a trigger and an escalation route",
+     "forms_considered": [
+      {
+       "form": "table",
+       "reason": "chosen: lookup content"
+      },
+      {
+       "form": "dashboard tiles",
+       "reason": "the board needs the trigger rule, which is words"
+      }
+     ],
+     "chosen_form": "table",
+     "why": "it turns the register into a reporting commitment",
+     "marks": "R1 and R2 codes in orange"
+    }
+   ]
+  }
+ ]
+}

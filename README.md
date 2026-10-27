@@ -15,22 +15,24 @@ calculate the page geometry and write the .pptx file with native charts and tabl
 they render the file with LibreOffice, read the render, and refuse a page that has a
 defect they can measure.
 
-![Page 1 of an IPO pitch book built from a public S-1: six headline figures, an annotated quarterly revenue chart with margin and growth rows, the offering terms and summary financials](docs/showcase/hero.png)
+![Twelve pages from ten decks that the skill built: pitch book, LBO committee book, three pages of a board deck, strategy pre-read, initiation report, quarterly results, committee pre-read, two pages in the look of US government decks, a roadmap and an annual report](docs/showcase/range.png)
 
-*Page 1 of the IPO pitch book in the gallery below. The skill built it from the public
-Form S-1 of Anthropic, PBC, with no reference. The bank, Halden & Rowe, is fictional. The
-deck is an unofficial demonstration and is not investment advice.*
+The image above shows twelve pages from ten decks in the gallery below. Each image of a new
+page in this README is the LibreOffice render of the .pptx file that the build wrote.
 
-![Page 4 of an initiation report built from a public S-1: a bar chart of compute contracts with floors and ceilings, and three tables of contract terms, aggregates and funding](docs/showcase/initiation-page-4.png)
+| Row | Left | Right |
+|---|---|---|
+| 1 | IPO pitch book: headline figures, an annotated revenue chart, the offering terms | LBO committee book: a returns table, a value bridge, four sensitivity tables |
+| 2 | Board deck: three approvals, eight target tiles with small bar charts | Strategy pre-read: a scatter of 214 stores in four zones, an action table |
+| 3 | Initiation report: a margin chart and a bridge to adjusted income | Board deck: two maps of plant moves, three tables, three figure tiles |
+| 4 | Quarterly results: six figure tiles with small charts, three tables | Committee pre-read: a diagram of who elects the board, share-class tables |
+| 5 | Transit outlook: three small charts with ranges, in the look of an EIA deck | Wildfire plan: ranked bars and a table, in the look of a SAMHSA deck |
+| 6 | Board deck: a roadmap of twelve initiatives with milestones | Parks annual report: ranked bars with a bracket callout, a table |
 
-*Page 4 of the initiation report in the gallery below. The broker, Keswick Research, is
-fictional.*
-
-![Page 5 of an investment committee pre-read built from a public S-1: a scenarios table with labelled assumptions, and a bar chart of the multiple of entry value at three entry prices](docs/showcase/committee-page-5.png)
-
-*Page 5 of the investment committee pre-read in the gallery below. The fund, Marlow Street
-Capital, is fictional. Each image is the LibreOffice render of the .pptx file that the
-build wrote.*
+The IPO pitch book, the initiation report and the committee pre-read use figures from the
+public Form S-1 of Anthropic, PBC. These decks are unofficial demonstrations and are not
+investment advice. The organisations on the other pages are fictional, and their figures
+are illustrative. The gallery gives the details.
 
 ## What the skill can do
 
@@ -69,6 +71,49 @@ build wrote.*
 
   A totals row that does not tie gives a warning. All other decisions belong to Claude.
   The report shows each decision next to the habits of the reference.
+
+## Your reference, your look
+
+For each pair, the reference page is on the left and the new page is on the right. The
+new pages have their own subject and figures, and they use the look of the reference.
+
+![Left: a page of three line charts from the EIA Annual Energy Outlook 2026 presentation. Right: a new page of three line charts on fares and costs of a fictional transit authority, in the same look](docs/showcase/reference-eia.png)
+
+*Left: page 13 of the Annual Energy Outlook 2026 release presentation (a PDF) of the U.S.
+Energy Information Administration. Right: a page of the transit outlook in the gallery. The
+reference is a US government work, so it is in the public domain.*
+
+![Left: a line chart and trend table from the SAMHSA 2025 NSDUH figure slides. Right: a new line chart and table on acres treated by a fictional forestry program, in the same look](docs/showcase/reference-samhsa.png)
+
+*Left: slide 10 of the 2025 NSDUH figure slides (a .pptx file) of the Substance Abuse and
+Mental Health Services Administration. Right: page 1 of the wildfire plan in the gallery,
+built on the masters of that file. The reference is a US government work, so it is in the
+public domain.*
+
+The two new sections show fictional organisations. Their figures are illustrative. The
+agencies did not prepare these pages and have no affiliation with them.
+
+## Up close
+
+These crops show three regions of gallery pages at a larger scale than the image above.
+
+![Two risk heat maps before and after mitigation beside a risk register, a table of risks by zone and a table of early-warning indicators](docs/showcase/closeup-risk.png)
+
+*Page 8 of the board deck. Two heat maps put nine risks on a grid of likelihood and
+severity, before and after mitigation. The register, the zone table and the indicator table
+use the same risk IDs and the same zone colours.*
+
+![A table that builds sponsor equity from exit EBITDA to IRR, beside a value creation bridge with costs in red](docs/showcase/closeup-returns.png)
+
+*Page 4 of the LBO committee book, top left. The table builds the sponsor's returns from
+exit EBITDA to IRR. The bridge shows each step from equity invested to equity to holders,
+with its value above the plot.*
+
+![A bar chart of compute contracts with brackets that group floors and ceilings, above a table of the aggregates that the S-1 states](docs/showcase/closeup-commitments.png)
+
+*Page 4 of the initiation report, left column. Two brackets put the contract floors and the
+ceilings into two groups, and each bracket has a note. The table under the chart lists the
+totals that the S-1 states.*
 
 ## Examples of requests
 
@@ -195,20 +240,33 @@ The build sources of these three decks are not in this repository.
 | Initiation of coverage by a fictional broker: thesis and key data, revenue drivers, unit economics, compute commitments, path to profit, key risks, forecast, valuation scenarios (16:9) | 8 | [image](docs/showcase/s1-initiation-report.png) | [.pptx](docs/showcase/s1-initiation-report.pptx), [PDF](docs/showcase/s1-initiation-report.pdf) |
 | Investment committee pre-read of a fictional fund: recommendation and size, growth and margins, ten risks, governance, scenarios, sizing rules and conditions (16:9) | 6 | [image](docs/showcase/s1-committee-pre-read.png) | [.pptx](docs/showcase/s1-committee-pre-read.pptx), [PDF](docs/showcase/s1-committee-pre-read.pdf) |
 
-### Four decks about fictional companies
+### Seven decks about fictional organisations
 
-The skill built these four decks with no reference. All companies and figures are
-fictional. Each deck has a figures script, a plan, a
-completion and page specs. Each build passed all checks and both package validations.
-The folder [showcase/](showcase/README.md) holds the sources and the commands that build
-each deck and image again.
+The skill built these seven decks. All organisations and figures are fictional. Each deck
+has a figures script, a plan, a completion and page specs. Each build passed all checks
+and both package validations. The folder [showcase/](showcase/README.md) holds the sources
+and the commands that build each deck and image again.
 
-| Deck | Pages | All pages | File |
-|---|---|---|---|
-| LBO investment committee book: company overview, sources and uses, operating model, returns and sensitivities, debt capacity, exit (US letter) | 6 | [image](docs/showcase/lbo-committee-book.png) | [.pptx](docs/showcase/lbo-committee-book.pptx) |
-| Grocery store format strategy: market shift, format economics, customer segments, network rationalisation, three-year plan | 5 | [image](docs/showcase/grocery-strategy.png) | [.pptx](docs/showcase/grocery-strategy.pptx) |
-| Software company quarterly results: highlights, revenue and ARR, unit economics, margin, guidance | 5 | [image](docs/showcase/software-earnings.png) | [.pptx](docs/showcase/software-earnings.pptx) |
-| National parks annual report: visitors, conservation, budget, volunteers, priorities | 5 | [image](docs/showcase/parks-annual-report.png) | [.pptx](docs/showcase/parks-annual-report.pptx) |
+Five decks have no reference. Two decks use the look of a public US government deck:
+
+- The transit outlook uses the look of the Annual Energy Outlook 2026 release
+  presentation, a PDF of the U.S. Energy Information Administration (EIA).
+- The wildfire plan uses the look and the masters of the 2025 NSDUH figure slides, a .pptx
+  file of the Substance Abuse and Mental Health Services Administration (SAMHSA).
+
+These two references are US government works, so they are in the public domain.
+[showcase/README.md](showcase/README.md) gives the address of each. This repository does
+not include them.
+
+| Deck | Reference | Pages | All pages | Files |
+|---|---|---|---|---|
+| Board deck of a medical device maker on an operating transformation: decision, order to cash, plant footprint, prioritisation, EBITDA bridge and cash, roadmap, operating model, delivery risks (16:9) | None | 8 | [image](docs/showcase/board-transformation.png) | [.pptx](docs/showcase/board-transformation.pptx), [PDF](docs/showcase/board-transformation.pdf) |
+| Section of a transit authority's ten-year outlook: ridership, fare revenue, capital plan, funding gap, cost per boarding, project timeline (16:9) | EIA, PDF | 6 | [image](docs/showcase/transit-outlook.png) | [.pptx](docs/showcase/transit-outlook.pptx), [PDF](docs/showcase/transit-outlook.pdf) |
+| Section of a state forestry program's wildfire plan: acres treated, hazard by county, cost per acre, crews and equipment, schedule, hazard reduction (16:9) | SAMHSA, .pptx | 6 | [image](docs/showcase/wildfire-plan.png) | [.pptx](docs/showcase/wildfire-plan.pptx), [PDF](docs/showcase/wildfire-plan.pdf) |
+| LBO investment committee book: company overview, sources and uses, operating model, returns and sensitivities, debt capacity, exit (US letter) | None | 6 | [image](docs/showcase/lbo-committee-book.png) | [.pptx](docs/showcase/lbo-committee-book.pptx), [PDF](docs/showcase/lbo-committee-book.pdf) |
+| Grocery store format strategy: market shift, format economics, customer segments, network rationalisation, three-year plan (16:9) | None | 5 | [image](docs/showcase/grocery-strategy.png) | [.pptx](docs/showcase/grocery-strategy.pptx), [PDF](docs/showcase/grocery-strategy.pdf) |
+| Software company quarterly results: highlights, revenue and ARR, unit economics, margin, guidance (16:9) | None | 5 | [image](docs/showcase/software-earnings.png) | [.pptx](docs/showcase/software-earnings.pptx), [PDF](docs/showcase/software-earnings.pdf) |
+| National parks annual report: visitors, conservation, budget, volunteers, priorities (16:9) | None | 5 | [image](docs/showcase/parks-annual-report.png) | [.pptx](docs/showcase/parks-annual-report.pptx), [PDF](docs/showcase/parks-annual-report.pdf) |
 
 The `examples/` folder of the skill holds worked inputs:
 
@@ -274,7 +332,7 @@ results come from Ubuntu 24.04 with LibreOffice 24.2.7.2 and the versions in INS
 
 | Result | Measurement | Command |
 |---|---|---|
-| The four gallery decks build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report` |
+| The seven gallery decks about fictional organisations build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `board-transformation`, `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report`. Add `/abs/path/REF` for `transit-outlook` and `wildfire-plan` (showcase/README.md) |
 | The judge files a section in the look of a reference under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
 | Only the layout check separates five wrong decks from the reference | The judge totals of the five wrong decks are 0.134 to 0.308, in the spread of the reference. So the style total alone files each wrong deck under the reference. Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
 | The raster instrument reads a render back | The script renders keybank at 100 dpi and measures the pixels. The surface (FFFFFF) and the navy (113D63) are exact. The ink is 010101 against 000000 in the file. The left margin is within 0.01 in of the file, and the other margins are within 0.09 in. The body size estimate is 11.7pt against 12pt in the file. | `sh tools/measure/raster_keybank.sh`, then compare `raster/raster.md` with the draft of `scripts/extract_style.py` |
@@ -289,7 +347,8 @@ plugins/designing-presentations/  the plugin root; an install copies only this f
   README.md                       what the plugin runs, sends, fetches and writes
   skills/designing-presentations/ the skill: SKILL.md, references/, scripts/,
                                   components/, examples/, refs/
-showcase/                         the sources of the four fictional-company decks, and the build script
+showcase/                         the sources of the seven fictional-organisation decks, and the scripts
+                                  that build the decks and the README images
 docs/showcase/                    the gallery images, .pptx files and PDF files
 tools/package_skill.py            builds the upload zip for claude.ai and the API
 tools/make_icon.py                draws the plugin icon
@@ -299,7 +358,7 @@ tools/measure/                    the measurement scripts in the evidence table
 ## Contribute
 
 1. Make your change.
-2. Build the four gallery decks again with `showcase/rebuild.sh` (see
+2. Build the seven gallery decks again with `showcase/rebuild.sh` (see
    [showcase/README.md](showcase/README.md)). Each build must pass.
 3. Run `claude plugin validate . --strict` from the root of this repository.
 4. Run `python3 tools/package_skill.py` after you commit. The packager reads the
