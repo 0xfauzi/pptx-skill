@@ -422,7 +422,18 @@
            "fill_role": "color.surface_alt"
           }
          ],
-         "weight": 1.0
+         "weight": 0.7
+        },
+        {
+         "type": "element",
+         "id": "t_u",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.caption",
+           "text": "Bars and line: nine quarters, Q3 FY24 to Q3 FY26, the first and last labelled (and the low on retention); Q3 FY26 in indigo"
+          }
+         ]
         },
         {
          "type": "region",
@@ -565,120 +576,232 @@
            "layout": {
             "kind": "flex",
             "direction": "column",
-            "gap_role": "space.xs",
+            "gap_role": "space.lg",
             "pad_role": null,
             "align": "stretch",
             "justify": "start"
            },
            "children": [
             {
-             "type": "element",
-             "id": "s_h",
-             "kind": "text",
-             "paragraphs": [
+             "type": "region",
+             "id": "mid_a",
+             "layout": {
+              "kind": "flex",
+              "direction": "column",
+              "gap_role": "space.xs",
+              "pad_role": null,
+              "align": "stretch",
+              "justify": "start"
+             },
+             "children": [
               {
-               "role": "type.h1",
-               "text": "Against Q3 guidance"
-              }
-             ]
-            },
-            {
-             "type": "element",
-             "id": "s_u",
-             "kind": "text",
-             "paragraphs": [
-              {
-               "role": "type.caption",
-               "text": "guided in August 2026 (amber); beat against the high end in green"
-              }
-             ]
-            },
-            {
-             "type": "element",
-             "id": "score",
-             "kind": "table",
-             "table": {
-              "columns": [
-               {
-                "key": "m",
-                "label": "Metric",
-                "value_kind": "text"
-               },
-               {
-                "key": "g",
-                "label": "Guidance",
-                "value_kind": "number"
-               },
-               {
-                "key": "a",
-                "label": "Actual",
-                "value_kind": "number"
-               },
-               {
-                "key": "v",
-                "label": "vs high end",
-                "value_kind": "number"
-               }
-              ],
-              "rows": [
-               [
-                "Revenue ($M)",
-                "350.0-354.0",
-                "358.2",
-                "+4.2"
-               ],
-               [
-                "Operating income ($M)",
-                "52.0-54.0",
-                "59.5",
-                "+5.5"
-               ],
-               [
-                "Operating margin (%)",
-                "14.9-15.3",
-                "16.6",
-                "+1.3 pts"
+               "type": "element",
+               "id": "s_h",
+               "kind": "text",
+               "paragraphs": [
+                {
+                 "role": "type.h1",
+                 "text": "Against Q3 guidance"
+                }
                ]
-              ],
-              "header_rows": 1,
-              "totals_last_row": false,
-              "cell_anchor": "m",
-              "emphasis": [
-               {
+              },
+              {
+               "type": "element",
+               "id": "s_u",
+               "kind": "text",
+               "paragraphs": [
+                {
+                 "role": "type.caption",
+                 "text": "guided in August 2026 (grey); beat against the high end in green"
+                }
+               ]
+              },
+              {
+               "type": "element",
+               "id": "score",
+               "kind": "table",
+               "table": {
                 "columns": [
-                 "g"
+                 {
+                  "key": "m",
+                  "label": "Metric",
+                  "value_kind": "text"
+                 },
+                 {
+                  "key": "g",
+                  "label": "Guidance",
+                  "value_kind": "number"
+                 },
+                 {
+                  "key": "a",
+                  "label": "Actual",
+                  "value_kind": "number"
+                 },
+                 {
+                  "key": "v",
+                  "label": "vs high end",
+                  "value_kind": "number"
+                 }
                 ],
-                "fill_role": "keep",
-                "ink_role": "color.accent2",
-                "bold": false
-               },
-               {
-                "columns": [
-                 "a"
+                "rows": [
+                 [
+                  "Revenue ($M)",
+                  "350.0-354.0",
+                  "358.2",
+                  "+4.2"
+                 ],
+                 [
+                  "Operating income ($M)",
+                  "52.0-54.0",
+                  "59.5",
+                  "+5.5"
+                 ],
+                 [
+                  "Operating margin (%)",
+                  "14.9-15.3",
+                  "16.6",
+                  "+1.3 pts"
+                 ]
                 ],
-                "fill_role": "keep",
-                "ink_role": "color.accent1",
-                "bold": true
-               },
-               {
-                "columns": [
-                 "v"
-                ],
-                "fill_role": "keep",
-                "ink_role": "color.positive",
-                "bold": true
+                "header_rows": 1,
+                "totals_last_row": false,
+                "cell_anchor": "m",
+                "emphasis": [
+                 {
+                  "columns": [
+                   "g"
+                  ],
+                  "fill_role": "keep",
+                  "ink_role": "color.ink_muted",
+                  "bold": false
+                 },
+                 {
+                  "columns": [
+                   "a"
+                  ],
+                  "fill_role": "keep",
+                  "ink_role": "color.accent1",
+                  "bold": true
+                 },
+                 {
+                  "columns": [
+                   "v"
+                  ],
+                  "fill_role": "keep",
+                  "ink_role": "color.positive",
+                  "bold": true
+                 }
+                ]
                }
-              ]
-             }
+              },
+              {
+               "type": "element",
+               "id": "s_fn",
+               "kind": "text",
+               "paragraphs": [
+                {
+                 "role": "type.footnote",
+                 "text": "Operating income and margin are non-GAAP; guided margin is the guided income over guided revenue at each end of the range."
+                }
+               ]
+              }
+             ]
             },
             {
-             "type": "element",
-             "id": "s_fn",
-             "kind": "text",
-             "paragraphs": [
+             "type": "region",
+             "id": "mid_b",
+             "layout": {
+              "kind": "flex",
+              "direction": "column",
+              "gap_role": "space.xs",
+              "pad_role": null,
+              "align": "stretch",
+              "justify": "start"
+             },
+             "children": [
               {
-               "role": "type.footnote",
-               "text": "Operating income and margin are non-GAAP; guided margin is the guided income over guided revenue at each end of the range."
+               "type": "element",
+               "id": "g_h",
+               "kind": "text",
+               "paragraphs": [
+                {
+                 "role": "type.h1",
+                 "text": "FY2026 guidance, raised"
+                }
+               ]
+              },
+              {
+               "type": "element",
+               "id": "g_u",
+               "kind": "text",
+               "paragraphs": [
+                {
+                 "role": "type.caption",
+                 "text": "issued 26 October 2026; new guidance in amber, August's in grey"
+                }
+               ]
+              },
+              {
+               "type": "element",
+               "id": "fyg",
+               "kind": "table",
+               "table": {
+                "columns": [
+                 {
+                  "key": "m",
+                  "label": "Metric",
+                  "value_kind": "text"
+                 },
+                 {
+                  "key": "n",
+                  "label": "Now",
+                  "value_kind": "number"
+                 },
+                 {
+                  "key": "a",
+                  "label": "August",
+                  "value_kind": "number"
+                 }
+                ],
+                "rows": [
+                 [
+                  "Revenue ($M)",
+                  "1,394.4-1,398.4",
+                  "1,379.0-1,389.0"
+                 ],
+                 [
+                  "Growth year on year (%)",
+                  "20.9-21.3",
+                  "19.6-20.4"
+                 ],
+                 [
+                  "Operating margin (%)",
+                  "15.9-16.0",
+                  "15.5-15.7"
+                 ]
+                ],
+                "header_rows": 1,
+                "totals_last_row": false,
+                "cell_anchor": "m",
+                "emphasis": [
+                 {
+                  "columns": [
+                   "n"
+                  ],
+                  "fill_role": "keep",
+                  "ink_role": "color.accent2",
+                  "bold": true
+                 },
+                 {
+                  "columns": [
+                   "a"
+                  ],
+                  "fill_role": "keep",
+                  "ink_role": "color.ink_muted",
+                  "bold": false
+                 }
+                ]
+               }
               }
              ]
             }
@@ -743,24 +866,12 @@
                "bullet_level": 0
               }
              ]
-            },
-            {
-             "type": "element",
-             "id": "n4",
-             "kind": "text",
-             "paragraphs": [
-              {
-               "role": "type.body",
-               "text": "FY2026 revenue guidance raised to $1,394.4-1,398.4M.",
-               "bullet_level": 0
-              }
-             ]
             }
            ],
            "weight": 0.95
           }
          ],
-         "weight": 0.6
+         "weight": 1.0
         }
        ],
        "weight": 1.0
@@ -772,7 +883,7 @@
        "paragraphs": [
         {
          "role": "type.source_line",
-         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December. Bars: nine quarters, Q3 FY24 to Q3 FY26; Q3 FY26 in indigo."
+         "text": "Source: Corvane Software management accounts (fictional; illustrative figures). Non-GAAP unless stated; fiscal year ends December."
         }
        ]
       }
@@ -816,12 +927,61 @@
        "fill_role": "color.accent3",
        "line_role": "none",
        "labels": {
-        "show": false
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
        },
        "points": [
         {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        },
+        {
          "index": 8,
-         "fill_role": "color.accent1"
+         "fill_role": "color.accent1",
+         "label": {
+          "ink_role": "color.accent1"
+         }
         }
        ]
       }
@@ -844,7 +1004,7 @@
       "value": {
        "visible": false,
        "min": 0,
-       "max": 376.1,
+       "max": 422.7,
        "cross_between": "between"
       }
      },
@@ -895,12 +1055,61 @@
        "fill_role": "color.accent3",
        "line_role": "none",
        "labels": {
-        "show": false
+        "show": true,
+        "position": "outside_end",
+        "number_format": "#,##0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
        },
        "points": [
         {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        },
+        {
          "index": 8,
-         "fill_role": "color.accent1"
+         "fill_role": "color.accent1",
+         "label": {
+          "ink_role": "color.accent1"
+         }
         }
        ]
       }
@@ -923,7 +1132,7 @@
       "value": {
        "visible": false,
        "min": 0,
-       "max": 1572.9,
+       "max": 1767.6,
        "cross_between": "between"
       }
      },
@@ -974,12 +1183,61 @@
        "fill_role": "color.accent3",
        "line_role": "none",
        "labels": {
-        "show": false
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
        },
        "points": [
         {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        },
+        {
          "index": 8,
-         "fill_role": "color.accent1"
+         "fill_role": "color.accent1",
+         "label": {
+          "ink_role": "color.accent1"
+         }
         }
        ]
       }
@@ -1002,7 +1260,7 @@
       "value": {
        "visible": false,
        "min": 0,
-       "max": 87.2,
+       "max": 97.9,
        "cross_between": "between"
       }
      },
@@ -1057,8 +1315,50 @@
         "style": "none"
        },
        "labels": {
-        "show": false
-       }
+        "show": true,
+        "position": "above",
+        "number_format": "0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        }
+       ]
       }
      ],
      "axes": {
@@ -1078,8 +1378,8 @@
       },
       "value": {
        "visible": false,
-       "min": 112,
-       "max": 123,
+       "min": 110,
+       "max": 124,
        "cross_between": "between"
       }
      },
@@ -1128,12 +1428,61 @@
        "fill_role": "color.accent3",
        "line_role": "none",
        "labels": {
-        "show": false
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
        },
        "points": [
         {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        },
+        {
          "index": 8,
-         "fill_role": "color.accent1"
+         "fill_role": "color.accent1",
+         "label": {
+          "ink_role": "color.accent1"
+         }
         }
        ]
       }
@@ -1156,7 +1505,7 @@
       "value": {
        "visible": false,
        "min": 0,
-       "max": 17.4,
+       "max": 19.6,
        "cross_between": "between"
       }
      },
@@ -1207,12 +1556,61 @@
        "fill_role": "color.accent3",
        "line_role": "none",
        "labels": {
-        "show": false
+        "show": true,
+        "position": "outside_end",
+        "number_format": "0.0",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
        },
        "points": [
         {
+         "index": 1,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "show": false
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "show": false
+         }
+        },
+        {
          "index": 8,
-         "fill_role": "color.accent1"
+         "fill_role": "color.accent1",
+         "label": {
+          "ink_role": "color.accent1"
+         }
         }
        ]
       }
@@ -1235,7 +1633,7 @@
       "value": {
        "visible": false,
        "min": 0,
-       "max": 22.6,
+       "max": 25.4,
        "cross_between": "between"
       }
      },
@@ -1460,7 +1858,7 @@
            "paragraphs": [
             {
              "role": "type.body",
-             "text": "ARR growth rose to 22.2% after four quarters at 21.0-21.1%; revenue growth held at 21.3-21.7% for five quarters.",
+             "text": "ARR growth rose to 22.2% after four quarters between 21.0% and 21.1%; revenue growth held between 21.3% and 21.7% for five quarters.",
              "bullet_level": 0
             }
            ]
@@ -3804,7 +4202,7 @@
            "paragraphs": [
             {
              "role": "type.footnote",
-             "text": "Forward-looking statements: guidance reflects expectations at the date issued and is subject to risk. Corvane Software is fictional; every figure is illustrative."
+             "text": "Forward-looking statements: guidance reflects expectations when issued and carries risk. Corvane Software is fictional; every figure is illustrative."
             }
            ]
           }

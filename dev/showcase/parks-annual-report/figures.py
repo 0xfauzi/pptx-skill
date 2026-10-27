@@ -4,8 +4,8 @@ def say(*a): out.append(" ".join(str(x) for x in a))
 
 # Page 1: visits and access (thousands of visits per month, April to March)
 months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"]
-prev = [520, 640, 780, 1010, 1120, 860, 700, 430, 360, 310, 380, 830]
-curr = [560, 690, 840, 1060, 1180, 920, 760, 470, 380, 330, 400, 830]
+prev = [570, 700, 850, 1010, 1120, 920, 750, 470, 360, 310, 380, 500]
+curr = [610, 750, 910, 1060, 1180, 980, 810, 510, 380, 330, 400, 500]
 tp, tc = sum(prev), sum(curr)
 assert tp == 7940 and tc == 8420
 growth = (tc / tp - 1) * 100
@@ -14,7 +14,7 @@ peak = max(curr); assert peak == 1180 and months[curr.index(peak)] == "Aug"
 low = min(curr); assert low == 330 and months[curr.index(low)] == "Jan"
 assert round(peak / low, 1) == 3.6
 summer = sum(curr[3:5]); assert round(summer / tc * 100) == 27   # Jul+Aug share
-say("8.42 million", "7.94 million", "6.0%", "1.18 million", "330,000", "3.6", "27%")
+say("8.42 million", "7.94 million", "6.0%", "1.18 million", "330,000", "1,180", "330", "3.6", "27%")
 mode_prev = {"Car": 71, "Bus, shuttle or train": 19, "On foot or by bike": 10}
 mode_curr = {"Car": 64, "Bus, shuttle or train": 25, "On foot or by bike": 11}
 assert sum(mode_prev.values()) == 100 and sum(mode_curr.values()) == 100
@@ -39,6 +39,9 @@ habitat = {"Peatland re-wetted": 1260, "Native woodland planted": 540, "Wetland 
 hab_total = sum(habitat.values()); assert hab_total == 2140
 hab_target = 2000; assert round(hab_total / hab_target * 100) == 107
 say("6 of 9", "+41%", "-14%", "2,140", "2,000", "107%", "1,260", "540", "340")
+hab_share = {k: round(v / hab_total * 100) for k, v in habitat.items()}
+assert list(hab_share.values()) == [59, 25, 16] and sum(hab_share.values()) == 100
+say("59%", "25%", "16%", "100%")
 
 # Page 3: budget, $m
 income = {"Government grant": 96.4, "Parking, camping and permits": 28.7, "Shops, cafes and leases": 11.2,

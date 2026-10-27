@@ -3,10 +3,10 @@
 usage: python3 dev/showcase/sheet.py OUT.png WIDTH COLUMNS PAGE.png [PAGE.png ...]
 
 Pages are scaled to the column width and placed in reading order on a grey ground, with a
-16 px gutter. The palette is chosen by maximum coverage with no dithering: on the five showcase
-sheets it kept every pixel within 21 (sum of the three channel differences, out of 765) of
-the full-colour sheet, at 22 to 28 percent of the full-colour file's size (measured when the
-sheets in docs/showcase/ were made).
+16 px gutter. The palette is chosen by maximum coverage with no dithering: on the six showcase
+images it kept every pixel within 16 (sum of the three channel differences, out of 765) of
+the full-colour image, at 24 to 36 percent of the full-colour file's size (measured when the
+images in docs/showcase/ were made).
 """
 import sys
 

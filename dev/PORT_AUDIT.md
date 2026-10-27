@@ -12,7 +12,7 @@ under the same hard limits; the agent's judgment does the design and instruments
 measuring. Rows written before the section "No house" below say "house" for what is now
 the reference (one deck, never pooled); they are kept as written, as the record of the time.
 
-Judge distances quoted in a row are the figure measured when the row was written; later rows changed the judge (layout gates, the fixed panel, the house spread) and the emitter, so rows disagree with each other by design. Calibration counts follow the same rule (row 26's 147/161 and row 41's 157/171 are what those runs measured). The current figures are the re-runnable ones: `examples/proofs/*.build.json` (section 0.086, re-run 2026-10-20 on a fresh keybank guide; round trip 0.056 when recorded), and the calibration in `fingerprint.DEFAULT_WEIGHTS` (152/165 with the shipped weights, houses in `oracles/calibration-houses.txt`).
+Judge distances quoted in a row are the figure measured when the row was written; later rows changed the judge (layout gates, the fixed panel, the house spread) and the emitter, so rows disagree with each other by design. Calibration counts follow the same rule (the "Style fingerprint" row's 147/161 and the "Judge layout gates" row's 157/171 are what those runs measured). The current figures are the re-runnable ones: `dev/proofs/*.build.json` (section 0.083 in `keybank-section.build.json`, round trip 0.056 in `kb3-rt.build.json`, each `judge.total`), and the calibration in `fingerprint.DEFAULT_WEIGHTS` (152/165 with the shipped weights, firms in `dev/oracles/calibration-firms.txt`).
 
 | Port | Source in deckgen | Adopted because | Changed | Checked by |
 |---|---|---|---|---|
@@ -1003,3 +1003,22 @@ package valid, judge and leakage "no reference"; the plugin cache's hashes are u
 afterwards and no `__pycache__` was written.
 
 ruff 0.16.9 over plugins/: 121 findings, the same 121 as 420caa5 (paths normalised).
+
+## Docs round: the showcase decks and the blank package
+
+`pptx_tools.py blank` passed python-pptx's stock package properties to every deck built on
+it: `lastModifiedBy` "Steve Canny", created 2013-01-27, and an `app.xml` naming "Microsoft
+Macintosh PowerPoint" and "On-screen Show (4:3)" (read from `docProps/` of the four showcase
+decks before this change). It now clears the author fields, dates the package when it is
+made and writes an empty `app.xml`; none of those strings is in the four rebuilt decks
+(`unzip -p` over each file). The stock master's level-2 and level-4 bullet character is
+still an en dash; no showcase page sets text at those levels.
+
+The showcase decks named Inter, Carlito and Gelasio, which PowerPoint machines do not carry.
+They now name Arial, Calibri and Georgia, measured with Liberation Sans, Carlito and Gelasio
+through `textfit.METRIC_ALIAS_CLASSES`. On the committee book's end-market chart at 7pt,
+LibreOffice 24.2.7 drew Carlito category labels with lost and split word spaces ("Water
+andwastewater"); Liberation Sans drew them as written, and Caladea, Gelasio and Inter with
+uneven spacing (renders of the same chart with only the chart's typeface changed, compared
+by eye). The committee book therefore sets chart text in Arial. Every page of the four
+rebuilt decks fits and both validations pass; two rebuilds gave byte-identical renders.

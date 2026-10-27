@@ -174,11 +174,11 @@ assert all(b > a for a, b in zip(margins, margins[1:]))
 kpis = [
     (f"${m1(REV26)}m", "Revenue, FY2026E", f"+{p1(H[-1]['growth'])}% on FY2025A"),
     (f"${m1(E26)}m", "Adj. EBITDA, FY2026E", f"{p1(H[-1]['margin'])}% margin, +{p1(H[-1]['margin'] - H[-2]['margin'])}pp"),
-    (pc(rev_cagr), "Revenue CAGR, FY2021A-26E", f"Adj. EBITDA CAGR {pc(ebitda_cagr)}"),
-    (pc(H[-1]["am_share"]), "Aftermarket share of revenue", f"{pc(H[0]['am_share'])} in FY2021A"),
-    (pc(conv26), "Cash conversion, FY2026E", "(Adj. EBITDA - capex) / Adj. EBITDA"),
+    (pc(rev_cagr), "Revenue CAGR, FY21A-26E", f"Adj. EBITDA CAGR {pc(ebitda_cagr)}"),
+    (pc(H[-1]["am_share"]), "Aftermarket mix, FY2026E", f"of revenue; {pc(H[0]['am_share'])} in FY2021A"),
+    (pc(conv26), "Cash conversion, FY2026E", "(EBITDA - capex) / EBITDA"),
     (f"${m1(H[-1]['backlog'])}m", "Order backlog, FY2026E", f"{xx(backlog_cover)} FY2026E revenue"),
-    (xx(BASE["ev"] / E26, 1), "Entry EV / FY2026E Adj. EBITDA", f"EV ${m1(BASE['ev'])}m"),
+    (xx(BASE["ev"] / E26, 1), "Entry EV / Adj. EBITDA", f"FY2026E; EV ${m1(BASE['ev'])}m"),
 ]
 kpi_cells = []
 for i, (fig, lab, ctx) in enumerate(kpis):
@@ -283,15 +283,16 @@ endmkt_chart = {
     "text": AXT,
     "series": [{"name": "Share of FY2026E revenue (%)", "values": [v for _, v in end_order], "fill_role": "color.accent1",
                 "line_role": "none",
-                "labels": {"show": True, "position": "outside_end", "number_format": "0.0\"%\"", "role": "type.data_label",
+                "labels": {"show": True, "position": "outside_end", "number_format": "0.0", "role": "type.data_label",
                            "ink_role": "color.ink"},
                 "points": [{"index": i, "fill_role": "color.accent3"} for i in range(3, 7)]}],
     "axes": {"category": cat_axis(reverse=True), "value": {"visible": False, "min": 0, "max": 27, "cross_between": "between"}},
     "gap_width": 45, "overlap": 0, "legend": "none", "plot_fill_role": "none", "title": "none",
-    "plot_area": {"x": 0.42, "y": 0.02, "w": 0.32, "h": 0.96},
+    "plot_area": {"x": 0.38, "y": 0.02, "w": 0.28, "h": 0.96},
 }
 for _, v in end_order:
     reg(f"{v:.1f}%")
+    reg(f"{v:.1f}")
 
 CUST = [("Customer 1: US water utility", 4.2, 1998), ("Customer 2: chemicals major, Europe", 3.6, 2004),
         ("Customer 3: EPC contractor, US", 3.1, 2011), ("Customer 4: power generator, US", 2.4, 2007),
@@ -356,10 +357,10 @@ s1 = page("s1-overview", "Section 4  |  Leveraged finance and LBO  |  4.1 Compan
           annotations=[
               {"id": "def_br", "host": "endmkt", "kind": "bracket", "anchor": {"categories": [0, 2]}, "side": "right",
                "style": "square", "gap_role": "space.xl", "depth_role": "space.xs", "line_role": "color.accent1", "line_width_pt": 0.75,
-               "label": {"text": f"Defensive {pc(def_share)}", "role": "type.data_label", "ink_role": "color.accent1", "align": "left", "max_width_share": 0.16}},
+               "label": {"text": f"Defensive {pc(def_share)}", "role": "type.data_label", "ink_role": "color.accent1", "align": "left", "max_width_share": 0.2}},
               {"id": "cyc_br", "host": "endmkt", "kind": "bracket", "anchor": {"categories": [3, 6]}, "side": "right",
                "style": "square", "gap_role": "space.xl", "depth_role": "space.xs", "line_role": "color.ink_muted", "line_width_pt": 0.75,
-               "label": {"text": f"Cyclical {pc(cyc_share)}", "role": "type.data_label", "ink_role": "color.ink_muted", "align": "left", "max_width_share": 0.16}},
+               "label": {"text": f"Cyclical {pc(cyc_share)}", "role": "type.data_label", "ink_role": "color.ink_muted", "align": "left", "max_width_share": 0.2}},
           ])
 
 s1["answered"] = [{"kind": "briefs differ from the file's exhibits",
@@ -405,7 +406,8 @@ cap_t = table("cap", [col("t", "Tranche", "text", width_share=0.15), col("a", "$
                       col("pc", "% of cap."), col("pr", "Pricing", "text"), col("ip", "Issue price"), col("mt", "Maturity", "text"),
                       col("cl", "Call protection", "text"), col("am", "Amortisation", "text"), col("rk", "Ranking", "text")],
               cap_rows,
-              emphasis=[{"rows": [2, 4, 6, 9], "fill_role": "keep", "bold": True},
+              emphasis=[{"columns": ["pr", "mt"], "include_header": True, "fill_role": "keep", "indent_role": "space.md"},
+                        {"rows": [2, 4, 6, 9], "fill_role": "keep", "bold": True},
                         {"rows": [10], "fill_role": "color.surface_alt", "bold": True},
                         {"rows": [4], "columns": ["cx"], "fill_role": "keep", "ink_role": "color.accent1", "bold": True}])
 
@@ -443,7 +445,7 @@ stack_chart = {
          "points": [{"index": 0, "label": {"text": f"First-lien TLB\n${m1(BASE['tlb0'])}m\n{xx(BASE['tlb0'] / E26)}"}}]},
         {"name": "Senior unsecured notes", "values": [round(BASE["notes0"] / E26, 2)], "fill_role": "color.accent4", "line_role": "color.surface",
          "line_width_pt": 0.75, "labels": {"show": True, "position": "center", "role": "type.data_label", "ink_role": "color.ink"},
-         "points": [{"index": 0, "label": {"text": f"Notes {xx(BASE['notes0'] / E26)}"}}]},
+         "points": [{"index": 0, "label": {"text": f"Notes\n{xx(BASE['notes0'] / E26)}"}}]},
         {"name": "Equity", "values": [round(eq0 / E26, 2)], "fill_role": "color.accent3", "line_role": "color.surface",
          "line_width_pt": 0.75, "labels": {"show": True, "position": "center", "role": "type.data_label", "ink_role": "color.ink"},
          "points": [{"index": 0, "label": {"text": f"Equity\n${m1(eq0)}m\n{xx(eq0 / E26)}"}}]},
@@ -628,7 +630,7 @@ assert DOWN["irr"] < m.HURDLE_IRR and MGMT["irr"] > BASE["irr"]
 haircut = (1 - r31["ebitda"] / MGMT["rows"][-1]["ebitda"]) * 100
 
 ebitda_chart = {
-    "type": "COLUMN_CLUSTERED", "categories": [f"FY{str(h['year'])[2:]}{'E' if h['year'] == 2026 else 'A'}" for h in H] + [f"FY{str(r['year'])[2:]}E" for r in R],
+    "type": "COLUMN_CLUSTERED", "categories": [f"{str(h['year'])[2:]}{'E' if h['year'] == 2026 else 'A'}" for h in H] + [f"{str(r['year'])[2:]}E" for r in R],
     "number_format": "0", "text": AXT,
     "series": [{"name": "Adj. EBITDA ($m)", "values": [h["ebitda"] for h in H] + [r["ebitda"] for r in R], "fill_role": "color.accent1",
                 "line_role": "none",
@@ -1145,7 +1147,7 @@ moic_chart = {
                             **({"fill_role": "color.negative"} if s[2]["moic"] < m.HURDLE_MOIC else {})} for j, s in enumerate(SCEN)]}],
     "axes": {"category": cat_axis(reverse=True), "value": {"visible": False, "min": 0, "max": 2.9, "cross_between": "between"}},
     "gap_width": 40, "overlap": 0, "legend": "none", "plot_fill_role": "none", "title": "none",
-    "plot_area": {"x": 0.3, "y": 0.12, "w": 0.62, "h": 0.86},
+    "plot_area": {"x": 0.36, "y": 0.12, "w": 0.58, "h": 0.86},
 }
 
 peer_rows = []

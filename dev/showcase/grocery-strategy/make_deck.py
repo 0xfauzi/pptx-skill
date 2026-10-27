@@ -255,10 +255,11 @@ stab = table("stab", [C("seg", "Segment", "text"), C("hh", "Households (k)"), C(
                       C("g", "Spend growth, 2022-25 (% a year)", total="none"), C("sow", "Brindle share of wallet (%)", total="none"),
                       C("bs", "Brindle sales (£m)"), C("mission", "Main mission", "text", width_share=0.15), C("format", "Format they choose", "text")],
              seg_rows, totals=True, cell_anchor="m",
-             emphasis=[{"rows": fast, "columns": ["sow", "g"], "fill_role": "keep", "ink_role": "color.accent2", "bold": True}])
+             emphasis=[{"columns": ["mission"], "include_header": True, "fill_role": "keep", "indent_role": "space.md"},
+                       {"rows": fast, "columns": ["sow", "g"], "fill_role": "keep", "ink_role": "color.accent2", "bold": True}])
 
 core = [0, 3]
-lab_pos = {0: "right", 3: "right", 1: "right", 2: "left", 4: "left"}
+lab_pos = {0: "right", 3: "right", 1: "right", 2: "below", 4: "left"}
 
 
 def seg_series(name, idx, role):
@@ -378,19 +379,28 @@ rf, rs, ex = A["Reformat"], A["Right-size"], A["Exit"]
 large_under = sum(A[a]["large"] for a in ("Reformat", "Right-size", "Exit"))
 assert large_under == 124 and sum(A[a]["stores"] for a in ("Reformat", "Right-size", "Exit")) == D["below_total"]
 side4 = col("side", [
-    txt("side-t", [
+    txt("side-t1", [
         P("type.h2", "Reformat where demand is growing"),
         P("type.body", f"{rf['stores']} stores, {rf['super']} of them superstores, give space back to fresh, food-to-go and click-and-collect and sublet the rest; capex £{L['Reformat']['capex']:.0f}m lifts them to a 10% return."),
+    ]),
+    txt("side-t2", [
         P("type.h2", "Right-size where it is not"),
         P("type.body", f"{rs['stores']} stores cut space and move to the leaner labour model; £{L['Right-size']['capex']:.1f}m of capex adds £{L['Right-size']['uplift']}m."),
+    ]),
+    txt("side-t3", [
         P("type.h2", "Exit releases capital, not EBITDA"),
         P("type.body", f"The {ex['stores']} exits earn £{ex['ebitda']}m on £{D['exit_capital']}m of capital; {round(D['transfer'] * 100)}% of their sales move to nearby stores, worth £{L['Exit']['transfer']}m."),
+    ]),
+    txt("side-t4", [
         P("type.h2", "Invest where return and demand meet"),
         P("type.body", f"{A['Invest']['stores']} stores clear both lines, {A['Invest']['stores'] - A['Invest']['large']} of them neighbourhood or express: the model for the 30 new stores."),
+    ]),
+    txt("side-t5", [
         P("type.h2", "The problem is the large stores"),
         P("type.body", f"{large_under} of the {D['below_total']} stores under the hurdle are superstores or supermarkets; {D['below_total'] - large_under} are small formats."),
     ]),
 ], gap="space.sm", pad="space.md", fill_role="color.surface_alt", weight=1.0)
+side4["layout"]["justify"] = "space_between"
 body4 = row("body", [
     col("exA", [txt("exA-h", [P("type.h1", "214 stores by return and catchment growth")]),
                 txt("exA-u", [P("type.caption", "One point per store; thresholds are the 12% hurdle and 1.5% a year catchment growth")]),
@@ -420,7 +430,7 @@ for i, d in enumerate(deltas):
         run = round(run + d, 1)
 assert abs(run - D["eb2028"]) < 0.05
 heights = [round(abs(d), 1) for d in deltas]
-step_pts = [{"index": 0, "fill_role": "color.accent1"}, {"index": 1, "fill_role": "color.accent2"}, {"index": 2, "fill_role": "color.positive"},
+step_pts = [{"index": 0, "fill_role": "color.accent1"}, {"index": 1, "fill_role": "color.positive"}, {"index": 2, "fill_role": "color.positive"},
             {"index": 3, "fill_role": "color.positive"}, {"index": 4, "fill_role": "color.positive"}, {"index": 5, "fill_role": "color.negative"},
             {"index": 6, "fill_role": "color.accent1"}]
 lab_text = [f"£{deltas[0]:.1f}m"] + [f"+{d:.1f}" if d >= 0 else f"({-d:.1f})" for d in deltas[1:-1]] + [f"£{deltas[-1]:.1f}m"]
@@ -430,7 +440,7 @@ bridge = {"type": "COLUMN_STACKED", "categories": labels, "number_format": "0.0"
               {"name": "Step", "values": heights, "fill_role": "color.accent1", "line_role": "none", "labels": {"show": False}, "points": step_pts},
               {"name": "Label", "values": [0] * 7, "fill_role": "none", "line_role": "none",
                "labels": {"show": True, "position": "inside_base", "number_format": "0.0", **DL},
-               "points": [{"index": i, "label": {"text": t, "ink_role": "color.accent2" if i == 1 else "color.ink"}} for i, t in enumerate(lab_text)]}],
+               "points": [{"index": i, "label": {"text": t, "ink_role": "color.ink"}} for i, t in enumerate(lab_text)]}],
           "axes": {"category": cat_axis(labels={"show": True, "role": "type.axis_label", "ink_role": "color.ink_muted", "rotation_deg": 0}),
                    "value": {"visible": False, "min": 0, "max": 345, "cross_between": "between"}},
           "gap_width": 35, "overlap": 100, "legend": "none", "plot_fill_role": "none", "title": "none",
@@ -462,7 +472,7 @@ assert abs(sum(L[k]["uplift"] for k in L) - D["uplift_total"]) < 0.05
 rtab = table("rtab", [C("w", "Workstream", "text"), C("gate", "Gate to pass", "text", width_share=0.33), C("y26", "2026", total="none"), C("y27", "2027", total="none"),
                       C("y28", "2028", total="none"), C("n", "Stores", total="none"), C("capex", "Capex (£m)"), C("up", "EBITDA uplift 2028 (£m)")],
              rrows, totals=True, cell_anchor="m",
-             emphasis=[{"rows": [0], "columns": ["w", "up"], "fill_role": "keep", "ink_role": "color.accent2", "bold": True}])
+             emphasis=[{"rows": [0], "columns": ["w", "up"], "fill_role": "keep", "ink_role": "color.accent1", "bold": True}])
 grow_capex_share = round((L["Reformat"]["capex"] + L["Open"]["capex"]) / D["capex_total"] * 100)
 assert grow_capex_share == 81
 panel5 = col("panel", [

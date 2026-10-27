@@ -38,21 +38,21 @@
      "data": "six series of nine quarterly values, one per headline metric",
      "forms_considered": [
       {
-       "form": "small unlabelled column sparkline in each tile",
-       "reason": "chosen: the shape of nine quarters under the figure, with the current bar in indigo"
+       "form": "small column sparkline in each tile, first and last values labelled",
+       "reason": "chosen: the shape of nine quarters under the figure, with the current bar in indigo and its two end values stated"
       },
       {
        "form": "a separate nine-quarter table",
-       "reason": "repeats pages 2 to 4 in figures; the reader here needs the direction, not the values"
+       "reason": "repeats pages 2 to 4 in figures; the reader here needs the direction and its two ends, not every value"
       },
       {
        "form": "no trend on the summary page",
        "reason": "a figure without its history invites the question whether it is a blip"
       }
      ],
-     "chosen_form": "small unlabelled column sparkline in each tile",
-     "why": "a tile states the figure; the sparkline under it answers whether it is a trend, and the exact values live on the later pages",
-     "marks": "the Q3 FY26 bar in indigo, earlier bars in slate; retention drawn as an indigo line showing its trough and turn; the source line says what the bars span"
+     "chosen_form": "small column sparkline in each tile, first and last values labelled",
+     "why": "a tile states the figure; the sparkline under it answers whether it is a trend, its first and last labels say how far it came, and every value lives on the later pages",
+     "marks": "the Q3 FY26 bar and its label in indigo, earlier bars in slate; retention drawn as an indigo line labelled at its start, trough and end; a caption under the tiles says what the bars span"
     },
     {
      "reader_must_see": "the supporting metrics behind the headline: backlog, large customers, GAAP margin and stock compensation, against last year",
@@ -74,7 +74,7 @@
     },
     {
      "reader_must_see": "that revenue and operating income both landed above the top of the range guided in August",
-     "comparison": "each actual against the guided low and high and the beat against the high end",
+     "comparison": "each actual against the guided low and high given in August, and the beat against the high end",
      "data": "three metrics, each a guided low, a guided high and an actual",
      "forms_considered": [
       {
@@ -88,7 +88,29 @@
      ],
      "chosen_form": "guidance scorecard table",
      "why": "an analyst checks the beat against the stated range, a figure to quote; the table gives it directly",
-     "marks": "the guided range in amber, the forward-looking colour; each beat in green"
+     "marks": "the guided range in grey, superseded by the actual; each beat in green"
+    },
+    {
+     "reader_must_see": "that full-year guidance went up with the quarter",
+     "comparison": "the FY2026 range issued in October against the range guided in August",
+     "data": "three metrics, each a range now and a range in August",
+     "forms_considered": [
+      {
+       "form": "two-column guidance table, now against August",
+       "reason": "chosen: each row reads the new range against the one it replaces"
+      },
+      {
+       "form": "a sentence in the notes column",
+       "reason": "a range of the form 1,394.4-1,398.4 breaks at its hyphen in a narrow column, and the August range would need a second sentence"
+      },
+      {
+       "form": "floating range bars by update",
+       "reason": "page 5 draws every update; here the reader needs the latest change"
+      }
+     ],
+     "chosen_form": "two-column guidance table, now against August",
+     "why": "the raise is a figure analysts quote; a table states both ranges and puts the full outlook on page 5",
+     "marks": "the new guidance in amber, the colour of guidance in force; August's in grey, as on page 5"
     }
    ]
   },

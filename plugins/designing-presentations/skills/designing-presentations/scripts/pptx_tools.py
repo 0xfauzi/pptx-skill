@@ -42,6 +42,7 @@ import sys
 import tempfile
 import zipfile
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 from lxml import etree
@@ -865,6 +866,11 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
     return info
 
 
+_EMPTY_APP_XML = (b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                  b'<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" '
+                  b'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"/>')
+
+
 def blank(out: str, width_emu: int, height_emu: int) -> dict:
     """A slide-free package at the given page size with python-pptx's stock master, for a
     reference that has no master to reuse (a PDF). The guide then supplies everything the
@@ -872,6 +878,15 @@ def blank(out: str, width_emu: int, height_emu: int) -> dict:
     prs = Presentation()
     prs.slide_width = Emu(width_emu)
     prs.slide_height = Emu(height_emu)
+    # python-pptx's stock package carries its author's name, a 2013 date and a Mac PowerPoint 4:3
+    # show in its properties; every deck built on this blank would repeat them
+    core = prs.core_properties
+    core.author = core.last_modified_by = core.comments = ""
+    core.revision = 1
+    core.created = core.modified = datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)
+    for part in prs.part.package.iter_parts():
+        if part.partname == "/docProps/app.xml":
+            part._blob = _EMPTY_APP_XML
     prs.save(out)
     return {"out": out, "width_emu": width_emu, "height_emu": height_emu, "layouts": [lay.name for lay in prs.slide_layouts]}
 
