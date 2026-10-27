@@ -1,6 +1,6 @@
 """(a) Oracle comparison: deckgen's own pure solver vs the port, specimen by specimen.
 
-Run: cd /home/user/deckgen && uv run python -I <this file>
+Run: cd "$DECKGEN" && uv run python -I <this file>
 Converts each specimen SlideModel mechanically to the port's spec (regions and
 layouts pass through; text runs become paragraphs with dataset refs resolved;
 table_ref becomes a table with the dataset's real cells; chart/decor/image become

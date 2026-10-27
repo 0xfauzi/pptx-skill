@@ -10,10 +10,10 @@ Paths below are as they stood before the repository took its plugin layout: `ora
 now `dev/oracles/`, and `scripts/` is `plugins/designing-presentations/skills/designing-presentations/scripts/`. Each
 script finds the skill there itself (`PPTX_SKILL` overrides).
 
-Every script needs a deckgen checkout (read-only) at /home/user/deckgen and, unless noted,
+Every script needs a deckgen checkout (read-only; `$DECKGEN` below) and, unless noted,
 runs from it with deckgen's environment:
 
-    cd /home/user/deckgen && uv run python -I /path/to/pptx-skill/oracles/<script>
+    cd "$DECKGEN" && uv run python -I /path/to/pptx-skill/dev/oracles/<script>
 
 Environment variables (all optional):
 

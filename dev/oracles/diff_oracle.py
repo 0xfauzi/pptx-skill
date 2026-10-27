@@ -1,6 +1,6 @@
 """Compare the port's guide with deckgen's draft on the same deck: core roles, spacing, floors, density.
 
-Run: cd /home/user/deckgen && uv run python -I <this file> jazz keybank netflix exhibits
+Run: cd "$DECKGEN" && uv run python -I <this file> jazz keybank netflix exhibits
 
 Each name is a deck under $DECKGEN/fixtures/corpus/<name>.pptx (DECKGEN defaults to the
 working directory). deckgen's draft comes from deckgen_server.style.compiler.extract in

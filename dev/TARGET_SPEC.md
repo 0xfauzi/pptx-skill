@@ -714,7 +714,8 @@ pixels holding one colour on at least half the pages (rules, bands, logo block, 
 number area); margins from ink extents; line pitch by autocorrelation and a body size
 from it. Measured on a native-pptx bank deck rendered to images at 100 dpi and re-measured:
 surface and accent exact, ink within 1 unit, left margin within 0.01 in, other sides within
-0.08 in, body 11.7pt from a 14.4pt pitch against 12pt in the file. On real scans, line
+0.09 in, body 11.7pt from a modal 14pt pitch against 12pt in the file
+(dev/proofs/keybank-raster-oracle.md). On real scans, line
 pitch held on 3 of 11 pages (measured), so treat it as weak evidence. Faces cannot be read
 from pixels: the model looks at page images beside candidate fonts and names the family.
 Raster measurements carry provenance `raster_inference` and confidence 0.5. Report

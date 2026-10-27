@@ -17,8 +17,9 @@ print bounds how finely a size can be read (a 12pt line is 12 px tall). Faces ca
 read from pixels; the report leaves /typography/families open.
 
 Calibration (keybank.pptx rendered at 100 dpi and re-measured, 2026-10-20; the numbers
-live in dev/PORT_AUDIT.md): line pitch over body text 14.4pt for the 12pt body (1.2 x size,
-the explicit lnSpc the reference writes); the modal text-line height is close to the size for
+live in dev/proofs/keybank-raster-oracle.md): line pitch over body text modal 14pt over 11
+pages, 14.4pt (1.2 x the 12pt body, the explicit lnSpc the reference writes) on 3 of them, so
+a body of 11.7pt against 12pt in the file; the modal text-line height is close to the size for
 mixed-case Arial lines; chrome rows found at the top rule and bottom rule the OOXML walk
 reports; margins within one spacing step of the walk's.
 """

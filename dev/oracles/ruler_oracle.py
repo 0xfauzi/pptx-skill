@@ -1,6 +1,6 @@
 """(c) Oracle half: deckgen's HarfBuzz measure_text over the shared cases.
 
-Run: cd /home/user/deckgen && uv run python -I <this> [oracle.json]
+Run: cd "$DECKGEN" && uv run python -I <this> [oracle.json]
 (default output: ruler_oracle.json in the system temporary directory)."""
 
 import json
