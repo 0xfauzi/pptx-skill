@@ -866,3 +866,50 @@ identical (the no-reference books' title band, as at cfcd04c, and fid-bcg-p15's 
 
 ruff 0.16.9: 143 findings here, 144 at cfcd04c and 144 on main; the one gone is a PERF102 in
 extract_style.py's spacing slot loop, rewritten by item 36; no new finding.
+
+## Round 8, part 5: the final verifier's defects, and the skill made publishable
+
+The final verifier on 9d3f933 found two false refusals new on round 8 and four nearby
+defects. Each was reproduced on main and on 9d3f933 first, fixed, broken again to watch it
+return, and restored. Proofs: `r8x/pub/` in the session scratchpad.
+
+| Item | Reproduced | Fix | With the fix broken |
+|---|---|---|---|
+| 1 A rounded negative zero refused | main PASS (no check); 9d3f933 REFUSED, "'-0.0' is not drawn as written" on `r8f/p2/lbl/deck1-low.json`; the render's PDF says `0.0` | `label_text` writes a value that rounds to zero unsigned, and the sign before a quoted prefix: measured on LibreOffice 24.2.7 over 8 formats and 10 values (`r8x/pub/gen/genz.json`: -0.04 under 0.0 is `0.0`, -0.5 under 0 is `-1`, -0.4 under "$"0.0 is `-$0.4`); deck1-low PASS, genz 20 of 20 labels on all 8 pages | sign kept: deck1-low REFUSED again, genz 12 to 18 of 20; sign after the prefix: page z7 16 of 20 |
+| 2 General spelt as Python's :g | main PASS; 9d3f933 REFUSED, 5 refusals on `r8f/p2/lbl/gen.json` ('1.23457e+06' where LibreOffice draws 1234567) | one reading, `general_text`, measured on 72 values (`r8x/pub/gen/gen*.json`, read from the render's PDF): an integer below 2^53 whole; otherwise 15 significant digits, plain from 1e-4 to 1e15; zero is `0`; outside those bounds LibreOffice switches between plain and `1E+016` by a rule not measured, so the label is reported unread, never refused | :g back: gen REFUSED, '1.23457e+06' |
+| 3 Element bomb under the size caps | `r8f/p2/elem.pptx` (62.9 MB of groups in one part): main ran past 400 s at 796 MB (`r8x/pub/bomb/rss.txt`); validate's duplicate-id counts were quadratic (30,000 groups 10.5 s) | `ooxml.Package` counts start tags in every XML part as it opens a package and refuses one over 1,000,000 (the largest of 39 measured packages, refs/files and deckgen's fixtures, holds 24,263; 991,964 validates in 4.4 to 6.7 s at 465 MB); duplicate ids counted with Counter. elem.pptx refused by name in 0.6 s at 60 MB; keybank and jazz validate in 0.5 s, as on main (0.4 s) | cap off: elem 22.8 s at 1,490 MB; list.count back: 30,000 groups 11.1 s against 1.6 s |
+| 4 A zip that is no presentation | `r8f/p2/junk.pptx`: extract_style and gallery digest KeyError on main and 9d3f933 | the refusal moves from pptx_tools into `ooxml.Package` (one definition): every reader refuses "a zip without ppt/presentation.xml" by name | KeyError in both again |
+| 5 Mixed-script refusal on real spellings | `ΔDSCR column chart`, `한국語`, `iPhone用ケース` refused on main and 9d3f933 | the refusal is removed; a form's key is its UTS #39 skeleton (`scripts/confusable_letters.json`: the 1,580 letters, marks and digits of Unicode 18.0.0 confusables whose prototype is ASCII, its licence in full), so a look-alike spelling of a form reads as that form and the existing "at least two distinct forms" check catches it, naming the forms as written. Real mixed spellings pass; Cyrillic `bаr chart`, Greek `cοlumn chart` and `p0l chart` beside their Latin twins are one form | no skeleton: the three look-alike pairs pass as two forms |
+| 6 Holdout needs a reference | main: "the following arguments are required: --reference" | `--reference` optional; with none the copy is for a no-reference run and says so | the argparse error again |
+| 7 Install hints on macOS | main, run as darwin with soffice missing: "sudo apt-get install -y libreoffice-impress" | preflight names Homebrew on macOS (`brew install --cask libreoffice`; poppler, fontconfig and the metric font casks; each name checked on formulae.brew.sh) and apt-get elsewhere | apt-get on darwin again |
+| 8 Plugin and marketplace | not a plugin | `.claude-plugin/plugin.json` (name designing-presentations, version 0.8.0, MIT) and `.claude-plugin/marketplace.json` (name pptx-skill, one plugin, source `./`), per the plugin manifest and marketplace references (code.claude.com/docs/en/plugins-reference, plugins/marketplace-reference.md); the skill in `skills/designing-presentations/`, the default scan | `claude plugin validate` (2.1.311) on a fresh clone: passed, and passed with `--strict`; the skills directory alone: passed |
+| 9 What ships and what does not | SKILL.md, scripts, evals, oracles, specs and proofs side by side at the root | the skill directory holds SKILL.md, references, scripts, components, examples, refs/fetch.sh and MANIFEST.md, LICENSE.txt; TARGET_SPEC, this audit, evals, oracles, the proofs (out of examples/ and PROVENANCE.json) and the packager move to `dev/`; every path in the skill's text that cites them names its `dev/` path; oracles and holdout find the skill in its new place | link check over SKILL.md, references, README, INSTALL and dev/README: 114 references, one unresolved, `refs/library`, which `library.py import` creates |
+| 10 Frontmatter for every surface | name and description only | `license` and `compatibility` added (two of the six keys an upload accepts, per code.claude.com/docs/en/skills); the skill directory named as `${CLAUDE_SKILL_DIR}` for Claude Code | the packager refuses an added `version` key and a malformed name |
+| 11 Upload zip | none | `dev/tools/package_skill.py`: the folder as the zip's one top-level entry (claude.com/docs/skills/how-to.md), refs/files and caches left out, frontmatter keys, name rule, description 1,024 and compatibility 500 (agentskills.io/specification), LICENSE.txt equal to LICENSE, 30 MB uncompressed (platform.claude.com skills guide) | 93 files, 2,086,475 bytes uncompressed, 657,701 zipped |
+| 12 Licence, dependencies, install guide | README only | MIT LICENSE (2026, 0xfauzi) and its copy in the skill; INSTALL.md with the versions preflight printed (Python 3.13.16, lxml 6.1.3, Pillow 12.3.0, python-pptx 1.0.2, pdfplumber 0.11.10, uharfbuzz 0.57.0, LibreOffice 24.2.7.2, poppler 24.02.0, fontconfig 2.15.0), fonts and every install path; README rewritten for users with one example render (`docs/`), the measured claims and known gaps kept; the review history moves to dev/README.md | the skill installs nothing: no script runs pip, apt or brew (grep); preflight only prints commands |
+| 13 Junk | none committed (history checked for caches, binaries and blobs over 500 KB) | .gitignore for caches, outputs, refused decks, the third-party decks and local Claude state | |
+
+Known conflict, not resolved by code: the claude.ai help article on custom skills caps a
+description at 200 characters; the newer claude.com skill guide and the Agent Skills
+specification say 1,024. The description is 842 characters.
+
+Rebuilt from a FRESH extraction on main and here (`r8x/pub/rb/run.sh`, `r8x/pub/rb/fid.sh`
+with `FIDC=r8x/fidc`, `r8x/pub/genre.sh`): the 29 example result lines and the 10 genre lines
+(11 with the dense-ref extract) are identical on both. Against the previous round-8 rebuild
+(9d3f933, `r8x/b9`) every report, plan check and guide is identical and all 106 example and
+27 genre renders are pixel-identical: no worked example sets a General or rounded-zero label,
+and the restructure moves files without changing a byte the build reads. Against main, 100 of
+106 and 15 of 27 renders are identical, the same sets the verifier listed (the no-reference
+title band, fid-bcg-p15's rules, the genre content and bracket moves).
+
+Proofs from a fresh clone of the branch: `claude plugin validate .` and `--strict` pass;
+`claude plugin marketplace add <clone>` then `claude plugin install
+designing-presentations@pptx-skill` into a scratch config dir installs 0.8.0 (the cache copy's
+skills/ is byte-identical to the clone's); a headless session on that config, given only a
+brief, built a 2-page no-reference section (Harrow Valley Water) through the installed skill:
+PASS, 2 of 2 pages fit, package valid, one warning (LibreOffice's legend order on a stacked
+bar), leakage and judge "no reference", nothing written inside the skill. The reference
+validator `skills-ref` was not run: installing it was refused in this session; its rules
+(validator.py) are what the packager checks.
+
+ruff 0.16.9: 143 findings here, 144 on main; the two new findings in the packager fixed.
