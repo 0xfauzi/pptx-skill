@@ -224,7 +224,7 @@
      ],
      "chosen_form": "one stacked bar of the capital stack labelled in turns",
      "why": "a capital stack is read by seniority; one bar keeps the order and the proportions",
-     "marks": "first lien blue, notes light steel, equity grey; each layer labelled with amount and turns"
+     "marks": "first lien blue, notes light steel, equity grey; each layer labelled with amount and turns, the notes layer beside the bar with a leader because its three lines do not fit its 1.25x"
     },
     {
      "reader_must_see": "every tranche's size, leverage, price, maturity and terms in one place",
@@ -500,7 +500,7 @@
      ],
      "chosen_form": "value creation bridge",
      "why": "the committee asks whether returns rely on multiple expansion; a bridge shows a zero step there",
-     "marks": "costs in red, gains in blue, totals grey; each step labelled with its value; the zero multiple step labelled 0.0"
+     "marks": "costs in red, gains in blue, totals grey; each step's value in a row of text above the plot, over its bar (LibreOffice set chart labels with gaps inside the figures); no multiple step, as the subtitle says"
     },
     {
      "reader_must_see": "how IRR changes with an earlier or later exit at three exit multiples",
@@ -852,7 +852,7 @@
      ],
      "chosen_form": "sorted bars with the base exit as a line",
      "why": "the committee asks whether the exit is conservative; bars against the line answer it",
-     "marks": "bars grey as context; the base exit as a labelled blue line; values at the bar ends"
+     "marks": "bars grey as context, drawn from zero so their lengths compare; the base exit as a labelled blue line; values at the bar bases"
     }
    ]
   }

@@ -441,7 +441,7 @@ stack_chart = {
          "points": [{"index": 0, "label": {"text": f"First-lien TLB\n${m1(BASE['tlb0'])}m\n{xx(BASE['tlb0'] / E26)}"}}]},
         {"name": "Senior unsecured notes", "values": [round(BASE["notes0"] / E26, 2)], "fill_role": "color.accent4", "line_role": "color.surface",
          "line_width_pt": 0.75, "labels": {"show": True, "position": "center", "role": "type.data_label", "ink_role": "color.ink"},
-         "points": [{"index": 0, "label": {"text": f"Notes\n{xx(BASE['notes0'] / E26)}"}}]},
+         "points": [{"index": 0, "label": {"show": False}}]},  # three lines do not fit its 1.25x: labelled beside the stack (s2 annotations)
         {"name": "Equity", "values": [round(eq0 / E26, 2)], "fill_role": "color.accent3", "line_role": "color.surface",
          "line_width_pt": 0.75, "labels": {"show": True, "position": "center", "role": "type.data_label", "ink_role": "color.ink"},
          "points": [{"index": 0, "label": {"text": f"Equity\n${m1(eq0)}m\n{xx(eq0 / E26)}"}}]},
@@ -450,7 +450,7 @@ stack_chart = {
     ],
     "axes": {"category": {"visible": False}, "value": {"visible": False, "min": 0, "max": 10.9, "cross_between": "between"}},
     "gap_width": 12, "overlap": 100, "legend": "none", "plot_fill_role": "none", "title": "none",
-    "plot_area": {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0},
+    "plot_area": {"x": 0.0, "y": 0.0, "w": 0.6, "h": 1.0},
 }
 # the stack is drawn in turns of FY2026E EBITDA; the last segment is the fees inside total uses (not a source) - drop it
 stack_chart["series"] = stack_chart["series"][:3]
@@ -527,7 +527,13 @@ s2 = page("s2-structure", "Section 4  |  Leveraged finance and LBO  |  4.2 Trans
           "Sources and uses and pro forma capital structure", p2_body,
           "Source: sponsor financing commitment papers (illustrative), lender term sheets, sponsor model; all figures illustrative.",
           "Page 2 shows how the $1,260.0m price is paid for and what the capital structure looks like at close.",
-          charts={"stack": stack_chart})
+          charts={"stack": stack_chart},
+          annotations=[
+              {"id": "notes_lbl", "host": "stack", "kind": "arrow", "anchor": {"point": {"series": 1, "category": 0}}, "position": "right",
+               "gap_role": "space.lg", "line_role": "color.ink_muted", "line_width_pt": 0.75,
+               "label": {"text": f"Notes ${m1(BASE['notes0'])}m {xx(BASE['notes0'] / E26)}", "role": "type.data_label", "ink_role": "color.ink",
+                         "align": "left", "max_width_share": 0.3}},
+          ])
 
 # ================================================================ PAGE 3: five-year operating model
 hist3 = H[2:]   # FY2023A..FY2026E
@@ -871,10 +877,7 @@ bridge_chart = {
         {"name": "Step", "values": step_s, "fill_role": "color.accent1", "line_role": "none", "labels": {"show": False},
          "points": [{"index": 0, "fill_role": "color.accent3"}, {"index": 1, "fill_role": "color.negative"},
                     {"index": 4, "fill_role": "color.negative"}, {"index": 5, "fill_role": "color.negative"}]},
-        {"name": "Label", "values": [0.0] * 7, "fill_role": "none", "line_role": "none",
-         "labels": {"show": True, "position": "inside_base", "role": "type.data_label", "ink_role": "color.ink"},
-         "points": [{"index": i, "label": {"text": t}} for i, t in enumerate(lab)]},
-    ],
+    ],  # the figures are a row of text above the plot (s4 annotations): LibreOffice set chart labels in Arial 7 to 9pt with gaps inside the figures
     "axes": {"category": cat_axis(), "value": {"visible": False, "min": 0, "max": 1700, "cross_between": "between"}},
     "gap_width": 35, "overlap": 100, "legend": "none", "plot_fill_role": "none", "title": "none",
     "plot_area": {"x": 0.0, "y": 0.06, "w": 1.0, "h": 0.84},
@@ -936,7 +939,11 @@ s4 = page("s4-returns", "Section 4  |  Leveraged finance and LBO  |  4.4 Returns
           "Returns analysis: IRR and MOIC sensitivities", p4_body,
           "Source: sponsor model; returns to the sponsor after the management incentive plan, gross of fund fees and carry; all figures illustrative.",
           "Page 4 states what the committee earns in the base case and how far each assumption can move before the hurdle is missed.",
-          charts={"bridge": bridge_chart})
+          charts={"bridge": bridge_chart},
+          annotations=[
+              {"id": "bridge_vals", "host": "bridge", "kind": "category_row", "anchor": {"categories": [0, len(cats) - 1]}, "position": "above",
+               "gap_role": "space.xs", "cells": lab, "role": "type.data_label", "ink_role": "color.ink", "align": "center", "cell_width": "own"},
+          ])
 
 # ================================================================ PAGE 5: debt capacity and covenant headroom
 yrs5 = ["PF FY26"] + [f"FY{str(r['year'])[2:]}E" for r in R]
@@ -1195,7 +1202,7 @@ ref_chart = {
     "series": [{"name": "EV / EBITDA (x)", "values": [round(v, 2) for _, v in refs6], "fill_role": "color.accent3", "line_role": "none",
                 "labels": {"show": True, "position": "inside_base", "role": "type.data_label", "ink_role": "color.ink"},
                 "points": [{"index": i, "label": {"text": xx(v, 1)}} for i, (_, v) in enumerate(refs6)]}],
-    "axes": {"category": cat_axis(reverse=True), "value": {"visible": False, "min": 6, "max": 12.5, "cross_between": "between"}},
+    "axes": {"category": cat_axis(reverse=True), "value": {"visible": False, "min": 0, "max": 12.5, "cross_between": "between"}},
     "gap_width": 35, "overlap": 0, "legend": "none", "plot_fill_role": "none", "title": "none",
     "plot_area": {"x": 0.44, "y": 0.12, "w": 0.52, "h": 0.86},
 }
@@ -1220,7 +1227,7 @@ p6_body = region("body", "column", [
         exhibit("mcx", "Sponsor MOIC and IRR by exit route", "x and %; below the 2.5x MOIC hurdle in red", chart("moic", 1.0), weight=0.8),
         region("tr6", "column", [
             p6_notes,
-            exhibit("rfx", "Reference multiples against the base exit", f"x EBITDA; bars from 6.0x; {n_above} of {len(refs6)} sit above the 10.0x base exit (blue line)", chart("refm", 1.0), weight=1.0),
+            exhibit("rfx", "Reference multiples against the base exit", f"x EBITDA; {n_above} of {len(refs6)} sit above the 10.0x base exit (blue line)", chart("refm", 1.0), weight=1.0),
         ], gap="space.md", weight=0.9),
     ], gap="space.gutter", weight=1.0),
     region("bot6", "row", [

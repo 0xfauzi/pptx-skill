@@ -185,11 +185,15 @@ weights and figures with every text run paraphrased.
   margin on a line longer than about 2.6 million EMU (2.8 in). A table cell or text line
   that the renderer wraps for it is refused at render time (`renderer divergence`), not
   predicted before it.
-- **Carlito chart text.** LibreOffice draws Carlito (Calibri's stand-in) chart labels at 7pt
+- **Chart text spacing.** LibreOffice draws Carlito (Calibri's stand-in) chart labels at 7pt
   with collapsed word spaces ("Water andwastewater") and at 7.5 and 8pt with gaps inside
   words ("Wat er"); setting `kern` on the chart text changed nothing, and 8.5 and 9pt drew
   within the measured bounds. The committee book in the gallery sets its 7pt chart text in
-  Arial for this (`dev/PORT_AUDIT.md`, docs round 2).
+  Arial for this (`dev/PORT_AUDIT.md`, docs round 2). Liberation Sans (Arial) chart labels
+  are spaced unevenly too: figures such as "(30.0)" drew with gaps and overlaps between
+  glyphs of 0.25 to 0.42 of a space at 7, 7.5, 8, 8.5 and 9pt bold and at 7pt regular, where the
+  same figures as text boxes drew within 0.06 (docs round 3). The committee book's bridge
+  sets its figures as a row of text above the plot (`category_row`).
 - **Leakage and stated figures are reported, not refused.** The build lists every name,
   figure and phrase of the reference found in the new deck, and warns where a figure the
   plan's message states is not on the page; Claude removes or answers each in the final
