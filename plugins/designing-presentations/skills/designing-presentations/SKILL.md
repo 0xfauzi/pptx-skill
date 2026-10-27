@@ -23,8 +23,10 @@ data: every exhibit is reasoned out as a written brief before its spec.
 **What refuses, and what is evidence.** Only measurable defects refuse: text that does not
 fit, overlaps, contrast under 3:1, a bridge that does not tie (a table's totals row that
 does not is listed first), a literal where a role belongs, an invalid package, a render
-that is not what was written, a past deck's content, an invented number, text under the
-measured floor or the 7pt absolute floor. Everything else is your choice. A reference's
+that is not what was written, text under the measured floor or the 7pt absolute floor.
+Two checks report and never refuse: the reference's names, figures and phrases found in the
+new deck (leakage), and a figure the plan's message states that is not on its page; remove
+or answer each in the report. Everything else is your choice. A reference's
 habits (title register and length, where claims sit, variety, source lines, unlabelled
 marks, density) are evidence shown beside each choice; where a page departs, answer it in
 one line in the report. The corpus counts in the references (578 coded pages of 24

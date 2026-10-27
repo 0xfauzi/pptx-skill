@@ -2,8 +2,9 @@
 
 The skill is the folder `plugins/designing-presentations/skills/designing-presentations/`
 (`SKILL_DIR` below). It runs Python scripts and LibreOffice on the machine where Claude
-works, so that machine needs the requirements below. The skill installs nothing itself: `scripts/preflight.py` checks every requirement
-and prints the install command for whatever is missing, for you to run.
+works, so that machine needs the requirements below. The skill installs nothing itself:
+`scripts/preflight.py` checks every requirement and prints the install command for whatever
+is missing, for you to run.
 
 ## Requirements
 
@@ -101,11 +102,12 @@ The packager zips the files git tracks in the skill, as committed, and refuses b
 untracked or ignored file there, a tracked file changed since the last commit, and a skill
 an upload would reject: a frontmatter key outside the six the Agent Skills specification
 defines; a name that is not the folder's, holds "anthropic" or "claude" or an XML tag; a
-description over 200 characters (support.claude.com article 12512198) or with an XML tag; a
-frontmatter line that is not a one-line plain `key: value`; a compatibility over 500
-characters; a symbolic link; a `LICENSE.txt` that differs from the repository's `LICENSE`;
-a total over 30 MB (platform.claude.com skills guide, "Limits and constraints"). The reference decks (`refs/files`, git-ignored) are left out. Upload the zip in
-claude.ai under Customize > Skills and turn the skill on; code execution must be enabled.
+description that is empty, over 200 characters (support.claude.com article 12512198) or
+holds an XML tag; a frontmatter line that is not a one-line plain `key: value`; a
+compatibility over 500 characters; a symbolic link; a `LICENSE.txt` that differs from the
+repository's `LICENSE`; a total over 30 MB (platform.claude.com skills guide, "Limits and
+constraints"). The reference decks (`refs/files`, git-ignored) are left out. Upload the zip
+in claude.ai under Customize > Skills and turn the skill on; code execution must be enabled.
 Whether the sandbox there has LibreOffice and the packages above depends on the
 environment: ask Claude to run `scripts/preflight.py` first.
 
@@ -134,8 +136,8 @@ the skill runs there only as far as the pre-installed packages reach; preflight 
 The build compares a new deck against a panel of public decks of other firms (the judge's
 rarity basis and the leakage check's background). They are third-party files and are never
 shipped; fetch them once, into the skill's git-ignored `refs/files/`. `fetch.sh` is POSIX
-sh (run under dash, bash and bash --posix), needs curl and `sha256sum` or `shasum`, and checks every file
-against the sha256 in `refs/MANIFEST.md`:
+sh (run under dash, bash and bash --posix), needs curl and `sha256sum` or `shasum`, and
+checks every file against the sha256 in `refs/MANIFEST.md`:
 
 ```sh
 sh plugins/designing-presentations/skills/designing-presentations/refs/fetch.sh

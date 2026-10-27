@@ -12,12 +12,17 @@ reference's look, measure text with the installed fonts, solve the page geometry
 the .pptx with native charts and tables, render it with LibreOffice, read the render back
 and refuse a page whose defect can be measured.
 
-![Four pages from four showcase decks: an LBO committee book, a consulting strategy page, an earnings page and a public annual report](docs/showcase/hero.png)
+![Page 1 of an LBO investment committee book: seven headline figures over six tables and a bar chart, with a notes column](docs/showcase/hero.png)
 
-*One page from each of the four showcase decks below, all built with no reference: page 1
-of an LBO investment committee book, page 4 of a grocery format strategy, page 1 of a
-software company's quarterly results and page 2 of a national parks annual report. Every
-company and figure is fictional. Rendered by LibreOffice from the .pptx each build wrote.*
+*Page 1 of the LBO investment committee book in the gallery below, built with no
+reference. Click the image for the full-size render.*
+
+[![Three more showcase pages: a store network page from a grocery strategy, a margin page from an earnings deck and a visitors page from a parks annual report](docs/showcase/strip.png)](#gallery)
+
+*From the other three gallery decks: page 4 of a grocery format strategy, page 4 of a
+software company's quarterly results and page 1 of a national parks annual report. Every
+company and figure is fictional. Each image is LibreOffice's render of the .pptx its build
+wrote.*
 
 ## What it is good at
 
@@ -30,8 +35,8 @@ company and figure is fictional. Rendered by LibreOffice from the .pptx each bui
   committee book in the gallery sets five to nine tables and charts on each letter page
   (counted in its page specs).
 - **Native, editable exhibits.** Charts are PowerPoint charts with their data in the file;
-  tables are PowerPoint tables. Bridges, floating ranges, scatters and combo charts have
-  worked recipes in the skill's `references/chart-recipes.md`.
+  tables are PowerPoint tables. Bridges (one crossing zero among them), floating
+  valuation ranges, a mekko and a price-and-volume combo chart have worked recipes in the skill's `references/chart-recipes.md`.
 - **Annotation.** Reference lines, bands, brackets, callouts, badges, outline boxes, rows
   aligned to categories and any OOXML shape, placed at data positions on a chart or on
   table cells. A mark with no words says what explains it, or the build warns.
@@ -148,7 +153,7 @@ page specs, on the skill in this repository. Each build passed every gate and bo
 validations. The sources and the command that rebuilds each deck and image are in
 [dev/showcase/](dev/showcase/README.md).
 
-| Deck | Pages | Contact sheet | File |
+| Deck | Pages | All pages | File |
 |---|---|---|---|
 | LBO investment committee book: company overview, sources and uses, operating model, returns and sensitivities, debt capacity, exit (US letter) | 6 | [image](docs/showcase/lbo-committee-book.png) | [.pptx](docs/showcase/lbo-committee-book.pptx) |
 | Grocery store format strategy: market shift, format economics, customer segments, network rationalisation, three-year plan | 5 | [image](docs/showcase/grocery-strategy.png) | [.pptx](docs/showcase/grocery-strategy.pptx) |
@@ -178,12 +183,16 @@ weights and figures with every text run paraphrased.
   report. The leakage report's matching rules and thresholds are unmeasured, and its false
   positives have not been recorded across the scenarios.
 - **Source-line habit.** A data page without a source line warns where at least half of
-  three or more of the reference's data pages carry one; that line is a definition in
-  `scripts/build_deck.py`, not a measurement.
+  the reference's data pages carry one (counted over three or more data pages), and also
+  where the habit is unmeasured (the digest has no answer, or the reference has fewer than
+  three data pages); both lines are definitions in `scripts/build_deck.py`
+  (`SOURCE_LINE_MAJORITY`, `SOURCE_LINE_MIN_PAGES`), not measurements.
 - **Football-field ticks.** The football-field component sets each axis tick label
-  starting at its value (left-aligned, not centred on it) and drops a tick whose label
-  does not fit its interval (`components/football_field/expand.py`; on the keybank example
-  the $14.0 tick is not drawn). Read the axis on every render.
+  starting at its value (left-aligned, not centred on it), except the last, which it
+  right-aligns at the end of the track; it drops a tick whose label does not fit its
+  interval (`components/football_field/expand.py`). On the keybank example the $14 tick
+  is not drawn: the build report holds ticks `ff-tk0` to `ff-tk3` and `ff-tk5` and no
+  `ff-tk4` (`dev/proofs/keybank-section.build.json`). Read the axis on every render.
 - **Hidden slides** are read as evidence (the predecessor's rule); the draft lists them,
   and Claude excludes them by deleting them from a copy.
 - **Scanned PDFs** yield palette, ink, chrome, margins and line pitch from pixels, with
