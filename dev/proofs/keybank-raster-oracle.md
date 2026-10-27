@@ -77,3 +77,20 @@ Sizes those runs imply at cap height 0.716 em (run height: size): {4: 5.6, 5: 7.
 - /typography/families: match the letterforms by eye against fc-match candidates; a metric alias keeps fit measurement valid.
 - /typography/roles/*: sizes from the line heights above and the pages; weights, case and alignment by eye.
 - /composition, /tables, /charts: from the page images and the gallery crops.
+
+## Against the file (round 8)
+
+The report above re-run by `dev/oracles/raster_keybank.sh` on
+`mi_keybank_first_niagara_fig_ma.pptx` on round 8 printed the same values. Beside it, what
+`scripts/extract_style.py` reads from the same deck's XML (the round-8 rebuild's draft):
+
+| value | raster (pixels, 100 dpi) | the file (draft) | difference |
+|---|---|---|---|
+| surface | FFFFFF | FFFFFF | exact |
+| the navy of the rules and bands | 113D63 (raster accent1) | 113D63 (color.rule) | exact |
+| ink | 010101 | 000000 | 1 unit |
+| left margin | 388620 EMU (0.425 in) | 381000 EMU (0.417 in) | 0.008 in |
+| right margin | 502920 EMU (0.550 in) | 457200 EMU (0.500 in) | 0.050 in |
+| top margin | 434340 EMU (0.475 in) | 358617 EMU (0.392 in) | 0.083 in |
+| bottom margin | 617220 EMU (0.675 in) | 679212 EMU (0.743 in) | 0.068 in |
+| body size | 11.7pt (modal pitch 14pt / 1.2; 14.4pt on 3 of 11 pages) | 12.0pt (type.body) | 0.3pt |

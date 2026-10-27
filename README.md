@@ -16,8 +16,8 @@ file says, a past deck's content, an invented number.
 
 ![A page of the no-reference credit example, rendered](docs/no-reference-credit-p1.png)
 
-*Page 1 of `plugins/designing-presentations/skills/designing-presentations/examples/no-reference-credit.*`: a two-page credit committee section on a
-fictional railroad, built with no reference, its look reasoned out from the brief. Rendered
+*Page 1 of `examples/no-reference-credit.*` in the skill: a two-page credit committee
+section on a fictional railroad, built with no reference, its look reasoned out from the brief. Rendered
 by LibreOffice from the .pptx the build wrote.*
 
 ## Install
@@ -30,15 +30,18 @@ by LibreOffice from the .pptx the build wrote.*
 ```
 
 From a shell: `claude plugin marketplace add 0xfauzi/pptx-skill` then
-`claude plugin install designing-presentations@pptx-skill`. On Claude Code 2.1.292 or later
-one line does both: `/plugin install designing-presentations --marketplace 0xfauzi/pptx-skill`.
-The skill then loads as `/designing-presentations:designing-presentations`, and Claude uses
+`claude plugin install designing-presentations@pptx-skill`. One line does both: in a session
+`/plugin install designing-presentations --marketplace 0xfauzi/pptx-skill` (Claude Code
+2.1.275 or later), from a shell `claude plugin install designing-presentations --marketplace
+0xfauzi/pptx-skill` (2.1.292 or later). The install copies the plugin folder only, never
+`dev/`; where it lands and how to fetch the judge's panel again after an update:
+[INSTALL.md](INSTALL.md). The skill then loads as `/designing-presentations:designing-presentations`, and Claude uses
 it on its own when a request asks for slides.
 
 ### Claude Code, by hand
 
-Copy (or symlink) `plugins/designing-presentations/skills/designing-presentations/` into `~/.claude/skills/` for every
-project, or into a project's `.claude/skills/`. The directory name must stay
+Copy (or symlink) `plugins/designing-presentations/skills/designing-presentations/` into
+`~/.claude/skills/` for every project, or into a project's `.claude/skills/`. The directory name must stay
 `designing-presentations`, the skill's `name`.
 
 ### claude.ai
@@ -51,7 +54,9 @@ python3 dev/tools/package_skill.py          # writes dist/designing-presentation
 ```
 
 The zip holds the `designing-presentations/` folder as its one top-level entry, as claude.ai
-asks, without the third-party reference decks.
+asks: the files git tracks there, as committed, without the third-party reference decks. The
+packager refuses an untracked or ignored file in the skill and anything an upload would
+reject (INSTALL.md lists the rules).
 
 ### Claude API
 
@@ -68,40 +73,42 @@ built and measured on, and how to fetch the judge's panel of public decks.
 
 Python 3.11 or later with lxml, Pillow, python-pptx and pdfplumber (uharfbuzz optional, a
 better text ruler); LibreOffice, poppler and fontconfig. The skill installs nothing: run
-`python3 plugins/designing-presentations/skills/designing-presentations/scripts/preflight.py` and it lists what is
-missing with the install command for your platform, for you to run. Versions measured, and
+`scripts/preflight.py` in the skill and it lists what is missing with the install command for your platform, for you to run. Versions measured, and
 fonts: [INSTALL.md](INSTALL.md).
 
 ## Examples
 
-Worked inputs ship in `plugins/designing-presentations/skills/designing-presentations/examples/`: a four-page section, an
-annotated page, a bridge and a round trip on a bank pitch book (pptx); two pages on a
-McKinsey board PDF; and two decks with no reference at all (a board review and a dense
-credit paper), each with its brief, figures script, plan, completion and page specs. Their
-build reports are in `dev/proofs/`.
+Worked inputs ship in the skill's `examples/`: a four-page section, an annotated page, a
+bridge and a round trip on a bank pitch book (pptx); two pages on a McKinsey board PDF; and
+two decks with no reference at all (a board review and a dense credit paper), each with its
+brief, figures script, plan, completion and page specs. Their build reports are in
+`dev/proofs/`. The reference examples are derived from public decks (the bank pitch book is
+a Mergers and Inquisitions training deck; the PDF a public board packet); the new pages
+carry their own text, and the round trip, which rebuilds the bank deck's own page 3, keeps
+its roles, weights and figures with every text run paraphrased.
 
 ## What was measured
 
 Every number below was produced on this corpus by a script in the session that built the
-skill. None is estimated.
+skill, and each cites the file that holds it. None is estimated.
 
-| Claim | Measurement |
-|---|---|
-| The judge tells firms apart | 152 of 165 held-out slides over 8 firms filed correctly with the shipped weights, 151 with weights re-fitted in the same run, 132 with equal weights (chance bound 29; weights fitted on the other half of the same corpus, judged leave-one-slide-out, single-slide decks split by deck, raster pages not scored; firms in `dev/oracles/calibration-firms.txt`). The three Mergers and Inquisitions books are one firm (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same style, not as rivals |
-| The judge is not fooled by copying the master | a master-reuse deck, which inherits the reference master verbatim, is flagged as off-style |
-| The judge is not fooled by a wreck in the reference's clothes | Five decks a rater calls wrong (keybank's shapes at random positions, all stacked at one point, nine random boxes a page, a wall of text, every box overflowing) once filed under keybank at 0.013 to 0.192; they now carry `overlap` or `overflow` at 1.0 and fail the layout gate |
-| The layout port is the predecessor's solver | 383 boxes over 14 specimen slides at three scales: maximum difference 0 EMU; validation findings agree on 14 of 14 |
-| The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback the sandbox has |
-| The gallery port is the predecessor's gallery | Component, candidate, cluster, crop and exemplar counts equal the predecessor's recorded manifests on three decks; crop rows match 12/12, 14/14 and 22/24; every exemplar skeleton byte-identical |
-| The extractor tracks the predecessor's draft | Title, body, emphasis and caption sizes, surface and ink equal the predecessor's on jazz, keybank, netflix and exhibits; 47 of 160 compared values differ (h1/h2 sizes on two decks, rule and muted ink by deliberate change, spacing steps on two), listed in `dev/PORT_AUDIT.md` and re-runnable with `dev/oracles/diff_oracle.py` |
-| New pages read as the reference (judge only) | keybank: 4 generated pages with a novel football-field component, 0.090 against the reference with the reference's own pages at 0.055 to 0.372, every page fit, filed (`dev/proofs/keybank-section.build.json`). A 17-page McKinsey board PDF (CalSTRS, 2024; a public board packet, not under `refs/`): 2 generated pages at 0.313 against a reference spread of 0.082 to 0.355: every page fit, not filed (`dev/proofs/mckinsey-pdf.build.json`). In a blind round on an earlier build the rater caught every generated page in two firms the judge had filed, so a filed deck is necessary, not sufficient (`dev/evals/README.md`) |
-| The chain reproduces the reference's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: 0.056, inside the reference's own spread; the render matches the original to the eye. McKinsey PDF page 13: 0.097, filed, while the render lost the ring diagram, the gradient ground and the block positions: the number does not see it |
-| PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders |
-| The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and accent exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.08 in, the top and bottom rules at the walk's positions, body 11.7pt from a 14.4pt pitch against 12pt in the file |
+| Claim | Measurement | Proof |
+|---|---|---|
+| The judge tells firms apart | 152 of 165 held-out slides over 8 firms filed correctly with the shipped weights, 151 with weights re-fitted in the same run, 132 with equal weights (chance bound 29; weights fitted on the other half of the same corpus, judged leave-one-slide-out, raster pages not scored). The three Mergers and Inquisitions books are one firm (one fictional bank, one master) and the judge cannot tell them apart; it reports them as the same style, not as rivals | `scripts/fingerprint.py`, the `DEFAULT_WEIGHTS` docstring (re-run with `fingerprint.py calibrate`); firms in `dev/oracles/calibration-firms.txt` |
+| The judge is not fooled by copying the master | a master-reuse deck, which inherits the reference master verbatim, is flagged as off-style | `dev/PORT_AUDIT.md`, row "Style fingerprint" |
+| The judge is not fooled by a wreck in the reference's clothes | Five decks a rater calls wrong (keybank's shapes at random positions, all stacked at one point, one page-sized text box a page, nine random boxes a page, every run repeated twelve times) once filed under keybank at 0.013 to 0.192; each now reads overlap or overflow at 1.0 and fails the layout gate | `dev/oracles/README.md`, "build_gaming.py"; `scripts/fingerprint.py`, the `DEFAULT_WEIGHTS` docstring |
+| The layout port is the predecessor's solver | 383 boxes over 14 specimen slides at three scales: maximum difference 0 EMU; validation findings agree on 14 of 14 | `dev/oracles/README.md`, "oracle_compare.py" |
+| The text ruler is the measured one | 90 of 90 recorded wrap cases agree with HarfBuzz; 89 of 90 with the Pillow fallback the sandbox has | `dev/oracles/ruler_agreement.txt` |
+| The gallery port is the predecessor's gallery | Component, candidate, cluster, crop and exemplar counts equal the predecessor's recorded manifests on three decks; crop rows match 12 of 12, 14 of 14 and 22 of 24; every exemplar skeleton identical | `dev/oracles/README.md`, "gallery_judge.py" |
+| The extractor tracks the predecessor's draft | Title, body, emphasis and caption sizes, surface and ink equal the predecessor's on jazz, keybank, netflix and exhibits; 47 of 160 compared values differ (h1/h2 sizes on two decks, rule and muted ink by deliberate change, spacing steps on two), re-runnable with `dev/oracles/diff_oracle.py` | `dev/PORT_AUDIT.md`, row "OOXML reader with inheritance" |
+| New pages read as the reference (judge only) | keybank: 4 generated pages with a novel football-field component, 0.083 against the reference with the reference's own pages at 0.055 to 0.372, every page fit, filed. A 17-page McKinsey board PDF (CalSTRS, 2024; a public board packet, not under `refs/`): 2 generated pages at 0.321 against a reference spread of 0.082 to 0.355: every page fit, not filed. In a blind round on an earlier build the rater caught every generated page in two firms the judge had filed, so a filed deck is necessary, not sufficient | `dev/proofs/keybank-section.build.json`, `dev/proofs/mckinsey-pdf.build.json` (`judge.total`, `judge.reference_spread`, `judge.filed_under_reference`); the blind round in `dev/evals/README.md` |
+| The chain reproduces the reference's own page | keybank slide 3 imported as roles and weights, re-solved and emitted on the keybank master: fit, 0.056, filed, inside the reference's own spread; the render matches the original to the eye. McKinsey PDF page 13: 0.100, filed, while the render lost the ring diagram and the block positions: the number does not see it | `dev/proofs/kb3-rt.build.json`; `dev/proofs/mckinsey-p13-roundtrip.md` |
+| PDF triage tells scans from vector exports | 19 reference PDFs classified per page; the 8 page-image decks (EDGAR prints, a bound filing, OCR scans, a stamped scan) come out `raster`, the 11 vector exports `vector`, with no deck misfiled against a reading of its renders | `dev/PORT_AUDIT.md`, row "PDF triage" |
+| The raster instrument reads a render back | keybank rendered at 100 dpi and re-measured from pixels: surface and the navy exact, ink within 1 unit, left margin within 0.01 in, the other sides within 0.09 in, body 11.7pt from a modal 14pt pitch against 12pt in the file | `dev/proofs/keybank-raster-oracle.md`, "Against the file" |
 
-The McKinsey pages are not filed; the judge's components carry the gap (sizes off the
-reference's histogram, fills), and the renders show a flat navy where the reference draws a
-gradient.
+The McKinsey pages are not filed; the judge's components carry the gap: fills 0.855, the
+size histogram 0.698 and the bold ratio 0.537 against the reference (`judge.components` in
+`dev/proofs/mckinsey-pdf.build.json`).
 
 ## Known gaps
 
@@ -116,8 +123,9 @@ gradient.
 - Hidden slides are read as evidence (the predecessor's rule); the digest lists them and the agent
   excludes them by deleting them from a copy.
 - A scanned PDF yields palette, ink, chrome, margins and line pitch from pixels (confidence
-  capped at 0.5) and nothing about faces; the agent names the family by eye.
-- The judge was calibrated on 19 public decks from 8 firms and does not track a human
+  capped at 0.5 by `scripts/raster_style.py`) and nothing about faces; the agent names the family by eye.
+- The judge was calibrated on 8 firms: 16 public decks and 20 one-slide pages of the
+  predecessor's taste spike (`dev/oracles/calibration-firms.txt`), and does not track a human
   rater; the blind round in `dev/evals/README.md` is the success measure.
 - The scenarios in `dev/evals/` have not yet been run with fresh agents on every model tier.
 
@@ -140,8 +148,8 @@ docs/                             the image above
 
 ## Licence
 
-MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill carries the same text as
-`plugins/designing-presentations/skills/designing-presentations/LICENSE.txt`. `scripts/confusable_letters.json` holds a
+MIT, copyright 2026 0xfauzi: [LICENSE](LICENSE). The skill carries the same text as its
+`LICENSE.txt`. `scripts/confusable_letters.json` holds a
 subset of the Unicode confusables data under the Unicode License v3, whose notice it carries
 in full. The public reference decks `refs/fetch.sh` downloads belong to their publishers
 and are never committed or shipped (`refs/MANIFEST.md` names each source).

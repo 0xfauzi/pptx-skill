@@ -178,8 +178,8 @@ would lose and whether it fits at full scale. Take a candidate it marks (a conte
 the reference's most used layout, with a title, text and an exhibit, nothing lost,
 fitting); with none, the page that loses least, and name each loss in the report. Read
 `judge.total` against `judge.reference_spread`, then put the render beside the original:
-the distance does not see what was lost (a consulting page round-tripped at 0.097, filed,
-with its diagram and gradient gone). How to choose and read it:
+the distance does not see what was lost (a consulting page round-tripped at 0.100, filed,
+with its ring diagram and block positions gone). How to choose and read it:
 [references/templates-and-chrome.md](references/templates-and-chrome.md), "The round trip".
 
 ### 5. Section plan
