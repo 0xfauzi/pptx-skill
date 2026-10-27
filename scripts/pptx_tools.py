@@ -41,6 +41,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+from collections import Counter
 from pathlib import Path
 
 from lxml import etree
@@ -108,11 +109,9 @@ def sniff(path: str) -> None:
     if head[:2] != b"PK":
         raise SystemExit(f"{path}: not a zip, so not a .pptx")
     try:
-        pkg = Package(path)  # the member and size caps, before python-pptx reads a byte
+        Package(path)  # the caps and ppt/presentation.xml, before python-pptx reads a byte
     except PackageRefused as exc:
         raise SystemExit(f"refused: {exc}") from None
-    if "ppt/presentation.xml" not in pkg.names:
-        raise SystemExit(f"{path}: a zip without ppt/presentation.xml; not a presentation")
 
 
 def slide_count(path: str) -> int:
@@ -745,8 +744,8 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
         source = (folder + "/" if folder else "") + n.rsplit("/", 1)[-1].removesuffix(".rels")
         ids = [rel.get("Id") for rel in rels]
         declared[source] = set(ids)
-        for rid in sorted({i for i in ids if ids.count(i) > 1}):
-            problems.append(f"{n}: relationship Id {rid} is declared {ids.count(rid)} times")
+        for rid, k in sorted((i, k) for i, k in Counter(ids).items() if k > 1):
+            problems.append(f"{n}: relationship Id {rid} is declared {k} times")
         for rel in rels:
             if rel.get("TargetMode") == "External":
                 continue
@@ -803,7 +802,7 @@ def validate(path: str, render: bool, emit: bool = False, guide: dict | None = N
         if root is None:
             continue
         ids = [c.get("id") for c in root.iter(qn("p:cNvPr"))]
-        dup = {i for i in ids if ids.count(i) > 1}
+        dup = {i for i, k in Counter(ids).items() if k > 1}
         if dup:
             problems.append(f"{sp}: duplicate shape ids {sorted(dup)}")
         tree = root.find(f"{qn('p:cSld')}/{qn('p:spTree')}")

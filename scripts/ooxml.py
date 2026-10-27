@@ -73,6 +73,15 @@ CELL_MARGIN_DEFAULTS = {"marL": 91440, "marR": 91440, "marT": 45720, "marB": 457
 #: is refused by name, never read in part
 MAX_ZIP_MEMBERS = 5000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
+#: the cost of parsing is the element count, not the byte size: a 718 KB package can inflate
+#: under the member cap to 62.9 MB of real elements, which held 768 MB and ran past five
+#: minutes. Measured, round 8: the largest of 39 packages (refs/files and deckgen's fixtures)
+#: holds 24,263 elements over all its XML parts (themes.pptx; the largest part 2,938, a jazz
+#: slide); a package of 991,964 validates in 4.4 to 6.7 s at 465 MB, where the 62.9 MB one
+#: took 22.8 s at 1,490 MB with no cap (r8x/pub/bomb/rss.txt, r8x/pub/brk-3to6.txt). The
+#: cap is 41 times that largest package
+MAX_PACKAGE_ELEMENTS = 1_000_000
+XML_MEMBER_SUFFIXES = (".xml", ".rels", ".vml")
 EMU_PER_PT = 12700
 
 
@@ -96,7 +105,8 @@ def _local(el: etree._Element) -> str:
 
 
 class PackageRefused(cli.Refused):
-    """An untrusted package this reader will not open: not a zip, or over a zip-bomb cap."""
+    """An untrusted package this reader will not open: not a zip, not a presentation, or
+    over a zip-bomb cap."""
 
 
 class Package:
@@ -115,7 +125,21 @@ class Package:
         for info in infos:
             if info.file_size > MAX_MEMBER_BYTES:
                 raise PackageRefused(f"{path}: {info.filename} declares {info.file_size} bytes uncompressed, over the {MAX_MEMBER_BYTES} byte cap")
+        elements = 0
+        for info in infos:
+            if not info.filename.lower().endswith(XML_MEMBER_SUFFIXES):
+                continue
+            with self.zip.open(info) as fh:
+                # start tags: a '<' that opens no end tag, declaration or comment (a pair split
+                # across two reads counts once more, never less)
+                while chunk := fh.read(1 << 20):
+                    elements += chunk.count(b"<") - chunk.count(b"</") - chunk.count(b"<?") - chunk.count(b"<!")
+            if elements > MAX_PACKAGE_ELEMENTS:
+                raise PackageRefused(f"{path}: over {MAX_PACKAGE_ELEMENTS} XML elements by {info.filename}, past the element cap "
+                                     "(the largest measured deck holds 24,263); it is not parsed")
         self.names = set(self.zip.namelist())
+        if "ppt/presentation.xml" not in self.names:
+            raise PackageRefused(f"{path}: a zip without ppt/presentation.xml; not a presentation")
         self._roots: dict[str, etree._Element] = {}
         self._rels: dict[str, dict[str, tuple[str, str]]] = {}
         self._parser = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)

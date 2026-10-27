@@ -67,8 +67,8 @@ Design starts from the reader and the data; a reference governs the look only:
 present, each text field a phrase of at least BRIEF_MIN_WORDS distinct words (a form's name
 at least one; placeholders such as TBD or n/a and a lone letter do not count), at least two
 distinct forms considered (_form_key: case, punctuation, fullwidth letters, a leading
-article and a plural s folded; a form spelt in two scripts refused), a chosen form that is
-one of them, `in_reference_look` a phrase when given (and not given on a guide with no
+article, a plural s and look-alike letters of another script folded, UTS #39's skeleton),
+a chosen form that is one of them, `in_reference_look` a phrase when given (and not given on a guide with no
 reference), and no brief given twice across the plan. The key it replaced,
 `nearest_house_exhibit`, is refused by name.
 
@@ -526,41 +526,29 @@ def _phrase_error(value, where: str, least: int) -> str | None:
     return None
 
 
-def _mixed_scripts(text: str) -> list[str]:
-    """The words of a text that mix letters of two scripts (a Cyrillic "а" inside a Latin
-    word reads the same and is another word to a comparison)."""
-    out = []
-    for word in re.findall(r"[^\W\d_]+", unicodedata.normalize("NFKC", text)):
-        scripts = {_script_of(ch) for ch in word} - {None}
-        if len(scripts) > 1:
-            out.append(word)
-    return out
+#: UTS #39's confusables for letters, marks and digits whose prototype is ASCII (a Cyrillic
+#: "а" is "a", a Greek "ο" is "o"; a Greek "Δ" has none and stays itself), its version and
+#: licence in the file
+CONFUSABLES = json.loads((Path(__file__).resolve().parent / "confusable_letters.json").read_text(encoding="utf-8"))["map"]
 
 
-#: scripts written together in one word of one language: Japanese sets kanji beside kana
-#: (棒グラフ, bar graph), so Han, Hiragana and Katakana are one script for this check
-_SCRIPT_GROUPS = {"CJK": "JAPANESE_OR_CHINESE", "HIRAGANA": "JAPANESE_OR_CHINESE", "KATAKANA": "JAPANESE_OR_CHINESE",
-                  "KATAKANA-HIRAGANA": "JAPANESE_OR_CHINESE", "IDEOGRAPHIC": "JAPANESE_OR_CHINESE", "HALFWIDTH": "JAPANESE_OR_CHINESE"}
-#: letters that belong to no one script (a modifier apostrophe, U+02BC, in Donʼt; a combining mark)
-_NO_SCRIPT = ("MODIFIER", "COMBINING")
-
-
-def _script_of(ch: str) -> str | None:
-    first = unicodedata.name(ch, "?").split(" ")[0]
-    if first in _NO_SCRIPT:
-        return None
-    return _SCRIPT_GROUPS.get(first, first)
+def _skeleton(word: str) -> str:
+    """A word as UTS #39 skeletons it (decompose, map each character to its prototype,
+    decompose again): two spellings that read the same share one, whatever their scripts."""
+    mapped = "".join(CONFUSABLES.get(ch, ch) for ch in unicodedata.normalize("NFD", word))
+    return unicodedata.normalize("NFD", mapped).casefold()
 
 
 def _form_key(form: str) -> str:
     """A form's name for telling two apart: compatibility forms folded (fullwidth letters),
-    case, spacing and punctuation left out, a leading article dropped, and each word's
-    plural s (on words of four letters or more, not "ss") dropped: "Bar charts" and "the
-    BAR CHART." are one form."""
+    case, spacing and punctuation left out, a leading article dropped, each word's plural s
+    (on words of four letters or more, not "ss") dropped, and each word read as its
+    skeleton (_skeleton): "Bar charts", "the BAR CHART." and a "bаr chart" spelt with a
+    Cyrillic "а" are one form."""
     words = re.findall(r"[^\W_]+", unicodedata.normalize("NFKC", form).casefold())
     if words and words[0] in ("a", "an", "the"):
         words = words[1:]
-    return " ".join(w[:-1] if len(w) >= 4 and w.endswith("s") and not w.endswith("ss") else w for w in words)
+    return " ".join(_skeleton(w[:-1] if len(w) >= 4 and w.endswith("s") and not w.endswith("ss") else w) for w in words)
 
 
 def _brief_key(brief: dict) -> str:
@@ -619,11 +607,10 @@ def brief_errors(brief, where: str, guide: dict) -> list[str]:
                     names.append(_form_key(f["form"]))
             distinct = sorted({n for n in names if n})
             if len(distinct) < 2:
-                out.append(f"{where} forms_considered: {len(distinct)} distinct form{'' if len(distinct) == 1 else 's'} ({distinct}); "
+                written = [f["form"] for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str)]
+                out.append(f"{where} forms_considered: {len(distinct)} distinct form{'' if len(distinct) == 1 else 's'} ({written} read as "
+                           f"{'one' if len(distinct) == 1 else len(distinct)}); "
                            "weigh at least two forms for what the reader must see, each with why not or why")
-            mixed = [w for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str) for w in _mixed_scripts(f["form"])]
-            if mixed:
-                out.append(f"{where} forms_considered: {mixed} mix{'es' if len(mixed) == 1 else ''} letters of two scripts; spell each form in one")
             chosen = brief.get("chosen_form")
             if isinstance(chosen, str) and distinct and _form_key(chosen) not in distinct:
                 weighed = [f["form"] for f in forms if isinstance(f, dict) and isinstance(f.get("form"), str)]
@@ -776,7 +763,7 @@ def register_error(stated, where: str) -> str | None:
     named = '|'.join(t for t in VOCABULARY['title_register'] if t != OTHER_TERM)
     if not (isinstance(stated, str) and _words(stated) >= 1):
         return f"{where}: the title's register in words (or a term the reference's titles are coded in: {named}), not {stated!r}"
-    if _form_key(stated) == OTHER_TERM:
+    if _form_key(stated) == _form_key(OTHER_TERM):
         return f"{where}: say what the register is, in words (\"a label and a figure\"): a bare {stated!r} names nothing"
     return None
 

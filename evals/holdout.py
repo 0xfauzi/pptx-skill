@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """A copy of the skill with the worked examples of the decks under test held out.
 
-    python3 evals/holdout.py --reference REF.pptx [--reference REF2.pdf ...] [--alias WORD ...] --out DIR
+    python3 evals/holdout.py [--reference REF.pptx ...] [--alias WORD ...] --out DIR
+
+With no --reference the copy is for a run with no reference deck: no worked example is
+held out (none is made from a deck under test), and evals/ is still left out.
 
 The skill ships worked examples (a completion, a digest, deck specs, build proofs) made
 from public reference decks. An evaluation that tests the skill on one of those decks
@@ -75,7 +78,8 @@ def provenance() -> dict:
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--reference", action="append", required=True, help="a reference deck the evaluation tests on (repeatable)")
+    ap.add_argument("--reference", action="append", default=[],
+                    help="a reference deck the evaluation tests on (repeatable; none for a run with no reference)")
     ap.add_argument("--alias", action="append", default=[], help="another word the skill's files may use for a tested deck (repeatable)")
     ap.add_argument("--out", required=True, help="a new or empty directory outside the skill")
     args = ap.parse_args(argv)
@@ -153,7 +157,7 @@ def main(argv: list[str]) -> int:
             hit = [a for a in aliases if a and a in low]
             if hit:
                 naming.append({"file": str(p.relative_to(out)), "line": i, "names": hit})
-    print(json.dumps({"out": str(out), "tested": sorted(tested.values()),
+    print(json.dumps({"out": str(out), "tested": sorted(tested.values()) or "no reference: a run with no reference deck",
                       "held_out": held or "nothing: no example of examples/PROVENANCE.json is made from a deck given",
                       "untested_examples_kept": sorted(n for n in prov["references"] if n not in held),
                       "panel_withheld": withheld or "nothing: no file of refs/files is a deck given",
