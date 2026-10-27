@@ -81,7 +81,8 @@ MAX_MEMBER_BYTES = 64 * 1024 * 1024
 #: took 22.8 s at 1,490 MB with no cap (r8x/pub/bomb/rss.txt, r8x/pub/brk-3to6.txt). The
 #: cap is 41 times that largest package
 MAX_PACKAGE_ELEMENTS = 1_000_000
-XML_MEMBER_SUFFIXES = (".xml", ".rels", ".vml")
+#: the byte order marks a counted member may open with (UTF-8, UTF-16 LE and BE)
+XML_BOMS = (b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff")
 EMU_PER_PT = 12700
 
 
@@ -102,6 +103,26 @@ def _local(el: etree._Element) -> str:
 
 
 # --- package ----------------------------------------------------------------------
+
+
+def _xml_head(fh) -> bytes | None:
+    """The member's bytes from its first byte that is not a byte order mark, whitespace or
+    NUL (which hold no '<'), when that byte is '<'; None when it is anything else (the member
+    cannot open as XML in UTF-8 or UTF-16) or the member is empty."""
+    head = fh.read(64)
+    for bom in XML_BOMS:
+        if head.startswith(bom):
+            break
+    else:
+        bom = b""
+    rest = head[len(bom):]
+    while True:
+        rest = rest.lstrip(b" \t\r\n\x00")
+        if rest:
+            return rest if rest.startswith(b"<") else None
+        rest = fh.read(1 << 16)
+        if not rest:
+            return None
 
 
 class PackageRefused(cli.Refused):
@@ -125,15 +146,22 @@ class Package:
         for info in infos:
             if info.file_size > MAX_MEMBER_BYTES:
                 raise PackageRefused(f"{path}: {info.filename} declares {info.file_size} bytes uncompressed, over the {MAX_MEMBER_BYTES} byte cap")
+        # every member lxml could parse is counted, by its first bytes and never by its name:
+        # a relationship may name any member, so a renamed part is parsed all the same, and
+        # root() parses only what was counted here
         elements = 0
+        self.xml_parts: set[str] = set()
         for info in infos:
-            if not info.filename.lower().endswith(XML_MEMBER_SUFFIXES):
-                continue
             with self.zip.open(info) as fh:
-                # start tags: a '<' that opens no end tag, declaration or comment (a pair split
-                # across two reads counts once more, never less)
-                while chunk := fh.read(1 << 20):
+                chunk = _xml_head(fh)
+                if chunk is None:
+                    continue
+                self.xml_parts.add(info.filename)
+                while chunk:
+                    # start tags: a '<' that opens no end tag, declaration or comment (a pair
+                    # split across two reads counts once more, never less)
                     elements += chunk.count(b"<") - chunk.count(b"</") - chunk.count(b"<?") - chunk.count(b"<!")
+                    chunk = fh.read(1 << 20)
             if elements > MAX_PACKAGE_ELEMENTS:
                 raise PackageRefused(f"{path}: over {MAX_PACKAGE_ELEMENTS} XML elements by {info.filename}, past the element cap "
                                      "(the largest measured deck holds 24,263); it is not parsed")
@@ -146,6 +174,10 @@ class Package:
 
     def root(self, part: str) -> etree._Element:
         if part not in self._roots:
+            if part in self.names and part not in self.xml_parts:
+                # never handed to lxml: its encoding sniffing reads more than UTF-8 and UTF-16,
+                # and what it would read here was not counted
+                raise etree.XMLSyntaxError(f"{part}: its first byte is not '<'; not read as XML", 4, 1, 1)
             self._roots[part] = etree.fromstring(self.zip.read(part), self._parser)
         return self._roots[part]
 

@@ -33,7 +33,6 @@ import subprocess
 import sys
 import tempfile
 import unicodedata
-import zipfile
 from bisect import bisect_right
 from pathlib import Path
 
@@ -54,12 +53,14 @@ NON_DRAWING_CATEGORIES = frozenset({"Cc", "Cf", "Cn", "Co", "Cs", "Zl", "Zp", "Z
 
 def declared_fonts(pptx: Path) -> set[str]:
     names: set[str] = set()
-    with zipfile.ZipFile(pptx) as z:
-        for member in z.namelist():
-            if not member.endswith(".xml") or not member.startswith("ppt/"):
+    # through ooxml.Package, the one reader that holds the zip-bomb and element caps
+    pkg = ooxml.Package(str(pptx))
+    with pkg.zip:
+        for member in sorted(pkg.xml_parts):
+            if not member.startswith("ppt/"):
                 continue
             try:
-                root = etree.fromstring(z.read(member), etree.XMLParser(resolve_entities=False, no_network=True))
+                root = pkg.root(member)
             except etree.XMLSyntaxError:
                 continue
             for tag in ("latin", "ea", "cs", "buFont"):  # a bullet font is a face too (Wingdings squares)
