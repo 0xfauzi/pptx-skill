@@ -137,7 +137,7 @@ If you set `CLAUDE_CODE_PLUGIN_CACHE_DIR`, the cache is in that folder. If you s
 release, the skill is at this path:
 
 ```
-~/.claude/plugins/cache/pptx-skill/designing-presentations/0.9.0/skills/designing-presentations/
+~/.claude/plugins/cache/pptx-skill/designing-presentations/0.10.0/skills/designing-presentations/
 ```
 
 `claude plugin list` shows the installed plugins. An update installs the new version
