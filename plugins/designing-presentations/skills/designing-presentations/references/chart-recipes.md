@@ -417,6 +417,12 @@ horizontal bar the line is vertical and its label positions are the vertical set
 (`end_outside`, `end_right`, `end_left`, `start_right`, `start_left`); `end_below` is a
 horizontal line's.
 
+To keep the value axis under the plot, list the methods bottom-up (the first category is
+drawn lowest) with `reverse: false`. To print each range as a "$x to $y" column beside
+the bars, hide the series' labels and draw a `category_row` annotation at `position`
+`right`, one text cell per method (section "Rows aligned to categories"). Proven on:
+`examples/keybank-section.deck.json` page `s3-football` (seven methods, $6 to $16).
+
 ## Widths set by the layout: one full-height column per segment (worked: a mekko)
 
 A native chart cannot vary category widths, which is the point of a mekko. Approximate

@@ -56,9 +56,8 @@ Element kinds: text (paragraphs: role, text, bullet_level|null); table (columns
 header_role, cell_role, cell_padding_role|null; a width_share is the column's exact
 share of the table width, a min_width_role a spacing role it never narrows below, and
 the fitter still measures every cell against both and reports any deficit); image | chart | rule (optional size {width_emu|null,
-height_emu|null}: a measured extent, null = flexible). Text takes no height; a width on text
-is a no-wrap label's measured extent, and every paragraph must
-set on one line in it (sized_text_refusal, violation sized_text_wraps). Every element may carry
+height_emu|null}: a measured extent, null = flexible). Text takes no size
+(sized_text_refusal). Every element may carry
 weight (flex share, default equal) and scale_class ("scaling" | "fixed": type
 resolves at s = 1). Grid tracks are uniform. Node ids are unique and carry no '#'.
 
@@ -577,17 +576,15 @@ def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
 
 def sized_text_refusal(node_id: Any, size: Mapping[str, Any]) -> str | None:
     """The one rule for a size on text that a page spec writes (the build's
-    own title band, build_deck.prepare_page, is the build's, not the spec's). A height would
-    be a coordinate: a text box is as tall as its measured lines. A width is a no-wrap
-    label's measured extent: the solver holds every paragraph to one line in it
-    (measured_violations), so a width that is a guess and not a measurement is refused
-    there, by measurement."""
-    if size.get("height_emu") is None:
+    own title band, build_deck.prepare_page, is the build's, not the spec's). A size would
+    be a coordinate: a text box is as tall as its measured lines and as wide as its region
+    gives it, and no command in the skill measures a label's extent to write one."""
+    if size.get("height_emu") is None and size.get("width_emu") is None:
         return None
-    return (f"text {node_id!r}: size.height_emu is not read on text; a text box is as tall as its measured lines, or takes a "
-            "share of a column by weight (inside a region with a weight). Space above or below it is a gap_role or "
-            "a region's pad_roles; the title's height above a top rule is the build's own band. A width alone is a "
-            "no-wrap label's measured extent and must hold each paragraph on one line")
+    return (f"text {node_id!r}: size is not read on text; a text box is as tall as its measured lines, or takes a "
+            "share of a column by weight (inside a region with a weight). Its width is a share of a row by weight. "
+            "Space above or below it is a gap_role or a region's pad_roles; the title's height above a top rule is "
+            "the build's own band")
 
 def _parse_node(raw: Mapping[str, Any]) -> Region | Element:
     node_id = raw.get("id")
@@ -1248,15 +1245,8 @@ def measured_violations(ctx: Context, boxes: Mapping[str, Box], measurements: Ma
     be cut between characters. Containment compares boxes only, so a box a stretch row
     or a grid track sized below its text passed it."""
     out: list[Violation] = []
-    sized = {node.id for node, _ in walk(ctx.spec.root) if isinstance(node, Element) and node.kind == "text" and node.width_emu is not None}
     for el_id, rows in measurements.items():
         box = boxes[el_id]
-        if el_id in sized:
-            for m in rows:
-                if len(m.lines) > 1:
-                    over = advance_emu(ctx.ruler, m.text, m.face.path, m.entry.size_pt) - (m.allowance_emu - ctx.ruler.fit_epsilon_emu)
-                    out.append(Violation("sized_text_wraps", el_id, None, f"paragraph {m.index}: a text with a width is a no-wrap label, and {m.text!r} "
-                                         f"takes {len(m.lines)} lines in it; a width on text must be the label's measured one-line extent", max(1, over), True))
         need = element_height_emu(rows)
         if need > box.height:
             out.append(Violation("overflow", el_id, None, f"the measured text needs {need} EMU and its box is {box.height} EMU tall", need - box.height, True))
