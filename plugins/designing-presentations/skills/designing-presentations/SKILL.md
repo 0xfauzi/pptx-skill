@@ -255,7 +255,6 @@ node that nothing reads. Where to read:
 | the spec grammar, limits, pictures (logos, icons as small SVG in colour roles, the user's files) | [references/page-specs.md](references/page-specs.md) |
 | drawing the form your brief chose, technique by technique (two value axes, rows aligned to categories, marks) | [references/chart-recipes.md](references/chart-recipes.md) |
 | table spec keys and per-table `emphasis` roles | [references/tables.md](references/tables.md) |
-| a component the template never showed | [references/components.md](references/components.md) |
 | building a company page library | [references/page-library.md](references/page-library.md) |
 
 ### 7. Build
@@ -420,11 +419,9 @@ around a refusal by changing the guide.
 | `scripts/build_deck.py` | run: solve, emit, read back, validate, render, judge, leakage |
 | `scripts/leakage.py` | run on any deck: past decks' content found in it (the build runs it too) |
 | `scripts/images.py` | run: `list` and `extract` the reference's pictures; `check` an icon in the SVG subset |
-| `scripts/component.py`, `scripts/component_api.py` | run: check and admit a component; measure text by hand |
 | `scripts/emit_pptx.py`, `textfit.py`, `fontfiles.py`, `chart_geometry.py`, `annotate.py`, `fingerprint.py`, `cli.py` | called by the build and the commands |
 | [references/gotchas.md](references/gotchas.md) | read when a render and PowerPoint disagree: measured OOXML and renderer facts |
 | `references/page_craft_vocabulary.json` | data: the title vocabulary (register, companions); no exhibit is read in a list |
-| `components/` | the shipped components, read-only, and their contract (`components/README.md`); yours go in `"$DECK_WORK/components"` |
 | `examples/` | worked deck specs, plans, completions, digests (with a reference and with none) |
 | `refs/` | `MANIFEST.md`: the judge's panel of public decks, in the git-ignored `refs/files` once the user has fetched them |
 

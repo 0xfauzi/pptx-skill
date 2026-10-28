@@ -57,7 +57,7 @@ header_role, cell_role, cell_padding_role|null; a width_share is the column's ex
 share of the table width, a min_width_role a spacing role it never narrows below, and
 the fitter still measures every cell against both and reports any deficit); image | chart | rule (optional size {width_emu|null,
 height_emu|null}: a measured extent, null = flexible). Text takes no height; a width on text
-is a no-wrap label's measured extent (a component's marker label), and every paragraph must
+is a no-wrap label's measured extent, and every paragraph must
 set on one line in it (sized_text_refusal, violation sized_text_wraps). Every element may carry
 weight (flex share, default equal) and scale_class ("scaling" | "fixed": type
 resolves at s = 1). Grid tracks are uniform. Node ids are unique and carry no '#'.
@@ -195,8 +195,7 @@ def snap_baseline(scaled_emu: Fraction, baseline_emu: int) -> int:
     return max(1, round(scaled_emu / baseline_emu)) * baseline_emu
 
 def gap_emu(guide: "Guide", role: str | None, scale: Fraction, axis: str) -> int:
-    """A flex gap; `None` is zero, for rows whose weighted parts share one scale (a
-    component's bar split around a marker rule must not open a gap at the cut)."""
+    """A flex gap; `None` is zero, for rows whose weighted parts share one scale."""
     return space_emu(guide, role, scale, axis) if role else 0
 
 
@@ -379,7 +378,7 @@ class Box:
 @dataclass(frozen=True)
 class Flex:
     direction: str
-    gap_role: str | None  # None: no gap (a component's bar whose parts must touch)
+    gap_role: str | None  # None: no gap (parts that must touch)
     pad_role: str | None
     align: str
     justify: str
@@ -478,7 +477,7 @@ class Table:
     totals_last_row: bool = False  # the emitter bolds it, so the fitter measures it bold
     # every cell in the setting the emitter writes it in, (grid row, column, bold, italic,
     # indent role), header rows first (emit_pptx.table_row_styles, the one reader); a table
-    # parsed without them (a component's probe) is measured by header_bold and totals_last_row
+    # parsed without them is measured by header_bold and totals_last_row
     cell_styles: tuple[tuple[int, int, bool, bool, str | None], ...] = ()
     header_bold: bool = False  # the emitter bolds the header row (the guide's or the table's header_bold), so it is measured bold
 
@@ -577,7 +576,7 @@ def _parse_layout(raw: Mapping[str, Any], region_id: str) -> Flex | Grid:
     raise LayoutContractError(f"region {region_id!r}: layout kind must be flex or grid")
 
 def sized_text_refusal(node_id: Any, size: Mapping[str, Any]) -> str | None:
-    """The one rule for a size on text that a page spec or a component writes (the build's
+    """The one rule for a size on text that a page spec writes (the build's
     own title band, build_deck.prepare_page, is the build's, not the spec's). A height would
     be a coordinate: a text box is as tall as its measured lines. A width is a no-wrap
     label's measured extent: the solver holds every paragraph to one line in it
@@ -1168,9 +1167,8 @@ class ParagraphMeasurement:
 @dataclass
 class Context:
     """One solve's instruments: the guide, the ruler and the face index. `spec` is
-    None for a measuring-only context (component_api.py): one_line_width and the
-    cell measurers read the ruler alone, and nothing else is reachable without a
-    tree to solve."""
+    None for a measuring-only context: one_line_width and the cell measurers read the
+    ruler alone, and nothing else is reachable without a tree to solve."""
 
     guide: Guide
     ruler: Ruler
@@ -1780,24 +1778,12 @@ def build_context(spec_path: str, guide_path: str) -> Context:
     from build_deck import mark_measured_weights, normalise, prepare_page
     if "root" in raw:
         slide: dict = {}
-        raw["root"] = _components_as_boxes(raw["root"])
         raw["root"] = normalise(raw["root"], slide)
         mark_measured_weights(raw["root"], slide, raw_guide)
     prepare_page(raw, raw_guide)
     spec = parse_spec(raw)
     guide = load_guide(raw_guide)
     return Context(guide, ruler_for(raw_guide), default_index(), spec)
-
-
-def _components_as_boxes(node: dict) -> dict:
-    """A component node held as a flexible box of its own id and weight, the stand-in
-    build_deck solves before it expands (its first pass), for `solve` on a bare spec."""
-    if node.get("type") == "region":
-        return {**node, "children": [_components_as_boxes(c) for c in node.get("children", [])]}
-    if node.get("type") == "component":
-        print(f"component {node['id']!r} ({node.get('kind')}): solved as a flexible box; its own text is measured by component_api", file=sys.stderr)
-        return {"type": "element", "id": node["id"], "kind": "image", **({"weight": node["weight"]} if "weight" in node else {})}
-    return node
 
 
 def capacity_slide(path: str, slide_id: str | None) -> dict:
@@ -1830,14 +1816,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     p.add_argument("--slide", default=None, help="the slide id in a deck JSON")
     p.add_argument("--guide", required=True)
     p.add_argument("--chrome", default="auto", choices=["auto", "none", "draw"], help="as the build will run")
-    p.add_argument("--components", default=None, help="your components directory, as the build will read it")
     p.add_argument("-o", "--out", default=None)
     args = parser.parse_args(argv)
     import cli
     cli.guard_args(args, "out")
     if args.command == "capacity":
-        from build_deck import capacity, use_components
-        use_components(args.components)
+        from build_deck import capacity
         payload = capacity(capacity_slide(args.spec, args.slide), json.loads(Path(args.guide).read_text(encoding="utf-8")), args.chrome)
         if args.out:
             # written before anything is printed: a reader piping the listing into `head`
@@ -1849,8 +1833,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         for e in payload["elements"]:
             print(f"  {e['id']:<18} {e['role'] or '':<18} box {e['box_in']} in  lines {e['lines_now']}  chars {e['chars_now']}"
                   f"  free {e['chars_free']} chars" + (f" (+{e['lines_free']} lines)" if "lines_free" in e else f"  ({e.get('why')})"))
-        for c in payload.get("components", []):
-            print(f"  {c['id']:<18} component {c['kind']}: {c['budget']}")
         for t in payload.get("tables", []):
             print(f"  {t['id']:<18} table: {t['body_rows']} body rows need {t['rows_need_in']} in, box {t['box_in']} in; "
                   f"rows_to_fit {t['rows_to_fit']}" + (f", {t['height_free_in']} in free" if "height_free_in" in t else "")

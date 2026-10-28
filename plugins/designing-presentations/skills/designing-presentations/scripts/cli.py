@@ -3,8 +3,7 @@
 A command writes only outside this skill. Company files, guides, digests, renders and
 builds belong to the user's work directory (SKILL.md: `DECK_WORK`), never to the skill,
 so every output path a command takes passes `out_path`, which refuses one inside the
-skill by name. `component.py admit` writes its record to the user's components directory
-(`--components`), never beside a shipped component. One maintenance command writes skill
+skill by name. One maintenance command writes skill
 content and is the only exception: `library.py import` builds the
 git-ignored external library of public decks in `refs/library` (Library.guard_location
 refuses any other owner there). The user fills the git-ignored `refs/files`.

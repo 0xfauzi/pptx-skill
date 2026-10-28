@@ -84,7 +84,7 @@ named first, with the lines the band holds, because every other violation on tha
 follows from it: shorten it, or move a clause to where the reference states claims (the reason
 names the places, from the guide's `claims_elsewhere`). Nothing is dropped. Moves, for
 instance, in no order: re-arrange (two columns instead of one, a table beside the chart
-instead of below, a compact component variant), cut words, split at a declared boundary
+instead of below), cut words, split at a declared boundary
 (the fitting rows become page one, the rest page two under the reference's continuation, as
 its pages show it). Then build again.
 
@@ -343,11 +343,6 @@ the guide says is refused by name.
   text's size (category labels against their slot, centred data labels against a column's
   width), and under `spills` each horizontal bar's label wider than its bar, warned as
   "chart label wider than its bar".
-- `component_notes`: what each component chose and why (its variant), each role or
-  constant it left at its default, each role it computed from the guide (a lead's or a
-  marker's ink by contrast), and a component admitted against another guide (re-run its
-  check). The defaults are choices like any other: set them through the component's
-  `data["roles"]` or `data["params"]` where the reference does otherwise.
 - `pictures`: per picture on the page (a `slide.images` entry or a `category_row` cell),
   the box it was drawn in on the render (`box_px`), `differ_share` (the share of that
   box's pixels with no pixel of the picture as written within one pixel and 64 levels of

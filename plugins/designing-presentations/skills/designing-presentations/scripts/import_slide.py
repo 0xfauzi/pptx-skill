@@ -442,12 +442,10 @@ def survey(path: str, guide: dict, chrome: str = "auto", pages: tuple[int, int] 
     title, text and an exhibit, losing least, that fits."""
     import tempfile
 
-    import component_api
     import layout as L
     from build_deck import full_scale_cause, solve_slide
     lg = L.load_guide(guide)
     ruler, index = L.ruler_for(guide), L.default_index()
-    api = component_api.make_api(guide, lg, ruler, index)
     content = set((((guide.get("variety") or {}).get("content_pages")) or {}).get("pages") or [])
     triage = {p["slide"]: p.get("triage") for p in (guide.get("variety") or {}).get("pages") or []}
     out = []
@@ -467,7 +465,7 @@ def survey(path: str, guide: dict, chrome: str = "auto", pages: tuple[int, int] 
                     kinds[k] = kinds.get(k, 0) + 1
             why = None
             try:
-                _, ctx, outcome = solve_slide(json.loads(json.dumps(sl)), guide, chrome, lg, ruler, index, api, L.Fraction(1))
+                _, ctx, outcome = solve_slide(json.loads(json.dumps(sl)), guide, chrome, lg, ruler, index, L.Fraction(1))
                 fits = outcome.status
                 if fits != "fit":
                     why = full_scale_cause(ctx, outcome)

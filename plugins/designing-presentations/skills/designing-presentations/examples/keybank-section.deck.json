@@ -586,66 +586,10 @@
        },
        "children": [
         {
-         "type": "component",
+         "type": "element",
          "id": "ff",
-         "kind": "football_field",
-         "weight": 1.3,
-         "data": {
-          "axis": {
-           "min": 6.0,
-           "max": 16.0,
-           "format": "${:,.0f}",
-           "ticks": [
-            6,
-            8,
-            10,
-            12,
-            14,
-            16
-           ]
-          },
-          "rows": [
-           {
-            "label": "52-week trading range",
-            "low": 8.2,
-            "high": 12.4
-           },
-           {
-            "label": "Analyst price targets",
-            "low": 9.0,
-            "high": 13.5
-           },
-           {
-            "label": "Trading comps (P / TBV 0.9x to 1.3x)",
-            "low": 7.6,
-            "high": 11.0
-           },
-           {
-            "label": "Trading comps (P / E 13x to 17x)",
-            "low": 8.1,
-            "high": 10.6
-           },
-           {
-            "label": "Precedent transactions",
-            "low": 9.4,
-            "high": 13.8
-           },
-           {
-            "label": "DDM (8.5% to 10.0% cost of equity)",
-            "low": 8.8,
-            "high": 12.1
-           },
-           {
-            "label": "DDM with 25% synergies",
-            "low": 10.2,
-            "high": 13.9
-           }
-          ],
-          "marker": {
-           "label": "Offer $11.40",
-           "value": 11.4
-          }
-         }
+         "kind": "chart",
+         "weight": 1.3
         },
         {
          "type": "element",
@@ -685,7 +629,153 @@
    },
    "title": {
     "register": "topic"
-   }
+   },
+   "charts": {
+    "ff": {
+     "type": "BAR_STACKED",
+     "categories": [
+      "DDM with 25% synergies",
+      "DDM (8.5% to 10.0% cost of equity)",
+      "Precedent transactions",
+      "Trading comps (P / E 13x to 17x)",
+      "Trading comps (P / TBV 0.9x to 1.3x)",
+      "Analyst price targets",
+      "52-week trading range"
+     ],
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Low",
+       "values": [
+        10.2,
+        8.8,
+        9.4,
+        8.1,
+        7.6,
+        9.0,
+        8.2
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Range",
+       "values": [
+        3.7,
+        3.3,
+        4.4,
+        2.5,
+        3.4,
+        4.5,
+        4.2
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "none",
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.body",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "color.rule",
+       "line_width_pt": 1.5,
+       "tick_marks": "none",
+       "reverse": false,
+       "title": "none",
+       "number_format": "\"$\"0.0",
+       "min": 6.0,
+       "max": 16.0,
+       "major_unit": 2,
+       "cross_between": "between",
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "gap_width": 7,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.42,
+      "y": 0.06,
+      "w": 0.4,
+      "h": 0.86
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "offer",
+     "host": "ff",
+     "kind": "reference_line",
+     "anchor": {
+      "value": 11.4
+     },
+     "line_role": "color.accent2",
+     "line_width_pt": 1.5,
+     "dash": "solid",
+     "label": {
+      "text": "Offer $11.40",
+      "role": "type.data_label",
+      "ink_role": "color.ink",
+      "position": "end_outside",
+      "align": "left"
+     }
+    },
+    {
+     "id": "ranges",
+     "host": "ff",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       6
+      ]
+     },
+     "position": "right",
+     "gap_role": "space.sm",
+     "cells": [
+      "$10.2 to $13.9",
+      "$8.8 to $12.1",
+      "$9.4 to $13.8",
+      "$8.1 to $10.6",
+      "$7.6 to $11.0",
+      "$9.0 to $13.5",
+      "$8.2 to $12.4"
+     ],
+     "role": "type.data_label",
+     "ink_role": "color.ink",
+     "align": "left",
+     "cell_width": "own"
+    }
+   ]
   },
   {
    "id": "s4-synergies",

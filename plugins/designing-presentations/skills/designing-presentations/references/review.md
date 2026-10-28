@@ -20,7 +20,7 @@ pages would. Then change the specs and build again. Never a score.
   lowest judge distance alone.
 - Stop when a round produces no new finding you can act on, or at the cap. Report the
   findings still open.
-- A finding that a sentence in the specs cannot fix (a component defect, a renderer
+- A finding that a sentence in the specs cannot fix (a renderer
   difference) goes into the report as a defect, not into another round.
 
 ## What to look for, in order

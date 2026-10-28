@@ -250,6 +250,3 @@ sh ~/.claude/plugins/cache/pptx-skill/designing-presentations/<version>/fetch-re
 
 No command writes in the skill folder. Each output path must be in a work folder of your
 own (`DECK_WORK` in SKILL.md). The scripts refuse an output path in the skill folder.
-Put your own components, and the admission records that `component.py admit` writes, in
-a components folder of your own. Give that folder as `--components DIR`
-(`references/components.md`).

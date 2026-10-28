@@ -75,7 +75,6 @@ from pathlib import Path
 sys.dont_write_bytecode = True  # the skill directory is never written, not even a bytecode cache
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import annotate  # noqa: E402
-import component_api  # noqa: E402
 import images
 import layout as L  # noqa: E402
 import plan  # noqa: E402
@@ -381,6 +380,13 @@ def check_node_keys(node: dict) -> None:
                      + (f", and its data goes under {home}[{nid!r}]" if home else ""))
 
 
+def component_removed(node: dict) -> str:
+    """The refusal of a spec node of type component: the skill ships no components."""
+    return (f"component {node.get('id')!r} ({node.get('kind')}): components were removed from this skill. Build the exhibit from "
+            "regions, native charts, tables, shapes and annotations (references/page-specs.md); for a valuation range (a football "
+            "field), see references/chart-recipes.md, \"A base on horizontal bars\"")
+
+
 def normalise(node: dict, slide: dict) -> dict:
     """Move presentation keys off tree nodes into the slide's styling tables (the solver
     reads geometry and roles only), turn `rect` into a sized `image` carrying its fill, and
@@ -393,8 +399,8 @@ def normalise(node: dict, slide: dict) -> dict:
             styling.setdefault(node["id"], {}).update(st)
         node["children"] = [normalise(c, slide) for c in node.get("children", [])]
         return node
-    if node.get("type") == "component":
-        return node
+    if node.get("type", node.get("node_type")) == "component":
+        raise SystemExit(component_removed(node))
     check_node_keys(node)
     st = {k: node.pop(k) for k in list(node) if k in PRESENTATION_KEYS}
     if node.get("kind") == "rect":
@@ -1476,7 +1482,7 @@ def page_problems(entry: dict, elements: list[dict], resolved: dict, guide: dict
     if found:
         problems.append(found)
     refusals = list(dict.fromkeys(p["kind"] for p in problems if p["severity"] == "refusal"))
-    entry["solver_status"] = entry["status"]  # the geometry verdict alone; component.py's harness page reads it
+    entry["solver_status"] = entry["status"]  # the geometry verdict alone
     if refusals and entry["status"] == "fit":
         entry["status"], entry["reason"] = "unfittable", "; ".join(refusals)
     return problems
@@ -2493,134 +2499,6 @@ def slide_chrome(slide: dict, guide: dict, mode: str) -> dict:
         raise SystemExit(str(error.code)) from None
 
 
-#: the components that ship with the skill, read-only; a user's own components, and a user's
-#: admission of a shipped one under another guide, live in a work directory passed as
-#: --components (use_components), never in the skill
-SHIPPED_COMPONENTS = Path(__file__).resolve().parent.parent / "components"
-_user_components: Path | None = None
-
-
-def use_components(directory: str | None) -> None:
-    """Read a user's components directory beside the shipped ones (`--components DIR`). It
-    is a work directory: a path inside the skill is refused by name, as an output is."""
-    global _user_components
-    if directory is None:
-        _user_components = None
-        return
-    import cli
-    _user_components = Path(cli.out_path(directory, "--components directory")).resolve()
-
-
-def user_components() -> Path | None:
-    return _user_components
-
-
-def component_root(kind: str) -> Path:
-    """A component's code directory: the directory itself when `kind` is a path (a
-    component under development), else `<kind>` in the user's components directory when it
-    holds an expand.py there, else the shipped `components/<kind>`. A user component may not
-    take a shipped component's name: a fork that silently replaced the shipped one would make
-    one name draw two ways."""
-    if "/" in kind or kind.startswith("."):
-        return Path(kind).resolve()
-    shipped = SHIPPED_COMPONENTS / kind
-    if _user_components is not None and (_user_components / kind / "expand.py").exists():
-        if (shipped / "expand.py").exists():
-            raise SystemExit(f"component {kind!r}: {_user_components / kind} has an expand.py and the skill ships a component of that name; "
-                             "give the fork its own name")
-        return _user_components / kind
-    return shipped
-
-
-def admission_path(kind: str) -> Path:
-    """Where a component's admission record is read: beside a component given by path; for a
-    name, the user's record (`<components>/<kind>/admitted.json`, written by component.py
-    admit) before the shipped one."""
-    if "/" in kind or kind.startswith("."):
-        return component_root(kind) / "admitted.json"
-    if _user_components is not None and (_user_components / kind / "admitted.json").exists():
-        return _user_components / kind / "admitted.json"
-    return component_root(kind) / "admitted.json"
-
-
-def admission_note(kind: str, guide: dict) -> str | None:
-    """Admission is bound to the guide it was checked with: a component admitted on keybank
-    overflowed its band on netflix (12pt floor, different padding). Say so when the guide
-    differs, and point at the check."""
-    rec_path = admission_path(kind)
-    if not rec_path.exists():
-        return f"component {kind!r} is not admitted; run component.py check and admit"
-    rec = json.loads(rec_path.read_text())
-    sha = guide.get("reference", {}).get("sha256")
-    if rec.get("guide_reference_sha256") and sha and rec["guide_reference_sha256"] != sha:
-        return f"component {kind!r} was admitted against another reference ({rec.get('guide_reference', '?')}); run component.py check with this guide before trusting its fit"
-    return None
-
-
-def load_component(kind: str):
-    import importlib.util
-    root = component_root(kind)
-    spec_file = root / "expand.py"
-    if not spec_file.exists():
-        mine = "" if "/" in kind or kind.startswith(".") else (
-            f" nor {_user_components / kind / 'expand.py'}" if _user_components else "; a component of your own is read from build_deck.py --components DIR")
-        raise SystemExit(f"component {kind!r}: no {spec_file}{mine}")
-    module_spec = importlib.util.spec_from_file_location(f"component_{root.name}", spec_file)
-    module = importlib.util.module_from_spec(module_spec)  # type: ignore[arg-type]
-    module_spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module.expand
-
-
-def expand_components(tree: dict, slide: dict, guide: dict, boxes: dict | None, api: dict | None = None) -> tuple[dict, bool]:
-    """Replace component nodes. With no boxes yet, each becomes a flexible placeholder so a
-    probe solve can learn its box; with boxes, each is expanded at its box. Every expand
-    call receives the guide with `_api` (component_api.py: the solver's own text width
-    and line pitch) so a component measures instead of estimating."""
-    pending = False
-    api = api if api is not None else component_api.make_api(guide)
-    guide_for_components = component_api.with_api(guide, api)
-
-    def visit(node: dict) -> dict:
-        nonlocal pending
-        if node.get("type") == "region":
-            node = dict(node)
-            node["children"] = [visit(c) for c in node.get("children", [])]
-            return node
-        if node.get("type") == "component":
-            box = (boxes or {}).get(node["id"])
-            if box is None:
-                pending = True
-                return {"type": "element", "id": node["id"], "kind": "image", "weight": node.get("weight")}
-            data = dict(node.get("data", {}))
-            data["_id"] = node["id"]
-            note = admission_note(node["kind"], guide)
-            if note:
-                slide.setdefault("component_notes", []).append(note)
-            if box["width"] <= 0 or box["height"] <= 0:
-                # the page left the component no room; expanding into nothing emits debris
-                raise SystemExit(f"component {node['id']}: the page leaves it a {box['width']} x {box['height']} EMU box; cut or split the page before the component")
-            try:
-                sub = load_component(node["kind"])(data, {"width_emu": box["width"], "height_emu": box["height"]}, guide_for_components)
-            except ValueError as error:
-                # the component cannot draw what its data asks for (a variant the data cannot
-                # carry, a constant out of range): refused by name, never a traceback
-                raise SystemExit(f"component {node['id']!r} ({node['kind']}): {error}") from None
-            # what the component chose and the defaults it left in place, said by the component
-            # (component_api: its root region's `report`), into the page's component_notes
-            told = sub.pop("report", None) if isinstance(sub, dict) else None
-            if told is not None and (not isinstance(told, list) or not all(isinstance(t, str) for t in told)):
-                raise SystemExit(f"component {node['kind']}: report is a list of sentences, got {told!r}")
-            slide.setdefault("component_notes", []).extend(f"{node['kind']} {node['id']!r}: {t}" for t in told or [])
-            sub = normalise(sub, slide)
-            sub["weight"] = node.get("weight")
-            if sub.get("id") != node["id"]:
-                raise SystemExit(f"component {node['kind']}: expand must return a region whose id is the instance id {node['id']!r}")
-            return sub
-        return node
-
-    return visit(tree), pending
-
-
 def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[dict]:
     """The solver's boxes and measured lines, joined with the slide's styling, charts,
     images and rules, into the emitter's flat element list."""
@@ -2700,28 +2578,16 @@ def flatten(slide: dict, resolved: dict, spec_raw: dict, guide: dict) -> list[di
     return out
 
 
-def solve_slide(slide: dict, guide: dict, chrome: str, lg: L.Guide, ruler, index, api: dict, scale: L.Fraction | None = None) -> tuple[dict, L.Context, L.Outcome]:
+def solve_slide(slide: dict, guide: dict, chrome: str, lg: L.Guide, ruler, index, scale: L.Fraction | None = None) -> tuple[dict, L.Context, L.Outcome]:
     """One page as the build solves it: presentation keys lifted, measured weights marked,
-    the page prepared (guide page size, chrome zones, title band), components probed and
-    expanded at their boxes, then the scale descent; or, given `scale`, one attempt at that
-    scale only. The build and `layout.py capacity` both call this, so a capacity budget is
-    the page the build solves. `slide` is updated as the build updates it (styling, rects,
-    spacers, component notes)."""
+    the page prepared (guide page size, chrome zones, title band), then the scale descent;
+    or, given `scale`, one attempt at that scale only. The build and `layout.py capacity`
+    both call this, so a capacity budget is the page the build solves. `slide` is updated
+    as the build updates it (styling, rects, spacers)."""
     spec_raw = json.loads(json.dumps(slide["spec"]))
     spec_raw["root"] = normalise(spec_raw["root"], slide)
     mark_measured_weights(spec_raw["root"], slide, guide)
     prepare_page(spec_raw, guide, chrome, slide_chrome(slide, guide, chrome))
-    # components: probe once with placeholders to learn their boxes, then expand at those boxes
-    tree, pending = expand_components(spec_raw["root"], slide, guide, None, api)
-    if pending:
-        # the probe measures the text around the placeholder first, so the component gets
-        # the space the text leaves and not an equal share with a one-line source
-        probe_spec = L.parse_spec({**spec_raw, "root": tree})
-        attempt = L._attempt(L.Context(lg, ruler, index, probe_spec), L.Fraction(1))
-        probe_boxes = attempt.resolved.boxes if attempt.resolved is not None else L.solve_tree(probe_spec, lg, 1.0)
-        tree, _ = expand_components(spec_raw["root"], slide, guide, {k: v.as_dict() for k, v in probe_boxes.items()}, api)
-    spec_raw["root"] = tree
-    mark_measured_weights(tree, slide, guide)  # a component's tables too
     spec = L.parse_spec(spec_raw)
     ctx = L.Context(lg, ruler, index, spec)
     if scale is None:
@@ -2810,10 +2676,9 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
     import copy
     lg = L.load_guide(guide)
     ruler, index = L.ruler_for(guide), L.default_index()
-    api = component_api.make_api(guide, lg, ruler, index)
     one = L.Fraction(1)
     base_slide = copy.deepcopy(slide)
-    base_raw, base_ctx, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index, api)
+    base_raw, base_ctx, outcome = solve_slide(base_slide, guide, chrome, lg, ruler, index)
     out: dict = {"id": slide.get("id"), "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "status": outcome.status,
                  "scale": None if outcome.resolved is None else float(outcome.resolved.scale),
                  "reserved_zones_in": {z.get("source"): [round(z[k] / EMU_PER_INCH, 2) for k in ("left", "top", "width", "height")]
@@ -2829,7 +2694,7 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
                                             base_raw["page"].get("reserved_zones") or [])
         out["annotations"] = [{"id": e.get("id"), "status": e.get("status"), **({"why": e["why"]} if e.get("why") else {})} for e in placed]
         out["annotation_problems"] = [{"kind": f["kind"], "severity": f["severity"], "detail": f["detail"]} for f in found]
-    _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, one)
+    _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, one)
     fits_full = full.status == "fit"
     texts: list[dict] = []
     out["tables"] = table_budgets(full_ctx, full)
@@ -2842,9 +2707,6 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
                 walk(c, path + (i,))
         elif node.get("kind") == "text" and node.get("paragraphs"):
             texts.append({"node": node, "path": path})
-        elif node.get("type") == "component":
-            out.setdefault("components", []).append({"id": node.get("id"), "kind": node.get("kind"),
-                                                     "budget": "measured by the component itself (component_api); its box is in the build report"})
 
     walk(slide["spec"]["root"], ())
 
@@ -2859,7 +2721,7 @@ def capacity(slide: dict, guide: dict, chrome: str = "auto") -> dict:
 
     def fits(path: tuple, n: int) -> tuple[bool, L.Outcome]:
         try:
-            _, _, o = solve_slide(with_filler(path, n), guide, chrome, lg, ruler, index, api, one)
+            _, _, o = solve_slide(with_filler(path, n), guide, chrome, lg, ruler, index, one)
         except SystemExit:
             return False, None  # type: ignore[return-value]
         return o.status == "fit", o
@@ -3119,7 +2981,6 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
     lg = L.load_guide(guide)
     ruler = L.ruler_for(guide)
     index = L.default_index()
-    api = component_api.make_api(guide, lg, ruler, index)
     emit_spec: dict = {"slides": [], **({"firm_chrome": deck["firm_chrome"]} if "firm_chrome" in deck else {})}
     report = {"out": out, "ruler": ruler.name, "ruler_basis": ruler_basis(guide), "slides": []}
     ref_slides = None
@@ -3143,14 +3004,12 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
         read_answers(slide)  # a malformed answer refuses before anything is solved
     for number, slide in enumerate(deck["slides"], 1):
         try:
-            spec_raw, ctx, outcome = solve_slide(slide, guide, chrome, lg, ruler, index, api)
+            spec_raw, ctx, outcome = solve_slide(slide, guide, chrome, lg, ruler, index)
             entry = {"id": slide.get("id"), "status": outcome.status, "attempts": [a.summary() for a in outcome.attempts]}
             entry["layout_depth"] = {"deepest": len(ctx.spec.deepest) - 1, "chain": " > ".join(ctx.spec.deepest), "runaway_bound": L.MAX_TREE_DEPTH}
             layout_taken = L.defaults_taken(spec_raw["root"]) + bullet_indents_taken(slide, ctx.spec, guide)
             if layout_taken:
                 entry["layout_defaults_taken"] = layout_taken
-            if slide.get("component_notes"):
-                entry["component_notes"] = sorted(set(slide["component_notes"]))
             # every table choice neither the spec nor the guide states, as the chart's are listed
             taken = {t["id"]: table_defaults_taken(table_element(t, (slide.get("styling") or {}).get(t["id"]) or {}), EmitGuide(guide))
                      for t in table_nodes(spec_raw["root"])}
@@ -3179,7 +3038,7 @@ def build(deck: dict, guide: dict, template: str, out: str, reference: str | Non
                 # is shrunk, and what crosses then (a heading over a rule) is the shrinking's
                 # effect, not the cause (a sidebar 0.09 in too tall read as the headings)
                 import copy
-                _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, api, L.Fraction(1))
+                _, full_ctx, full = solve_slide(copy.deepcopy(slide), guide, chrome, lg, ruler, index, L.Fraction(1))
                 entry["why_not_full_scale"] = full_scale_cause(full_ctx, full)
                 causes = full_scale_cause(ctx, outcome)
                 first = entry["why_not_full_scale"][0]
@@ -3427,12 +3286,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--brief", action="append", default=[], help="the user's brief or data as a text file; the leakage report allows its words")
     ap.add_argument("--computed", action="append", default=[], metavar="FILE", help="figures your own arithmetic produced from the user's data, as text (one file a flag, repeated for more); "
                     "a past deck's figure that matches one is listed under leakage.declared_computed instead of as distinctive")
-    ap.add_argument("--components", default=None, help="your components directory (a work directory): components a page names are read "
-                    "there and in the skill's components/, and your admissions there come first")
     import cli
     args = cli.parse_args(ap, argv, "--computed")
     cli.guard_args(args, "out", "renders")
-    use_components(args.components)
     outputs = Outputs(args.out, args.renders, not args.no_render)
     try:
         report = _run(args, outputs)

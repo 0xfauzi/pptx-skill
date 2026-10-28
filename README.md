@@ -321,10 +321,6 @@ weights and figures of that page, but it uses new words for each text run.
   - The data does not show the habit of the reference.
   The limits (`SOURCE_LINE_MAJORITY`, `SOURCE_LINE_MIN_PAGES` in `scripts/build_deck.py`)
   are definitions, not measurements.
-- **Football-field ticks.** The football-field component starts each axis tick label at
-  its value. The last label aligns right at the end of the track. The component removes a
-  tick if its label does not fit its interval (`components/football_field/expand.py`).
-  Read the axis on each render.
 - **Hidden slides.** The skill reads hidden slides as evidence. The draft lists them. To
   exclude a hidden slide, Claude deletes it from a copy of the reference.
 - **Scanned PDFs.** From the pixels of a scan, the skill gets the palette, ink, chrome,
@@ -347,7 +343,7 @@ results come from Ubuntu 24.04 with LibreOffice 24.2.7.2 and the versions in INS
 |---|---|---|
 | The seven gallery decks about fictional organisations build and pass | Each build exits 0. `validate --render` and `validate --emit --guide` report no problems for each deck. | `sh showcase/rebuild.sh DECK /abs/work/dir`, for each of `board-transformation`, `lbo-committee-book`, `grocery-strategy`, `software-earnings`, `parks-annual-report`. Add `/abs/path/REF` for `transit-outlook` and `wildfire-plan` (showcase/README.md) |
 | The font scripts handle missing, embedded, restricted, subset and supplied fonts with no network use | The eleven scenarios of `tools/evals/fonts/` pass. Each command runs with no network (`unshare -rn`), and `strace` and a Python audit hook find no network call. | `python3 -I tools/evals/fonts/run_checks.py /abs/empty/dir` |
-| The judge files a section in the look of a reference under that reference | The keybank example section has a judge total of 0.083. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
+| The judge files a section in the look of a reference under that reference | The keybank example section has a judge total of 0.060. The pages of the reference itself are at 0.055 to 0.372. The judge files the section under the reference, and the layout is clean. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `deck.pptx` line) |
 | Only the layout check separates five wrong decks from the reference | The judge totals of the five wrong decks are 0.134 to 0.308, in the spread of the reference. So the style total alone files each wrong deck under the reference. Each wrong deck has `layout_clean` false. Overlap is 1.0 for the scrambled, stacked and random decks. Overflow is 1.0 for the overflowing and giant-box decks, and 0.6 for the random deck. | `sh tools/measure/judge_keybank.sh /abs/out/dir` (the `g1` to `g5` lines) |
 | The raster instrument reads a render back | The script renders keybank at 100 dpi and measures the pixels. The surface (FFFFFF) and the navy (113D63) are exact. The ink is 010101 against 000000 in the file. The left margin is within 0.01 in of the file, and the other margins are within 0.09 in. The body size estimate is 11.7pt against 12pt in the file. | `sh tools/measure/raster_keybank.sh`, then compare `raster/raster.md` with the draft of `scripts/extract_style.py` |
 | Chart positions agree with LibreOffice | The script reads 474 features of 15 chart configurations and a table. The largest offset from the prediction of `scripts/chart_geometry.py` is 1.07 px, and the mean is 0.236 px, at 1600 px wide. The script did not find 7 features within 7 px of the prediction. The script reports that a later series can cover such a feature. | `python3 -I tools/measure/chart_geometry_probe.py /abs/out/dir` |
@@ -360,7 +356,7 @@ plugins/designing-presentations/  the plugin root; an install copies only this f
   .claude-plugin/plugin.json      the plugin manifest; icon.png is the listing icon
   README.md                       what the plugin runs, sends, fetches and writes
   skills/designing-presentations/ the skill: SKILL.md, references/, scripts/,
-                                  components/, examples/, refs/
+                                  examples/, refs/
 showcase/                         the sources of the seven fictional-organisation decks, and the scripts
                                   that build the decks and the README images
 docs/showcase/                    the gallery images, .pptx files and PDF files

@@ -189,7 +189,7 @@
  "/derivation_rules": [
   "Extend the palette by stepping the deep blue towards the grey: 113D63 -> 5E7C9E -> CCD1D7; never introduce a new hue.",
   "New text roles take a size from the ladder 10 / 12 / 15 / 19 / 24; weight 700 only for emphasis, h2 and table headers.",
-  "Any new component is drawn flat with rect geometry, blue header treatment and grey panels, ruled with 0.5pt grey lines."
+  "Any new exhibit is drawn flat with rect geometry, blue header treatment and grey panels, ruled with 0.5pt grey lines."
  ],
  "/color/roles/color.accent2": {
   "hex": "113D63",

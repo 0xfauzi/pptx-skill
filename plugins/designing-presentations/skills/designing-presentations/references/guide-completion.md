@@ -91,7 +91,7 @@ value instead. A left-out key never closes anything.
 | `/typography/families/substitutes` | {"<face named in the file>": "<installed face measured in its place>"} | refused |
 | `/typography/scale_ratio` | a number, e.g. 1.25 | the levels are not a geometric ladder |
 | `/spacing/steps/<name>` | an integer EMU, 12700 (one point) or more | refused |
-| `/spacing/steps` | {"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} (integers of 12700 EMU, one point, or more; space.xs, space.sm, space.margin and space.gutter are required: the round trip and the components read them) | refused |
+| `/spacing/steps` | {"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} (integers of 12700 EMU, one point, or more; space.xs, space.sm, space.margin and space.gutter are required: the round trip and the build read them) | refused |
 | `/spacing/baseline_emu` | an integer EMU | no baseline grid |
 | `/density_bands/table_rows_per_inch` | {"metric": "table_rows_per_inch", "low", "high", "median", "n"} | no table to measure |
 | `/floors/<name>/floor_pt` | a number of points, never below absolute_floor_pt | no run in this family: the absolute floor holds |

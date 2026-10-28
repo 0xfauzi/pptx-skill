@@ -15,7 +15,7 @@
 A page is a tree. Regions lay out children with `flex` (direction, gap role, pad role,
 align, justify, weights) or `grid` (rows, cols, gutter role, areas). Elements are `text`
 (paragraphs with a type role, text, bullet level), `table` (columns with a value kind,
-rows, header rows), `chart`, `image`, `rule`, `rect`, or a `component`. Everything is a
+rows, header rows), `chart`, `image`, `rule`, `rect`. Everything is a
 role (`type.body`, `color.accent1`, `space.md`); a literal colour, size, font or coordinate
 is refused by name. The full grammar with a worked example is the docstring of
 `scripts/layout.py` (read it, do not run it for this); a complete four-page deck is
@@ -59,7 +59,7 @@ python3 scripts/layout.py capacity "$DECK_WORK/deck/deck.json" --slide s3-synerg
 ```
 
 `capacity` solves the page with the build's own solve (the same function: guide page size,
-chrome zones for the `--chrome` mode, the title band, components probed and expanded),
+chrome zones for the `--chrome` mode, the title band),
 then, for every text element the spec names, prints its solved box, its lines and
 characters now, and `free`: how many characters more it takes before the page stops
 fitting at full scale, found by solving the page again with filler text appended to that
@@ -74,7 +74,7 @@ s3-synergies: fit at scale 1.0 (pillow_x128)
 
 Budgets do not add up: two elements in one column share the same free space. A page that
 fits only below full scale has no budget left (every `free` is 0, with the reason); cut or
-re-arrange first. A component's own text is measured by the component, not here. The
+re-arrange first. The
 filler is mean-advance English with figures, so a run of capitals or wide figures takes
 fewer characters than `free` says. Write the skeleton with short placeholder text, read
 the budgets, then write the words.

@@ -417,10 +417,6 @@ horizontal bar the line is vertical and its label positions are the vertical set
 (`end_outside`, `end_right`, `end_left`, `start_right`, `start_left`); `end_below` is a
 horizontal line's.
 
-The `football_field` component (`components/football_field`) draws the same exhibit
-from rects with measured label widths; pick the chart when the page wants native,
-editable data, the component when it wants the label column the component lays out.
-
 ## Widths set by the layout: one full-height column per segment (worked: a mekko)
 
 A native chart cannot vary category widths, which is the point of a mekko. Approximate

@@ -143,7 +143,7 @@ VALUE_SHAPES: tuple[tuple[str, str, str | None], ...] = (
     (r"/spacing/steps/[^/]+", "an integer EMU, 12700 (one point) or more", None),
     (r"/spacing/steps", ('{"space.xs": EMU, "space.sm": EMU, "space.md": EMU, "space.lg": EMU, "space.margin": EMU, "space.gutter": EMU} '
                          '(integers of 12700 EMU, one point, or more; space.xs, space.sm, space.margin and space.gutter are required: '
-                         'the round trip and the components read them)'), None),
+                         'the round trip and the build read them)'), None),
     (r"/spacing/baseline_emu", "an integer EMU", "no baseline grid"),
     (r"/density_bands/table_rows_per_inch", '{"metric": "table_rows_per_inch", "low", "high", "median", "n"}', "no table to measure"),
     (r"/floors/[^/]+/floor_pt", "a number of points, never below absolute_floor_pt", "no run in this family: the absolute floor holds"),
@@ -184,7 +184,7 @@ MARGIN_SIDES = ("left", "right", "top", "bottom")
 #: points or pixels (6 meant as 6 pt is 6 EMU, 0.0005 pt), refused rather than stored.
 MIN_STEP_EMU = 12_700
 STEP_UNIT_HINT = "a step is EMU (12,700 per point, 91,440 per 0.1 in): was it written in points or pixels?"
-#: the spacing steps the round trip (import_slide) and the components read by name
+#: the spacing steps the round trip (import_slide) and the build read by name
 SPACING_STEPS_NEEDED = ("space.margin", "space.gutter", "space.xs", "space.sm")
 #: the colour roles a completed /tables names, each answered (null: the reference has none)
 TABLE_ROLE_KEYS = ("header_fill_role", "header_ink_role", "banding_role")
@@ -1208,7 +1208,7 @@ def apply_one(guide: dict, path: str, value, open_paths: dict, digest_stub: dict
         tiny = sorted(k for k, v in value.items() if k not in bad and v < MIN_STEP_EMU)
         if bad or missing or tiny:
             raise PatchError(f"{path}: " + "; ".join(([f"{bad} must each be a positive integer EMU (\"space.sm\": 91440, not an object)"] if bad else [])
-                                                     + ([f"{missing} not answered: the round trip and the components read them"] if missing else [])
+                                                     + ([f"{missing} not answered: the round trip and the build read them"] if missing else [])
                                                      + ([f"{tiny} are under {MIN_STEP_EMU} EMU; " + STEP_UNIT_HINT] if tiny else [])))
         guide["spacing"]["steps"] = {k: {"emu": v, "provenance": model_prov("completion")} for k, v in value.items()}
     elif path.startswith("/notes"):
