@@ -1,0 +1,241 @@
+{
+ "/color/roles/color.accent1": {
+  "hex": "00A9F4",
+  "why": "the electric blue used for titles, numerals and the 70% / 56% figures on the dark pages"
+ },
+ "/color/roles/color.accent2": {
+  "hex": "95DEFF",
+  "why": "the pale blue seen on one run; the natural tint step of the accent on the navy ground"
+ },
+ "/color/roles/color.accent3": {
+  "hex": "2251FF",
+  "why": "a mid blue between the electric accent and the navy surface, for a third series; derived by hue, not observed"
+ },
+ "/color/roles/color.positive": {
+  "hex": "00A9F4",
+  "why": "the reference uses its accent for emphasis, never green; positive reads as the accent"
+ },
+ "/color/roles/color.negative": {
+  "hex": "95DEFF",
+  "why": "no red in the register; a lighter tint marks the negative case"
+ },
+ "/typography/roles/type.kicker": {
+  "size_pt": 10,
+  "weight": 700,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.accent1"
+ },
+ "/typography/roles/type.source_line": {
+  "size_pt": 9,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "the reference sets its source lines at 8pt; the annotation floor this draft measured is 9.0pt (Tukey fence over 43 annotation runs, 33 of them at 9pt), so 9pt is the smallest size it admits"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 12,
+  "weight": 700,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.table_cell": {
+  "size_pt": 12,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.axis_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.data_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "center",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/floors/chart/floor_pt": 10,
+ "/tables": {
+  "header_fill_role": null,
+  "header_ink_role": "color.ink",
+  "header_bold": true,
+  "banding_role": null,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.accent1"
+   },
+   "row_interior": {
+    "width_pt": 0.5,
+    "color_role": "color.ink_muted"
+   },
+   "table_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.accent1"
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "none": true
+   }
+  },
+  "cell_padding_role": "space.sm",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": true,
+  "why": "the framework page rules its rows with thin light lines on the navy; headers are plain white bold text"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent1",
+   "color.accent2",
+   "color.accent3"
+  ],
+  "per_kind": {
+   "column": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "b"
+   },
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "b"
+   },
+   "line": {
+    "gridlines_major": 0.0,
+    "data_labels": 0.0,
+    "legend_position": "b"
+   }
+  },
+  "why": "no native chart in the PDF; the figure pages use large accent numerals and no gridlines"
+ },
+ "/continuation": {
+  "contd_mark": null,
+  "why": "none seen: no page of the reference's 17 continues onto the next, so the reference shows no continuation mark; a page that splits says how it marks the continuation in the report"
+ },
+ "/shape_language/icon_style": "white line icons in accent-blue circles",
+ "/imagery/register_kind": "photographs in circles and wide crops, blue tinted",
+ "/description": {
+  "summary": "A dark McKinsey discussion document: navy pages, white Arial body, Georgia display titles, one electric-blue accent for numerals and emphasis, numbered framework rows with icons, white source lines at the foot.",
+  "typography": "Georgia for titles (44pt) and section heads (36 and 25pt), Arial for everything else; 12pt body, 8pt sources; bold used for the key clause of a sentence.",
+  "color": "Navy ground, white ink, electric blue accent; no other hue.",
+  "layout": "Wide 16:9 pages, 0.6in side margins, title top-left, content in two or three columns, source line bottom-left, McKinsey & Company and the page number bottom-right.",
+  "tables": "No ruled tables observed; frameworks are rows with a numbered circle, a label and a short description.",
+  "imagery": "Circular photo crops and icon circles.",
+  "motifs": "Numbered blue circles, thin white rules between rows.",
+  "not_seen": [
+   "light backgrounds on content pages",
+   "colour bars",
+   "gradients",
+   "more than one accent hue"
+  ],
+  "tone": "assured, spare, executive"
+ },
+ "/derivation_rules": [
+  "Tint the accent toward white for secondary series (00A9F4 -> 95DEFF); never introduce a second hue.",
+  "Display sizes step 44 / 36 / 25; body 12; annotation 8 to 10."
+ ],
+ "/notes/fonts": "Georgia is not installed in this sandbox; measured as DejaVu Serif (recorded under typography.families.substitutes); the file names Georgia.",
+ "/typography/families/substitutes": {
+  "Georgia": "DejaVu Serif",
+  "Aptos": "Carlito"
+ },
+ "/shape_language/corner_radii": {
+  "modal_radius_emu": 0,
+  "rounded_share": 0.0,
+  "why": "every box in the renders is square-cornered: the skills matrix cells and group frames (page 14), the panels on pages 12 and 13"
+ },
+ "/typography/scale_ratio": null,
+ "/spacing/baseline_emu": null,
+ "/density_bands/table_rows_per_inch": null,
+ "/typography/roles/type.title/line_spacing": null,
+ "/typography/roles/type.body/line_spacing": null,
+ "/typography/roles/type.caption/line_spacing": null,
+ "/typography/roles/type.emphasis/line_spacing": null,
+ "/typography/roles/type.footnote/line_spacing": null,
+ "/typography/roles/type.h1/line_spacing": null,
+ "/typography/roles/type.h2/line_spacing": null,
+ "/variety/content_pages": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  17
+ ],
+ "/titles/register": {
+  "per_title": {
+   "4": "claim",
+   "5": "topic",
+   "6": "claim",
+   "7": "topic",
+   "8": "claim",
+   "9": "claim",
+   "11": "topic",
+   "13": "topic",
+   "14": "topic",
+   "15": "topic",
+   "17": "topic"
+  },
+  "companions": {
+   "4": {
+    "below": {"other": "the timeline's first label"}
+   },
+   "6": {
+    "below": {"other": "the first big number"}
+   },
+   "7": {
+    "below": {"other": "a 'Not Exhaustive' tag"}
+   }
+  },
+  "claims_elsewhere": {
+   "5": null,
+   "7": null,
+   "11": null,
+   "13": null,
+   "14": null,
+   "15": null,
+   "17": null
+  },
+  "why": "Read off the renders: claim sentences where the page argues (4, 6, 8, 9), topic phrases on frameworks, reference and detail pages; the blocks found below titles 4 and 6 are the timeline's first label and the first big number, and 7's is a 'Not Exhaustive' tag, none a companion of the title. Pages 2, 3, 10 and 12 carry titles the position reader did not find."
+ },
+ "/color/roles/color.emphasis": null
+}

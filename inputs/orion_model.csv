@@ -1,0 +1,19 @@
+section,line,FY2026E,FY2027E,FY2028E,FY2029E,FY2030E,FY2031E
+P&L,Revenue,412.0,445.0,481.3,519.8,559.4,600.2
+P&L,EBITDA,78.3,87.2,97.2,108.1,119.2,130.2
+P&L,Capex,-16.5,-17.8,-19.3,-20.8,-22.4,-24.0
+P&L,Change in NWC,-4.1,-3.3,-3.6,-3.9,-4.0,-4.1
+Debt,Term loan B,355.0,331.6,302.4,266.8,224.6,175.9
+Debt,Senior notes,120.0,120.0,120.0,120.0,120.0,120.0
+Debt,Cash interest,-38.9,-37.0,-34.6,-31.6,-28.1,-24.0
+Transaction,Entry EV,860.0,,,,,
+Transaction,Entry multiple (x LTM EBITDA),11.0,,,,,
+Transaction,Sponsor equity,405.0,,,,,
+Transaction,Fees and expenses,22.0,,,,,
+Transaction,Management rollover,30.0,,,,,
+Returns,Exit multiple base (x),,,,,,11.0
+Returns,IRR at 10x / 11x / 12x exit (%),,,,,,18.4 / 21.2 / 23.8
+Returns,MOIC at 10x / 11x / 12x exit (x),,,,,,2.33 / 2.61 / 2.90
+Downside,Revenue growth (% pa),,,,,,1.5
+Downside,EBITDA margin FY2031 (%),,,,,,17.0
+Downside,IRR at 10x exit (%),,,,,,9.6

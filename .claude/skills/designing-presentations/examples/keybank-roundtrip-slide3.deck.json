@@ -1,0 +1,437 @@
+{
+ "slides": [
+  {
+   "id": "import-3",
+   "layout": "Title and Content",
+   "notes": "round trip of keybank.pptx (mi_keybank_first_niagara_fig_ma.pptx) slide 3: roles and weights as import_slide.py read them on the keybank guide, no coordinates; the text paraphrased from the public deck",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Valuation: Inputs to the Dividend Discount Model"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "weight": 1.0,
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "row1",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Growth in Total Assets"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "In a 1% to 2% range, easing to 1.5% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row2",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e3",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Risk-Weighted Share of Total Assets"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e4",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "73-74% through all 12 years of the explicit forecast (FY 15 to FY 26)",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row3",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e5",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "CET 1 Ratio Target"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e6",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "9.0% (a little over the bank's present 8.5% goal)",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row4",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e7",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Return on Avg. Assets"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e8",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "0.60%, rising to 0.83% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row5",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e9",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Share of Earnings Paid Out"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e10",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "65-70%, rising to 80% by FY 26",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row6",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e11",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Required Equity Return"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e12",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "8.97% throughout (2.1% risk-free, 5.8% equity premium, 1.19 levered beta)",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "row7",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.gutter",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "e13",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Exit Price / TBV Multiple"
+            }
+           ],
+           "weight": 0.2885
+          },
+          {
+           "type": "element",
+           "id": "e14",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "1.33x from 1.6% growth in common net income, an 11.42% ROTCE and the 8.97% equity return; an exit P / E of 11.8x follows",
+             "bullet_level": 0
+            }
+           ],
+           "weight": 0.7115
+          }
+         ],
+         "weight": 1.0
+        }
+       ]
+      }
+     ]
+    },
+    "splittable_groups": []
+   },
+   "styling": {
+    "e1": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e2": {
+     "anchor": "m"
+    },
+    "e3": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e4": {
+     "anchor": "m"
+    },
+    "e5": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e6": {
+     "anchor": "m"
+    },
+    "e7": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e8": {
+     "anchor": "m"
+    },
+    "e9": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e10": {
+     "anchor": "m"
+    },
+    "e11": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e12": {
+     "anchor": "m"
+    },
+    "e13": {
+     "anchor": "m",
+     "fill_role": "color.rule",
+     "paragraphs": {
+      "0": {
+       "align": "center",
+       "ink_role": "color.ink_inverse"
+      }
+     }
+    },
+    "e14": {
+     "anchor": "m"
+    }
+   },
+   "import_notes": [
+    "e1: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e3: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e5: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e7: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e9: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e11: filled text box written flush, without its inset; wrap it in a padded region to keep one",
+    "e13: filled text box written flush, without its inset; wrap it in a padded region to keep one"
+   ],
+   "import_lost": [
+    "each element's exact position and size (rebuilt from roles and weights)"
+   ]
+  }
+ ]
+}

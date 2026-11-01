@@ -1,0 +1,280 @@
+{
+ "/color/roles/color.ink_muted": {
+  "hex": "595959",
+  "why": "no muted ink is observed; a neutral between the black ink and the grey accent, for source lines and axis labels"
+ },
+ "/color/roles/color.surface_alt": {
+  "hex": "CCD1D7",
+  "why": "the light grey panel fill covers 31% of painted area (sensitivity table bands on slides 4 and 10)"
+ },
+ "/color/roles/color.accent3": {
+  "hex": "5E7C9E",
+  "why": "the master carries the reference's palette as swatch rectangles: 17-61-99, 204-209-215 (observed as accent1), 94-124-158, 72-80-89"
+ },
+ "/extra_roles/color.slate": "485059",
+ "/typography/roles/type.h1/members": {
+  "weight": 400,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.h2/members": {
+  "weight": 700,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/typography/roles/type.kicker": {
+  "size_pt": 10,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.accent2",
+  "why": "section labels above exhibits; caption size, bold, caps, in the reference's blue"
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "the reference's smallest text is its 10pt notes; the annotation floor is 10"
+ },
+ "/typography/roles/type.source_line": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "same size as the 10pt captions the reference uses for notes"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 12,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "center",
+  "case": "as_typed",
+  "ink_role": "color.ink_inverse",
+  "why": "the label boxes on slide 3 are white bold text on the deep blue"
+ },
+ "/typography/roles/type.table_cell": {
+  "size_pt": 12,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "body size; the body floor is 12"
+ },
+ "/typography/roles/type.axis_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted"
+ },
+ "/typography/roles/type.data_label": {
+  "size_pt": 10,
+  "weight": 400,
+  "italic": false,
+  "family": "major",
+  "alignment": "center",
+  "case": "as_typed",
+  "ink_role": "color.ink"
+ },
+ "/floors/chart/floor_pt": 10,
+ "/tables": {
+  "header_fill_role": "color.accent2",
+  "header_ink_role": "color.ink_inverse",
+  "header_bold": true,
+  "banding_role": null,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.rule"
+   },
+   "row_interior": {
+    "width_pt": 0.5,
+    "color_role": "color.accent1"
+   },
+   "table_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.rule"
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "none": true
+   }
+  },
+  "cell_padding_role": "space.xs",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": true,
+  "merged_cell_convention": "span_labels",
+  "why": "no table in the reference; the slide 3 label boxes (blue fill, white bold text) and the slide 4 sensitivity grids (grey bands, thin rules) set the pattern"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent2",
+   "color.accent3",
+   "color.accent1",
+   "color.slate"
+  ],
+  "per_kind": {
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "none"
+   },
+   "column": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "b"
+   },
+   "line": {
+    "gridlines_major": 0.0,
+    "data_labels": 0.0,
+    "legend_position": "b"
+   }
+  },
+  "why": "no native chart; the pasted exhibits on slides 7 (clustered columns, deep blue against a second series, legend below, no gridlines) and 9 (horizontal deep-blue bars, value labels at the bar end, no value axis, no gridlines, 'Source:' line under) set the language"
+ },
+ "/continuation": {
+  "contd_mark": null,
+  "why": "none seen: no page of the reference's 12 continues onto the next, so the reference shows no continuation mark; a page that splits says how it marks the continuation in the report"
+ },
+ "/shape_language/icon_style": "none",
+ "/imagery/register_kind": "screenshots and logos, wide crops, no frames",
+ "/description": {
+  "summary": "A restrained banker's deck: black Arial on white, a deep blue (113D63) full-width rule under the title and a blue block at the left edge on every page, light grey panels for sensitivity grids, the bank name in blue at the foot, one message per page in a 24pt plain title.",
+  "typography": "Arial throughout; 24pt regular titles that run to two lines when needed, 12pt body in square-bullet lists, bold 12pt for emphasis inside a sentence, 10pt for notes and sources. No italics, no caps except short labels.",
+  "color": "White pages, black text; deep blue for structure (rule, left block, label boxes, header fills) and for the footer name; light grey for panel fills and secondary bars; red appears once as a highlight line and is not a palette colour.",
+  "layout": "A consistent left margin of 0.42in; title band at the top; content either one full-width text block or a label column beside explanatory bullets; exhibits sit right with text left; generous bottom margin above the footer rule.",
+  "tables": "Flat grids: blue header band with white bold text, thin grey interior rules, no outer border, figures right-aligned, labels left.",
+  "imagery": "Pasted exhibits (screenshots of models) spanning the content width, no frames or shadows.",
+  "motifs": "The top rule and the left block are the page signature; label boxes are solid blue rectangles with white text; nothing is rounded, nothing has an effect.",
+  "not_seen": [
+   "rounded corners",
+   "shadows or gradients",
+   "colour bars that are not the top rule or left block",
+   "centred body text",
+   "icons",
+   "text smaller than 10pt"
+  ],
+  "tone": "direct, analytical, restrained",
+  "charts": "Flat deep-blue bars with the figure at the bar end, no gridlines, no value axis where labels carry the figures; source line under the exhibit (slide 9)."
+ },
+ "/derivation_rules": [
+  "Extend the palette by stepping the deep blue towards the grey: 113D63 -> 5E7C9E -> CCD1D7; never introduce a new hue.",
+  "New text roles take a size from the ladder 10 / 12 / 15 / 19 / 24; weight 700 only for emphasis, h2 and table headers.",
+  "Any new component is drawn flat with rect geometry, blue header treatment and grey panels, ruled with 0.5pt grey lines."
+ ],
+ "/color/roles/color.accent2": {
+  "hex": "113D63",
+  "why": "the reference's deep-blue swatch 17-61-99 on the master; the draft observes the same hex as color.rule (the top rule and left block)"
+ },
+ "/typography/scale_ratio": 1.25,
+ "/typography/roles/type.title/line_spacing": 1.2,
+ "/typography/roles/type.body/line_spacing": 1.2,
+ "/typography/roles/type.caption/line_spacing": 1.2,
+ "/typography/roles/type.emphasis/line_spacing": 1.2,
+ "/typography/roles/type.h2/line_spacing": 1.2,
+ "/typography/roles/type.h1/line_spacing": 1.2,
+ "/color/roles/color.positive": {
+  "hex": "113D63",
+  "why": "the reference marks the favourable case in its own deep blue (slide 12 recommendation chevrons); no green is ever used, so positive takes the structural blue"
+ },
+ "/color/roles/color.negative": {
+  "hex": "FF0000",
+  "why": "the only saturated non-blue in the deck: the red highlight outline on slides 7, 8 and 10 that flags the adverse figure"
+ },
+ "/spacing/baseline_emu": null,
+ "/density_bands/table_rows_per_inch": {
+  "metric": "table_rows_per_inch",
+  "low": null,
+  "high": null,
+  "n": 0
+ },
+ "/variety/content_pages": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "/titles/register": {
+  "per_title": {
+   "2": "topic",
+   "3": "topic",
+   "4": "topic",
+   "5": "topic",
+   "6": "topic",
+   "7": "topic",
+   "8": "question",
+   "9": "question",
+   "10": "topic",
+   "11": "question",
+   "12": "topic"
+  },
+  "companions": {
+   "3": {
+    "below": {"other": "first label cell of the assumptions column"}
+   },
+   "4": {
+    "below": "units_line"
+   },
+   "5": {
+    "below": "units_line"
+   },
+   "7": {
+    "below": "units_line"
+   },
+   "10": {
+    "below": {"other": "a column header of the table"}
+   }
+  },
+  "claims_elsewhere": {
+   "2": "the first bullet: we recommend against the acquisition",
+   "3": null,
+   "4": "a lead-in bullet above the sensitivity tables",
+   "5": "a lead-in bullet ending in a colon above the comps table",
+   "6": null,
+   "7": "a lead-in bullet ending in a colon above the accretion table",
+   "10": null,
+   "12": "the labels of four numbered rows"
+  },
+  "why": "Read off the renders: titles are short topic phrases or questions; slide 3's below-block is the first label cell of the assumptions column and slide 10's is a column header, not companions of the title; slides 4, 5 and 7 carry a units line under the title. The claim sits in a lead-in bullet on argument pages and in numbered row labels on the summary."
+ },
+ "/color/roles/color.emphasis": {
+  "hex": "FF0000",
+  "why": "the red outline boxes round the figures the claim rests on (slides 5, 7, 8, 9, 10); the reference's look-here mark, read off the renders"
+ }
+}

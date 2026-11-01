@@ -1,0 +1,489 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "mi_keybank_first_niagara_fig_ma.pptx",
+ "reference_sha256": "5642eb9ad45229ca4ce70874a4741ccc4b97a464692e3eef4471ffdd3366f2ad",
+ "render_fidelity": "metric_substituted",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1800,
+  "px_per_pt": 3.33
+ },
+ "sample_policy": "every evidence page",
+ "pages_not_read": [],
+ "generated_slides_skipped": [],
+ "pages": [
+  {
+   "slide": 1,
+   "page_png": "pages/slide-01.png",
+   "content_crop": {
+    "file": "crops/p001-content.png",
+    "pixel_size": [
+     2184,
+     468
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [],
+   "source_line": null
+  },
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     2164,
+     1286
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [],
+   "source_line": null
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2164,
+     1336
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "what": "seven navy label boxes down the left, each with its assumption in a bullet beside it",
+     "message": "The dividend discount model's assumptions, one labelled row each",
+     "how_drawn": "seven equal navy boxes stacked down the left third, each a white centred label; to their right one square-bulleted line or two of figures in black body type; no grid lines, no fills on the right",
+     "marks": "nothing is marked: every row carries the same weight and the figures sit in plain body type",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     2184,
+     1424
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      2184,
+      1324
+     ],
+     "box_in": [
+      0.41,
+      1.41,
+      9.1,
+      5.52
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p004-c1",
+     "what": "a pasted grid of implied share prices, terminal multiple down the side against discount rate across the top",
+     "message": "Implied price by terminal P / TBV and discount rate sits below the $11.40 offer",
+     "how_drawn": "a spreadsheet pasted as a picture: a navy panel on the left holds the white row heading, a grey header band carries the rates, a dollar sign on the first row only, two decimals throughout, no cell borders inside the grid",
+     "marks": "the 1.35x row and the 9.00% column are set bold, so the base case reads as a cross through the grid; the navy spanner names the discount rate over the columns",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    },
+    {
+     "candidate": "p004-c1",
+     "what": "a second pasted grid of the same prices, CET1 target down the side against discount rate",
+     "message": "Implied price by CET 1 target and discount rate sits below the offer",
+     "how_drawn": "the same pasted spreadsheet layout repeated under the first: navy panel with white heading on the left, grey header band, dollar sign on the first row only, two decimals",
+     "marks": "the 9.00% target row and the 9.00% column are set bold to show the base case; nothing is drawn over the grid",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2164,
+     1383
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p005-c1",
+     "file": "crops/p005-c1.png",
+     "pixel_size": [
+      2164,
+      1283
+     ],
+     "box_in": [
+      0.41,
+      1.41,
+      9.02,
+      5.35
+     ],
+     "kinds": {
+      "image": 2,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p005-c1",
+     "what": "a pasted peer table of regional banks with max, quartile, median and minimum rows under it, the subject last",
+     "message": "First Niagara trades in line with peers on P / E and P / TBV",
+     "how_drawn": "a pasted spreadsheet: a navy header band with underlined group headings, eight peer rows in small black type, then a boxed block of max, quartile, median and minimum rows, and the subject alone in a boxed light blue row at the foot; multiples carry an x, ratios a percent sign",
+     "marks": "the median row is filled light blue and bold, and a red rectangle rings the median and 25th percentile figures from P / E across; a second red rectangle rings First Niagara's figures in the bottom row, with no words of its own beside it",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    },
+    {
+     "candidate": "p005-c1",
+     "what": "a small pasted table of the subject's valuation multiples at current price, offer and against public comps",
+     "message": "The offer's forward P / E is above the public comps",
+     "how_drawn": "a small pasted table under the peer grid: a grey header band with four column headings, row labels on the left, multiples with an x, missing comps written N/A in blue",
+     "marks": "two red rectangles ring the forward P / E rows for year 1 and year 2, with no words of their own beside them; the blue N/A cells stand out without a mark",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2164,
+     1336
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "what": "seven navy label boxes down the left, each with its merger assumption in a bullet beside it",
+     "message": "The merger model's assumptions, one labelled row each",
+     "how_drawn": "seven navy boxes stacked down the left, white centred labels, each with its assumption as a square-bulleted line in black beside it, as on slide 3",
+     "marks": "nothing is marked: each assumption is one row of equal weight",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  },
+  {
+   "slide": 7,
+   "page_png": "pages/slide-07.png",
+   "content_crop": {
+    "file": "crops/p007-content.png",
+    "pixel_size": [
+     2164,
+     1424
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p007-c1",
+     "file": "crops/p007-c1.png",
+     "pixel_size": [
+      2164,
+      1344
+     ],
+     "box_in": [
+      0.41,
+      1.33,
+      9.02,
+      5.6
+     ],
+     "kinds": {
+      "image": 2,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p007-c1",
+     "what": "a pasted grid of EPS accretion, purchase premium down the side against cost savings across the top",
+     "message": "EPS accretion by purchase premium and cost savings falls to 0-5% at 10-20% savings",
+     "how_drawn": "a pasted grid of accretion: navy panel with the white row heading on the left, grey header band of synergy percentages, negative accretion written in brackets, the 40.0% column bold in black",
+     "marks": "a red rectangle rings the block from 10% to 25% synergies and 22.5% to 32.5% premium, the range the bullet above names; the 27.5% row and the 40.0% column are bold",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    },
+    {
+     "candidate": "p007-c1",
+     "what": "a pasted chart of paired columns, offer price against implied price for each contribution metric",
+     "message": "The offer is justified only where full cost synergies are credited to the seller",
+     "how_drawn": "a pasted Excel column chart: blue offer columns paired with red implied columns for fourteen metrics, dollar gridlines and axis on the left, dollar values above the red columns only, a two-entry legend at the foot",
+     "marks": "a red rectangle rings the two post-synergy columns that clear the offer, with no words of its own; every red column carries its value above it",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 8,
+   "page_png": "pages/slide-08.png",
+   "content_crop": {
+    "file": "crops/p008-content.png",
+    "pixel_size": [
+     2379,
+     1302
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p008-c1",
+     "file": "crops/p008-c1.png",
+     "pixel_size": [
+      2379,
+      339
+     ],
+     "box_in": [
+      0.0,
+      2.0,
+      9.91,
+      1.41
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p008-c2",
+     "file": "crops/p008-c2.png",
+     "pixel_size": [
+      1671,
+      249
+     ],
+     "box_in": [
+      1.48,
+      3.59,
+      6.96,
+      1.04
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p008-c3",
+     "file": "crops/p008-c3.png",
+     "pixel_size": [
+      1348,
+      467
+     ],
+     "box_in": [
+      2.15,
+      4.81,
+      5.62,
+      1.95
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p008-c1",
+     "what": "three pasted excerpts of other banks' announcements, their synergy figures ringed in red",
+     "message": "Recent deals projected cost savings of about 30 percent, well under 40",
+     "how_drawn": "three screenshots of other banks' press releases pasted down the page at different sizes and typefaces, the third with its own blue header bar",
+     "marks": "red rectangles ring the percent of expenses phrase in each excerpt, with no words of their own; a thick red arrow points from the red headline to the $20 million line",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  },
+  {
+   "slide": 9,
+   "page_png": "pages/slide-09.png",
+   "content_crop": {
+    "file": "crops/p009-content.png",
+    "pixel_size": [
+     2184,
+     1291
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p009-c1",
+     "file": "crops/p009-c1.png",
+     "pixel_size": [
+      941,
+      1213
+     ],
+     "box_in": [
+      5.59,
+      1.33,
+      3.92,
+      5.05
+     ],
+     "kinds": {
+      "image": 1
+     }
+    },
+    {
+     "id": "p009-c2",
+     "file": "crops/p009-c2.png",
+     "pixel_size": [
+      1204,
+      1291
+     ],
+     "box_in": [
+      0.41,
+      1.33,
+      5.02,
+      5.38
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 1
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p009-c2",
+     "what": "a pasted list of bank deals as horizontal bars of synergy run rate, longest first, the average boxed",
+     "message": "Bank deals announced synergy run rates averaging 25.7%",
+     "how_drawn": "a pasted bar list on the right half: deal names right-aligned, navy bars running left to right, sorted longest first, each value at the bar end with a decimal comma, dashed vertical lines at the average and the top quartile",
+     "marks": "the average is a dashed line with its value boxed in red at the foot, and the top quartile line is labelled beside it in bold; the bars themselves carry no mark",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 10,
+   "page_png": "pages/slide-10.png",
+   "content_crop": {
+    "file": "crops/p010-content.png",
+    "pixel_size": [
+     2186,
+     1377
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p010-c1",
+     "file": "crops/p010-c1.png",
+     "pixel_size": [
+      1486,
+      568
+     ],
+     "box_in": [
+      3.32,
+      2.75,
+      6.19,
+      2.37
+     ],
+     "kinds": {
+      "shape": 7
+     }
+    }
+   ],
+   "exhibits": [
+    {
+     "candidate": "p010-c1",
+     "what": "two columns of estimates, ours against KeyBank's, beside navy row labels, three rows ringed",
+     "message": "Our estimates of cash efficiency and EPS accretion are well above KeyBank's",
+     "how_drawn": "drawn in shapes, not a table: navy label boxes down the left, two grey column heading boxes, and square-bulleted figures in black under each heading with no cell lines",
+     "marks": "one red outline encloses the three middle rows of both columns, where the two sets of estimates differ, with no words of its own; the capital ratios row bolds its labels",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 11,
+   "page_png": "pages/slide-11.png",
+   "content_crop": {
+    "file": "crops/p011-content.png",
+    "pixel_size": [
+     2164,
+     1286
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [],
+   "source_line": null
+  },
+  {
+   "slide": 12,
+   "page_png": "pages/slide-12.png",
+   "content_crop": {
+    "file": "crops/p012-content.png",
+    "pixel_size": [
+     2184,
+     1162
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "exhibits": [
+    {
+     "candidate": null,
+     "what": "four numbered rows, each a navy arrow label pointing at a grey band of explanation",
+     "message": "Four numbered recommendations against the deal",
+     "how_drawn": "four rows, each a black number tab, a navy chevron with a white heading pointing right, and a rounded grey band holding two or three lines of black explanation",
+     "marks": "the number tabs order the four points; the chevrons point each heading at its explanation, and nothing else is marked",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  }
+ ],
+ "source_line": "on every page whose exhibits include a data_chart or a table: true or false, read off the page; null elsewhere"
+}

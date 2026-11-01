@@ -1,0 +1,164 @@
+# Intake: render, extract, gallery, PDF triage, fonts
+
+## Contents
+- What the three intake commands produce
+- What the digest cannot see
+- Generated slides and corner radii
+- PDF references: triage, vector pages, raster pages
+- Fonts the machine lacks
+
+## What the three intake commands produce
+
+```bash
+python3 scripts/render.py "$REF" --out "$DECK_WORK/ref/renders" --width 1600 --grid
+python3 scripts/extract_style.py "$REF" -o "$DECK_WORK/ref/draft.json" --report "$DECK_WORK/ref/draft.md"
+python3 scripts/gallery.py "$REF" --out "$DECK_WORK/ref/gallery" --guide "$DECK_WORK/ref/draft.json"
+```
+
+- `renders/grid.png` and one PNG per page; `renders/fonts.json`, the font report.
+- `draft.json`, the guide draft with provenance on every value and the `unresolved` list
+  (the open addresses you answer); `draft.md`, the evidence digest: size levels with
+  votes, the role table, colour pools by use, spacing steps and margins, composition
+  archetypes, chrome, motifs, register and density bands, floors, titles, the reference's
+  variety, and what is still open.
+- `gallery/MANIFEST.md`: crops of every component, one exemplar per composition family
+  with its skeleton.
+
+Read `fonts.json`. A face rendered as a `metric_alias` (Arial as Liberation Sans) is
+faithful in layout and not in letterforms: never copy letterforms from such a render. A
+face marked `substituted` makes the render useless as evidence of fit. For a PDF the list
+is the file's own fonts: an embedded face renders `exact`, a face the file only names is
+matched like a pptx face.
+
+`extract_style.py` prints one progress line per stage on stderr (a 205-page PDF: 48 to
+50 s over three runs, 32 to 34 s of it reading the PDF). `gallery.py` needs `--guide` for
+a PDF (no placeholders, so footer and page number come from the chrome the draft mined),
+crops only evidence pages, and refuses a deck over its component cap (1,000) with the
+count; `--pages 30-70` reads a range.
+
+## What the digest cannot see
+
+- `type.body` is the most frequent size level. When two or three levels are close in
+  votes, the reference writes at several sizes: the judge's `size_hist` reports how far your
+  pages' sizes sit from the reference's histogram (a section held at one body size in a
+  reference with its mass at 11, 16 and 18pt was not filed under its reference).
+- Density bands are the reference's own range (10th to 90th percentile of words, elements and
+  covered area per page). Below the band is sparse for this reference; above it is denser
+  than the reference ever goes.
+- Composition archetypes list which pages share an arrangement of content boxes; the
+  draft's Variety section measures how often the reference repeats one.
+- Hidden slides are walked as evidence. The digest's notes list them; when one is an
+  off-style leftover, delete it from a copy (`pptx_tools.py delete`) and extract again.
+
+## Generated slides and corner radii
+
+Slides this skill generated carry an origin tag; the extractor and the gallery skip them
+and say how many (`--include-generated` keeps them, only when you mean to treat your own
+output as evidence). `/shape_language/corner_radii` is observed whenever the slides declare
+preset geometry and is then never completed. A PDF declares none: the draft lists the
+address open and you read it off the renders
+(`{"modal_radius_emu": 0, "rounded_share": 0.0, "why": "..."}`).
+
+## PDF references: triage, vector pages, raster pages
+
+Of 19 reference PDFs measured, 8 are page images inside a letter-size print (an EDGAR
+exhibit printed from a browser, a filing with the deck bound in, a scan with an OCR
+layer). Their text layer is browser chrome or OCR output; mining it gives a reference of 1pt
+Times. So triage first:
+
+```bash
+python3 scripts/ooxml.py triage "$REF"      # per-page class and the deck_class; a non-PDF is refused
+```
+
+- `vector` and `vector_with_image` pages carry real type and are mined like a pptx, minus
+  placeholders, layouts, chart parts and table rules, which the draft lists as open. The
+  reader joins glyphs into lines, lines into text blocks (one block is one element), blocks
+  into paragraphs with bullets and measured indents. A glyph turned a quarter is read at
+  its true size; any other angle is left out and counted in the notes. The title is the
+  block at the position titles recur at (left edge, top or bottom, on at least half the
+  pages). Size never picks the title: with no recurring position `type.title` stays open.
+  A wrong size in the draft is a reader defect to report, never a value to patch over.
+- `raster_wrapper`, `raster_ocr` and `raster_only` pages are images. When they are the
+  majority (`deck_class: raster`) the draft opens every text-derived address, takes the
+  page size from the image box, and names the next step:
+
+```bash
+python3 scripts/raster_style.py "$REF" --out "$DECK_WORK/ref/raster" [--dpi 100]
+```
+
+  It measures what pixels can tell: palette by painted area, text ink as the modal dark
+  pixel, chrome as pixels holding one colour on half the pages (with `chrome-mask.png`),
+  margins by ink extents, line pitch by autocorrelation with a body size estimate.
+  `raster.patch.json` applies through `complete_guide.py` with provenance
+  `raster_inference` at confidence 0.5: the colour roles, and the margins when all four
+  sides carry ink. Chrome is not in it: the candidates (kind, box, colour) are listed in
+  `/notes/raster_chrome` and `raster.json`, and you write `/chrome` from the page images in
+  the shape `complete_guide.py` asks for (which kind each is, its text and text style, the
+  pages it is on). `raster.md` names the dpi and size band. Faces
+  cannot be read from pixels: name the family yourself from the page images. The body
+  estimate was within 0.3pt on a deck rendered and re-measured, and within the stated band
+  on a 104 dpi scan. A raster draft has no levels table, so a type role beyond the five it
+  opens is written with `"provenance": "raster_inference"`, and `/typography/bullets` takes
+  glyph, face and indent per level as the pages draw them. Run it only on a raster deck:
+  on a vector PDF it still measures pixels (the McKinsey board PDF reads surface 051B2D
+  and no margins) and adds nothing the vector reader did not.
+
+  On a raster draft the gallery refuses by name (`no_vector_pages`: no shapes to crop),
+  and the digest still runs: `gallery.py digest` cuts every page whole (no candidates),
+  and `/exhibit_habits` and `color.emphasis` are open as on a vector reference. The
+  whole-section answers a raster draft opens take checked shapes, each printed by
+  `complete_guide.py --check`: `/spacing/steps` an object of integer EMU
+  (`{"space.xs": 45720, "space.sm": 91440, ..., "space.margin": ..., "space.gutter": ...}`;
+  margin, gutter, xs and sm are required), `/composition` `{"archetypes": [{"archetype_id":
+  "arch-1", "slides": [...], "description": ...}], "why"}` (an empty list states none), and
+  `/chrome` a list of entries, each `chrome_id`, `kind` (`rule`, `band`, `logo`, `label`,
+  `page_number`, `footer`, `date`), `box_in` in inches, `slides_present` (at least half the
+  pages, or it is never drawn) and what its kind draws with (a rule a stroke, a band a
+  fill, a text kind its `text` and `text_style`, a logo an `image_path` (a PNG, JPEG or GIF
+  that `images.read_picture` opens; anything else is refused by name) or a placeholder
+  fill). An entry that would draw nothing is refused there, not left to draw nothing.
+- `other_size` pages (a memo bound in front) are excluded; `--pages 7-60` restricts the
+  extraction to a range you choose from the triage table.
+
+## Fonts the machine lacks
+
+`python3 scripts/preflight.py --reference "$REF"` lists every face the reference names with
+what this machine draws it as AND what the solver measures it with. The two differ on a
+PDF: the page renders draw a face the file embeds exactly, while the solver needs a font
+file. Bain's Verdana and
+McKinsey's Georgia rendered `exact` from their PDFs and every page was refused at
+capacity; preflight now says `NOT measurable here` for such a face, on a line that reads
+`needs`: the workflow runs, and text set in that face is refused until the user supplies
+its file or a stand-in is named (the exit code stays 0; `missing` is kept for what stops
+the workflow). The font report (`scripts/fonts.py report`, [fonts.md](fonts.md)) says
+what to do for each such face.
+
+**What you may install.** Nothing, on your own. Preflight prints the commands for missing
+packages; the user runs them, or tells you to. Python packages are machine-wide. A font is
+never downloaded or installed, by you or by any command, even when the user asks: the user
+puts font files they license in the fonts folder (`$DECK_FONTS`). What you may do without
+asking: name, under
+`/typography/families/substitutes`, the stand-in fc-match already draws (below). Say in
+the final report every face that was substituted, supplied or extracted, and every package
+anyone installed during the work, and by whom.
+
+The solver measures with the font files it has (`fc-list`). With no metric alias for the
+reference's face (Arial, Calibri, Cambria, Times New Roman and Courier New have one), the
+solver refuses rather than measure another face under that name. The refusal names the
+face LibreOffice draws it with (`fc-match <family>`); record exactly that face under
+`/typography/families/substitutes` in the completion (`{"Verdana": "Inter"}`). A stand-in
+other than fc-match's answer is refused, because the solver would then fit text in one
+face while the render draws another (Verdana measured as DejaVu Sans and drawn as Inter
+put a table row on one line that the build had wrapped). Every page that sets such a face
+reads `status: unfittable`, `reason: font refused` until it is recorded.
+
+`render.py` and the solver read metric aliases from one table (`textfit.py`, fontconfig's
+17 binding="same" classes). Helvetica is not an alias of Liberation Sans: without Nimbus
+Sans or TeX Gyre Heros installed, a Helvetica deck reports `substituted`. A face that draws
+bullet glyphs only (`bullets_only`) does not set the gallery's verdict: on keybank the
+verdict `metric_substituted` comes from Arial drawn as Liberation Sans and Calibri as
+Carlito (same metrics, other letterforms), not from Wingdings, and the gallery's warning
+names each face and what it means. `fonts.json` lists
+per face `uncovered_count` and an `uncovered_sample`; the gallery refuses with
+`uncoverable_characters` when any face has one, because a crop in a fallback face teaches
+the wrong letterforms. Ask the user for a face that covers the script, in the fonts folder.

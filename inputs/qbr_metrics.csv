@@ -1,0 +1,7 @@
+quarter,ARR ($m),new ARR ($m),churned ARR ($m),expansion ARR ($m),customers,NRR (%),GRR (%),gross margin (%),CAC payback (months),pipeline ($m),win rate (%),headcount
+Q3 2025,48.2,4.1,1.3,1.9,612,109,93,74.1,21,38.5,22,214
+Q4 2025,52.9,4.6,1.2,2.0,648,110,94,74.8,20,41.2,23,226
+Q1 2026,56.1,3.9,1.6,1.7,671,108,92,75.2,22,39.8,21,238
+Q2 2026,60.4,4.8,1.4,2.2,702,110,93,75.9,20,44.1,24,247
+Q3 2026,64.0,4.2,1.9,1.8,724,107,91,76.3,23,40.3,20,251
+notes: Q3 churn spike = 2 enterprise logos lost to a competitor price cut; new self-serve tier launched Aug; plan for Q4 is $68m ARR

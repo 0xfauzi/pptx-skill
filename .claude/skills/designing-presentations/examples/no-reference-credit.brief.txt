@@ -1,0 +1,11 @@
+Brief from the user: two pages for a lender's credit committee book on Larkspur Rail Freight (a fictional short-line freight railroad), illustrative figures, printed on letter paper and read line by line. No template, no brand: choose the look.
+Fiscal years 2021, 2022, 2023, 2024, 2025.
+Carloads, thousands: 182; 191; 204; 199; 213.
+Revenue by commodity, $m. Intermodal: 61.4; 66.0; 72.8; 70.1; 78.5. Chemicals: 44.2; 47.9; 51.3; 53.0; 56.6. Agriculture: 38.7; 36.2; 40.9; 42.5; 41.8. Aggregates: 27.5; 29.8; 31.1; 30.4; 33.2. Coal: 22.9; 20.4; 17.6; 14.8; 12.3.
+EBITDA, $m: 58.3; 61.0; 66.9; 64.2; 72.4.
+Capex, $m: 24.1; 26.5; 28.0; 25.7; 29.9.
+Cash interest, $m: 14.2; 13.8; 15.9; 17.1; 16.4.
+Cash taxes, $m: 4.0; 4.6; 5.2; 4.9; 6.1.
+Net debt at year end, $m: 228.0; 226.5; 238.0; 252.4; 230.2.
+Covenants: net debt to EBITDA at most 4.00x; EBITDA to cash interest at least 3.00x.
+Debt at FY2025 year end, $m: term loan B 185.0 at SOFR + 3.25%, due 2029; revolving credit facility of 50.0 committed with 20.0 drawn at SOFR + 2.75%, due 2028; equipment notes 41.4 at 5.10% fixed, due 2031. Cash 16.2.
