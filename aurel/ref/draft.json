@@ -1,0 +1,397 @@
+{
+ "schema": "pptx-skill style guide draft v1",
+ "measurement": {
+  "ruler": "pillow_x128",
+  "basis": "pinned when the draft was extracted; every capacity, survey and build on this guide measures with this ruler"
+ },
+ "reference": {
+  "file": null,
+  "sha256": null,
+  "slides": null,
+  "format": "none",
+  "text_layer": {
+   "status": "none"
+  },
+  "triage": null,
+  "page": null,
+  "layouts_used": null,
+  "none": "no reference deck: the model chooses the whole look; nothing here is a habit to compare with"
+ },
+ "typography": {
+  "families": {
+   "major": null,
+   "minor": null,
+   "fallbacks": []
+  },
+  "levels": [],
+  "roles": {},
+  "scale_ratio": null,
+  "bullets": {}
+ },
+ "color": {
+  "theme": {},
+  "roles": {},
+  "usage": {}
+ },
+ "spacing": {
+  "steps": {},
+  "margins": {},
+  "baseline_emu": null,
+  "gap_levels": []
+ },
+ "composition": {
+  "archetypes": [],
+  "bands": [],
+  "column_grids": [],
+  "alignment_edges": []
+ },
+ "variety": {
+  "pages": [],
+  "why": "no reference: no pages to measure variety over"
+ },
+ "register_stats": {},
+ "density_bands": {},
+ "chrome": [],
+ "motifs": [],
+ "titles": null,
+ "tables": null,
+ "charts": null,
+ "shape_language": {},
+ "imagery": {},
+ "floors": {
+  "body": {
+   "roles": [
+    "type.body",
+    "type.emphasis",
+    "type.h1",
+    "type.h2"
+   ],
+   "floor_pt": null,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  },
+  "annotation": {
+   "roles": [
+    "type.kicker",
+    "type.caption",
+    "type.footnote",
+    "type.source_line"
+   ],
+   "floor_pt": null,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  },
+  "display": {
+   "roles": [
+    "type.title"
+   ],
+   "floor_pt": null,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  },
+  "chart": {
+   "roles": [
+    "type.axis_label",
+    "type.data_label"
+   ],
+   "floor_pt": null,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  },
+  "table": {
+   "roles": [
+    "type.table_header",
+    "type.table_cell"
+   ],
+   "floor_pt": null,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  }
+ },
+ "floors_note": "absolute_floor_pt: product safety floor (7.0pt, measured on two screen media); never generate below it. floor_pt is null: with no reference nothing was measured, so the absolute floor is every family's floor",
+ "unresolved": [
+  {
+   "path": "/look_brief",
+   "reason": "no reference: the look brief, written before any other answer: who reads the deck and where, the subject's own world, the data's character, the density it calls for and why, the look in words, what each colour means, why the type ladder is what it is, and what you rejected; references/no-reference-design.md walks the reasoning, complete_guide.py --shapes gives the keys",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/reference/page",
+   "reason": "no reference: the page size, {\"width_emu\": int, \"height_emu\": int, \"why\": \"...\"}: 16:9 at 13.333 x 7.5 in is 12192000 x 6858000 EMU, 4:3 at 10 x 7.5 in is 9144000 x 6858000; choose for where the deck will be shown",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/families",
+   "reason": "no reference: the faces, {\"major\": \"<face>\", \"minor\": \"<face>\"}: faces installed or supplied in $DECK_FONTS (fonts.py report --guide checks them), so every fit is measured",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.title",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.kicker",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.h1",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.h2",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.body",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.emphasis",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.caption",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.footnote",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.source_line",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.table_header",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.table_cell",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.axis_label",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/roles/type.data_label",
+   "reason": "no reference: a type role of the ladder you choose (size, weight, face, case, ink); null when the look has no such text; no size below the 7.0pt absolute floor",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/typography/bullets",
+   "reason": "no reference: the bullet per level, {\"0\": {\"glyph\": \"<glyph>\", \"font\": \"<face>\", \"indent_role\": \"space.<step>\", \"hanging_indent_role\": \"space.<step>\"}}, or {} for text set without bullets",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.surface",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.surface_alt",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.ink",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.ink_muted",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.accent1",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.accent2",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.accent3",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.rule",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.positive",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.negative",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/color/roles/color.emphasis",
+   "reason": "no reference: a colour of the palette you choose; null when the look has none (surface, ink and accent1 are required)",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/spacing/steps",
+   "reason": "no reference: the spacing scale you choose",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/spacing/margins",
+   "reason": "no reference: the page margins, {\"left\": {\"emu\": int}, \"right\": ..., \"top\": ..., \"bottom\": ...}",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/chrome",
+   "reason": "no reference: the page furniture drawn on every page (a rule, a page number, a label), or [] for none",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/tables",
+   "reason": "no reference: how tables are drawn: header, banding, rules, padding, alignment",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/charts",
+   "reason": "no reference: series colours, gridlines, labels and legends",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/description",
+   "reason": "no reference: the look you chose, in words: summary, typography, color, layout, tables, imagery, motifs, not_seen ([]), tone",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  },
+  {
+   "path": "/continuation",
+   "reason": "no reference: what the deck does when a page continues onto the next, in words or {contd_mark, why}",
+   "constraints": {
+    "provenance": "model_choice"
+   },
+   "candidates": []
+  }
+ ],
+ "notes": [
+  "no reference deck: every address is open for the model's own choice (provenance model_choice). The corpus evidence in references/ is there as questions to ask of a design, never as a default to fill an address with"
+ ]
+}
