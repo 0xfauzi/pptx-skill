@@ -1,0 +1,246 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": "c14c590750257bf344b319e86c4e20a53b4e8d5734afb7c4cae7a022ca815801",
+ "pages": [
+  {
+   "id": "s1-cover",
+   "intent": "cover: name the question and the status of the numbers",
+   "message": "US cold-chain logistics market sizing and where to play, preliminary",
+   "composition": "new:cover-title-block",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": []
+  },
+  {
+   "id": "s2-exec",
+   "intent": "the answer first, as numbered findings",
+   "message": "Cold chain is an attractive, growing market; a pharma-led entry is the hypothesis to test",
+   "composition": "new:numbered-findings",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the five findings and the hypothesis in reading order, each with its headline figure",
+     "comparison": "none between rows: each row pairs a short finding with its evidence",
+     "data": "five short findings, each with one or two figures from the notes",
+     "forms_considered": [
+      {
+       "form": "rows of navy label cells beside pale blue detail cells",
+       "reason": "chosen: the reference's own assumptions table device, so a finding reads left to right with its evidence"
+      },
+      {
+       "form": "bulleted list under the title",
+       "reason": "loses the split between the finding and its evidence"
+      },
+      {
+       "form": "five numbered boxes in a grid",
+       "reason": "breaks the top-down reading order of an argument"
+      }
+     ],
+     "chosen_form": "rows of navy label cells beside pale blue detail cells",
+     "why": "an executive summary is read top-down; label cells give each finding a scannable head",
+     "in_reference_look": "navy cells with white text and pale blue cells as on the reference's pages 5 and 6",
+     "marks": "nothing marked: the title states the answer and the last row states the hypothesis"
+    }
+   ]
+  },
+  {
+   "id": "s3-size",
+   "intent": "size the market and split its growth",
+   "message": "The market grows from about 95 to about 135 billion dollars by 2030, about 7% a year",
+   "composition": "new:single-wide-chart",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "how the 2025 market becomes the 2030 market and how much of the step comes from pharma",
+     "comparison": "the 2025 total against the 2030 total, with the growth split into non-pharma and pharma steps",
+     "data": "two totals in billion dollars and two increments that sum to the difference",
+     "forms_considered": [
+      {
+       "form": "bridge from 2025 total to 2030 total",
+       "reason": "chosen: totals and the two growth steps share one dollar scale and the steps tie to the difference"
+      },
+      {
+       "form": "stacked columns for 2025 and 2030",
+       "reason": "the reader would subtract segment heights to see each segment's growth"
+      },
+      {
+       "form": "line chart of the market to 2030",
+       "reason": "only two dated points exist in the notes; intermediate years would be invented"
+      }
+     ],
+     "chosen_form": "bridge from 2025 total to 2030 total",
+     "why": "the claim is a size and a growth split; a bridge shows both without arithmetic",
+     "in_reference_look": "navy totals and the bright blue for the pharma step, bold black chart label with a unit line, source line under the plot",
+     "marks": "the pharma step in the emphasis blue with its value; a bracket over the growth steps carrying the 7% a year rate"
+    }
+   ]
+  },
+  {
+   "id": "s4-mix",
+   "intent": "show where growth concentrates",
+   "message": "Pharma is 22% of today's market but 35% of growth to 2030",
+   "composition": "new:chart-beside-notes",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "that the pharma share of growth is much larger than its share of today's market",
+     "comparison": "pharma and non-pharma shares of the 2025 market against their shares of 2025 to 2030 growth",
+     "data": "two compositions of 100 percent, two segments each",
+     "forms_considered": [
+      {
+       "form": "two 100 percent stacked columns side by side",
+       "reason": "chosen: the pharma segment's height in each column is the comparison, read on one scale"
+      },
+      {
+       "form": "two pie charts",
+       "reason": "angles across two pies are hard to compare"
+      },
+      {
+       "form": "paired horizontal bars of share",
+       "reason": "works, but the reference draws composition as stacked bars and the two columns read as before and after"
+      }
+     ],
+     "chosen_form": "two 100 percent stacked columns side by side",
+     "why": "the claim is a share that grows; two stacked columns put the pharma segment at the same base so its height difference reads directly",
+     "in_reference_look": "navy for non-pharma and the bright blue for pharma, segment values inside the bars in white",
+     "marks": "pharma segments in the emphasis blue with their shares labelled; the drivers text beside it names biologics and GLP-1"
+    }
+   ]
+  },
+  {
+   "id": "s5-capacity",
+   "intent": "show that supply is tight",
+   "message": "Revenue grows faster than warehouse capacity, which already runs at about 82% utilisation",
+   "composition": "new:single-wide-chart",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the gap opening between revenue growth and capacity growth to 2030",
+     "comparison": "pharma revenue, total revenue and warehouse capacity, each indexed to 2025",
+     "data": "three series of six yearly index values, compounded from the stated growth rates",
+     "forms_considered": [
+      {
+       "form": "indexed line chart with labels at the line ends",
+       "reason": "chosen: three growth paths on one scale and the reference names series at line ends"
+      },
+      {
+       "form": "bars of annual growth rates",
+       "reason": "states the rates but not how the gap compounds by 2030"
+      },
+      {
+       "form": "table of index values",
+       "reason": "the reader would compare numbers instead of slopes"
+      }
+     ],
+     "chosen_form": "indexed line chart with labels at the line ends",
+     "why": "the claim is a widening gap; lines on one index scale show the slopes diverging",
+     "in_reference_look": "thin coloured lines, light grey gridlines, series named at the right end in their own colour, no legend",
+     "marks": "capacity line in grey and named at its end; a callout states the 82% utilisation and the tight regions"
+    }
+   ]
+  },
+  {
+   "id": "s6-cost",
+   "intent": "show the cost of adding capacity",
+   "message": "Cold storage costs about twice ambient to build, and energy is 25 to 30% of opex",
+   "composition": "new:chart-beside-notes",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "how far the cold-storage build cost range sits above the ambient cost",
+     "comparison": "the cold build cost range against the ambient build cost per square foot",
+     "data": "one range of 220 to 260 dollars and one value of 120 dollars per square foot",
+     "forms_considered": [
+      {
+       "form": "floating range bar against an ambient bar on one dollar axis",
+       "reason": "chosen: the range and the single value share one scale"
+      },
+      {
+       "form": "two columns using the cold midpoint",
+       "reason": "hides that the cold figure is a range"
+      },
+      {
+       "form": "a single big number of 2x",
+       "reason": "loses the dollar levels a capital plan needs"
+      }
+     ],
+     "chosen_form": "floating range bar against an ambient bar on one dollar axis",
+     "why": "the claim is a multiple of a cost; two bars on a dollar axis show it and keep the levels",
+     "in_reference_look": "horizontal bars as the reference draws them, navy for cold storage, grey for ambient",
+     "marks": "the cold range's upper part in the emphasis blue, the cost of each bar written beside it"
+    }
+   ]
+  },
+  {
+   "id": "s7-options",
+   "intent": "compare the three routes in",
+   "message": "The three routes trade off capability, capital and exposure to pharma growth",
+   "composition": "arch-5",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "what each route buys, its exposure to growth, its cost and its open question",
+     "comparison": "three routes against four criteria",
+     "data": "three rows by four columns of short qualitative text with figures from the notes",
+     "forms_considered": [
+      {
+       "form": "table with a navy label column",
+       "reason": "chosen: qualitative criteria read across each route and down each criterion"
+      },
+      {
+       "form": "two by two matrix of growth exposure and capital",
+       "reason": "would place routes on axes the notes do not measure"
+      },
+      {
+       "form": "three text columns",
+       "reason": "the criteria would not line up across routes"
+      }
+     ],
+     "chosen_form": "table with a navy label column",
+     "why": "the reader compares routes criterion by criterion; a table aligns them",
+     "in_reference_look": "the reference's assumptions table: navy label cells with white text, pale blue banded cells, white rules",
+     "marks": "nothing on the table: the title states the comparison and the next page gives the answer"
+    }
+   ]
+  },
+  {
+   "id": "s8-answer",
+   "intent": "give the preliminary answer and the work to confirm it",
+   "message": "Hypothesis: buy a regional 3PL for capability, then build pharma-grade sites near hubs",
+   "composition": "new:three-text-columns",
+   "title_register": "claim",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the answer to both CEO questions and the measurements that would change it",
+     "comparison": "the case for, the choice of where to play, and the open measurements side by side",
+     "data": "three short lists of qualitative points with figures from the notes",
+     "forms_considered": [
+      {
+       "form": "three columns under navy header bars",
+       "reason": "chosen: the two CEO questions and the next steps read as parallel answers"
+      },
+      {
+       "form": "single bulleted list",
+       "reason": "mixes the answer with the work still needed"
+      },
+      {
+       "form": "table of options against criteria",
+       "reason": "the previous page already compares routes"
+      }
+     ],
+     "chosen_form": "three columns under navy header bars",
+     "why": "the reader takes the answer and the conditions on it at once",
+     "in_reference_look": "navy header cells with white text over pale blue bodies, as the reference's tables draw labels",
+     "marks": "nothing marked: the headers name each column's question"
+    }
+   ]
+  }
+ ]
+}

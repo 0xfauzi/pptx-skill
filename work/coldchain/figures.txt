@@ -1,0 +1,23 @@
+total CAGR 2025-30: 0.0728
+pharma CAGR 2025-30: 0.1076
+non-pharma CAGR 2025-30: 0.0621
+market growth $bn: 40.0000
+pharma growth $bn: 14.0000
+non-pharma growth $bn: 26.0000
+pharma share 2025: 0.2211
+pharma share 2030: 0.2593
+pharma share of growth: 0.3500
+capacity 2030 bn cu ft: 4.9883
+index market: [100.0, 107.3, 115.1, 123.5, 132.5, 142.1]
+index pharma: [100.0, 110.8, 122.7, 135.9, 150.5, 166.7]
+index capacity: [100.0, 104.0, 108.2, 112.5, 117.0, 121.7]
+build cost multiple low: 1.8333
+build cost multiple high: 2.1667
+build cost multiple mid: 2.0000
+build cost premium $/sqft low: 100
+build cost premium $/sqft high: 140
+pharma 2025 market / client revenue: 17.5000
+stated: ~$95bn, ~$135bn, ~7% a year (7.3%), pharma ~$21bn -> ~$35bn, ~11% a year (10.8%), non-pharma $74bn -> $100bn, ~6% a year (6.2%)
+stated: +$40bn growth, pharma +$14bn = 35% of growth, 22% of 2025 market, 26% of 2030 market
+stated: capacity 4.1 -> ~5.0bn cu ft, index 2030: market 142, pharma 167, capacity 122
+stated: build cost 1.8x to 2.2x ambient, about 2x; premium $100 to $140 per sq ft

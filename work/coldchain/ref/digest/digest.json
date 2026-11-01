@@ -1,0 +1,7278 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "reference-report.pdf",
+ "reference_sha256": "c14c590750257bf344b319e86c4e20a53b4e8d5734afb7c4cae7a022ca815801",
+ "render_fidelity": "faithful",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1350,
+  "px_per_pt": 3.33
+ },
+ "sample_policy": "every evidence page",
+ "pages_not_read": [],
+ "generated_slides_skipped": [],
+ "record_template": {
+  "candidate": "<a candidate id on this page, or null>",
+  "what": "<what the exhibit is, in your words: its form and what it is made of>",
+  "message": "<the one thing a reader takes from it>",
+  "how_drawn": "<how the reference draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
+  "marks": "<what the reference marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim lives, and whether words beside the mark say what it marks; or that it marks nothing and how the claim still reads>",
+  "chart_or_table": "<true when it is a chart or a table, drawn natively or pasted as a picture: the pages the source-line habit is counted over>",
+  "axis_labels": "<true when it sets axis or category labels>",
+  "value_labels": "<true when it sets values on its marks>",
+  "why": "<optional>"
+ },
+ "source_line": "on every page holding a chart or a table: true or false, read off the page; null elsewhere",
+ "pages": [
+  {
+   "slide": 1,
+   "page_png": "pages/slide-01.png",
+   "content_crop": {
+    "file": "crops/p001-content.png",
+    "pixel_size": [
+     1847,
+     1190
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p001-c1",
+     "file": "crops/p001-c1.png",
+     "pixel_size": [
+      1826,
+      814
+     ],
+     "box_in": [
+      1.14,
+      1.33,
+      7.61,
+      3.39
+     ],
+     "kinds": {
+      "image": 1,
+      "connector": 2
+     }
+    },
+    {
+     "id": "p001-c2",
+     "file": "crops/p001-c2.png",
+     "pixel_size": [
+      589,
+      135
+     ],
+     "box_in": [
+      1.08,
+      4.86,
+      2.45,
+      0.56
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (2 panels)",
+    "kinds": "picture",
+    "marks": [
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "picture"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "picture"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p001-c1",
+     "what": "cover photograph of energy infrastructure in a wide crop with a slanted cut",
+     "message": "the report's subject: energy",
+     "how_drawn": "photo with diagonal white cut, thin blue rule under it",
+     "marks": "nothing marked",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  },
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     2050,
+     716
+    ],
+    "also_draws": []
+   },
+   "candidates": [],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": []
+   },
+   "exhibits": [],
+   "source_line": null
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2186,
+     1028
+    ],
+    "also_draws": [
+     {
+      "ref": "page3/t0",
+      "as": "title"
+     },
+     {
+      "ref": "page3/r1",
+      "as": "chrome"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p003-c1",
+     "file": "crops/p003-c1.png",
+     "pixel_size": [
+      2186,
+      1111
+     ],
+     "box_in": [
+      0.74,
+      0.56,
+      9.11,
+      4.63
+     ],
+     "kinds": {
+      "image": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p003-c1",
+     "what": "picture of report covers and a table of side-case download links, beside a text column",
+     "message": "the product is a suite of documents",
+     "how_drawn": "pasted picture to the right of body text",
+     "marks": "nothing marked",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     2184,
+     970
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      2125,
+      133
+     ],
+     "box_in": [
+      0.84,
+      4.48,
+      8.85,
+      0.55
+     ],
+     "kinds": {
+      "connector": 16,
+      "shape": 9
+     }
+    },
+    {
+     "id": "p004-c2",
+     "file": "crops/p004-c2.png",
+     "pixel_size": [
+      803,
+      98
+     ],
+     "box_in": [
+      1.22,
+      2.99,
+      3.35,
+      0.41
+     ],
+     "kinds": {
+      "connector": 2,
+      "shape": 1
+     }
+    },
+    {
+     "id": "p004-c3",
+     "file": "crops/p004-c3.png",
+     "pixel_size": [
+      1010,
+      132
+     ],
+     "box_in": [
+      5.48,
+      1.02,
+      4.21,
+      0.55
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p004-c4",
+     "file": "crops/p004-c4.png",
+     "pixel_size": [
+      957,
+      141
+     ],
+     "box_in": [
+      0.74,
+      0.99,
+      3.99,
+      0.59
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l21",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l22",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l23",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l24",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l25",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l26",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l27",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l28",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p004-c4",
+     "what": "two line charts side by side: past projections against the realised history",
+     "message": "past outlooks over- and under-shot the realised series",
+     "how_drawn": "history in black, past projections in thin grey lines, the latest in blue; labels at line ends; 'historical data series' label in the plot",
+     "marks": "the latest projection is coloured blue and named at its end; the history is labelled in words inside the plot",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2121,
+     980
+    ],
+    "also_draws": [
+     {
+      "ref": "page5/t0",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p005-c1",
+     "file": "crops/p005-c1.png",
+     "pixel_size": [
+      2121,
+      1118
+     ],
+     "box_in": [
+      0.73,
+      0.23,
+      8.84,
+      4.66
+     ],
+     "kinds": {
+      "connector": 11,
+      "shape": 24
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r5",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r6",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r7",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r8",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r9",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r10",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r11",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r12",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p005-c1",
+     "what": "two-column table: case groups in dark navy cells with white text, their assumptions in light-blue banded cells",
+     "message": "what each scenario assumes",
+     "how_drawn": "navy left column with merged cells per group, alternating pale blue rows on the right, bold 'Low:'/'High:' run-in labels, thin white rules between cells, footnote in italic under it",
+     "marks": "bold run-in labels mark low and high; no colour emphasis",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2090,
+     949
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p006-c1",
+     "file": "crops/p006-c1.png",
+     "pixel_size": [
+      2090,
+      727
+     ],
+     "box_in": [
+      0.77,
+      1.1,
+      8.71,
+      3.03
+     ],
+     "kinds": {
+      "connector": 8,
+      "shape": 16
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r5",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r6",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r7",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r8",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r9",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p006-c1",
+     "what": "two-column table of policy cases, navy label cells and pale blue description cells",
+     "message": "what each policy case assumes",
+     "how_drawn": "same navy and pale blue table as page 5, single rows, italic disclaimer under it",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": false
+  },
+  {
+   "slide": 7,
+   "page_png": "pages/slide-07.png",
+   "content_crop": {
+    "file": "crops/p007-content.png",
+    "pixel_size": [
+     2230,
+     984
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p007-c1",
+     "file": "crops/p007-c1.png",
+     "pixel_size": [
+      2230,
+      1090
+     ],
+     "box_in": [
+      0.64,
+      0.17,
+      9.29,
+      4.54
+     ],
+     "kinds": {
+      "connector": 33,
+      "shape": 124
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r5",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r6",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r7",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r8",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r9",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r10",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r11",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r12",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r13",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r14",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r15",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r16",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r17",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r18",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r19",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r20",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r21",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r22",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r23",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r24",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r25",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r26",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r27",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r28",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r29",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r30",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r31",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r32",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r33",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r34",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r35",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r36",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r37",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r38",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r39",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r40",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r41",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r42",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r43",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r44",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r45",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r46",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r47",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r48",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r49",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r50",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r51",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r52",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r53",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r54",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r55",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r56",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r57",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r58",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r59",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r60",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r61",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r62",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r63",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r64",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r65",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r66",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r67",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r68",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r69",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r70",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r71",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r72",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r73",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r74",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r75",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r76",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r77",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r78",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r79",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r80",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r81",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r82",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r83",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r84",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r85",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r86",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r87",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r88",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r89",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r90",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r91",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r92",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r93",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r94",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r95",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r96",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r97",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r98",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r99",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r100",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r101",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r102",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r103",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r104",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r105",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r106",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r107",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r108",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r109",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r110",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r111",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r112",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r113",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r114",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r115",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r116",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r117",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r118",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r119",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r120",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r121",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p007-c1",
+     "what": "left: stacked horizontal bars of consumption by fuel per case; right: dot strip of each fuel's share across cases with a grey bar for the 2025 value",
+     "message": "gas and liquids stay the largest fuels in every case",
+     "how_drawn": "bars sorted with 2025 on top; fuel legend set as coloured words above the bars; dots shaded by year; grey background bar for the base year",
+     "marks": "an explanatory callout with a curved arrow says what each dot is; the 2025 bar is labelled in grey text",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 8,
+   "page_png": "pages/slide-08.png",
+   "content_crop": {
+    "file": "crops/p008-content.png",
+    "pixel_size": [
+     2033,
+     953
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p008-c1",
+     "file": "crops/p008-c1.png",
+     "pixel_size": [
+      2033,
+      953
+     ],
+     "box_in": [
+      0.74,
+      1.12,
+      8.47,
+      3.97
+     ],
+     "kinds": {
+      "connector": 12,
+      "shape": 17
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p008-c1",
+     "what": "line chart of four sectors 2000 to 2050 with shaded ranges across cases",
+     "message": "industrial grows, the rest stay flat",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey; shaded bands give the range across cases",
+     "marks": "a dashed vertical line at 2025 labelled '2025' and 'projections' separates history from forecast; series labels at the right end in the series colour",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 9,
+   "page_png": "pages/slide-09.png",
+   "content_crop": {
+    "file": "crops/p009-content.png",
+    "pixel_size": [
+     2128,
+     972
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p009-c1",
+     "file": "crops/p009-c1.png",
+     "pixel_size": [
+      2128,
+      1177
+     ],
+     "box_in": [
+      0.67,
+      0.17,
+      8.87,
+      4.9
+     ],
+     "kinds": {
+      "connector": 18,
+      "shape": 94
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r5",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r6",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r7",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r8",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r9",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r10",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r11",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r12",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r13",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r14",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r15",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r16",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r17",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r18",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r19",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r20",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r21",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r22",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r23",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r24",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r25",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r26",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r27",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r28",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r29",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r30",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r31",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r32",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r33",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r34",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r35",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r36",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r37",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r38",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r39",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r40",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r41",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r42",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r43",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r44",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r45",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r46",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r47",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r48",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r49",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r50",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r51",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r52",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r53",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r54",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r55",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r56",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r57",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r58",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r59",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r60",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r61",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r62",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r63",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r64",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r65",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r66",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r67",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r68",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r69",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r70",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r71",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r72",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r73",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r74",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r75",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p009-c1",
+     "what": "left: stacked horizontal bars by transport mode per case; right: gasoline consumption lines",
+     "message": "regulation cases change fleet mix and fuel use",
+     "how_drawn": "bars with mode names as coloured words to the right; lines with labels at the ends; the 2025 bar on top",
+     "marks": "dashed 2025 line with 'projections'; policy cases coloured, others grey, each named at the line end",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 10,
+   "page_png": "pages/slide-10.png",
+   "content_crop": {
+    "file": "crops/p010-content.png",
+    "pixel_size": [
+     2023,
+     985
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p010-c1",
+     "file": "crops/p010-c1.png",
+     "pixel_size": [
+      2023,
+      892
+     ],
+     "box_in": [
+      0.83,
+      1.02,
+      8.43,
+      3.72
+     ],
+     "kinds": {
+      "connector": 16,
+      "shape": 20
+     }
+    },
+    {
+     "id": "p010-c2",
+     "file": "crops/p010-c2.png",
+     "pixel_size": [
+      996,
+      686
+     ],
+     "box_in": [
+      5.0,
+      1.87,
+      4.15,
+      2.86
+     ],
+     "kinds": {
+      "connector": 16,
+      "shape": 3
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l18",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l19",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l20",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l21",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l22",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l23",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l24",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l25",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l26",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l27",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l28",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l30",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l31",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p010-c1",
+     "what": "two line charts of vehicle shares across cases",
+     "message": "electric shares rise in every case",
+     "how_drawn": "percent axis, grey case lines, one coloured policy case",
+     "marks": "dashed 2025 'projections' line; coloured case named at its end",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 11,
+   "page_png": "pages/slide-11.png",
+   "content_crop": {
+    "file": "crops/p011-content.png",
+    "pixel_size": [
+     2162,
+     971
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p011-c1",
+     "file": "crops/p011-c1.png",
+     "pixel_size": [
+      724,
+      916
+     ],
+     "box_in": [
+      6.74,
+      1.06,
+      3.02,
+      3.82
+     ],
+     "kinds": {
+      "image": 1,
+      "connector": 14,
+      "shape": 11
+     }
+    },
+    {
+     "id": "p011-c2",
+     "file": "crops/p011-c2.png",
+     "pixel_size": [
+      1390,
+      971
+     ],
+     "box_in": [
+      0.75,
+      1.06,
+      5.79,
+      4.05
+     ],
+     "kinds": {
+      "connector": 21,
+      "shape": 21
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "picture",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "picture",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "picture",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "picture",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l18",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l19",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l20",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l21",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l22",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l23",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l24",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l25",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l26",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l27",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l28",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l30",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l31",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l32",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l33",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l34",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p011-c2",
+     "what": "two line charts of electricity consumption across cases",
+     "message": "data center load drives growth",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey",
+     "marks": "dashed 2025 line; the high-demand case in dark red and named in a stacked label block, other cases grey",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    },
+    {
+     "candidate": "p011-c1",
+     "what": "line chart by census division with an inset US map shading two divisions",
+     "message": "growth concentrates in two divisions",
+     "how_drawn": "map inset in the plot, divisions coloured to match their lines",
+     "marks": "the two divisions are coloured and named on the map; the other lines grey",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 12,
+   "page_png": "pages/slide-12.png",
+   "content_crop": {
+    "file": "crops/p012-content.png",
+    "pixel_size": [
+     2198,
+     1013
+    ],
+    "also_draws": [
+     {
+      "ref": "page12/t0",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p012-c1",
+     "file": "crops/p012-c1.png",
+     "pixel_size": [
+      2198,
+      1088
+     ],
+     "box_in": [
+      0.74,
+      0.18,
+      9.16,
+      4.53
+     ],
+     "kinds": {
+      "connector": 30,
+      "shape": 100
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r5",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r6",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r7",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r8",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r9",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r10",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r11",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r12",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r13",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r14",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r15",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r16",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r17",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r18",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r19",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r20",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r21",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r22",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r23",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r24",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r25",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r26",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r27",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r28",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r30",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r31",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r32",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r33",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r34",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r35",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r36",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r37",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r38",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r39",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r40",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r41",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r42",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r43",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r44",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r45",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r46",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r47",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r48",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r49",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r50",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r51",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r52",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r53",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r54",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r55",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r56",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r57",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r58",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r59",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r60",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r61",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r62",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r63",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r64",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r65",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r66",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r67",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r68",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r69",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r70",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r71",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r72",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r73",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r74",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r75",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r76",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r77",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r78",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r79",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r80",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r81",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r82",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r83",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r84",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r85",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r86",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r87",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r88",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r89",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l18",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l19",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l20",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p012-c1",
+     "what": "left: capacity line chart across cases; right: stacked horizontal bars of generation by source per case",
+     "message": "gas, solar and wind grow most",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey; bars with the source legend as coloured words",
+     "marks": "dashed 2025 'projections' line; baseline black dashed and named; others grey",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 13,
+   "page_png": "pages/slide-13.png",
+   "content_crop": {
+    "file": "crops/p013-content.png",
+    "pixel_size": [
+     2164,
+     993
+    ],
+    "also_draws": [
+     {
+      "ref": "page13/t0",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p013-c1",
+     "file": "crops/p013-c1.png",
+     "pixel_size": [
+      2164,
+      1099
+     ],
+     "box_in": [
+      0.64,
+      0.13,
+      9.02,
+      4.58
+     ],
+     "kinds": {
+      "connector": 32,
+      "shape": 42
+     }
+    },
+    {
+     "id": "p013-c2",
+     "file": "crops/p013-c2.png",
+     "pixel_size": [
+      626,
+      737
+     ],
+     "box_in": [
+      3.82,
+      1.63,
+      2.61,
+      3.07
+     ],
+     "kinds": {
+      "connector": 16,
+      "shape": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "drawn shapes (1 panel)",
+    "kinds": "drawn shapes",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r3",
+      "geometry": "outline",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "r4",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l18",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l19",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l20",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l21",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l22",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l23",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l24",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l25",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l26",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l27",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l28",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l30",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l31",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l32",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l33",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l34",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l35",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l36",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l37",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l38",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l39",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l40",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l41",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l42",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l43",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l44",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l45",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l46",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     },
+     {
+      "ref": "l47",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": true
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p013-c1",
+     "what": "three line charts side by side: gas production, consumption, exports",
+     "message": "gas grows across most cases",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey",
+     "marks": "dashed 2025 line; coloured cases named by a word block in the third panel",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 14,
+   "page_png": "pages/slide-14.png",
+   "content_crop": {
+    "file": "crops/p014-content.png",
+    "pixel_size": [
+     2210,
+     982
+    ],
+    "also_draws": [
+     {
+      "ref": "page14/t0",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p014-c1",
+     "file": "crops/p014-c1.png",
+     "pixel_size": [
+      1951,
+      1088
+     ],
+     "box_in": [
+      0.74,
+      0.19,
+      8.13,
+      4.53
+     ],
+     "kinds": {
+      "connector": 23,
+      "shape": 29
+     }
+    },
+    {
+     "id": "p014-c2",
+     "file": "crops/p014-c2.png",
+     "pixel_size": [
+      790,
+      739
+     ],
+     "box_in": [
+      6.66,
+      1.62,
+      3.29,
+      3.08
+     ],
+     "kinds": {
+      "connector": 11,
+      "shape": 3
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "r3",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l12",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l13",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l14",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l15",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l16",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l17",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l18",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l19",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l20",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l21",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l22",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l23",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l24",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l25",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l26",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l27",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l28",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l29",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l30",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l31",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l32",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l33",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p014-c1",
+     "what": "three line charts: crude production, crude exports, liquids exports",
+     "message": "oil output stays high",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey",
+     "marks": "dashed 2025 'projections' line; the outlier low case in gold and named",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 15,
+   "page_png": "pages/slide-15.png",
+   "content_crop": {
+    "file": "crops/p015-content.png",
+    "pixel_size": [
+     2077,
+     990
+    ],
+    "also_draws": [
+     {
+      "ref": "page15/t0",
+      "as": "title"
+     }
+    ]
+   },
+   "candidates": [
+    {
+     "id": "p015-c1",
+     "file": "crops/p015-c1.png",
+     "pixel_size": [
+      2088,
+      1164
+     ],
+     "box_in": [
+      0.64,
+      0.19,
+      8.7,
+      4.85
+     ],
+     "kinds": {
+      "connector": 12,
+      "shape": 16
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "text only",
+    "kinds": "text only",
+    "marks": [
+     {
+      "ref": "r2",
+      "geometry": "fill",
+      "prst": null,
+      "over": [
+       "line",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l0",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l1",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l2",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l3",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l4",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l5",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l6",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l7",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape",
+       "text"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l8",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l9",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l10",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "l11",
+      "geometry": "line",
+      "prst": null,
+      "over": [
+       "line",
+       "shape"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p015-c1",
+     "what": "one line chart of nuclear generation across cases",
+     "message": "nuclear generation is stable",
+     "how_drawn": "thin coloured lines on a white plot, light grey horizontal gridlines, no frame, axis numbers in grey Arial, bold black chart title over a plain unit line; series named by coloured bold labels at the line ends instead of a legend; other cases in grey",
+     "marks": "dashed 2025 line; two cases coloured and named at their ends",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": false
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 16,
+   "page_png": "pages/slide-16.png",
+   "content_crop": {
+    "file": "crops/p016-content.png",
+    "pixel_size": [
+     1869,
+     696
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p016-c1",
+     "file": "crops/p016-c1.png",
+     "pixel_size": [
+      1869,
+      419
+     ],
+     "box_in": [
+      0.74,
+      1.4,
+      7.79,
+      1.75
+     ],
+     "kinds": {
+      "image": 1
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "picture (1 panel)",
+    "kinds": "picture",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p016-c1",
+     "what": "agency logo with tagline and contact links",
+     "message": "where to find the full report",
+     "how_drawn": "centred logo picture over two lines of text with links",
+     "marks": "nothing marked",
+     "chart_or_table": false,
+     "axis_labels": false,
+     "value_labels": false
+    }
+   ],
+   "source_line": null
+  }
+ ]
+}

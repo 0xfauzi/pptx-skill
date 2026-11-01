@@ -1,0 +1,20 @@
+# Generated intermediates (renders, crops, refused and superseded builds) are reproducible from the sources kept here.
+*
+!.gitignore
+!coldchain/
+coldchain/*
+!coldchain/scripts/
+!coldchain/scripts/**
+!coldchain/deck/
+!coldchain/deck/**
+!coldchain/plan.json
+!coldchain/figures.py
+!coldchain/figures.txt
+!coldchain/brief.txt
+!coldchain/ref/
+coldchain/ref/*
+!coldchain/ref/completion.json
+!coldchain/ref/guide.json
+!coldchain/ref/digest/
+coldchain/ref/digest/*
+!coldchain/ref/digest/digest.json

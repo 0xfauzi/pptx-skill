@@ -1,0 +1,1975 @@
+{
+ "firm_chrome": {
+  "chrome-2": "drop",
+  "chrome-3": {
+   "text": "Cold-chain logistics market sizing | Illustrative, preliminary"
+  }
+ },
+ "slides": [
+  {
+   "id": "s1-cover",
+   "layout": "Title Only",
+   "chrome": {
+    "chrome-4": {
+     "omit": true,
+     "why": "the reference's cover carries no page number"
+    }
+   },
+   "title": {
+    "register": "topic",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "spacer-top",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 0.8
+      },
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.cover_title",
+         "text": "US cold-chain logistics"
+        },
+        {
+         "role": "type.h1",
+         "text": "Market sizing and where to play"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "cover-rule",
+       "kind": "rule",
+       "size": {
+        "width_emu": null,
+        "height_emu": 25400
+       },
+       "line_role": "color.accent3"
+      },
+      {
+       "type": "element",
+       "id": "cover-sub",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body_large",
+         "text": "Discussion document for the executive team"
+        },
+        {
+         "role": "type.body_large",
+         "text": "Preliminary: all figures are rough estimates from calls and desk research"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "spacer-bot",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "cover-date",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body_large",
+         "text": "November 2026",
+         "align": "right"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "s2-exec",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Cold chain is an attractive, growing market; a pharma-led entry is the hypothesis to test"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "findings",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "f0",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "f0-h",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f0-ht",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Large and growing",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "weight": 0.32,
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "f0-d",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f0-dt",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "~$95bn in 2025 and ~$135bn by 2030: about 7% a year."
+              }
+             ]
+            }
+           ],
+           "weight": 0.68,
+           "fill_role": "color.surface_alt"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "f1",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "f1-h",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f1-ht",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Pharma drives growth",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "weight": 0.32,
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "f1-d",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f1-dt",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Pharma is 22% of the market but 35% of its growth: ~$21bn to ~$35bn, about 11% a year, on biologics and GLP-1."
+              }
+             ]
+            }
+           ],
+           "weight": 0.68,
+           "fill_role": "color.surface_alt"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "f2",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "f2-h",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f2-ht",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Capacity is tight",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "weight": 0.32,
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "f2-d",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f2-dt",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Public refrigerated warehouses run at ~82% utilisation, tightest in the Southeast and Texas; capacity grows ~4% a year."
+              }
+             ]
+            }
+           ],
+           "weight": 0.68,
+           "fill_role": "color.surface_alt"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "f3",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "f3-h",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f3-ht",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Entry is capital-heavy",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "weight": 0.32,
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "f3-d",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f3-dt",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "New cold storage costs $220-260 per sq ft, about twice ambient; energy is 25-30% of operating cost."
+              }
+             ]
+            }
+           ],
+           "weight": 0.68,
+           "fill_role": "color.surface_alt"
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "f4",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "f4-h",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f4-ht",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Hypothesis to test",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "weight": 0.32,
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "f4-d",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.xs",
+            "align": "stretch",
+            "justify": "center"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "f4-dt",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Buy a regional 3PL for cold capability, then build pharma-grade sites near hubs. The numbers are rough and need bottom-up validation."
+              }
+             ]
+            }
+           ],
+           "weight": 0.68,
+           "fill_role": "color.surface_alt"
+          }
+         ]
+        }
+       ],
+       "weight": 1.0
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "s3-size",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "US cold-chain logistics grows from ~$95bn to ~$135bn by 2030, about 7% a year"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "lbl",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.exhibit_label",
+         "text": "US cold-chain logistics market, 2025 to 2030"
+        },
+        {
+         "role": "type.unit_line",
+         "text": "$ billion"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "bridge",
+       "kind": "chart",
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        },
+        {
+         "role": "type.source_line",
+         "text": "Note: pharma covers 2-8\u00b0C and frozen; non-pharma is mostly food. Growth rate is the compound annual rate, 7.3%."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "bridge": {
+     "type": "COLUMN_STACKED",
+     "categories": [
+      "2025",
+      "Non-pharma growth",
+      "Pharma growth",
+      "2030"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "",
+       "values": [
+        0,
+        95,
+        121,
+        0
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "Value",
+       "values": [
+        95,
+        26,
+        14,
+        135
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_end",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "~95"
+         }
+        },
+        {
+         "index": 1,
+         "fill_role": "color.grey",
+         "label": {
+          "text": "+26"
+         }
+        },
+        {
+         "index": 2,
+         "fill_role": "color.emphasis",
+         "label": {
+          "text": "+14"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "~135"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.ink",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 160,
+       "cross_between": "between"
+      }
+     },
+     "gap_width": 60,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.04,
+      "y": 0.12,
+      "w": 0.92,
+      "h": 0.78
+     },
+     "bridge": {
+      "deltas": [
+       95,
+       26,
+       14,
+       135
+      ],
+      "totals": [
+       0,
+       3
+      ]
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "growth",
+     "host": "bridge",
+     "kind": "bracket",
+     "anchor": {
+      "categories": [
+       1,
+       2
+      ]
+     },
+     "side": "above",
+     "gap_role": "space.xs",
+     "depth_role": "space.xs",
+     "line_role": "color.ink",
+     "line_width_pt": 1.0,
+     "style": "square",
+     "label": {
+      "text": "+$40bn, about 7% a year; pharma is 35% of it",
+      "role": "type.data_label",
+      "ink_role": "color.ink_muted",
+      "align": "center"
+     }
+    }
+   ]
+  },
+  {
+   "id": "s4-mix",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Pharma is 22% of today's market but 35% of growth to 2030"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "lbl",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Share of the market and of its growth"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "percent; $ billion in brackets"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mix",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "n1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Pharma: the fast segment"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "~$21bn growing to ~$35bn, about 11% a year. Biologics and GLP-1 drugs need 2-8\u00b0C and frozen handling end to end."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Food: the volume base"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "~70% of volume but only ~2-3% growth a year. It fills warehouses; it does not drive growth."
+            }
+           ]
+          }
+         ],
+         "weight": 0.85
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "mix": {
+     "type": "COLUMN_STACKED_100",
+     "categories": [
+      "2025 market ($95bn)",
+      "Growth 2025-30 ($40bn)"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Non-pharma",
+       "values": [
+        74,
+        26
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "78%"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "65%"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Pharma",
+       "values": [
+        21,
+        14
+       ],
+       "fill_role": "color.emphasis",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "center",
+        "role": "type.data_label",
+        "ink_role": "color.ink_inverse"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "22%"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "35%"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.ink",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": false
+      }
+     },
+     "gap_width": 70,
+     "overlap": 100,
+     "legend": {
+      "position": "t",
+      "role": "type.data_label",
+      "ink_role": "color.ink_muted"
+     },
+     "plot_fill_role": "none",
+     "title": "none"
+    }
+   }
+  },
+  {
+   "id": "s5-capacity",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Revenue is set to outgrow warehouse capacity, which already runs at ~82% utilisation"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "lbl",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.exhibit_label",
+         "text": "Revenue and warehouse capacity, indexed"
+        },
+        {
+         "role": "type.unit_line",
+         "text": "2025 = 100"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "idx",
+       "kind": "chart",
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        },
+        {
+         "role": "type.source_line",
+         "text": "Note: index paths compound the stated growth rates (pharma 10.8%, total 7.3%, capacity 4% a year). Revenue includes price; capacity is cubic feet, so the gap signals tightness and pricing power, not a measured shortfall."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "idx": {
+     "type": "LINE",
+     "categories": [
+      "2025",
+      "2026",
+      "2027",
+      "2028",
+      "2029",
+      "2030"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Pharma revenue",
+       "values": [
+        100.0,
+        110.8,
+        122.7,
+        135.9,
+        150.5,
+        166.7
+       ],
+       "line_role": "color.emphasis",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.emphasis"
+       },
+       "points": [
+        {
+         "index": 5,
+         "label": {
+          "show": true,
+          "text": "Pharma revenue 167"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Total revenue",
+       "values": [
+        100.0,
+        107.3,
+        115.1,
+        123.5,
+        132.5,
+        142.1
+       ],
+       "line_role": "color.accent2",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.accent2"
+       },
+       "points": [
+        {
+         "index": 5,
+         "label": {
+          "show": true,
+          "text": "Total revenue 142"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Warehouse capacity",
+       "values": [
+        100.0,
+        104.0,
+        108.2,
+        112.5,
+        117.0,
+        121.7
+       ],
+       "line_role": "color.grey",
+       "line_width_pt": 2.0,
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.grey"
+       },
+       "points": [
+        {
+         "index": 5,
+         "label": {
+          "show": true,
+          "text": "Capacity 122"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.ink",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "none",
+       "tick_marks": "none",
+       "reverse": false,
+       "title": "none",
+       "number_format": "0",
+       "min": 80,
+       "max": 180,
+       "major_unit": 20,
+       "cross_between": "midpoint",
+       "gridlines": {
+        "line_role": "color.gridline",
+        "line_width_pt": 0.75
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.06,
+      "y": 0.04,
+      "w": 0.7,
+      "h": 0.84
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "util",
+     "host": "idx",
+     "kind": "arrow",
+     "anchor": {
+      "point": {
+       "series": 2,
+       "category": 3
+      }
+     },
+     "line_role": "color.ink",
+     "line_width_pt": 0.75,
+     "position": "below_right",
+     "gap_role": "space.sm",
+     "label": {
+      "text": "Public refrigerated warehouses already run at ~82% average utilisation, tightest in the Southeast and Texas",
+      "role": "type.data_label",
+      "ink_role": "color.ink_muted",
+      "align": "left",
+      "max_width_share": 0.32
+     }
+    }
+   ]
+  },
+  {
+   "id": "s6-cost",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Cold storage costs about twice as much as ambient to build; energy is 25-30% of opex"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "left",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "lbl",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Build cost of a new warehouse"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "$ per square foot"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "cost",
+           "kind": "chart",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "right",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "n1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Capital: a $100-140 premium per sq ft"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "Cold storage at $220-260 against ~$120 for ambient is 1.8x to 2.2x the cost to build."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "n2",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.exhibit_label",
+             "text": "Operations: energy is the main lever"
+            },
+            {
+             "role": "type.unit_line",
+             "text": "Energy is ~25-30% of opex. Ammonia or CO2 systems, on-site solar and thermal storage cut it."
+            }
+           ]
+          }
+         ],
+         "weight": 0.85
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "charts": {
+    "cost": {
+     "type": "BAR_STACKED",
+     "categories": [
+      "New ambient warehouse",
+      "New cold storage"
+     ],
+     "number_format": "0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Low end",
+       "values": [
+        120,
+        220
+       ],
+       "fill_role": "color.accent2",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.grey"
+        }
+       ]
+      },
+      {
+       "name": "Range to high end",
+       "values": [
+        0,
+        40
+       ],
+       "fill_role": "color.emphasis",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.ink",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "none",
+       "tick_marks": "none",
+       "reverse": false,
+       "title": "none",
+       "number_format": "\"$\"0",
+       "min": 0,
+       "max": 300,
+       "major_unit": 100,
+       "cross_between": "between",
+       "gridlines": {
+        "line_role": "color.gridline",
+        "line_width_pt": 0.75
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "gap_width": 60,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.32,
+      "y": 0.12,
+      "w": 0.46,
+      "h": 0.74
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "vals",
+     "host": "cost",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       1
+      ]
+     },
+     "position": "right",
+     "gap_role": "space.sm",
+     "cells": [
+      "$120",
+      "$220-260"
+     ],
+     "role": "type.data_label",
+     "ink_role": "color.ink_muted",
+     "align": "left",
+     "cell_width": "own"
+    }
+   ]
+  },
+  {
+   "id": "s7-options",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "The three routes trade off capability, capital and exposure to pharma growth"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "opts",
+       "kind": "table",
+       "weight": 1.0,
+       "table": {
+        "columns": [
+         {
+          "key": "route",
+          "label": "Route",
+          "value_kind": "text",
+          "width_share": 0.2
+         },
+         {
+          "key": "buys",
+          "label": "What it buys",
+          "value_kind": "text",
+          "width_share": 0.2
+         },
+         {
+          "key": "growth",
+          "label": "Exposure to growth",
+          "value_kind": "text",
+          "width_share": 0.2
+         },
+         {
+          "key": "capital",
+          "label": "Capital and risk",
+          "value_kind": "text",
+          "width_share": 0.2
+         },
+         {
+          "key": "q",
+          "label": "Question to answer first",
+          "value_kind": "text",
+          "width_share": 0.2
+         }
+        ],
+        "rows": [
+         [
+          "1. Buy a regional 3PL",
+          "Cold sites, customers and operating skills from day one",
+          "Mostly food: ~70% of volume, ~2-3% growth",
+          "Acquisition premium; integration into a freight forwarder",
+          "Are there targets with pharma-grade sites near hubs?"
+         ],
+         [
+          "2. Greenfield pharma-grade sites near hubs",
+          "New capacity where utilisation is tightest",
+          "Direct: pharma grows ~11% a year",
+          "$220-260 per sq ft to build; no cold track record",
+          "Can we win pharma customers without a track record?"
+         ],
+         [
+          "3. Tech-enabled last mile",
+          "A position in a fragmented segment: top 5 hold ~18%",
+          "Not sized in our notes",
+          "Lower capital per site; many small competitors",
+          "How large is refrigerated last mile, and who pays for it?"
+         ]
+        ],
+        "header_rows": 1
+       },
+       "emphasis": [
+        {
+         "columns": [
+          "route"
+         ],
+         "fill_role": "color.accent2",
+         "ink_role": "color.ink_inverse",
+         "bold": false
+        }
+       ],
+       "header_fill_role": "color.accent3",
+       "cell_anchor": "m"
+      },
+      {
+       "type": "region",
+       "id": "spacer",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "s8-answer",
+   "layout": "Title Only",
+   "title": {
+    "register": "claim",
+    "element": "title"
+   },
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "align": "stretch",
+      "justify": "start",
+      "pad_roles": {
+       "left": "space.xl",
+       "top": "space.sm",
+       "right": "space.xl",
+       "bottom": "space.sm"
+      }
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Hypothesis: buy a regional 3PL for capability, then build pharma-grade sites near hubs"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "cols",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.sm",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "c1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "c1-hb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c1-h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.exhibit_label",
+               "text": "Is it worth it?",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "c1-bb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c1-b",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "On market grounds, yes: ~$95bn growing about 7% a year, pharma about 11%",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Capacity is tight at ~82% utilisation, which supports pricing",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Against it: build cost about 2x ambient and no cold capability in-house today",
+               "bullet_level": 0
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.surface_alt",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "c2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "c2-hb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c2-h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.exhibit_label",
+               "text": "Where to play",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "c2-bb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c2-b",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Pharma-grade cold storage near hubs: a third of market growth, and the Southeast and Texas are tightest",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Enter by acquiring a regional 3PL for sites, staff and customers, then add greenfield pharma sites",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Treat tech-enabled last mile as a later option until it is sized",
+               "bullet_level": 0
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.surface_alt",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "c3",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": null,
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "region",
+           "id": "c3-hb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c3-h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.exhibit_label",
+               "text": "What we must measure next",
+               "ink_role": "color.ink_inverse"
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.accent2"
+          },
+          {
+           "type": "region",
+           "id": "c3-bb",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.sm",
+            "pad_role": "space.sm",
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "c3-b",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.body_large",
+               "text": "Size the market bottom-up by segment and region; the current figures are rough",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Screen regional 3PL targets for pharma-grade sites and price",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Model site returns: build cost, energy at 25-30% of opex, utilisation",
+               "bullet_level": 0
+              },
+              {
+               "role": "type.body_large",
+               "text": "Size refrigerated last mile",
+               "bullet_level": 0
+              }
+             ]
+            }
+           ],
+           "fill_role": "color.surface_alt",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "source",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.source_line",
+         "text": "Source: client calls and desk research (rough estimates, illustrative); team analysis"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

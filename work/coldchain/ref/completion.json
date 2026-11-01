@@ -1,0 +1,340 @@
+{
+ "/typography/scale_ratio": null,
+ "/typography/roles/type.source_line": {
+  "size_pt": 9,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "every chart page sets 'Data source: ...' and 'Note: ...' in black Arial at about 9pt directly under the plots"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 11,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_inverse",
+  "why": "pages 5 and 6 set white Arial in the navy label column, regular weight; 11pt is an observed level"
+ },
+ "/typography/roles/type.table_cell": {
+  "size_pt": 11,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "black Arial in the pale-blue banded cells of pages 5 and 6; 11pt is an observed level"
+ },
+ "/typography/roles/type.axis_label": {
+  "size_pt": 9,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "axis numbers and category names on pages 7 to 15 in grey Arial near 9pt",
+  "evidence": "pictures"
+ },
+ "/typography/roles/type.data_label": {
+  "size_pt": 9,
+  "weight": 700,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "series names at line ends are bold Arial at about 9pt in the series colour",
+  "evidence": "pictures"
+ },
+ "/typography/roles/*/line_spacing": null,
+ "/color/roles/color.surface_alt": {
+  "hex": "E7EFF8",
+  "why": "the pale blue banding of the assumption tables on pages 5 and 6"
+ },
+ "/color/roles/color.emphasis": {
+  "hex": "0096D7",
+  "why": "the reference picks out the case or series it talks about in its bright blue (the latest projection on page 4, linked phrases on pages 2 and 3, the high-growth case on page 11); dark red is a series colour, not a look-here mark"
+ },
+ "/spacing/baseline_emu": null,
+ "/variety/content_pages": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15
+ ],
+ "/density_bands/table_rows_per_inch": {
+  "metric": "table_rows_per_inch",
+  "low": 1.4,
+  "high": 2.5,
+  "median": 2.0,
+  "n": 2
+ },
+ "/titles/register": {
+  "per_title": {
+   "2": "question",
+   "3": "question",
+   "4": "topic",
+   "5": "claim",
+   "6": "claim",
+   "7": "claim",
+   "8": "claim",
+   "9": "claim",
+   "10": "claim",
+   "11": "claim",
+   "12": "claim",
+   "13": "claim",
+   "14": "claim",
+   "15": "topic"
+  },
+  "companions": {
+   "2": {
+    "below": "lead_in"
+   },
+   "3": {
+    "below": "lead_in"
+   },
+   "4": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "5": {
+    "below": "subtitle"
+   },
+   "7": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "8": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "9": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "10": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "11": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "12": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "13": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "14": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   },
+   "15": {
+    "below": {
+     "other": "the first chart's bold label and unit line"
+    }
+   }
+  },
+  "claims_elsewhere": {
+   "4": null,
+   "15": null
+  },
+  "why": "Read off the renders: the analysis pages (5 to 14) carry one- or two-line claim sentences in blue serif; the intro pages ask a question and the retrospective and nuclear pages name a topic. Under the title sits the first chart's bold label and unit line, not a subtitle; page 5 has a one-line subtitle in black."
+ },
+ "/tables": {
+  "header_fill_role": "color.accent2",
+  "header_ink_role": "color.ink_inverse",
+  "banding_role": "color.surface_alt",
+  "header_bold": false,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 1.0,
+    "color_role": "color.surface"
+   },
+   "row_interior": {
+    "width_pt": 1.0,
+    "color_role": "color.surface"
+   },
+   "table_bottom": {
+    "none": true
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "width_pt": 1.0,
+    "color_role": "color.surface"
+   }
+  },
+  "cell_padding_role": "space.sm",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": false,
+  "totals_bold": true,
+  "banding_phase": 0,
+  "merged_cell_convention": "the left label cell merges down over its Low/High rows",
+  "why": "pages 5 and 6: a navy label column with white text, pale blue cells on the right separated by thin white rules, no outer frame"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent2",
+   "color.accent3",
+   "color.accent1",
+   "color.pink",
+   "color.positive",
+   "color.grey"
+  ],
+  "per_kind": {
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 0.0,
+    "legend_position": "t"
+   },
+   "line": {
+    "gridlines_major": 1.0,
+    "data_labels": 0.0,
+    "legend_position": "none"
+   },
+   "column": {
+    "gridlines_major": 1.0,
+    "data_labels": 0.0,
+    "legend_position": "t"
+   }
+  },
+  "why": "stacked bars order navy, blue, dark red, pink, green, grey with the legend set as coloured words above; line charts carry light grey gridlines and name series at line ends instead of a legend"
+ },
+ "/extra_roles/color.pink": {
+  "hex": "D57883",
+  "why": "the coal and freight-truck series, a pale red step of the dark red"
+ },
+ "/extra_roles/color.grey": {
+  "hex": "7F7F7F",
+  "why": "the 'other' series and the grey lines for other cases"
+ },
+ "/shape_language/icon_style": "none",
+ "/shape_language/corner_radii": {
+  "modal_radius_emu": 0,
+  "rounded_share": 0.0,
+  "why": "every cell, bar and band in the renders is square-cornered"
+ },
+ "/imagery/register_kind": "one cover photograph in a wide slanted crop; otherwise none",
+ "/floors/chart/floor_pt": 7,
+ "/description": {
+  "summary": "A US government statistical outlook: white pages, blue serif claim titles, dense multi-panel charts with bold chart labels and unit lines, a source line under every chart, a solid blue footer band.",
+  "typography": "Times New Roman 26pt in bright blue for titles, one or two lines; Arial for everything else: bold 12pt chart labels with a regular unit line under them, 10pt body, 9pt axis and source text.",
+  "color": "White ground; bright blue 0096D7 for titles and the footer band; navy 003953, dark red 7A2630, pink, green and grey as series colours; grey for de-emphasised cases.",
+  "layout": "16:9 at 10 x 5.625in; title top-left at 0.75in; one to three chart panels side by side across the width; source and note lines in the band above the footer.",
+  "tables": "Navy label column with white text, pale blue banded cells, thin white rules, no frame.",
+  "imagery": "Only the cover photograph and a logo.",
+  "motifs": "Full-width blue footer band with the page number at right; a dashed vertical line at 2025 marked 'projections' on every time series.",
+  "not_seen": [
+   "gradients",
+   "icons",
+   "rounded corners",
+   "data labels on bars",
+   "boxed callouts"
+  ],
+  "tone": "neutral, factual, dense"
+ },
+ "/derivation_rules": [
+  "New series colours come from the six series roles in order; de-emphasised series take color.grey.",
+  "Emphasis on an exhibit uses color.emphasis (bright blue), drawn as a coloured label or line, never a filled box.",
+  "Sizes stay on the observed levels 7, 9, 10, 11, 12, 14, 18, 20, 26."
+ ],
+ "/continuation": {
+  "contd_mark": null,
+  "why": "none seen: no page of the 16 continues onto the next"
+ },
+ "/typography/families/substitutes": {
+  "Jost": "Inter"
+ },
+ "/notes/fonts": "Jost (cover title only) is not on this machine; the user approved Inter as its stand-in, measured about 13% wider. Arial and Times New Roman are measured with Liberation Sans and Liberation Serif.",
+ "/typography/roles/type.exhibit_label": {
+  "size_pt": 11,
+  "weight": 700,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "floor_family": "body",
+  "why": "bold black Arial chart labels over every chart on pages 4 and 7 to 15",
+  "space_before_pt": 0,
+  "space_after_pt": 0
+ },
+ "/typography/roles/type.unit_line": {
+  "size_pt": 11,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "floor_family": "body",
+  "why": "the regular unit line set directly under each chart label",
+  "space_before_pt": 0,
+  "space_after_pt": 0
+ },
+ "/typography/roles/type.body_large": {
+  "size_pt": 14,
+  "weight": 400,
+  "italic": false,
+  "family": "Arial",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "floor_family": "body",
+  "why": "running text on pages 2 and 3 and the table text on pages 5 and 6 at 14pt regular"
+ },
+ "/extra_roles/color.gridline": {
+  "hex": "D9D9D9",
+  "why": "the light grey gridlines on every line chart (126 rule votes)"
+ },
+ "/typography/roles/type.cover_title": {
+  "size_pt": 26,
+  "weight": 400,
+  "italic": true,
+  "family": "Jost",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "floor_family": "display",
+  "why": "the cover title on page 1 is set in italic Jost in black at the title level"
+ }
+}
