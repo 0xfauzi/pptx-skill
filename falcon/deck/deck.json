@@ -1,0 +1,2707 @@
+{
+ "slides": [
+  {
+   "id": "p1-comps",
+   "layout": "Blank",
+   "title": {
+    "register": "topic",
+    "element": "title"
+   },
+   "spec": {
+    "page": {
+     "reserved_zones": [
+      {
+       "left": 0,
+       "top": 7392924,
+       "width": 10058400,
+       "height": 379476,
+       "source": "chrome-5:rule (bottom rule at 8.105 in; the empty layout date, footer and number placeholders at 6.95 in draw nothing on the reference pages)"
+      }
+     ]
+    },
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_roles": {
+       "left": "space.margin",
+       "top": "space.lg",
+       "right": "space.margin",
+       "bottom": "space.sm"
+      },
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.section_label",
+         "text": "Project Falcon  |  Valuation  |  1 Trading comparables"
+        },
+        {
+         "role": "type.title",
+         "text": "Listed peer trading multiples"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "comps-block",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "comps-h",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h1",
+           "text": "Listed peers: trading multiples"
+          },
+          {
+           "role": "type.caption",
+           "text": "EV and equity value in $m; LTM and NTM consensus; statistics exclude Falcon; sorted by EV"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "comps",
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "co",
+            "label": [
+             "",
+             "Company"
+            ],
+            "width_share": 0.15,
+            "value_kind": "text"
+           },
+           {
+            "key": "tk",
+            "label": [
+             "",
+             "Ticker"
+            ],
+            "width_share": 0.05,
+            "value_kind": "text"
+           },
+           {
+            "key": "px",
+            "label": [
+             "",
+             "Share price ($)"
+            ],
+            "width_share": 0.08,
+            "value_kind": "number"
+           },
+           {
+            "key": "eq",
+            "label": [
+             "",
+             "Equity value ($m)"
+            ],
+            "width_share": 0.09,
+            "value_kind": "number"
+           },
+           {
+            "key": "ev",
+            "label": [
+             "",
+             "EV ($m)"
+            ],
+            "width_share": 0.08,
+            "value_kind": "number"
+           },
+           {
+            "key": "rl",
+            "label": [
+             "EV / revenue",
+             "LTM"
+            ],
+            "width_share": 0.075,
+            "value_kind": "number"
+           },
+           {
+            "key": "rn",
+            "label": [
+             "EV / revenue",
+             "NTM"
+            ],
+            "width_share": 0.075,
+            "value_kind": "number"
+           },
+           {
+            "key": "el",
+            "label": [
+             "EV / EBITDA",
+             "LTM"
+            ],
+            "width_share": 0.075,
+            "value_kind": "number"
+           },
+           {
+            "key": "en",
+            "label": [
+             "EV / EBITDA",
+             "NTM"
+            ],
+            "width_share": 0.075,
+            "value_kind": "number"
+           },
+           {
+            "key": "g",
+            "label": [
+             "",
+             "Revenue growth NTM (%)"
+            ],
+            "width_share": 0.125,
+            "value_kind": "number"
+           },
+           {
+            "key": "mg",
+            "label": [
+             "",
+             "EBITDA margin LTM (%)"
+            ],
+            "width_share": 0.125,
+            "value_kind": "number"
+           }
+          ],
+          "rows": [
+           [
+            "Penrose Automation",
+            "PRA",
+            "122.40",
+            "15,230",
+            "16,010",
+            "2.95x",
+            "2.76x",
+            "13.2x",
+            "12.0x",
+            "7.2",
+            "22.4"
+           ],
+           [
+            "Haldane Controls",
+            "HDC",
+            "91.75",
+            "11,840",
+            "12,920",
+            "2.65x",
+            "2.50x",
+            "12.7x",
+            "11.7x",
+            "5.7",
+            "20.9"
+           ],
+           [
+            "Stanmore Instruments",
+            "STI",
+            "64.05",
+            "7,960",
+            "8,640",
+            "2.44x",
+            "2.30x",
+            "12.3x",
+            "11.2x",
+            "6.2",
+            "19.9"
+           ],
+           [
+            "Corvex Industrial",
+            "CVX",
+            "48.20",
+            "6,120",
+            "7,410",
+            "2.31x",
+            "2.19x",
+            "12.3x",
+            "11.3x",
+            "5.6",
+            "18.8"
+           ],
+           [
+            "Varden Process",
+            "VDP",
+            "55.30",
+            "5,430",
+            "6,280",
+            "2.27x",
+            "2.14x",
+            "12.3x",
+            "11.3x",
+            "5.8",
+            "18.5"
+           ],
+           [
+            "Marrow Systems",
+            "MRW",
+            "33.10",
+            "2,410",
+            "3,150",
+            "1.92x",
+            "1.83x",
+            "12.0x",
+            "11.1x",
+            "4.9",
+            "16.0"
+           ],
+           [
+            "Quillon Flow",
+            "QFL",
+            "27.60",
+            "1,880",
+            "2,390",
+            "1.85x",
+            "1.78x",
+            "12.6x",
+            "11.5x",
+            "4.3",
+            "14.7"
+           ],
+           [
+            "Tessaly Motion",
+            "TSM",
+            "18.90",
+            "1,120",
+            "1,610",
+            "1.64x",
+            "1.59x",
+            "12.6x",
+            "11.8x",
+            "3.1",
+            "13.1"
+           ],
+           [
+            "Mean",
+            "",
+            "",
+            "",
+            "",
+            "2.25x",
+            "2.14x",
+            "12.5x",
+            "11.5x",
+            "5.3",
+            "18.0"
+           ],
+           [
+            "Median",
+            "",
+            "",
+            "",
+            "",
+            "2.29x",
+            "2.16x",
+            "12.4x",
+            "11.4x",
+            "5.7",
+            "18.6"
+           ],
+           [
+            "High",
+            "",
+            "",
+            "",
+            "",
+            "2.95x",
+            "2.76x",
+            "13.2x",
+            "12.0x",
+            "7.2",
+            "22.4"
+           ],
+           [
+            "Low",
+            "",
+            "",
+            "",
+            "",
+            "1.64x",
+            "1.59x",
+            "12.0x",
+            "11.1x",
+            "3.1",
+            "13.1"
+           ],
+           [
+            "Falcon (private)",
+            "",
+            "NA",
+            "NA",
+            "NA",
+            "NA",
+            "NA",
+            "NA",
+            "NA",
+            "5.8",
+            "18.9"
+           ]
+          ],
+          "header_rows": 2
+         }
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "lower",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "fit-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "fit-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Revenue multiple against margin"
+            },
+            {
+             "role": "type.caption",
+             "text": "x and %; eight listed peers; dashed line: least-squares fit, r = 0.99"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "fit",
+           "kind": "chart",
+           "weight": 1
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "pos-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "pos-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Falcon against the peer set"
+            },
+            {
+             "role": "type.caption",
+             "text": "Falcon against peer 25th percentile, median and 75th percentile; rank 1 is the highest of nine, Falcon included"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "pos",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "k",
+              "label": "Metric",
+              "value_kind": "text",
+              "width_share": 0.31
+             },
+             {
+              "key": "f",
+              "label": "Falcon",
+              "value_kind": "number",
+              "width_share": 0.12
+             },
+             {
+              "key": "q1",
+              "label": "25th pct",
+              "value_kind": "number",
+              "width_share": 0.13
+             },
+             {
+              "key": "md",
+              "label": "Median",
+              "value_kind": "number",
+              "width_share": 0.13
+             },
+             {
+              "key": "q3",
+              "label": "75th pct",
+              "value_kind": "number",
+              "width_share": 0.13
+             },
+             {
+              "key": "rk",
+              "label": "Rank",
+              "value_kind": "text",
+              "width_share": 0.18
+             }
+            ],
+            "rows": [
+             [
+              "EBITDA margin LTM (%)",
+              "18.9",
+              "15.7",
+              "18.6",
+              "20.1",
+              "4 of 9"
+             ],
+             [
+              "Revenue growth NTM (%)",
+              "5.8",
+              "4.8",
+              "5.7",
+              "5.9",
+              "3 of 9 (tied)"
+             ],
+             [
+              "Revenue LTM ($m)",
+              "1,460",
+              "1,552",
+              "2,990",
+              "3,875",
+              "7 of 9"
+             ],
+             [
+              "EBITDA LTM ($m)",
+              "276",
+              "244",
+              "557",
+              "784",
+              "6 of 9"
+             ]
+            ],
+            "header_rows": 1
+           }
+          },
+          {
+           "type": "element",
+           "id": "pos-note",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Falcon LTM revenue $1,460m, NTM $1,545m; LTM EBITDA $276m, NTM $301m."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mult-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "EV / NTM EBITDA by peer"
+            },
+            {
+             "role": "type.caption",
+             "text": "x; axis from zero; all eight within 0.9x of each other"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "mult",
+           "kind": "chart",
+           "weight": 1
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "element",
+         "id": "view",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Trading view"
+          },
+          {
+           "role": "type.bullet",
+           "text": "Peers trade at 11.1x to 12.0x NTM EBITDA (median 11.4x) and 12.0x to 13.2x LTM (median 12.4x): a 0.9x and 1.2x spread across eight companies.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "EV / NTM revenue runs from 1.59x (Tessaly, 13.1% margin) to 2.76x (Penrose, 22.4%) and tracks margin with a correlation of 0.99: revenue multiples restate the EBITDA multiple, not a separate view.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "Falcon's 18.9% LTM margin ranks 4 of 9 and its 5.8% NTM growth 3 of 9 (level with Varden), both within 0.3pp of the peer median, which supports applying the median multiple without a profile adjustment.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "On the fitted line Falcon's margin implies 2.24x NTM revenue, $3,461m of EV, against $3,440m at the median NTM EBITDA multiple.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "Falcon is smaller than six of eight peers: LTM revenue of $1,460m against a peer median of $2,990m. Larger peers trade somewhat higher (correlation 0.44 between EV and NTM EBITDA multiple), too few points to size a discount: no discount is applied, and this needs a view from the deal team.",
+           "bullet_level": 0
+          }
+         ],
+         "weight": 1.15
+        }
+       ],
+       "weight": 1
+      },
+      {
+       "type": "region",
+       "id": "foot",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "source",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.source_line",
+           "text": "Source: falcon_comps.csv (peer market data and consensus; Falcon management figures). Share prices and consensus estimates as of [pricing date to be confirmed]."
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "footrow",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "footer",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Project Falcon  |  Valuation  |  Strictly confidential  |  Draft for discussion"
+            }
+           ],
+           "weight": 1
+          },
+          {
+           "type": "element",
+           "id": "sheet",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Sheet 1",
+             "align": "right"
+            }
+           ],
+           "weight": 0.15
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "comps": {
+     "emphasis": [
+      {
+       "rows": [
+        9
+       ],
+       "fill_role": "keep",
+       "bold": true
+      },
+      {
+       "rows": [
+        8,
+        10,
+        11
+       ],
+       "fill_role": "keep",
+       "italic": true
+      },
+      {
+       "rows": [
+        12
+       ],
+       "fill_role": "color.surface_alt",
+       "ink_role": "color.ink_muted",
+       "bold": true
+      }
+     ],
+     "cell_anchor": "b",
+     "spanner_align": "center",
+     "data_fill_role": "none",
+     "edge_rules": {
+      "header_bottom": {
+       "color_role": "color.ink",
+       "width_pt": 1.0
+      }
+     }
+    },
+    "pos": {
+     "emphasis": [
+      {
+       "columns": [
+        "f"
+       ],
+       "fill_role": "color.surface_alt",
+       "ink_role": "color.ink_muted",
+       "bold": true,
+       "include_header": true
+      }
+     ],
+     "cell_anchor": "b",
+     "data_fill_role": "none",
+     "edge_rules": {
+      "header_bottom": {
+       "color_role": "color.ink",
+       "width_pt": 1.0
+      }
+     }
+    }
+   },
+   "charts": {
+    "fit": {
+     "type": "XY_SCATTER",
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Listed peers",
+       "values": [
+        [
+         18.8,
+         2.186
+        ],
+        [
+         20.9,
+         2.504
+        ],
+        [
+         16.0,
+         1.831
+        ],
+        [
+         22.4,
+         2.756
+        ],
+        [
+         14.7,
+         1.777
+        ],
+        [
+         19.9,
+         2.298
+        ],
+        [
+         13.1,
+         1.594
+        ],
+        [
+         18.5,
+         2.143
+        ]
+       ],
+       "line_role": "none",
+       "marker": {
+        "style": "circle",
+        "size": 6,
+        "fill_role": "color.ink_muted",
+        "line_role": "color.ink_muted"
+       },
+       "labels": {
+        "show": true,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "CVX"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "HDC"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "MRW"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "PRA"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "text": "QFL"
+         }
+        },
+        {
+         "index": 5,
+         "label": {
+          "text": "STI"
+         }
+        },
+        {
+         "index": 6,
+         "label": {
+          "text": "TSM"
+         }
+        },
+        {
+         "index": 7,
+         "label": {
+          "text": "VDP",
+          "position": "left"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Least-squares fit",
+       "values": [
+        [
+         12.5,
+         1.467
+        ],
+        [
+         23.0,
+         2.735
+        ]
+       ],
+       "line_role": "color.accent1",
+       "line_width_pt": 1.0,
+       "dash": "dash",
+       "smooth": false,
+       "marker": {
+        "style": "none"
+       },
+       "labels": {
+        "show": false
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "out",
+       "min": 12,
+       "max": 24,
+       "major_unit": 2,
+       "number_format": "0\"%\"",
+       "gridlines": "none",
+       "crosses": "min",
+       "title": {
+        "text": "EBITDA margin, LTM",
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "orientation": "horizontal"
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "out",
+       "min": 1.4,
+       "max": 3.0,
+       "major_unit": 0.4,
+       "number_format": "0.0\"x\"",
+       "gridlines": "none",
+       "crosses": "min",
+       "title": {
+        "text": "EV / NTM revenue",
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "orientation": "along"
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.13,
+      "y": 0.1,
+      "w": 0.8,
+      "h": 0.7
+     }
+    },
+    "mult": {
+     "type": "BAR_CLUSTERED",
+     "categories": [
+      "Penrose Automation",
+      "Tessaly Motion",
+      "Haldane Controls",
+      "Quillon Flow",
+      "Corvex Industrial",
+      "Varden Process",
+      "Stanmore Instruments",
+      "Marrow Systems"
+     ],
+     "number_format": "0.0\"x\"",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "EV / NTM EBITDA",
+       "values": [
+        12.04,
+        11.84,
+        11.69,
+        11.55,
+        11.31,
+        11.29,
+        11.25,
+        11.09
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "number_format": "0.0\"x\"",
+        "role": "type.emphasis",
+        "ink_role": "color.ink"
+       }
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 14,
+       "cross_between": "between",
+       "reverse": false
+      }
+     },
+     "gap_width": 60,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.36,
+      "y": 0.13,
+      "w": 0.6,
+      "h": 0.85
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "falcon-m",
+     "host": "fit",
+     "kind": "reference_line",
+     "anchor": {
+      "value": 18.9,
+      "axis": "category"
+     },
+     "line_role": "color.emphasis",
+     "line_width_pt": 1.0,
+     "dash": "dash",
+     "label": {
+      "text": "Falcon 18.9%: 2.24x on the fit",
+      "role": "type.data_label",
+      "ink_role": "color.emphasis",
+      "position": "end_outside",
+      "align": "left"
+     }
+    },
+    {
+     "id": "mult-med",
+     "host": "mult",
+     "kind": "reference_line",
+     "anchor": {
+      "value": 11.43
+     },
+     "line_role": "color.ink_muted",
+     "line_width_pt": 1.0,
+     "label": {
+      "text": "Median 11.4x",
+      "role": "type.data_label",
+      "ink_role": "color.ink_muted",
+      "position": "end_outside",
+      "align": "center"
+     }
+    }
+   ]
+  },
+  {
+   "id": "p2-precedents",
+   "layout": "Blank",
+   "title": {
+    "register": "topic",
+    "element": "title"
+   },
+   "spec": {
+    "page": {
+     "reserved_zones": [
+      {
+       "left": 0,
+       "top": 7392924,
+       "width": 10058400,
+       "height": 379476,
+       "source": "chrome-5:rule (bottom rule at 8.105 in; the empty layout date, footer and number placeholders at 6.95 in draw nothing on the reference pages)"
+      }
+     ]
+    },
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_roles": {
+       "left": "space.margin",
+       "top": "space.lg",
+       "right": "space.margin",
+       "bottom": "space.sm"
+      },
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.section_label",
+         "text": "Project Falcon  |  Valuation  |  2 Precedent transactions"
+        },
+        {
+         "role": "type.title",
+         "text": "Precedent transactions"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "prec-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "prec-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Announced transactions, 2023-2026"
+            },
+            {
+             "role": "type.caption",
+             "text": "EV in $m at announcement; multiples of LTM revenue and EBITDA; implied EBITDA and margin derived from EV and the two multiples"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "prec",
+           "kind": "table",
+           "table": {
+            "columns": [
+             {
+              "key": "d",
+              "label": "Announced",
+              "width_share": 0.09,
+              "value_kind": "text"
+             },
+             {
+              "key": "t",
+              "label": "Target",
+              "width_share": 0.17,
+              "value_kind": "text"
+             },
+             {
+              "key": "a",
+              "label": "Acquirer",
+              "width_share": 0.17,
+              "value_kind": "text"
+             },
+             {
+              "key": "b",
+              "label": "Buyer",
+              "width_share": 0.08,
+              "value_kind": "text"
+             },
+             {
+              "key": "ev",
+              "label": "EV ($m)",
+              "width_share": 0.08,
+              "value_kind": "number"
+             },
+             {
+              "key": "r",
+              "label": "EV / LTM revenue",
+              "width_share": 0.1,
+              "value_kind": "number"
+             },
+             {
+              "key": "e",
+              "label": "EV / LTM EBITDA",
+              "width_share": 0.1,
+              "value_kind": "number"
+             },
+             {
+              "key": "ie",
+              "label": "Implied LTM EBITDA ($m)",
+              "width_share": 0.11,
+              "value_kind": "number"
+             },
+             {
+              "key": "im",
+              "label": "Implied EBITDA margin (%)",
+              "width_share": 0.1,
+              "value_kind": "number"
+             }
+            ],
+            "rows": [
+             [
+              "Mar 2026",
+              "Brightwater Valves",
+              "Haldane Controls",
+              "Strategic",
+              "2,840",
+              "2.31x",
+              "12.4x",
+              "229",
+              "18.6"
+             ],
+             [
+              "Nov 2025",
+              "Ostrava Flow",
+              "Penrose Automation",
+              "Strategic",
+              "1,960",
+              "2.05x",
+              "11.1x",
+              "177",
+              "18.5"
+             ],
+             [
+              "Jul 2025",
+              "Lumen Sensing",
+              "KKR-backed Arcis",
+              "Sponsor",
+              "1,450",
+              "2.62x",
+              "13.8x",
+              "105",
+              "19.0"
+             ],
+             [
+              "Feb 2025",
+              "Tidewell Pumps",
+              "Stanmore Instruments",
+              "Strategic",
+              "1,180",
+              "1.84x",
+              "10.2x",
+              "116",
+              "18.0"
+             ],
+             [
+              "Oct 2024",
+              "Ferro Controls",
+              "Blackstone",
+              "Sponsor",
+              "3,210",
+              "2.44x",
+              "12.9x",
+              "249",
+              "18.9"
+             ],
+             [
+              "May 2024",
+              "Galloway Metering",
+              "Corvex Industrial",
+              "Strategic",
+              "890",
+              "1.71x",
+              "9.8x",
+              "91",
+              "17.4"
+             ],
+             [
+              "Jan 2024",
+              "Pelham Actuation",
+              "Varden Process",
+              "Strategic",
+              "1,320",
+              "2.12x",
+              "11.6x",
+              "114",
+              "18.3"
+             ],
+             [
+              "Aug 2023",
+              "Norland Instruments",
+              "Carlyle",
+              "Sponsor",
+              "2,050",
+              "2.38x",
+              "12.2x",
+              "168",
+              "19.5"
+             ],
+             [
+              "",
+              "Mean",
+              "",
+              "",
+              "1,862",
+              "2.18x",
+              "11.8x",
+              "156",
+              "18.5"
+             ],
+             [
+              "",
+              "Median",
+              "",
+              "",
+              "1,705",
+              "2.21x",
+              "11.9x",
+              "142",
+              "18.5"
+             ],
+             [
+              "",
+              "High",
+              "",
+              "",
+              "3,210",
+              "2.62x",
+              "13.8x",
+              "249",
+              "19.5"
+             ],
+             [
+              "",
+              "Low",
+              "",
+              "",
+              "890",
+              "1.71x",
+              "9.8x",
+              "91",
+              "17.4"
+             ],
+             [
+              "",
+              "Median, sponsors (3)",
+              "",
+              "",
+              "2,050",
+              "2.44x",
+              "12.9x",
+              "168",
+              "19.0"
+             ],
+             [
+              "",
+              "Median, strategics (5)",
+              "",
+              "",
+              "1,320",
+              "2.05x",
+              "11.1x",
+              "116",
+              "18.3"
+             ]
+            ],
+            "header_rows": 1
+           }
+          },
+          {
+           "type": "element",
+           "id": "prec-note",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Sponsor buyers: KKR-backed Arcis, Blackstone and Carlyle; the five strategic acquirers are all in the peer set on sheet 1. Implied LTM EBITDA = EV / (EV / LTM EBITDA); implied margin = (EV / LTM revenue) / (EV / LTM EBITDA)."
+            }
+           ]
+          }
+         ],
+         "weight": 1.75
+        },
+        {
+         "type": "region",
+         "id": "rank-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "rank-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "EV / LTM EBITDA by deal, ranked"
+            },
+            {
+             "role": "type.caption",
+             "text": "x; sponsor buyers in navy, strategic buyers in grey"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "rank",
+           "kind": "chart",
+           "weight": 1
+          }
+         ],
+         "weight": 1
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "lower2",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "size-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "size-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Deal size against multiple"
+            },
+            {
+             "role": "type.caption",
+             "text": "$m and x; eight deals, r = 0.57; dashed line: Falcon's EV at the precedent median"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "size",
+           "kind": "chart",
+           "weight": 1
+          }
+         ],
+         "weight": 1
+        },
+        {
+         "type": "element",
+         "id": "view",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h2",
+           "text": "Precedent view"
+          },
+          {
+           "role": "type.bullet",
+           "text": "Sponsors paid a median 12.9x LTM EBITDA across 3 deals, strategic buyers 11.1x across 5; three of the four highest multiples are sponsor deals.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "The precedent median of 11.9x sits 4.4% below the listed peers' 12.4x LTM today, so the set shows no control premium over current trading. Peer multiples at each announcement date are not in the data; checking them would show whether markets have re-rated since.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "No drift over time: deals announced in 2025-2026 have a median of 11.8x, those in 2023-2024 11.9x.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "Implied target margins run 17.4% to 19.5% (median 18.5%), around Falcon's 18.9%.",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "Larger deals priced higher: the 3 deals of $2,000m or more have a median of 12.4x against 11.1x for the 5 smaller (correlation 0.57; eight deals is too few to rely on).",
+           "bullet_level": 0
+          },
+          {
+           "role": "type.bullet",
+           "text": "At the precedent median Falcon's EV is $3,284m, above the largest deal in the set (Ferro Controls, $3,210m): if size carries a premium, the precedent median understates Falcon.",
+           "bullet_level": 0
+          }
+         ],
+         "weight": 1.5
+        }
+       ],
+       "weight": 1
+      },
+      {
+       "type": "region",
+       "id": "foot",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "source",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.source_line",
+           "text": "Source: falcon_precedents.csv (announced transactions; EV and multiples at announcement); falcon_comps.csv for listed peer multiples."
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "footrow",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "footer",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Project Falcon  |  Valuation  |  Strictly confidential  |  Draft for discussion"
+            }
+           ],
+           "weight": 1
+          },
+          {
+           "type": "element",
+           "id": "sheet",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Sheet 2",
+             "align": "right"
+            }
+           ],
+           "weight": 0.15
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "prec": {
+     "emphasis": [
+      {
+       "rows": [
+        9
+       ],
+       "fill_role": "keep",
+       "bold": true
+      },
+      {
+       "rows": [
+        8,
+        10,
+        11
+       ],
+       "fill_role": "keep",
+       "italic": true
+      },
+      {
+       "rows": [
+        12,
+        13
+       ],
+       "fill_role": "color.surface_alt",
+       "bold": true
+      }
+     ],
+     "cell_anchor": "b",
+     "data_fill_role": "none",
+     "edge_rules": {
+      "header_bottom": {
+       "color_role": "color.ink",
+       "width_pt": 1.0
+      }
+     }
+    }
+   },
+   "charts": {
+    "rank": {
+     "type": "BAR_CLUSTERED",
+     "categories": [
+      "Lumen Sensing, Jul-25",
+      "Ferro Controls, Oct-24",
+      "Brightwater Valves, Mar-26",
+      "Norland Instruments, Aug-23",
+      "Pelham Actuation, Jan-24",
+      "Ostrava Flow, Nov-25",
+      "Tidewell Pumps, Feb-25",
+      "Galloway Metering, May-24"
+     ],
+     "number_format": "0.0\"x\"",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "EV / LTM EBITDA",
+       "values": [
+        13.8,
+        12.9,
+        12.4,
+        12.2,
+        11.6,
+        11.1,
+        10.2,
+        9.8
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "none",
+       "labels": {
+        "show": true,
+        "position": "inside_base",
+        "number_format": "0.0\"x\"",
+        "role": "type.emphasis",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "fill_role": "color.ink_muted",
+         "label": {
+          "ink_role": "color.surface"
+         }
+        },
+        {
+         "index": 1,
+         "fill_role": "color.ink_muted",
+         "label": {
+          "ink_role": "color.surface"
+         }
+        },
+        {
+         "index": 3,
+         "fill_role": "color.ink_muted",
+         "label": {
+          "ink_role": "color.surface"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": true,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": false,
+       "min": 0,
+       "max": 15,
+       "cross_between": "between",
+       "reverse": false
+      }
+     },
+     "gap_width": 55,
+     "overlap": 0,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.42,
+      "y": 0.1,
+      "w": 0.55,
+      "h": 0.88
+     }
+    },
+    "size": {
+     "type": "XY_SCATTER",
+     "number_format": "0.0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Sponsor buyer",
+       "values": [
+        [
+         1450.0,
+         13.8
+        ],
+        [
+         3210.0,
+         12.9
+        ],
+        [
+         2050.0,
+         12.2
+        ]
+       ],
+       "line_role": "none",
+       "marker": {
+        "style": "circle",
+        "size": 6,
+        "fill_role": "color.ink_muted",
+        "line_role": "color.ink_muted"
+       },
+       "labels": {
+        "show": true,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "Lumen"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "Ferro"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "Norland",
+          "position": "left"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Strategic buyer",
+       "values": [
+        [
+         2840.0,
+         12.4
+        ],
+        [
+         1960.0,
+         11.1
+        ],
+        [
+         1180.0,
+         10.2
+        ],
+        [
+         890.0,
+         9.8
+        ],
+        [
+         1320.0,
+         11.6
+        ]
+       ],
+       "line_role": "none",
+       "marker": {
+        "style": "circle",
+        "size": 6,
+        "fill_role": "color.accent1",
+        "line_role": "color.accent1"
+       },
+       "labels": {
+        "show": true,
+        "position": "right",
+        "role": "type.data_label",
+        "ink_role": "color.ink"
+       },
+       "points": [
+        {
+         "index": 0,
+         "label": {
+          "text": "Brightwater",
+          "position": "left"
+         }
+        },
+        {
+         "index": 1,
+         "label": {
+          "text": "Ostrava"
+         }
+        },
+        {
+         "index": 2,
+         "label": {
+          "text": "Tidewell"
+         }
+        },
+        {
+         "index": 3,
+         "label": {
+          "text": "Galloway"
+         }
+        },
+        {
+         "index": 4,
+         "label": {
+          "text": "Pelham"
+         }
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "out",
+       "min": 500,
+       "max": 4000,
+       "major_unit": 500,
+       "number_format": "#,##0",
+       "gridlines": "none",
+       "crosses": "min",
+       "title": {
+        "text": "Deal EV ($m)",
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "orientation": "horizontal"
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "out",
+       "min": 9,
+       "max": 15,
+       "major_unit": 1,
+       "number_format": "0\"x\"",
+       "gridlines": "none",
+       "crosses": "min",
+       "title": {
+        "text": "EV / LTM EBITDA",
+        "role": "type.axis_label",
+        "ink_role": "color.ink",
+        "orientation": "along"
+       },
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "legend": {
+      "position": "t",
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.1,
+      "y": 0.16,
+      "w": 0.86,
+      "h": 0.64
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "trading-line",
+     "host": "rank",
+     "kind": "reference_line",
+     "anchor": {
+      "value": 12.443547549833887
+     },
+     "line_role": "color.emphasis",
+     "line_width_pt": 1.0,
+     "dash": "dash",
+     "label": {
+      "text": "Listed peers today 12.4x",
+      "role": "type.data_label",
+      "ink_role": "color.emphasis",
+      "position": "end_outside",
+      "align": "center"
+     }
+    },
+    {
+     "id": "falcon-ev",
+     "host": "size",
+     "kind": "reference_line",
+     "anchor": {
+      "value": 3284.4,
+      "axis": "category"
+     },
+     "line_role": "color.emphasis",
+     "line_width_pt": 1.0,
+     "dash": "dash",
+     "label": {
+      "text": "Falcon $3,284m",
+      "role": "type.data_label",
+      "ink_role": "color.emphasis",
+      "position": "end_outside",
+      "align": "center"
+     }
+    }
+   ]
+  },
+  {
+   "id": "p3-football",
+   "layout": "Blank",
+   "title": {
+    "register": "topic",
+    "element": "title"
+   },
+   "spec": {
+    "page": {
+     "reserved_zones": [
+      {
+       "left": 0,
+       "top": 7392924,
+       "width": 10058400,
+       "height": 379476,
+       "source": "chrome-5:rule (bottom rule at 8.105 in; the empty layout date, footer and number placeholders at 6.95 in draw nothing on the reference pages)"
+      }
+     ]
+    },
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_roles": {
+       "left": "space.margin",
+       "top": "space.lg",
+       "right": "space.margin",
+       "bottom": "space.sm"
+      },
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.section_label",
+         "text": "Project Falcon  |  Valuation  |  3 Valuation summary"
+        },
+        {
+         "role": "type.title",
+         "text": "Valuation summary: football field and implied values"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "upper",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.lg",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "ff-block",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "ff-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "Implied enterprise value by method"
+            },
+            {
+             "role": "type.caption",
+             "text": "$m; bar spans the 25th to 75th percentile multiple applied to Falcon; break in the bar at the median; EBITDA methods in navy"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "ff",
+           "kind": "chart",
+           "weight": 1
+          }
+         ],
+         "weight": 1.55
+        },
+        {
+         "type": "region",
+         "id": "right3",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "view",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h2",
+             "text": "Valuation view"
+            },
+            {
+             "role": "type.bullet",
+             "text": "The three EBITDA methods give $3,002m to $3,530m between their 25th and 75th percentiles, and all three overlap at $3,396m to $3,457m (shaded): 12.3x to 12.5x LTM EBITDA, 11.3x to 11.5x NTM.",
+             "bullet_level": 0
+            },
+            {
+             "role": "type.bullet",
+             "text": "Revenue methods span $2,779m to $3,639m, wider because peer revenue multiples vary with margin (sheet 1); they are shown for completeness and add little independent information.",
+             "bullet_level": 0
+            },
+            {
+             "role": "type.bullet",
+             "text": "Precedents sit lowest on both metrics: $3,284m at the median EBITDA multiple against $3,440m on NTM trading comps, because the deal set priced below where peers trade today (sheet 2).",
+             "bullet_level": 0
+            },
+            {
+             "role": "type.bullet",
+             "text": "No DCF or LBO range is shown: the data supplied covers market multiples only.",
+             "bullet_level": 0
+            },
+            {
+             "role": "type.bullet",
+             "text": "Implied equity value needs Falcon's net debt at the valuation date, which is not in the data supplied.",
+             "bullet_level": 0
+            }
+           ]
+          },
+          {
+           "type": "region",
+           "id": "ovl-block",
+           "layout": {
+            "kind": "flex",
+            "direction": "column",
+            "gap_role": "space.xs",
+            "pad_role": null,
+            "align": "stretch",
+            "justify": "start"
+           },
+           "children": [
+            {
+             "type": "element",
+             "id": "ovl-h",
+             "kind": "text",
+             "paragraphs": [
+              {
+               "role": "type.h1",
+               "text": "The EBITDA overlap restated as multiples"
+              },
+              {
+               "role": "type.caption",
+               "text": "x; enterprise value at each end of the overlap divided by Falcon's metric"
+              }
+             ]
+            },
+            {
+             "type": "element",
+             "id": "ovl",
+             "kind": "table",
+             "table": {
+              "columns": [
+               {
+                "key": "k",
+                "label": "Falcon metric ($m)",
+                "value_kind": "text",
+                "width_share": 0.46
+               },
+               {
+                "key": "lo",
+                "label": "At $3,396m",
+                "value_kind": "number",
+                "width_share": 0.27
+               },
+               {
+                "key": "hi",
+                "label": "At $3,457m",
+                "value_kind": "number",
+                "width_share": 0.27
+               }
+              ],
+              "rows": [
+               [
+                "EBITDA LTM, 276",
+                "12.3x",
+                "12.5x"
+               ],
+               [
+                "EBITDA NTM, 301",
+                "11.3x",
+                "11.5x"
+               ],
+               [
+                "Revenue LTM, 1,460",
+                "2.33x",
+                "2.37x"
+               ],
+               [
+                "Revenue NTM, 1,545",
+                "2.20x",
+                "2.24x"
+               ]
+              ],
+              "header_rows": 1
+             }
+            }
+           ]
+          }
+         ],
+         "weight": 1
+        }
+       ],
+       "weight": 1
+      },
+      {
+       "type": "region",
+       "id": "impl-block",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "impl-h",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.h1",
+           "text": "Implied values"
+          },
+          {
+           "role": "type.caption",
+           "text": "$m unless stated; multiples are the 25th percentile, median and 75th percentile of each set; last column restates each median EV on Falcon LTM EBITDA of $276m"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "impl",
+         "kind": "table",
+         "table": {
+          "columns": [
+           {
+            "key": "me",
+            "label": [
+             "",
+             "Method"
+            ],
+            "value_kind": "text"
+           },
+           {
+            "key": "fm",
+            "label": [
+             "Falcon metric",
+             "Metric"
+            ],
+            "value_kind": "text"
+           },
+           {
+            "key": "fv",
+            "label": [
+             "Falcon metric",
+             "$m"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "q1",
+            "label": [
+             "Peer or deal multiple",
+             "25th pct"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "md",
+            "label": [
+             "Peer or deal multiple",
+             "Median"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "q3",
+            "label": [
+             "Peer or deal multiple",
+             "75th pct"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "e1",
+            "label": [
+             "Implied enterprise value ($m)",
+             "At 25th pct"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "e2",
+            "label": [
+             "Implied enterprise value ($m)",
+             "At median"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "e3",
+            "label": [
+             "Implied enterprise value ($m)",
+             "At 75th pct"
+            ],
+            "value_kind": "number"
+           },
+           {
+            "key": "xl",
+            "label": [
+             "",
+             "Median EV / LTM EBITDA"
+            ],
+            "value_kind": "number"
+           }
+          ],
+          "rows": [
+           [
+            "Trading comps, EV / NTM EBITDA",
+            "EBITDA NTM",
+            "301",
+            "11.3x",
+            "11.4x",
+            "11.7x",
+            "3,396",
+            "3,440",
+            "3,530",
+            "12.5x"
+           ],
+           [
+            "Trading comps, EV / LTM EBITDA",
+            "EBITDA LTM",
+            "276",
+            "12.3x",
+            "12.4x",
+            "12.6x",
+            "3,385",
+            "3,434",
+            "3,478",
+            "12.4x"
+           ],
+           [
+            "Precedents, EV / LTM EBITDA",
+            "EBITDA LTM",
+            "276",
+            "10.9x",
+            "11.9x",
+            "12.5x",
+            "3,002",
+            "3,284",
+            "3,457",
+            "11.9x"
+           ],
+           [
+            "Trading comps, EV / NTM revenue",
+            "Revenue NTM",
+            "1,545",
+            "1.82x",
+            "2.16x",
+            "2.35x",
+            "2,808",
+            "3,344",
+            "3,630",
+            "12.1x"
+           ],
+           [
+            "Trading comps, EV / LTM revenue",
+            "Revenue LTM",
+            "1,460",
+            "1.90x",
+            "2.29x",
+            "2.49x",
+            "2,779",
+            "3,340",
+            "3,639",
+            "12.1x"
+           ],
+           [
+            "Precedents, EV / LTM revenue",
+            "Revenue LTM",
+            "1,460",
+            "2.00x",
+            "2.21x",
+            "2.40x",
+            "2,916",
+            "3,234",
+            "3,497",
+            "11.7x"
+           ],
+           [
+            "Less: net debt",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "[to be supplied]",
+            "[to be supplied]",
+            "[to be supplied]",
+            ""
+           ],
+           [
+            "Implied equity value",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "[needs net debt]",
+            "[needs net debt]",
+            "[needs net debt]",
+            ""
+           ]
+          ],
+          "header_rows": 2
+         }
+        },
+        {
+         "type": "element",
+         "id": "impl-note",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.footnote",
+           "text": "Percentiles interpolate linearly between ranked values (Excel PERCENTILE.INC). Trading comps: eight listed peers. Precedents: eight announced deals, 2023-2026."
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "foot",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "source",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.source_line",
+           "text": "Source: falcon_comps.csv, falcon_precedents.csv; Falcon LTM and NTM revenue and EBITDA as supplied. Share prices and consensus estimates as of [pricing date to be confirmed]."
+          }
+         ]
+        },
+        {
+         "type": "region",
+         "id": "footrow",
+         "layout": {
+          "kind": "flex",
+          "direction": "row",
+          "gap_role": "space.md",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "footer",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Project Falcon  |  Valuation  |  Strictly confidential  |  Draft for discussion"
+            }
+           ],
+           "weight": 1
+          },
+          {
+           "type": "element",
+           "id": "sheet",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.footnote",
+             "text": "Sheet 3",
+             "align": "right"
+            }
+           ],
+           "weight": 0.15
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "styling": {
+    "impl": {
+     "emphasis": [
+      {
+       "columns": [
+        "e2"
+       ],
+       "fill_role": "color.surface_alt",
+       "bold": true,
+       "include_header": true
+      },
+      {
+       "rows": [
+        6,
+        7
+       ],
+       "fill_role": "keep",
+       "italic": true
+      }
+     ],
+     "cell_anchor": "b",
+     "spanner_align": "center",
+     "data_fill_role": "none",
+     "edge_rules": {
+      "header_bottom": {
+       "color_role": "color.ink",
+       "width_pt": 1.0
+      }
+     }
+    },
+    "ovl": {
+     "cell_anchor": "b",
+     "data_fill_role": "none",
+     "edge_rules": {
+      "header_bottom": {
+       "color_role": "color.ink",
+       "width_pt": 1.0
+      }
+     }
+    }
+   },
+   "charts": {
+    "ff": {
+     "type": "BAR_STACKED",
+     "categories": [
+      "Precedents, EV / LTM revenue",
+      "Trading comps, EV / LTM revenue",
+      "Trading comps, EV / NTM revenue",
+      "Precedents, EV / LTM EBITDA",
+      "Trading comps, EV / LTM EBITDA",
+      "Trading comps, EV / NTM EBITDA"
+     ],
+     "number_format": "#,##0",
+     "text": {
+      "role": "type.axis_label",
+      "ink_role": "color.ink"
+     },
+     "series": [
+      {
+       "name": "Base",
+       "values": [
+        2916.3,
+        2779.4,
+        2808.5,
+        3001.5,
+        3384.6,
+        3396.4
+       ],
+       "fill_role": "none",
+       "line_role": "none",
+       "labels": {
+        "show": false
+       }
+      },
+      {
+       "name": "25th pct to median",
+       "values": [
+        317.5,
+        560.7,
+        535.8,
+        282.9,
+        49.8,
+        43.9
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "color.surface",
+       "line_width_pt": 1.0,
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 3,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        },
+        {
+         "index": 4,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        },
+        {
+         "index": 5,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        }
+       ]
+      },
+      {
+       "name": "Median to 75th pct",
+       "values": [
+        262.8,
+        298.7,
+        285.5,
+        172.5,
+        43.4,
+        90.1
+       ],
+       "fill_role": "color.accent1",
+       "line_role": "color.surface",
+       "line_width_pt": 1.0,
+       "labels": {
+        "show": false
+       },
+       "points": [
+        {
+         "index": 3,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        },
+        {
+         "index": 4,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        },
+        {
+         "index": 5,
+         "fill_role": "color.ink_muted",
+         "line_role": "color.surface"
+        }
+       ]
+      }
+     ],
+     "axes": {
+      "category": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "none",
+       "reverse": false,
+       "gridlines": "none",
+       "title": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      },
+      "value": {
+       "visible": true,
+       "line_role": "color.extra_1",
+       "line_width_pt": 0.75,
+       "tick_marks": "out",
+       "reverse": false,
+       "title": "none",
+       "number_format": "#,##0",
+       "min": 2600,
+       "max": 3800,
+       "major_unit": 200,
+       "cross_between": "between",
+       "gridlines": "none",
+       "labels": {
+        "show": true,
+        "role": "type.axis_label",
+        "ink_role": "color.ink"
+       }
+      }
+     },
+     "gap_width": 45,
+     "overlap": 100,
+     "legend": "none",
+     "plot_fill_role": "none",
+     "title": "none",
+     "plot_area": {
+      "x": 0.33,
+      "y": 0.1,
+      "w": 0.45,
+      "h": 0.82
+     }
+    }
+   },
+   "annotations": [
+    {
+     "id": "overlap",
+     "host": "ff",
+     "kind": "band",
+     "anchor": {
+      "values": [
+       3396.4,
+       3456.9
+      ]
+     },
+     "fill_role": "color.surface_alt",
+     "explained_by": {
+      "annotation": "overlap-note"
+     }
+    },
+    {
+     "id": "overlap-note",
+     "host": "ff",
+     "kind": "callout",
+     "anchor": {
+      "values": [
+       3396.4,
+       3456.9
+      ]
+     },
+     "position": "above",
+     "gap_role": "space.xs",
+     "pad_role": "space.xs",
+     "fill_role": "color.surface",
+     "line_role": "color.extra_1",
+     "line_width_pt": 0.5,
+     "label": {
+      "text": "EBITDA methods overlap 3,396-3,457",
+      "role": "type.data_label",
+      "ink_role": "color.ink",
+      "align": "left"
+     }
+    },
+    {
+     "id": "ranges",
+     "host": "ff",
+     "kind": "category_row",
+     "anchor": {
+      "categories": [
+       0,
+       5
+      ]
+     },
+     "position": "right",
+     "gap_role": "space.sm",
+     "cells": [
+      "2,916-3,497  (median 3,234)",
+      "2,779-3,639  (median 3,340)",
+      "2,808-3,630  (median 3,344)",
+      "3,002-3,457  (median 3,284)",
+      "3,385-3,478  (median 3,434)",
+      "3,396-3,530  (median 3,440)"
+     ],
+     "role": "type.data_label",
+     "ink_role": "color.ink",
+     "align": "left",
+     "cell_width": "own"
+    }
+   ]
+  }
+ ]
+}

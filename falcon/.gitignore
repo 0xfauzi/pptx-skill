@@ -1,0 +1,14 @@
+# intermediate build artefacts; regenerate with the skill's scripts
+ref/*
+!ref/completion.json
+!ref/guide.json
+!ref/draft.json
+!ref/digest/
+ref/digest/*
+!ref/digest/digest.json
+rt/
+out/*
+!out/b7/
+out/b7/renders/
+plan.check.json
+fonts/

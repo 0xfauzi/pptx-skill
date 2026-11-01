@@ -1,0 +1,1587 @@
+{
+ "schema": "pptx-skill exhibit digest v1",
+ "reference": "our-template.pptx",
+ "reference_sha256": "a16d68f1183129ed4361c4e98e8b6d245666c8a9ddf800a4af8cbc6bd2685252",
+ "render_fidelity": "metric_substituted",
+ "raster": {
+  "width_px": 2400,
+  "height_px": 1855,
+  "px_per_pt": 3.03
+ },
+ "sample_policy": "every evidence page",
+ "pages_not_read": [],
+ "generated_slides_skipped": [],
+ "record_template": {
+  "candidate": "<a candidate id on this page, or null>",
+  "what": "<what the exhibit is, in your words: its form and what it is made of>",
+  "message": "<the one thing a reader takes from it>",
+  "how_drawn": "<how the reference draws it: what is compared against what, order, colour, labels, legend, gridlines, number formats>",
+  "marks": "<what the reference marks on it and how (a ring, a band, a line, a callout, a bold row, a colour), where the claim lives, and whether words beside the mark say what it marks; or that it marks nothing and how the claim still reads>",
+  "chart_or_table": "<true when it is a chart or a table, drawn natively or pasted as a picture: the pages the source-line habit is counted over>",
+  "axis_labels": "<true when it sets axis or category labels>",
+  "value_labels": "<true when it sets values on its marks>",
+  "why": "<optional>"
+ },
+ "source_line": "on every page holding a chart or a table: true or false, read off the page; null elsewhere",
+ "pages": [
+  {
+   "slide": 1,
+   "page_png": "pages/slide-01.png",
+   "content_crop": {
+    "file": "crops/p001-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p001-c1",
+     "file": "crops/p001-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p001-c2",
+     "file": "crops/p001-c2.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p001-c3",
+     "file": "crops/p001-c3.png",
+     "pixel_size": [
+      609,
+      540
+     ],
+     "box_in": [
+      0.39,
+      1.29,
+      2.79,
+      2.47
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p001-c4",
+     "file": "crops/p001-c4.png",
+     "pixel_size": [
+      609,
+      608
+     ],
+     "box_in": [
+      0.39,
+      3.85,
+      2.79,
+      2.78
+     ],
+     "kinds": {
+      "chart": 1,
+      "shape": 6
+     }
+    },
+    {
+     "id": "p001-c5",
+     "file": "crops/p001-c5.png",
+     "pixel_size": [
+      609,
+      257
+     ],
+     "box_in": [
+      0.39,
+      6.71,
+      2.79,
+      1.18
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p001-c6",
+     "file": "crops/p001-c6.png",
+     "pixel_size": [
+      1012,
+      267
+     ],
+     "box_in": [
+      3.31,
+      1.29,
+      4.64,
+      1.22
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p001-c7",
+     "file": "crops/p001-c7.png",
+     "pixel_size": [
+      1012,
+      764
+     ],
+     "box_in": [
+      3.31,
+      2.6,
+      4.64,
+      3.5
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p001-c8",
+     "file": "crops/p001-c8.png",
+     "pixel_size": [
+      1012,
+      354
+     ],
+     "box_in": [
+      3.31,
+      6.18,
+      4.64,
+      1.62
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p001-c9",
+     "file": "crops/p001-c9.png",
+     "pixel_size": [
+      551,
+      1392
+     ],
+     "box_in": [
+      8.08,
+      1.29,
+      2.53,
+      6.38
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 18
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar bar clustered x1; table (3+ panels)",
+    "kinds": "chart bar bar clustered; table",
+    "marks": [
+     {
+      "ref": "sp[id=65]",
+      "geometry": "bracket",
+      "prst": "rightBracket",
+      "over": [
+       "chart"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     },
+     {
+      "ref": "sp[id=67]",
+      "geometry": "bracket",
+      "prst": "rightBracket",
+      "over": [
+       "chart"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p001-c3",
+     "what": "two-column fact table: item label in bold, description",
+     "message": "what the business is at a glance",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; labels bold in column one",
+     "marks": "nothing marked; reference table",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c4",
+     "what": "horizontal bar chart of revenue share by end market, seven bars",
+     "message": "44% of revenue is defensive",
+     "how_drawn": "bars sorted within group, navy for defensive and grey for cyclical, value labels at bar ends, no axis, category labels left",
+     "marks": "two right brackets group the bars, each labelled with the group name and its share; colour also carries the grouping and the subtitle explains it",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c5",
+     "what": "small region table with totals",
+     "message": "North America is the bulk; Asia Pacific grows fastest",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "fastest CAGR set in blue",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c6",
+     "what": "segment summary table with total row",
+     "message": "aftermarket is the high-margin growth segment",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "best and worst values in blue and red text; subtitle does not explain colours, note below does",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c7",
+     "what": "multi-year historical financial table with banded section headers",
+     "message": "steady growth and margin expansion",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; italics for ratio rows, bold totals",
+     "marks": "budget year in blue, a fall in red, explained in the note line under the table",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c8",
+     "what": "operating KPI table",
+     "message": "delivery and pricing are stable",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "one value under threshold in red, explained in subtitle",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p001-c9",
+     "what": "bulleted text panels plus a top-customers table",
+     "message": "strengths, risks and diligence findings",
+     "how_drawn": "bold 8pt panel heads, 8pt bullets; table in the same style",
+     "marks": "claims stated in bullets with figures; no marks",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 2,
+   "page_png": "pages/slide-02.png",
+   "content_crop": {
+    "file": "crops/p002-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p002-c1",
+     "file": "crops/p002-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c2",
+     "file": "crops/p002-c2.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p002-c3",
+     "file": "crops/p002-c3.png",
+     "pixel_size": [
+      449,
+      366
+     ],
+     "box_in": [
+      5.92,
+      0.75,
+      2.06,
+      1.68
+     ],
+     "kinds": {
+      "connector": 1,
+      "chart": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p002-c4",
+     "file": "crops/p002-c4.png",
+     "pixel_size": [
+      575,
+      300
+     ],
+     "box_in": [
+      0.39,
+      0.75,
+      2.63,
+      1.38
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c5",
+     "file": "crops/p002-c5.png",
+     "pixel_size": [
+      575,
+      354
+     ],
+     "box_in": [
+      3.15,
+      0.75,
+      2.63,
+      1.62
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p002-c6",
+     "file": "crops/p002-c6.png",
+     "pixel_size": [
+      546,
+      326
+     ],
+     "box_in": [
+      8.11,
+      0.75,
+      2.5,
+      1.49
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c7",
+     "file": "crops/p002-c7.png",
+     "pixel_size": [
+      2230,
+      471
+     ],
+     "box_in": [
+      0.39,
+      2.51,
+      10.22,
+      2.16
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c8",
+     "file": "crops/p002-c8.png",
+     "pixel_size": [
+      1428,
+      335
+     ],
+     "box_in": [
+      0.39,
+      4.75,
+      6.54,
+      1.53
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c9",
+     "file": "crops/p002-c9.png",
+     "pixel_size": [
+      953,
+      292
+     ],
+     "box_in": [
+      0.39,
+      6.55,
+      4.37,
+      1.34
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c10",
+     "file": "crops/p002-c10.png",
+     "pixel_size": [
+      659,
+      233
+     ],
+     "box_in": [
+      4.89,
+      6.55,
+      3.02,
+      1.06
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p002-c11",
+     "file": "crops/p002-c11.png",
+     "pixel_size": [
+      561,
+      198
+     ],
+     "box_in": [
+      8.04,
+      6.55,
+      2.57,
+      0.91
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar col stacked x3; table (3+ panels)",
+    "kinds": "chart bar col stacked; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p002-c3",
+     "what": "stacked column showing the capital stack, one column",
+     "message": "equity is the largest layer",
+     "how_drawn": "three stacked segments, navy, mid blue, grey, labels inside segments with $ and x EBITDA; arrow callout for the thin layer",
+     "marks": "an arrow callout labels the thin notes segment; no other mark",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c4",
+     "what": "sources of funds table",
+     "message": "sponsor equity and TLB fund the deal",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "key tranche amounts in blue",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c5",
+     "what": "uses of funds table",
+     "message": "purchase of equity dominates uses",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c6",
+     "what": "fees and costs table",
+     "message": "fees are 3.5% of EV",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c7",
+     "what": "pro forma capitalisation table, full width",
+     "message": "total leverage 5.75x",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; shaded total row",
+     "marks": "total capitalisation row shaded; leverage figure in blue",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c8",
+     "what": "key terms text table",
+     "message": "term loan is covenant-lite",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c9",
+     "what": "purchase price analysis table, implied multiples against peers",
+     "message": "entry multiple under peer medians",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "focus row shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c10",
+     "what": "cash interest table",
+     "message": "first-year cash interest by tranche",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p002-c11",
+     "what": "ownership table",
+     "message": "sponsor owns most",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 3,
+   "page_png": "pages/slide-03.png",
+   "content_crop": {
+    "file": "crops/p003-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p003-c1",
+     "file": "crops/p003-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p003-c2",
+     "file": "crops/p003-c2.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p003-c3",
+     "file": "crops/p003-c3.png",
+     "pixel_size": [
+      1542,
+      1264
+     ],
+     "box_in": [
+      0.39,
+      0.75,
+      7.07,
+      5.79
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p003-c4",
+     "file": "crops/p003-c4.png",
+     "pixel_size": [
+      841,
+      232
+     ],
+     "box_in": [
+      0.39,
+      6.62,
+      3.85,
+      1.06
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p003-c5",
+     "file": "crops/p003-c5.png",
+     "pixel_size": [
+      673,
+      266
+     ],
+     "box_in": [
+      4.37,
+      6.62,
+      3.08,
+      1.22
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p003-c6",
+     "file": "crops/p003-c6.png",
+     "pixel_size": [
+      659,
+      471
+     ],
+     "box_in": [
+      7.59,
+      0.75,
+      3.02,
+      2.16
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p003-c7",
+     "file": "crops/p003-c7.png",
+     "pixel_size": [
+      659,
+      419
+     ],
+     "box_in": [
+      7.59,
+      2.99,
+      3.02,
+      1.92
+     ],
+     "kinds": {
+      "chart": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p003-c8",
+     "file": "crops/p003-c8.png",
+     "pixel_size": [
+      659,
+      391
+     ],
+     "box_in": [
+      7.59,
+      4.99,
+      3.02,
+      1.79
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar col clustered x1; table (3+ panels)",
+    "kinds": "chart bar col clustered; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p003-c3",
+     "what": "large operating model table with banded sections",
+     "message": "revenue and EBITDA grow each forecast year",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; forecast columns in blue",
+     "marks": "forecast values in blue, explained in subtitle",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p003-c4",
+     "what": "base vs management plan table",
+     "message": "sponsor case under management",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p003-c5",
+     "what": "reinvestment table",
+     "message": "capex is modest",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "nothing marked",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p003-c6",
+     "what": "key assumptions table",
+     "message": "margin assumption rises every year",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "margin row shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p003-c7",
+     "what": "column chart of EBITDA by year, eleven bars",
+     "message": "EBITDA grows throughout",
+     "how_drawn": "history grey, forecast navy, value labels above bars, category labels below, no gridlines, no axis line values",
+     "marks": "colour splits history from forecast, explained in subtitle",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p003-c8",
+     "what": "cases compared table, shaded base column",
+     "message": "downside returns fall below hurdle",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base column shaded; downside returns in red",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 4,
+   "page_png": "pages/slide-04.png",
+   "content_crop": {
+    "file": "crops/p004-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p004-c1",
+     "file": "crops/p004-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p004-c2",
+     "file": "crops/p004-c2.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p004-c3",
+     "file": "crops/p004-c3.png",
+     "pixel_size": [
+      517,
+      505
+     ],
+     "box_in": [
+      0.39,
+      0.75,
+      2.37,
+      2.32
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p004-c4",
+     "file": "crops/p004-c4.png",
+     "pixel_size": [
+      1030,
+      961
+     ],
+     "box_in": [
+      2.89,
+      0.75,
+      4.72,
+      4.4
+     ],
+     "kinds": {
+      "chart": 1,
+      "shape": 10
+     }
+    },
+    {
+     "id": "p004-c5",
+     "file": "crops/p004-c5.png",
+     "pixel_size": [
+      625,
+      223
+     ],
+     "box_in": [
+      7.74,
+      0.75,
+      2.86,
+      1.02
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p004-c6",
+     "file": "crops/p004-c6.png",
+     "pixel_size": [
+      625,
+      232
+     ],
+     "box_in": [
+      7.74,
+      1.85,
+      2.86,
+      1.06
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p004-c7",
+     "file": "crops/p004-c7.png",
+     "pixel_size": [
+      625,
+      422
+     ],
+     "box_in": [
+      7.74,
+      3.0,
+      2.86,
+      1.93
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p004-c8",
+     "file": "crops/p004-c8.png",
+     "pixel_size": [
+      1101,
+      264
+     ],
+     "box_in": [
+      0.39,
+      5.23,
+      5.04,
+      1.21
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p004-c9",
+     "file": "crops/p004-c9.png",
+     "pixel_size": [
+      1101,
+      264
+     ],
+     "box_in": [
+      5.57,
+      5.23,
+      5.04,
+      1.21
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p004-c10",
+     "file": "crops/p004-c10.png",
+     "pixel_size": [
+      1101,
+      298
+     ],
+     "box_in": [
+      0.39,
+      6.52,
+      5.04,
+      1.37
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p004-c11",
+     "file": "crops/p004-c11.png",
+     "pixel_size": [
+      1101,
+      298
+     ],
+     "box_in": [
+      5.57,
+      6.52,
+      5.04,
+      1.37
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar col stacked x2; table (3+ panels)",
+    "kinds": "chart bar col stacked; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p004-c3",
+     "what": "sponsor returns build-up table",
+     "message": "2.56x and 20.7%",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "result rows shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c4",
+     "what": "waterfall bridge of equity value, stacked columns",
+     "message": "EBITDA growth creates most of the value",
+     "how_drawn": "grey start, navy increases, red decreases, values printed above each step, no axis",
+     "marks": "colours explain direction in subtitle; no other mark",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c5",
+     "what": "IRR by exit year table",
+     "message": "returns by hold period",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "under-hurdle values in red, base cell shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c6",
+     "what": "proceeds by holder table",
+     "message": "sponsor takes most exit proceeds",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "total bold",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c7",
+     "what": "break-even inputs table",
+     "message": "margin is the most sensitive input",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "cushion column bold",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c8",
+     "what": "sensitivity grid",
+     "message": "returns by entry debt and exit multiple",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base cell shaded, under-hurdle values red, explained under the grid",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c9",
+     "what": "sensitivity grid of IRR by growth and margin",
+     "message": "margin matters more than growth",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c10",
+     "what": "sensitivity grid of IRR by entry and exit multiple",
+     "message": "paying more needs multiple expansion",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p004-c11",
+     "what": "sensitivity grid of MOIC by entry and exit multiple",
+     "message": "high entry multiples miss the hurdle",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 5,
+   "page_png": "pages/slide-05.png",
+   "content_crop": {
+    "file": "crops/p005-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p005-c1",
+     "file": "crops/p005-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p005-c2",
+     "file": "crops/p005-c2.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p005-c3",
+     "file": "crops/p005-c3.png",
+     "pixel_size": [
+      1001,
+      614
+     ],
+     "box_in": [
+      0.39,
+      0.75,
+      4.59,
+      2.82
+     ],
+     "kinds": {
+      "chart": 1,
+      "shape": 4
+     }
+    },
+    {
+     "id": "p005-c4",
+     "file": "crops/p005-c4.png",
+     "pixel_size": [
+      1001,
+      696
+     ],
+     "box_in": [
+      0.39,
+      3.64,
+      4.59,
+      3.19
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p005-c5",
+     "file": "crops/p005-c5.png",
+     "pixel_size": [
+      1200,
+      734
+     ],
+     "box_in": [
+      5.11,
+      0.75,
+      5.5,
+      3.36
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p005-c6",
+     "file": "crops/p005-c6.png",
+     "pixel_size": [
+      1200,
+      298
+     ],
+     "box_in": [
+      5.11,
+      4.19,
+      5.5,
+      1.37
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p005-c7",
+     "file": "crops/p005-c7.png",
+     "pixel_size": [
+      650,
+      301
+     ],
+     "box_in": [
+      5.11,
+      5.64,
+      2.98,
+      1.38
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p005-c8",
+     "file": "crops/p005-c8.png",
+     "pixel_size": [
+      521,
+      267
+     ],
+     "box_in": [
+      8.22,
+      5.64,
+      2.39,
+      1.22
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 2
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar col clustered x2 + line standard x1; table (3+ panels)",
+    "kinds": "chart bar col clustered + line standard; table",
+    "marks": [
+     {
+      "ref": "sp[id=30]",
+      "geometry": "bracket",
+      "prst": "rightBracket",
+      "over": [
+       "chart"
+      ],
+      "carries_text": false,
+      "on_drawn_structure": false
+     }
+    ]
+   },
+   "exhibits": [
+    {
+     "candidate": "p005-c3",
+     "what": "clustered column chart, base vs downside leverage by year, with a covenant line",
+     "message": "headroom stays above 26%",
+     "how_drawn": "navy base, red downside, value labels above bars, legend on top, orange covenant line",
+     "marks": "orange covenant line in legend; a bracket with a label '26.6% headroom' marks the tightest gap",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p005-c4",
+     "what": "credit statistics table, base and downside",
+     "message": "leverage falls in both cases",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "covenant rows in red for downside",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p005-c5",
+     "what": "precedent LBO financings table with statistics block and focus row",
+     "message": "proposed terms sit at the median",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; mean/high/low italic, median bold, focus row shaded with blue text",
+     "marks": "focus row shaded and blue",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p005-c6",
+     "what": "debt capacity table",
+     "message": "proposed debt passes most tests",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "proposed row shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p005-c7",
+     "what": "downside definition table",
+     "message": "a sharp one-year volume shock",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "shocks in red",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p005-c8",
+     "what": "rate sensitivity table",
+     "message": "returns barely move with rates",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "current column shaded",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  },
+  {
+   "slide": 6,
+   "page_png": "pages/slide-06.png",
+   "content_crop": {
+    "file": "crops/p006-content.png",
+    "pixel_size": [
+     2230,
+     1754
+    ],
+    "also_draws": []
+   },
+   "candidates": [
+    {
+     "id": "p006-c1",
+     "file": "crops/p006-c1.png",
+     "pixel_size": [
+      2230,
+      83
+     ],
+     "box_in": [
+      0.39,
+      0.29,
+      10.22,
+      0.38
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 2
+     }
+    },
+    {
+     "id": "p006-c2",
+     "file": "crops/p006-c2.png",
+     "pixel_size": [
+      553,
+      641
+     ],
+     "box_in": [
+      5.1,
+      0.75,
+      2.53,
+      2.94
+     ],
+     "kinds": {
+      "connector": 1,
+      "chart": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p006-c3",
+     "file": "crops/p006-c3.png",
+     "pixel_size": [
+      621,
+      384
+     ],
+     "box_in": [
+      7.76,
+      1.92,
+      2.85,
+      1.76
+     ],
+     "kinds": {
+      "connector": 1,
+      "chart": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p006-c4",
+     "file": "crops/p006-c4.png",
+     "pixel_size": [
+      2230,
+      77
+     ],
+     "box_in": [
+      0.39,
+      7.97,
+      10.22,
+      0.35
+     ],
+     "kinds": {
+      "connector": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p006-c5",
+     "file": "crops/p006-c5.png",
+     "pixel_size": [
+      999,
+      601
+     ],
+     "box_in": [
+      0.39,
+      0.75,
+      4.58,
+      2.75
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p006-c6",
+     "file": "crops/p006-c6.png",
+     "pixel_size": [
+      1354,
+      807
+     ],
+     "box_in": [
+      0.39,
+      3.76,
+      6.2,
+      3.69
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    },
+    {
+     "id": "p006-c7",
+     "file": "crops/p006-c7.png",
+     "pixel_size": [
+      848,
+      670
+     ],
+     "box_in": [
+      6.73,
+      3.76,
+      3.88,
+      3.07
+     ],
+     "kinds": {
+      "table": 1,
+      "shape": 3
+     }
+    }
+   ],
+   "file_facts": {
+    "structure": "chart bar bar clustered x1; table (3+ panels)",
+    "kinds": "chart bar bar clustered; table",
+    "marks": []
+   },
+   "exhibits": [
+    {
+     "candidate": "p006-c2",
+     "what": "horizontal bar chart, four exit routes, MOIC and IRR inside bars",
+     "message": "two routes clear the hurdle",
+     "how_drawn": "navy bars above the hurdle, red below, labels inside bars, dashed orange vertical hurdle line labelled 'Hurdle 2.5x'",
+     "marks": "orange dashed line with a text label marks the hurdle; colour shows pass and fail, explained in subtitle",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p006-c3",
+     "what": "horizontal bar chart of reference multiples, seven bars sorted",
+     "message": "most references sit above the base exit",
+     "how_drawn": "grey bars with values inside at the left, category labels left, navy vertical reference line labelled 'Base exit 10.0x'",
+     "marks": "navy line with label marks the base multiple",
+     "chart_or_table": true,
+     "axis_labels": true,
+     "value_labels": true
+    },
+    {
+     "candidate": "p006-c5",
+     "what": "exit scenario table with shaded base column",
+     "message": "sponsor exit route is the base",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "base column shaded; returns under hurdle in red",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p006-c6",
+     "what": "listed peers trading multiples table with statistics block and focus row",
+     "message": "entry multiple vs peer median",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; mean/high/low italic, median bold, target row shaded with navy bold text",
+     "marks": "target row shaded; note explains the peer subset",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    },
+    {
+     "candidate": "p006-c7",
+     "what": "precedent transactions table with medians by buyer type",
+     "message": "strategic buyers pay more",
+     "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+     "marks": "median strategic bold; others italic",
+     "chart_or_table": true,
+     "axis_labels": false,
+     "value_labels": true
+    }
+   ],
+   "source_line": true
+  }
+ ]
+}

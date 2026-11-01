@@ -1,0 +1,70 @@
+== Falcon metrics ($m)
+rev_ltm: 1460
+rev_ntm: 1545
+ebitda_ltm: 276
+ebitda_ntm: 301
+Falcon EBITDA margin LTM %: 18.9
+Falcon revenue growth NTM %: 5.8
+== Trading comps
+Corvex Industrial | EV 7,410 | Eq 6,120 | ND 1,290 | 2.31x 2.19x | 12.3x 11.3x | g 5.6 | m 18.8
+Haldane Controls | EV 12,920 | Eq 11,840 | ND 1,080 | 2.65x 2.50x | 12.7x 11.7x | g 5.7 | m 20.9
+Marrow Systems | EV 3,150 | Eq 2,410 | ND 740 | 1.92x 1.83x | 12.0x 11.1x | g 4.9 | m 16.0
+Penrose Automation | EV 16,010 | Eq 15,230 | ND 780 | 2.95x 2.76x | 13.2x 12.0x | g 7.2 | m 22.4
+Quillon Flow | EV 2,390 | Eq 1,880 | ND 510 | 1.85x 1.78x | 12.6x 11.5x | g 4.3 | m 14.7
+Stanmore Instruments | EV 8,640 | Eq 7,960 | ND 680 | 2.44x 2.30x | 12.3x 11.2x | g 6.2 | m 19.9
+Tessaly Motion | EV 1,610 | Eq 1,120 | ND 490 | 1.64x 1.59x | 12.6x 11.8x | g 3.1 | m 13.1
+Varden Process | EV 6,280 | Eq 5,430 | ND 850 | 2.27x 2.14x | 12.3x 11.3x | g 5.8 | m 18.5
+ev_rev_ltm: mean 2.25 median 2.29 q1 1.90 q3 2.49 hi 2.95 lo 1.64
+ev_rev_ntm: mean 2.14 median 2.16 q1 1.82 q3 2.35 hi 2.76 lo 1.59
+ev_ebitda_ltm: mean 12.5 median 12.4 q1 12.3 q3 12.6 hi 13.2 lo 12.0
+ev_ebitda_ntm: mean 11.5 median 11.4 q1 11.3 q3 11.7 hi 12.0 lo 11.1
+growth: mean 5.3 median 5.7 q1 4.8 q3 5.9 hi 7.2 lo 3.1
+margin: mean 18.0 median 18.6 q1 15.7 q3 20.1 hi 22.4 lo 13.1
+== Precedents
+prec rev: mean 2.18 median 2.21 q1 2.00 q3 2.40 hi 2.62 lo 1.71
+prec ebitda: mean 11.8 median 11.9 q1 10.9 q3 12.5 hi 13.8 lo 9.8
+== Football field (implied EV $m, interquartile; median)
+Trading comps, EV / NTM EBITDA | on ebitda_ntm 301 | 11.3x-11.7x (med 11.4x) | EV 3,396-3,530 (med 3,440)
+Trading comps, EV / LTM EBITDA | on ebitda_ltm 276 | 12.3x-12.6x (med 12.4x) | EV 3,385-3,478 (med 3,434)
+Precedents, EV / LTM EBITDA | on ebitda_ltm 276 | 10.9x-12.5x (med 11.9x) | EV 3,002-3,457 (med 3,284)
+Trading comps, EV / NTM revenue | on rev_ntm 1545 | 1.82x-2.35x (med 2.16x) | EV 2,808-3,630 (med 3,344)
+Trading comps, EV / LTM revenue | on rev_ltm 1460 | 1.90x-2.49x (med 2.29x) | EV 2,779-3,639 (med 3,340)
+Precedents, EV / LTM revenue | on rev_ltm 1460 | 2.00x-2.40x (med 2.21x) | EV 2,916-3,497 (med 3,234)
+EBITDA methods: EV low end: 3,002
+EBITDA methods: EV high end: 3,530
+EBITDA methods: median-of-medians: 3,434
+Precedent median LTM EBITDA vs trading median LTM EBITDA, premium %: -4.4
+Falcon growth rank among 9 (1 = highest): 3
+Falcon margin rank among 9: 4
+corr(margin, EV/NTM EBITDA): 0.16
+Revenue methods: EV low end: 2,779
+Revenue methods: EV high end: 3,639
+Precedents 2025-26 median EBITDA x: 11.8
+Precedents 2023-24 median EBITDA x: 11.9
+Precedents sponsor median EBITDA x: 12.9
+Precedents strategic median EBITDA x: 11.1
+== Extra claims
+corr(margin, EV/NTM revenue): 0.99
+corr(growth, EV/NTM revenue): 0.93
+EBITDA methods overlap low: 3,396
+EBITDA methods overlap high: 3,457
+Largest precedent: Ferro Controls 3,210
+Precedent-implied EV at median exceeds largest precedent by: 74
+Sponsor deals 3, strategic deals 5
+Precedents ranked: [('Lumen Sensing', 13.8), ('Ferro Controls', 12.9), ('Brightwater Valves', 12.4), ('Norland Instruments', 12.2), ('Pelham Actuation', 11.6), ('Ostrava Flow', 11.1), ('Tidewell Pumps', 10.2), ('Galloway Metering', 9.8)]
+Peers ranked by margin: [('Penrose Automation', 22.4), ('Haldane Controls', 20.9), ('Stanmore Instruments', 19.9), ('Corvex Industrial', 18.8), ('Varden Process', 18.5), ('Marrow Systems', 16.0), ('Quillon Flow', 14.7), ('Tessaly Motion', 13.1)]
+Peers ranked by growth: [('Penrose Automation', 7.2), ('Stanmore Instruments', 6.2), ('Varden Process', 5.8), ('Haldane Controls', 5.7), ('Corvex Industrial', 5.6), ('Marrow Systems', 4.9), ('Quillon Flow', 4.3), ('Tessaly Motion', 3.1)]
+Peer median margin: 18.65
+Peer median growth: 5.65
+Precedents median EBITDA EV $m: 3,284
+Trading NTM EBITDA median EV $m: 3,440
+At EV 3,396: 12.3x LTM EBITDA, 11.3x NTM EBITDA, 2.33x LTM revenue
+At EV 3,457: 12.5x LTM EBITDA, 11.5x NTM EBITDA, 2.37x LTM revenue
+== Overlap restated
+EV 3,396: LTM EBITDA 12.3x NTM EBITDA 11.3x LTM rev 2.33x NTM rev 2.20x
+EV 3,457: LTM EBITDA 12.5x NTM EBITDA 11.5x LTM rev 2.37x NTM rev 2.24x
+== Precedent size vs multiple
+corr(deal EV, EV/LTM EBITDA): 0.57
+corr strategic only: 0.85
+Deals >= $2,000m: 3 median 12.4x; < $2,000m: 5 median 11.1x
+fit slope per $1bn 0.94x intercept 10.00

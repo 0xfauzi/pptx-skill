@@ -1,0 +1,144 @@
+{
+ "/extra_roles/color.slate": {
+  "hex": "56606C",
+  "why": "grey-slate ink of every italic subtitle, note line, source line and footer on all six pages"
+ },
+ "/typography/roles/type.title": {
+  "size_pt": 15,
+  "weight": 700,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "the page title under the section kicker line, 15pt bold near-black on every page"
+ },
+ "/typography/scale_ratio": null,
+ "/typography/roles/type.h1": {
+  "size_pt": 9,
+  "weight": 700,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "exhibit headings ('Exit scenarios', 'Listed flow-control peers') are 9pt bold navy"
+ },
+ "/typography/roles/type.h2": {
+  "size_pt": 8,
+  "weight": 700,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "text panel heads ('Exit view', 'Returns') are 8pt bold near-black above 8pt bullets"
+ },
+ "/typography/roles/type.caption": {
+  "size_pt": 8,
+  "weight": 400,
+  "italic": true,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.slate",
+  "why": "the units line under every exhibit heading is 7pt italic slate"
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 8,
+  "weight": 400,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.slate",
+  "why": "notes directly under tables are 7pt regular slate"
+ },
+ "/typography/roles/type.source_line": {
+  "size_pt": 8,
+  "weight": 400,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.slate",
+  "why": "'Source: ...' line above the bottom rule on every page, 7pt slate"
+ },
+ "/typography/roles/type.table_header": {
+  "size_pt": 7,
+  "weight": 700,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "right",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "column headers are 7pt bold near-black, right-aligned over numbers, no fill"
+ },
+ "/typography/roles/*/line_spacing": null,
+ "/color/roles/color.surface_alt": {
+  "hex": "E9EDF2",
+  "why": "pale blue-grey fill of section bands, shaded focus rows and the base-case column"
+ },
+ "/color/roles/color.positive": null,
+ "/color/roles/color.emphasis": {
+  "hex": "B85400",
+  "why": "the burnt orange of the 'Hurdle 2.5x' dashed line on sheet 6 and the springing covenant line on sheet 5: the colour the reference uses to mark a threshold to look at"
+ },
+ "/spacing/baseline_emu": null,
+ "/variety/content_pages": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "/shape_language/icon_style": "none",
+ "/imagery/register_kind": "none",
+ "/floors/display/floor_pt": 15,
+ "/description": {
+  "summary": "A dense investment-committee book: 11 x 8.5in pages packed with native tables and one or two small charts, claims stated in short bullet panels beside the exhibits.",
+  "typography": "Calibri throughout; 15pt bold title, 7pt bold navy caps section kicker above it, 9pt bold navy exhibit headings with a 7pt italic slate units line, 7pt table text, 8pt bullets.",
+  "color": "White ground, near-black ink, navy 1F3D63 as the one structural colour, mid blue and grey for secondary series, red for bad values, burnt orange for thresholds, pale blue-grey shading for focus rows.",
+  "layout": "0.4in side margins, a navy rule under the title, a grey rule over the footer; two to four columns of exhibits; source line above the footer; footer with project name left and sheet number right.",
+  "tables": "Unfilled headers, hairline grey row rules, 1pt dark rule under header and at bottom, statistics block in italics with bold median, focus row shaded with navy bold text.",
+  "imagery": "none",
+  "motifs": "Top navy rule, bottom grey rule, reference lines in charts carry their own text label.",
+  "not_seen": [
+   "no photographs or icons",
+   "no filled table headers",
+   "no gridlines on charts",
+   "no legends except where two series share a chart",
+   "no claim titles: titles name the topic"
+  ],
+  "tone": "Sober, analytical, number-led."
+ },
+ "/derivation_rules": [
+  "A new series colour comes after navy, mid blue 6F8DB3 and grey A9B1BB in that order.",
+  "A threshold or reference line is drawn in emphasis orange or navy with its own text label.",
+  "Any new text role sits on the 7/8/9/15pt ladder; nothing below 7pt."
+ ],
+ "/continuation": "none seen",
+ "/typography/roles/type.bullet": {
+  "size_pt": 8,
+  "weight": 400,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "space_before_pt": 0,
+  "space_after_pt": 4,
+  "why": "commentary bullets in the text panels are 8pt regular near-black with about 4pt between items"
+ },
+ "/typography/roles/type.section_label": {
+  "size_pt": 7,
+  "weight": 700,
+  "italic": false,
+  "family": "Calibri",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.ink_muted",
+  "why": "the section line above every title, 7pt bold navy capitals with bars between parts"
+ }
+}

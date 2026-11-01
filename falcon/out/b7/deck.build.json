@@ -1,0 +1,2426 @@
+{
+ "out": "/home/user/pptx-skill/falcon/out/b7/deck.pptx",
+ "ruler": "pillow_x128",
+ "ruler_basis": "pinned by the guide when its draft was extracted; every build on this guide measures with it",
+ "slides": [
+  {
+   "id": "p1-comps",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "layout_depth": {
+    "deepest": 3,
+    "chain": "root > lower > fit-block > fit-h",
+    "runaway_bound": 12
+   },
+   "layout_defaults_taken": [
+    "root: ['title', 'comps-block', 'foot'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "comps-block: no padding (pad_role left out)",
+    "comps-block: ['comps-h', 'comps'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "lower: no padding (pad_role left out)",
+    "fit-block: no padding (pad_role left out)",
+    "fit-block: ['fit-h'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "pos-block: no padding (pad_role left out)",
+    "pos-block: ['pos-h', 'pos', 'pos-note', 'mult-h'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "foot: no padding (pad_role left out)",
+    "foot: ['source', 'footrow'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "footrow: no padding (pad_role left out)"
+   ],
+   "table_defaults_taken": {
+    "comps": [
+     "emphasis[1].bold left out: the cells keep their own weight (the cell role's, and a totals row's totals_bold)",
+     "header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)"
+    ],
+    "pos": [
+     "header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)"
+    ]
+   },
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 2,
+    "comps-h": 2,
+    "fit-h": 2,
+    "pos-h": 3,
+    "pos-note": 2,
+    "mult-h": 2,
+    "view": 15,
+    "source": 1,
+    "footer": 1,
+    "sheet": 1
+   },
+   "tables": {
+    "comps": {
+     "rows": 15,
+     "height_emu": 2152650,
+     "column_widths_emu": [
+      1399032,
+      466344,
+      746150,
+      839419,
+      746150,
+      699516,
+      699516,
+      699516,
+      699516,
+      1165860,
+      1165861
+     ],
+     "fitting_row_prefix": 13,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
+    },
+    "pos": {
+     "rows": 5,
+     "height_emu": 931418,
+     "column_widths_emu": [
+      863890,
+      334409,
+      362277,
+      362277,
+      362277,
+      501613
+     ],
+     "fitting_row_prefix": 4,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
+    }
+   },
+   "annotations": [
+    {
+     "id": "falcon-m",
+     "kind": "reference_line",
+     "host": "fit",
+     "anchor": {
+      "value": 18.9,
+      "axis": "category"
+     },
+     "status": "placed",
+     "anchor_emu": [
+      2009938,
+      3931539,
+      0,
+      2381631
+     ],
+     "drawn": [
+      "falcon-m-line",
+      "falcon-m-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures"
+     ],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 27,
+      "covered": []
+     }
+    },
+    {
+     "id": "mult-med",
+     "kind": "reference_line",
+     "host": "mult",
+     "anchor": {
+      "value": 11.43
+     },
+     "status": "placed",
+     "anchor_emu": [
+      5795156,
+      5435285,
+      0,
+      1522527
+     ],
+     "drawn": [
+      "mult-med-line",
+      "mult-med-label"
+     ],
+     "defaults_taken": [
+      "dash: solid",
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures"
+     ],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 24,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 524,
+    "elements": 16,
+    "covered_area_fraction": 0.599,
+    "text_boxes_mostly_empty": [
+     {
+      "id": "view",
+      "text_ends_in": 5.9,
+      "box_ends_in": 7.65,
+      "empty_share": 0.43
+     }
+    ],
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "words_per_slide": {
+     "value": 524,
+     "band": [
+      730.5,
+      882.0
+     ],
+     "verdict": "below"
+    },
+    "elements_per_slide": {
+     "value": 16,
+     "band": [
+      28.5,
+      60.0
+     ],
+     "verdict": "below"
+    },
+    "content_area_fraction": {
+     "value": 0.599,
+     "band": [
+      0.7224,
+      0.7654
+     ],
+     "verdict": "below"
+    }
+   },
+   "contrast": {
+    "checked": 45,
+    "violations": [],
+    "warnings": [],
+    "reference_precedent": [],
+    "undecidable": [],
+    "unbound": [
+     {
+      "element": "comps",
+      "row_class": "header",
+      "why": "no ink role bound; the cells inherit the master's text colour"
+     },
+     {
+      "element": "pos",
+      "row_class": "header",
+      "why": "no ink role bound; the cells inherit the master's text colour"
+     }
+    ],
+    "nearest_pass": {
+     "element": "falcon-m-label",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.data_label",
+     "ink": "color.emphasis",
+     "text": "Falcon 18.9%: 2.24x on the fit",
+     "ratio": 4.88,
+     "threshold": 4.5,
+     "size_pt": 7.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "B85400",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 12,
+      "band": [
+       22.0,
+       51.0
+      ],
+      "verdict": "below"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       1.5
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 2,
+      "band": [
+       4.0,
+       8.0
+      ],
+      "verdict": "below"
+     },
+     "chart": {
+      "value": 2,
+      "band": [
+       1.0,
+       1.5
+      ],
+      "verdict": "above"
+     },
+     "line": {
+      "value": 2,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 2,
+     "band": [
+      0.0,
+      1.5
+     ],
+     "verdict": "above"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": "no chart on this page declares a bridge",
+   "source_line": {
+    "data_page": true,
+    "source_line": true
+   },
+   "solver_status": "fit",
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Listed peer trading multiples",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 29,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "words": {
+      "value": 4,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "lines": {
+      "value": 1,
+      "verdict": "no evidence: the guide has no titles read by position"
+     }
+    },
+    "register": {
+     "verdict": "no evidence: the guide's /titles/register is not completed"
+    }
+   },
+   "briefs": {
+    "plan": 4,
+    "file": 4,
+    "file_structure": "chart bar bar clustered x1; chart scatter x2; table (3+ panels)",
+    "verdict": "agree"
+   },
+   "chart_defaults_taken": {
+    "fit": [
+     "axes.category.reverse: minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)",
+     "axes.value.reverse: minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)"
+    ],
+    "mult": []
+   },
+   "drawn_lines": {
+    "title": {
+     "written": 2,
+     "drawn": 1
+    },
+    "comps-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "comps": {
+     "cells": 137,
+     "drawn as written": 137,
+     "not found": 0
+    },
+    "fit-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "pos-h": "not found: its words are not one run in its column of the render",
+    "pos": {
+     "cells": 30,
+     "drawn as written": 30,
+     "not found": 0
+    },
+    "pos-note": {
+     "written": 2,
+     "drawn": 2
+    },
+    "mult-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "view": {
+     "written": 15,
+     "drawn": 15
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    },
+    "footer": {
+     "written": 1,
+     "drawn": 1
+    },
+    "sheet": {
+     "written": 1,
+     "drawn": 1
+    },
+    "falcon-m-label": {
+     "written": 1,
+     "drawn": 1
+    },
+    "mult-med-label": {
+     "written": 1,
+     "drawn": 1
+    }
+   },
+   "chart_text_drawn": {
+    "fit": "8 of 8 chart labels drawn as written",
+    "mult": "16 of 16 chart labels drawn as written"
+   }
+  },
+  {
+   "id": "p2-precedents",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "layout_depth": {
+    "deepest": 3,
+    "chain": "root > body > prec-block > prec-h",
+    "runaway_bound": 12
+   },
+   "layout_defaults_taken": [
+    "root: ['title', 'body', 'foot'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "body: no padding (pad_role left out)",
+    "prec-block: no padding (pad_role left out)",
+    "prec-block: ['prec-h', 'prec', 'prec-note'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "rank-block: no padding (pad_role left out)",
+    "rank-block: ['rank-h'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "lower2: no padding (pad_role left out)",
+    "size-block: no padding (pad_role left out)",
+    "size-block: ['size-h'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "foot: no padding (pad_role left out)",
+    "foot: ['source', 'footrow'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "footrow: no padding (pad_role left out)"
+   ],
+   "table_defaults_taken": {
+    "prec": [
+     "emphasis[1].bold left out: the cells keep their own weight (the cell role's, and a totals row's totals_bold)",
+     "header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)"
+    ]
+   },
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 2,
+    "prec-h": 2,
+    "prec-note": 2,
+    "rank-h": 2,
+    "size-h": 2,
+    "view": 12,
+    "source": 1,
+    "footer": 1,
+    "sheet": 1
+   },
+   "tables": {
+    "prec": {
+     "rows": 15,
+     "height_emu": 2366518,
+     "column_widths_emu": [
+      518465,
+      979322,
+      979322,
+      460858,
+      460858,
+      576072,
+      576072,
+      633679,
+      576072
+     ],
+     "fitting_row_prefix": 14,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
+    }
+   },
+   "annotations": [
+    {
+     "id": "trading-line",
+     "kind": "reference_line",
+     "host": "rank",
+     "anchor": {
+      "value": 12.443547549833887
+     },
+     "status": "placed",
+     "anchor_emu": [
+      9285319,
+      1301877,
+      0,
+      2444191
+     ],
+     "drawn": [
+      "trading-line-line",
+      "trading-line-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures"
+     ],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 32,
+      "covered": []
+     }
+    },
+    {
+     "id": "falcon-ev",
+     "kind": "reference_line",
+     "host": "size",
+     "anchor": {
+      "value": 3284.4,
+      "axis": "category"
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3205247,
+      4660544,
+      0,
+      1777594
+     ],
+     "drawn": [
+      "falcon-ev-line",
+      "falcon-ev-label"
+     ],
+     "defaults_taken": [
+      "gap_role: 0 EMU: the label touches what it labels",
+      "label.max_width_share: one line, as wide as the text measures"
+     ],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 34,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 461,
+    "elements": 14,
+    "covered_area_fraction": 0.543,
+    "text_boxes_mostly_empty": [
+     {
+      "id": "view",
+      "text_ends_in": 6.24,
+      "box_ends_in": 7.65,
+      "empty_share": 0.42
+     }
+    ],
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "words_per_slide": {
+     "value": 461,
+     "band": [
+      730.5,
+      882.0
+     ],
+     "verdict": "below"
+    },
+    "elements_per_slide": {
+     "value": 14,
+     "band": [
+      28.5,
+      60.0
+     ],
+     "verdict": "below"
+    },
+    "content_area_fraction": {
+     "value": 0.543,
+     "band": [
+      0.7224,
+      0.7654
+     ],
+     "verdict": "below"
+    }
+   },
+   "contrast": {
+    "checked": 44,
+    "violations": [],
+    "warnings": [],
+    "reference_precedent": [],
+    "undecidable": [],
+    "unbound": [
+     {
+      "element": "prec",
+      "row_class": "header",
+      "why": "no ink role bound; the cells inherit the master's text colour"
+     }
+    ],
+    "nearest_pass": {
+     "element": "trading-line-label",
+     "paragraph": 0,
+     "run": 0,
+     "role": "type.data_label",
+     "ink": "color.emphasis",
+     "text": "Listed peers today 12.4x",
+     "ratio": 4.88,
+     "threshold": 4.5,
+     "size_pt": 7.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "B85400",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 11,
+      "band": [
+       22.0,
+       51.0
+      ],
+      "verdict": "below"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 0,
+      "band": [
+       0.0,
+       1.5
+      ],
+      "verdict": "in band"
+     },
+     "table": {
+      "value": 1,
+      "band": [
+       4.0,
+       8.0
+      ],
+      "verdict": "below"
+     },
+     "chart": {
+      "value": 2,
+      "band": [
+       1.0,
+       1.5
+      ],
+      "verdict": "above"
+     },
+     "line": {
+      "value": 2,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 2,
+     "band": [
+      0.0,
+      1.5
+     ],
+     "verdict": "above"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": "no chart on this page declares a bridge",
+   "source_line": {
+    "data_page": true,
+    "source_line": true
+   },
+   "solver_status": "fit",
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Precedent transactions",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 22,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "words": {
+      "value": 2,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "lines": {
+      "value": 1,
+      "verdict": "no evidence: the guide has no titles read by position"
+     }
+    },
+    "register": {
+     "verdict": "no evidence: the guide's /titles/register is not completed"
+    }
+   },
+   "briefs": {
+    "plan": 3,
+    "file": 3,
+    "file_structure": "chart bar bar clustered x1; chart scatter x2; table (3+ panels)",
+    "verdict": "agree"
+   },
+   "chart_defaults_taken": {
+    "rank": [],
+    "size": [
+     "axes.category.reverse: minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)",
+     "axes.value.reverse: minMax: from the origin outward (a value axis: low values at the origin; a category axis: a column chart lists its categories left to right, a horizontal bar bottom-up)"
+    ]
+   },
+   "drawn_lines": {
+    "title": {
+     "written": 2,
+     "drawn": 1
+    },
+    "prec-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "prec": {
+     "cells": 117,
+     "drawn as written": 117,
+     "not found": 0
+    },
+    "prec-note": {
+     "written": 2,
+     "drawn": 2
+    },
+    "rank-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "size-h": "not found: its words are not one run in its column of the render",
+    "view": "not found: its words are not one run in its column of the render",
+    "source": {
+     "written": 1,
+     "drawn": 1
+    },
+    "footer": {
+     "written": 1,
+     "drawn": 1
+    },
+    "sheet": {
+     "written": 1,
+     "drawn": 1
+    },
+    "trading-line-label": {
+     "written": 1,
+     "drawn": 1
+    },
+    "falcon-ev-label": {
+     "written": 1,
+     "drawn": 1
+    }
+   },
+   "chart_text_drawn": {
+    "rank": "16 of 16 chart labels drawn as written",
+    "size": "8 of 8 chart labels drawn as written"
+   }
+  },
+  {
+   "id": "p3-football",
+   "status": "fit",
+   "attempts": [
+    {
+     "scale": "1",
+     "result": "fit"
+    }
+   ],
+   "layout_depth": {
+    "deepest": 4,
+    "chain": "root > upper > right3 > ovl-block > ovl-h",
+    "runaway_bound": 12
+   },
+   "layout_defaults_taken": [
+    "root: ['title', 'impl-block', 'foot'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "upper: no padding (pad_role left out)",
+    "ff-block: no padding (pad_role left out)",
+    "ff-block: ['ff-h'] carry no weight: each that is flexible (not sized by its own content) takes weight 1 against its siblings' weights in the split of the free column space",
+    "right3: no padding (pad_role left out)",
+    "right3: ['view', 'ovl-block'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "ovl-block: no padding (pad_role left out)",
+    "ovl-block: ['ovl-h', 'ovl'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "impl-block: no padding (pad_role left out)",
+    "impl-block: ['impl-h', 'impl', 'impl-note'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "foot: no padding (pad_role left out)",
+    "foot: ['source', 'footrow'] carry no weight: each that is flexible (not sized by its own content) takes an equal share in the split of the free column space",
+    "footrow: no padding (pad_role left out)"
+   ],
+   "table_defaults_taken": {
+    "ovl": [
+     "header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)"
+    ],
+    "impl": [
+     "emphasis[1].bold left out: the cells keep their own weight (the cell role's, and a totals row's totals_bold)",
+     "header_bold: the header row in its role's own weight (neither the table nor the guide's tables says)"
+    ]
+   },
+   "scale": 1.0,
+   "violations": [],
+   "text_lines": {
+    "title": 2,
+    "ff-h": 2,
+    "view": 13,
+    "ovl-h": 2,
+    "impl-h": 2,
+    "impl-note": 1,
+    "source": 1,
+    "footer": 1,
+    "sheet": 1
+   },
+   "tables": {
+    "ovl": {
+     "rows": 5,
+     "height_emu": 717550,
+     "column_widths_emu": [
+      1633011,
+      958506,
+      958507
+     ],
+     "fitting_row_prefix": 4,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
+    },
+    "impl": {
+     "rows": 10,
+     "height_emu": 1435100,
+     "column_widths_emu": [
+      2012190,
+      872811,
+      385801,
+      540844,
+      502865,
+      540844,
+      992532,
+      992532,
+      992532,
+      1493929
+     ],
+     "fitting_row_prefix": 8,
+     "width_deficit_emu": 0,
+     "column_deficits_emu": {}
+    }
+   },
+   "annotations": [
+    {
+     "id": "overlap",
+     "kind": "band",
+     "host": "ff",
+     "anchor": {
+      "values": [
+       3396.4,
+       3456.9
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3824929,
+      1422095,
+      124839,
+      3263331
+     ],
+     "drawn": [
+      "overlap-band"
+     ],
+     "defaults_taken": [
+      "pad_role: 0 EMU: drawn on the anchor's own edge"
+     ],
+     "explained_by": {
+      "by": "annotation",
+      "annotation": "overlap-note",
+      "says": "EBITDA methods overlap 3,396-3,457"
+     },
+     "collisions": [],
+     "render_check": {
+      "host_words": 41,
+      "covered": []
+     }
+    },
+    {
+     "id": "overlap-note",
+     "kind": "callout",
+     "host": "ff",
+     "anchor": {
+      "values": [
+       3396.4,
+       3456.9
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      3824929,
+      1422095,
+      124839,
+      3263331
+     ],
+     "drawn": [
+      "overlap-note-box",
+      "overlap-note-label",
+      "overlap-note-leader"
+     ],
+     "defaults_taken": [
+      "label.max_width_share: one line, as wide as the text measures",
+      "head: none: a plain leader"
+     ],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 41,
+      "covered": []
+     }
+    },
+    {
+     "id": "ranges",
+     "kind": "category_row",
+     "host": "ff",
+     "anchor": {
+      "categories": [
+       0,
+       5
+      ]
+     },
+     "status": "placed",
+     "anchor_emu": [
+      4749178,
+      1422095,
+      1032430,
+      3263331
+     ],
+     "drawn": [
+      "ranges-0-text",
+      "ranges-1-text",
+      "ranges-2-text",
+      "ranges-3-text",
+      "ranges-4-text",
+      "ranges-5-text"
+     ],
+     "defaults_taken": [],
+     "explained_by": "its own label",
+     "collisions": [],
+     "render_check": {
+      "host_words": 41,
+      "covered": []
+     }
+    }
+   ],
+   "density": {
+    "words": 466,
+    "elements": 21,
+    "covered_area_fraction": 0.606,
+    "text_boxes_mostly_empty": "none",
+    "covered_basis": "ink: each measured text line at its width and pitch, each table at its fitted rows, each chart, image and fill at its box, unioned; a text box stretched past its lines is not covered. The reference band unions the reference's shape boxes, which count a stretched box whole, so the band is the more generous",
+    "words_per_slide": {
+     "value": 466,
+     "band": [
+      730.5,
+      882.0
+     ],
+     "verdict": "below"
+    },
+    "elements_per_slide": {
+     "value": 21,
+     "band": [
+      28.5,
+      60.0
+     ],
+     "verdict": "below"
+    },
+    "content_area_fraction": {
+     "value": 0.606,
+     "band": [
+      0.7224,
+      0.7654
+     ],
+     "verdict": "below"
+    }
+   },
+   "contrast": {
+    "checked": 36,
+    "violations": [],
+    "warnings": [],
+    "reference_precedent": [],
+    "undecidable": [],
+    "unbound": [
+     {
+      "element": "ovl",
+      "row_class": "header",
+      "why": "no ink role bound; the cells inherit the master's text colour"
+     },
+     {
+      "element": "impl",
+      "row_class": "header",
+      "why": "no ink role bound; the cells inherit the master's text colour"
+     }
+    ],
+    "nearest_pass": {
+     "element": "ff-h",
+     "paragraph": 1,
+     "run": 0,
+     "role": "type.caption",
+     "ink": "color.slate",
+     "text": "$m; bar spans the 25th to 75th percentil",
+     "ratio": 6.39,
+     "threshold": 4.5,
+     "size_pt": 8.0,
+     "bold": false,
+     "backing": "color.surface",
+     "ink_hex": "56606C",
+     "backing_hex": "FFFFFF"
+    },
+    "precedent_source": "reference"
+   },
+   "register": {
+    "kind_counts": {
+     "text": {
+      "value": 16,
+      "band": [
+       22.0,
+       51.0
+      ],
+      "verdict": "below"
+     },
+     "image": {
+      "value": 0,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "in band"
+     },
+     "shape": {
+      "value": 2,
+      "band": [
+       0.0,
+       1.5
+      ],
+      "verdict": "above"
+     },
+     "table": {
+      "value": 2,
+      "band": [
+       4.0,
+       8.0
+      ],
+      "verdict": "below"
+     },
+     "chart": {
+      "value": 1,
+      "band": [
+       1.0,
+       1.5
+      ],
+      "verdict": "in band"
+     },
+     "line": {
+      "value": 1,
+      "band": [
+       0.0,
+       0.0
+      ],
+      "verdict": "no evidence: the reference band is 0 to 0 (none on at least nine slides in ten; an exhibit pasted as a picture counts as an image)"
+     }
+    },
+    "decoration_count": {
+     "value": 3,
+     "band": [
+      0.0,
+      1.5
+     ],
+     "verdict": "above"
+    },
+    "container_ratio": {
+     "value": 0.0,
+     "band": [
+      0.0,
+      0.0
+     ],
+     "verdict": "in band"
+    }
+   },
+   "tieouts": [],
+   "bridge_ties": "no chart on this page declares a bridge",
+   "source_line": {
+    "data_page": true,
+    "source_line": true
+   },
+   "solver_status": "fit",
+   "problems": [],
+   "title": {
+    "element": "title",
+    "text": "Valuation summary: football field and implied values",
+    "register_stated": "topic",
+    "length": {
+     "chars": {
+      "value": 52,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "words": {
+      "value": 7,
+      "verdict": "no evidence: the guide has no titles read by position"
+     },
+     "lines": {
+      "value": 1,
+      "verdict": "no evidence: the guide has no titles read by position"
+     }
+    },
+    "register": {
+     "verdict": "no evidence: the guide's /titles/register is not completed"
+    }
+   },
+   "briefs": {
+    "plan": 3,
+    "file": 3,
+    "file_structure": "chart bar bar stacked x3; table (3+ panels)",
+    "verdict": "agree"
+   },
+   "chart_defaults_taken": {
+    "ff": []
+   },
+   "drawn_lines": {
+    "title": {
+     "written": 2,
+     "drawn": 1
+    },
+    "ff-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "view": {
+     "written": 13,
+     "drawn": 13
+    },
+    "ovl-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "ovl": {
+     "cells": 15,
+     "drawn as written": 15,
+     "not found": 0
+    },
+    "impl-h": {
+     "written": 2,
+     "drawn": 2
+    },
+    "impl": {
+     "cells": 78,
+     "drawn as written": 78,
+     "not found": 0
+    },
+    "impl-note": {
+     "written": 1,
+     "drawn": 1
+    },
+    "source": {
+     "written": 1,
+     "drawn": 1
+    },
+    "footer": {
+     "written": 1,
+     "drawn": 1
+    },
+    "sheet": {
+     "written": 1,
+     "drawn": 1
+    },
+    "overlap-note-label": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-0-text": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-1-text": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-2-text": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-3-text": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-4-text": {
+     "written": 1,
+     "drawn": 1
+    },
+    "ranges-5-text": {
+     "written": 1,
+     "drawn": 1
+    }
+   },
+   "chart_text_drawn": {
+    "ff": "6 of 6 chart labels drawn as written"
+   }
+  }
+ ],
+ "source_lines": {
+  "reference": {
+   "habit": "most",
+   "share": 1.0,
+   "pages_with": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "evidence": "the reference sources 6 of 6 data pages (100%)"
+  },
+  "deck": {
+   "data_pages": 3,
+   "with_source_line": [
+    "p1-comps",
+    "p2-precedents",
+    "p3-football"
+   ],
+   "data_pages_without": []
+  }
+ },
+ "position_drift": {
+  "_ids_reused_across_arrangements": {
+   "view": [
+    [
+     1
+    ],
+    [
+     2
+    ],
+    [
+     3
+    ]
+   ]
+  }
+ },
+ "repetition": {
+  "threshold": 0.5,
+  "frame_left_out": [
+   "footer",
+   "sheet",
+   "source",
+   "title"
+  ],
+  "pairs": [
+   {
+    "pages": [
+     1,
+     2
+    ],
+    "similarity": 0.199,
+    "similar": false
+   },
+   {
+    "pages": [
+     2,
+     3
+    ],
+    "similarity": 0.138,
+    "similar": false
+   }
+  ],
+  "realised": [
+   {
+    "page": 1,
+    "composition": "b1",
+    "structure": "chart bar bar clustered x1; chart scatter x2; table (3+ panels)",
+    "kinds": "chart bar bar clustered; chart scatter; table",
+    "panels": 4,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    },
+    "headline_rows": []
+   },
+   {
+    "page": 2,
+    "composition": "b2",
+    "structure": "chart bar bar clustered x1; chart scatter x2; table (3+ panels)",
+    "kinds": "chart bar bar clustered; chart scatter; table",
+    "panels": 3,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    },
+    "headline_rows": []
+   },
+   {
+    "page": 3,
+    "composition": "b3",
+    "structure": "chart bar bar stacked x3; table (3+ panels)",
+    "kinds": "chart bar bar stacked; table",
+    "panels": 3,
+    "drawn": {
+     "count": 0,
+     "read_as": "none"
+    },
+    "headline_rows": []
+   }
+  ],
+  "measure": {
+   "deck": "built",
+   "content_pages": 3,
+   "segments": [
+    [
+     1,
+     2,
+     3
+    ]
+   ],
+   "pairs": 2,
+   "status": "measured",
+   "composition": {
+    "V": 1.0,
+    "changed": 2,
+    "pairs": 2
+   },
+   "structures": {
+    "V": 0.5,
+    "changed": 1,
+    "pairs": 2,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 0.5,
+    "changed": 1,
+    "pairs": 2,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 3,
+    "pages": 3,
+    "per_page": 1.0
+   },
+   "longest_run": 1,
+   "runs": [],
+   "sequences": [
+    [
+     "b1",
+     "b2",
+     "b3"
+    ]
+   ]
+  },
+  "reference": {
+   "deck": "our-template.pptx",
+   "status": "measured",
+   "content_pages": 6,
+   "composition": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5
+   },
+   "structures": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 6,
+    "pages": 6,
+    "per_page": 1.0
+   },
+   "longest_run": 1
+  },
+  "against_reference": {
+   "composition_V": {
+    "value": 1.0,
+    "reference_V": 1.0,
+    "verdict": "at or above the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
+   },
+   "structures_V": {
+    "value": 0.5,
+    "reference_V": 1.0,
+    "verdict": "below the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
+   },
+   "kinds_V": {
+    "value": 0.5,
+    "reference_V": 1.0,
+    "verdict": "below the reference's",
+    "threshold": "unmeasured: the reference's own V is a choice of line; no reader has measured where V reads as samey"
+   },
+   "distinct_per_page": {
+    "value": 1.0,
+    "reference_p10_window": 1.0,
+    "windows": 4,
+    "window_pages": 3,
+    "verdict": "at or above the reference's 10th percentile window",
+    "threshold": "unmeasured: the 10th percentile window is a choice"
+   },
+   "longest_run": {
+    "built": 1,
+    "reference": 1
+   }
+  },
+  "reference_longest_run": 1,
+  "runs_over_reference": [],
+  "warnings": [
+   "structures_V 0.5 below the reference's (1.0): a departure (the line is unmeasured); answer it in one line in the report",
+   "kinds_V 0.5 below the reference's (1.0): a departure (the line is unmeasured); answer it in one line in the report"
+  ],
+  "plan": {
+   "check": {
+    "status": "pass",
+    "refusals": [],
+    "warnings": [],
+    "subset": null
+   },
+   "measure": {
+    "deck": "plan",
+    "content_pages": 3,
+    "segments": [
+     [
+      1,
+      2,
+      3
+     ]
+    ],
+    "pairs": 2,
+    "status": "measured",
+    "composition": {
+     "V": 1.0,
+     "changed": 2,
+     "pairs": 2
+    },
+    "structures": {
+     "status": "no evidence",
+     "why": "structure not read on 3 of 3 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
+    },
+    "kinds": {
+     "status": "no evidence",
+     "why": "kinds not read on 3 of 3 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
+    },
+    "distinct": {
+     "compositions": 3,
+     "pages": 3,
+     "per_page": 1.0
+    },
+    "longest_run": 1,
+    "runs": [],
+    "sequences": [
+     [
+      "new:wide-table-over-three-panels",
+      "new:table-beside-chart-over-text",
+      "new:chart-beside-text-over-wide-table"
+     ]
+    ]
+   },
+   "realised_by_page": [
+    {
+     "page": 1,
+     "id": "p1-comps",
+     "planned": "new:wide-table-over-three-panels",
+     "realised": "b1"
+    },
+    {
+     "page": 2,
+     "id": "p2-precedents",
+     "planned": "new:table-beside-chart-over-text",
+     "realised": "b2"
+    },
+    {
+     "page": 3,
+     "id": "p3-football",
+     "planned": "new:chart-beside-text-over-wide-table",
+     "realised": "b3"
+    }
+   ],
+   "names": "realised names (b1, b2, ...) are this build's own clusters of pages with alike boxes, not the plan's names: two pages share a realised name when they share an arrangement",
+   "composition_V": {
+    "planned": 1.0,
+    "realised": 1.0
+   },
+   "structures_V": {
+    "planned": "not declared: a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
+    "realised": 0.5
+   },
+   "kinds_V": {
+    "planned": "not declared: a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
+    "realised": 0.5
+   },
+   "pages_differing_from_plan": [],
+   "pages_against_their_archetype": "unmeasured: the guide keeps each archetype's kinds and slide numbers, not its boxes, so whether a page realises the archetype it names (arch-10 built as an arch-15 list) is not checked here; pages_differing_from_plan compares adjacent pages only. Compare the render with the archetype's slides yourself and correct plan.json when they differ"
+  }
+ },
+ "emitted_slides": 3,
+ "chrome": {
+  "mode": "auto",
+  "placeholders_copied": [],
+  "slide_layer_entries": [
+   "chrome-1",
+   "chrome-5"
+  ],
+  "notes": [],
+  "firm": [],
+  "drawn": [
+   [
+    "chrome-1",
+    "chrome-5"
+   ],
+   [
+    "chrome-1",
+    "chrome-5"
+   ],
+   [
+    "chrome-1",
+    "chrome-5"
+   ]
+  ],
+  "reference": [
+   {
+    "chrome_id": "chrome-2",
+    "kind": "date",
+    "text": "1/27/13",
+    "on": "6 of 6 reference pages"
+   },
+   {
+    "chrome_id": "chrome-3",
+    "kind": "footer",
+    "text": null,
+    "on": "6 of 6 reference pages"
+   },
+   {
+    "chrome_id": "chrome-4",
+    "kind": "page_number",
+    "text": "\u2039#\u203a 1/27/13",
+    "on": "6 of 6 reference pages"
+   },
+   {
+    "chrome_id": "chrome-1",
+    "kind": "rule",
+    "text": null,
+    "on": "6 of 6 reference pages"
+   },
+   {
+    "chrome_id": "chrome-5",
+    "kind": "rule",
+    "text": null,
+    "on": "6 of 6 reference pages"
+   }
+  ]
+ },
+ "validation": {
+  "file": "/home/user/pptx-skill/falcon/out/b7/deck.pptx",
+  "slides": 3,
+  "problems": [],
+  "ok": true
+ },
+ "leakage": {
+  "past_decks": [
+   "our-template.pptx"
+  ],
+  "briefs": [],
+  "computed": [
+   "figures.txt"
+  ],
+  "declared_computed": [
+   {
+    "text": "0.99",
+    "past": [
+     "our-template.pptx p1"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "0.99"
+   },
+   {
+    "text": "1,120",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "1120"
+   },
+   {
+    "text": "1.64x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "1.64x"
+   },
+   {
+    "text": "1.83x",
+    "past": [
+     "our-template.pptx p3",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "1.83x"
+   },
+   {
+    "text": "10.9x",
+    "past": [
+     "our-template.pptx p5",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     3
+    ],
+    "computed_as": "10.9x"
+   },
+   {
+    "text": "11.1x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "11.1x"
+   },
+   {
+    "text": "11.2x",
+    "past": [
+     "our-template.pptx p5",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "11.2x"
+   },
+   {
+    "text": "11.4x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     3
+    ],
+    "computed_as": "11.4x"
+   },
+   {
+    "text": "11.6",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     2
+    ],
+    "computed_as": "11.6"
+   },
+   {
+    "text": "11.8x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "11.8x"
+   },
+   {
+    "text": "12.0x",
+    "past": [
+     "our-template.pptx p5",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "12x"
+   },
+   {
+    "text": "12.4x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     2,
+     3
+    ],
+    "computed_as": "12.4x"
+   },
+   {
+    "text": "12.5x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     3
+    ],
+    "computed_as": "12.5x"
+   },
+   {
+    "text": "12.6x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     3
+    ],
+    "computed_as": "12.6x"
+   },
+   {
+    "text": "13.2x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "13.2x"
+   },
+   {
+    "text": "16.0",
+    "past": [
+     "our-template.pptx p5"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "16"
+   },
+   {
+    "text": "18.0",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "18"
+   },
+   {
+    "text": "18.5",
+    "past": [
+     "our-template.pptx p1",
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "18.5"
+   },
+   {
+    "text": "18.6",
+    "past": [
+     "our-template.pptx p1"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "18.6"
+   },
+   {
+    "text": "18.8",
+    "past": [
+     "our-template.pptx p5"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "18.8"
+   },
+   {
+    "text": "19.9",
+    "past": [
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "19.9"
+   },
+   {
+    "text": "2.00x",
+    "past": [
+     "our-template.pptx p2",
+     "our-template.pptx p4"
+    ],
+    "pages": [
+     3
+    ],
+    "computed_as": "2x"
+   },
+   {
+    "text": "2.19x",
+    "past": [
+     "our-template.pptx p4"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "2.19x"
+   },
+   {
+    "text": "2.21x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     2,
+     3
+    ],
+    "computed_as": "2.21x"
+   },
+   {
+    "text": "2.24x",
+    "past": [
+     "our-template.pptx p5"
+    ],
+    "pages": [
+     1,
+     3
+    ],
+    "computed_as": "2.24x"
+   },
+   {
+    "text": "2.27x",
+    "past": [
+     "our-template.pptx p2"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "2.27x"
+   },
+   {
+    "text": "2.30x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "2.3x"
+   },
+   {
+    "text": "2.33x",
+    "past": [
+     "our-template.pptx p4"
+    ],
+    "pages": [
+     3
+    ],
+    "computed_as": "2.33x"
+   },
+   {
+    "text": "2.40x",
+    "past": [
+     "our-template.pptx p4"
+    ],
+    "pages": [
+     3
+    ],
+    "computed_as": "2.4x"
+   },
+   {
+    "text": "2.44x",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1,
+     2
+    ],
+    "computed_as": "2.44x"
+   },
+   {
+    "text": "20.1",
+    "past": [
+     "our-template.pptx p5"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "20.1"
+   },
+   {
+    "text": "2023",
+    "past": [
+     "our-template.pptx p3",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     2,
+     3
+    ],
+    "computed_as": "2023"
+   },
+   {
+    "text": "22.4",
+    "past": [
+     "our-template.pptx p1"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "22.4"
+   },
+   {
+    "text": "3.1",
+    "past": [
+     "our-template.pptx p1",
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "3.1"
+   },
+   {
+    "text": "4.3",
+    "past": [
+     "our-template.pptx p3",
+     "our-template.pptx p5",
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "4.3"
+   },
+   {
+    "text": "4.8",
+    "past": [
+     "our-template.pptx p6"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "4.8"
+   },
+   {
+    "text": "5.3",
+    "past": [
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "5.3"
+   },
+   {
+    "text": "5.7",
+    "past": [
+     "our-template.pptx p2",
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "5.7"
+   },
+   {
+    "text": "5.8",
+    "past": [
+     "our-template.pptx p1"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "5.8"
+   },
+   {
+    "text": "5.9",
+    "past": [
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "5.9"
+   },
+   {
+    "text": "7.2",
+    "past": [
+     "our-template.pptx p1",
+     "our-template.pptx p3"
+    ],
+    "pages": [
+     1
+    ],
+    "computed_as": "7.2"
+   }
+  ],
+  "findings": 26,
+  "distinctive": 26,
+  "low": 1,
+  "pages": [
+   {
+    "page": 1,
+    "id": "p1-comps",
+    "findings": [
+     {
+      "kind": "name",
+      "text": "ev ebitda",
+      "past": [
+       "our-template.pptx p5",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 2
+     },
+     {
+      "kind": "name",
+      "text": "ltm ebitda",
+      "past": [
+       "our-template.pptx p5",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 2
+     },
+     {
+      "kind": "figure",
+      "text": "1.2x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "18.9%",
+      "past": [
+       "our-template.pptx p1",
+       "our-template.pptx p4"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.25x",
+      "past": [
+       "our-template.pptx p4",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "22.4%",
+      "past": [
+       "our-template.pptx p1",
+       "our-template.pptx p4"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     }
+    ]
+   },
+   {
+    "page": 2,
+    "id": "p2-precedents",
+    "findings": [
+     {
+      "kind": "name",
+      "text": "ev ltm ebitda",
+      "past": [
+       "our-template.pptx p2"
+      ],
+      "past_pages": 1,
+      "rare_words": 3
+     },
+     {
+      "kind": "name",
+      "text": "ltm ebitda",
+      "past": [
+       "our-template.pptx p5",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 2
+     },
+     {
+      "kind": "figure",
+      "text": "1,180",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1,960",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.71x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "1.84x",
+      "past": [
+       "our-template.pptx p4"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "11.6x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "12.2x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "12.9x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "18.5%",
+      "past": [
+       "our-template.pptx p4"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.05x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.12x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.18x",
+      "past": [
+       "our-template.pptx p4"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.38x",
+      "past": [
+       "our-template.pptx p4"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "2.62x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "9.8x",
+      "past": [
+       "our-template.pptx p6"
+      ],
+      "past_pages": 1,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "10.2x",
+      "past": [
+       "our-template.pptx p5",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     },
+     {
+      "kind": "figure",
+      "text": "18.9%",
+      "past": [
+       "our-template.pptx p1",
+       "our-template.pptx p4"
+      ],
+      "past_pages": 2,
+      "rare_words": 1
+     }
+    ]
+   },
+   {
+    "page": 3,
+    "id": "p3-football",
+    "findings": [
+     {
+      "kind": "name",
+      "text": "ev ltm ebitda",
+      "past": [
+       "our-template.pptx p2"
+      ],
+      "past_pages": 1,
+      "rare_words": 3
+     },
+     {
+      "kind": "name",
+      "text": "ltm ebitda",
+      "past": [
+       "our-template.pptx p5",
+       "our-template.pptx p6"
+      ],
+      "past_pages": 2,
+      "rare_words": 2
+     }
+    ]
+   }
+  ],
+  "images": [],
+  "low_findings": [
+   {
+    "kind": "figure",
+    "text": "2024",
+    "why": "a year",
+    "pages": [
+     2
+    ]
+   }
+  ],
+  "what_to_do": {
+   "distinctive": "a name, phrase or figure of the past deck found on no public deck of another firm: remove it, or confirm the user supplied it (pass their brief and data with --brief and it is not listed)",
+   "low": "a term of the trade, a round figure or a year: carry-over only if it came from the past deck rather than from your data; keep each one your data or brief produces, and check any figure you did not compute"
+  },
+  "rarity_basis": "not measured: no public decks in /home/user/pptx-skill/.claude/skills/designing-presentations/refs/files (the user fills it; nothing is downloaded); terms of the trade cannot be told from this reference's own words",
+  "chrome_excluded": {
+   "our-template.pptx": {
+    "phrase": 14,
+    "name": 6,
+    "figure": 46
+   }
+  },
+  "images_checked": "pptx media by sha256",
+  "method": "names (2+ capitalised words), figures and 5-word phrases of each new page found on a past page; chrome (on 50%+ of a past deck's pages), template text and --brief text excluded; thresholds unmeasured",
+  "verdict": "possible carry-over: 26 distinctive finding(s): remove each, or confirm the user supplied it for this deck"
+ },
+ "renders": {
+  "source": "/home/user/pptx-skill/falcon/out/b7/deck.pptx",
+  "fonts": {
+   "Arial": {
+    "rendered_with": "Liberation Sans",
+    "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 54,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   },
+   "Calibri": {
+    "rendered_with": "Carlito",
+    "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+    "fidelity": "metric_alias",
+    "codepoints_checked": 82,
+    "uncovered_count": 0,
+    "uncovered_sample": [],
+    "bullets_only": false
+   }
+  },
+  "pages": 3,
+  "images": [
+   "/home/user/pptx-skill/falcon/out/b7/renders/slide-01.png",
+   "/home/user/pptx-skill/falcon/out/b7/renders/slide-02.png",
+   "/home/user/pptx-skill/falcon/out/b7/renders/slide-03.png"
+  ]
+ },
+ "judge": {
+  "reference": "/home/user/pptx-skill/inputs/our-template.pptx",
+  "total": 0.164,
+  "components": {
+   "families": 0.005,
+   "size_hist": 0.418,
+   "size_ladder": 0,
+   "title_size": null,
+   "bold_ratio": 0.235,
+   "text_colors": 0.017,
+   "fills": null,
+   "lines": 0.631,
+   "aligns": 0.086,
+   "kinds": 0.197,
+   "background": 0.0,
+   "margins": 0.142,
+   "coverage": 0.015,
+   "count": 0.535,
+   "overlap": 0.047,
+   "overflow": 0.0
+  },
+  "per_slide": [
+   {
+    "slide": 1,
+    "total": 0.094,
+    "worst": [
+     [
+      "count",
+      0.558
+     ],
+     [
+      "size_hist",
+      0.412
+     ],
+     [
+      "bold_ratio",
+      0.225
+     ]
+    ]
+   },
+   {
+    "slide": 2,
+    "total": 0.11,
+    "worst": [
+     [
+      "count",
+      0.63
+     ],
+     [
+      "size_hist",
+      0.454
+     ],
+     [
+      "kinds",
+      0.251
+     ]
+    ]
+   },
+   {
+    "slide": 3,
+    "total": 0.167,
+    "worst": [
+     [
+      "lines",
+      0.631
+     ],
+     [
+      "count",
+      0.432
+     ],
+     [
+      "size_hist",
+      0.393
+     ]
+    ]
+   }
+  ],
+  "overflow_where": [],
+  "reference_spread": {
+   "n": 6,
+   "min": 0.021,
+   "median": 0.061,
+   "p90": 0.092,
+   "max": 0.093
+  },
+  "others": {},
+  "same_style_on_panel": {},
+  "panel": "refs/files (default)",
+  "nearest_is_reference": null,
+  "reference_rank": null,
+  "within_reference_spread": false,
+  "layout_clean": true,
+  "filed_under_reference": false
+ },
+ "outputs": {
+  "verdict": "built",
+  "moved_aside": [],
+  "deck": "/home/user/pptx-skill/falcon/out/b7/deck.pptx",
+  "renders": "/home/user/pptx-skill/falcon/out/b7/renders"
+ }
+}

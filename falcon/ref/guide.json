@@ -1,0 +1,3359 @@
+{
+ "schema": "pptx-skill style guide draft v1",
+ "measurement": {
+  "ruler": "pillow_x128",
+  "basis": "pinned when the draft was extracted; every capacity, survey and build on this guide measures with this ruler"
+ },
+ "reference": {
+  "file": "/home/user/pptx-skill/inputs/our-template.pptx",
+  "sha256": "a16d68f1183129ed4361c4e98e8b6d245666c8a9ddf800a4af8cbc6bd2685252",
+  "slides": 6,
+  "format": "pptx",
+  "text_layer": {
+   "status": "typographic"
+  },
+  "triage": null,
+  "page": {
+   "width_emu": 10058400,
+   "height_emu": 7772400,
+   "width_in": 11.0,
+   "height_in": 8.5,
+   "orientation": "landscape"
+  },
+  "layouts_used": [
+   [
+    "Blank",
+    6
+   ]
+  ]
+ },
+ "typography": {
+  "families": {
+   "major": "Calibri",
+   "minor": "Calibri",
+   "fallbacks": [
+    "Arial"
+   ],
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [
+     "ppt/slides/slide1.xml#sp[id=71]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[1]",
+     "ppt/slides/slide1.xml#sp[id=2]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=3]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=4]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=5]/p[0]/r[0]",
+     "ppt/slides/slide1.xml#sp[id=6]/p[0]/r[0]"
+    ],
+    "frequency": 2160,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "levels": [
+   {
+    "size_pt": 7.0,
+    "votes": 123,
+    "master_votes": 0,
+    "share": 1.0,
+    "sizes": [
+     7.0
+    ],
+    "role": "type.body"
+   },
+   {
+    "size_pt": 8.0,
+    "votes": 100,
+    "master_votes": 0,
+    "share": 1.0,
+    "sizes": [
+     8.0
+    ],
+    "role": null
+   },
+   {
+    "size_pt": 9.0,
+    "votes": 42,
+    "master_votes": 0,
+    "share": 1.0,
+    "sizes": [
+     9.0
+    ],
+    "role": "type.kicker"
+   },
+   {
+    "size_pt": 14.0,
+    "votes": 13,
+    "master_votes": 0,
+    "share": 0.538,
+    "sizes": [
+     14.0,
+     15.0
+    ],
+    "role": null
+   }
+  ],
+  "roles": {
+   "type.body": {
+    "size_pt": 7.0,
+    "weight": 400,
+    "italic": false,
+    "family": "Calibri",
+    "alignment": "left",
+    "line_spacing": 1.0,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "56606C",
+    "bold_share": 0.236,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=71]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[1]",
+      "ppt/slides/slide1.xml#sp[id=2]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=6]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=9]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=12]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=15]/p[0]/r[0]"
+     ],
+     "frequency": 123,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.extra_2"
+   },
+   "type.emphasis": {
+    "size_pt": 7.0,
+    "weight": 700,
+    "italic": false,
+    "family": "Arial",
+    "alignment": "left",
+    "line_spacing": 1.0,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "1B1F24",
+    "bold_share": 1.0,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=2]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=66]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=66]/p[0]/r[1]",
+      "ppt/slides/slide1.xml#sp[id=68]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=68]/p[0]/r[1]",
+      "ppt/slides/slide2.xml#sp[id=46]/p[0]/r[0]",
+      "ppt/slides/slide2.xml#sp[id=2]/p[0]/r[0]"
+     ],
+     "frequency": 29,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.ink"
+   },
+   "type.kicker": {
+    "size_pt": 9.0,
+    "weight": 700,
+    "italic": false,
+    "family": "Calibri",
+    "alignment": "left",
+    "line_spacing": 1.0,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "1F3D63",
+    "bold_share": 1.0,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=25]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=28]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=31]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=34]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=37]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=41]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=61]/p[0]/r[0]",
+      "ppt/slides/slide2.xml#sp[id=4]/p[0]/r[0]"
+     ],
+     "frequency": 42,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.ink_muted"
+   },
+   "type.table_cell": {
+    "size_pt": 7.0,
+    "weight": 400,
+    "italic": false,
+    "family": "Calibri",
+    "alignment": "right",
+    "line_spacing": null,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "1B1F24",
+    "bold_share": 0.258,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[0]/tc[0]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[0]/tc[1]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[1]/tc[0]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[1]/tc[1]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[2]/tc[0]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[2]/tc[1]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[3]/tc[0]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/tr[3]/tc[1]/p[0]/r[0]"
+     ],
+     "frequency": 1882,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.ink"
+   },
+   "type.axis_label": {
+    "size_pt": 7.0,
+    "weight": 400,
+    "italic": false,
+    "family": "Calibri",
+    "alignment": "left",
+    "line_spacing": null,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "1B1F24",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "chart#0",
+      "chart#1",
+      "chart#2",
+      "chart#3",
+      "chart#4",
+      "chart#5",
+      "chart#6"
+     ],
+     "frequency": 7,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.ink"
+   },
+   "type.data_label": {
+    "size_pt": 7.0,
+    "weight": 400,
+    "italic": false,
+    "family": "Calibri",
+    "alignment": "left",
+    "line_spacing": null,
+    "space_before_pt": 0.0,
+    "space_after_pt": 0.0,
+    "tracking_pt": 0.0,
+    "case": "as_typed",
+    "ink": "1B1F24",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "chart#0",
+      "chart#1",
+      "chart#2",
+      "chart#3",
+      "chart#4",
+      "chart#5",
+      "chart#6"
+     ],
+     "frequency": 7,
+     "master_membership": false,
+     "confidence": 1.0
+    },
+    "ink_role": "color.ink"
+   },
+   "type.bullet": {
+    "size_pt": 8,
+    "ink_role": "color.ink",
+    "italic": false,
+    "space_after_pt": 4,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": 0,
+    "tracking_pt": null,
+    "weight": 400,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "commentary bullets in the text panels are 8pt regular near-black with about 4pt between items"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.caption": {
+    "size_pt": 8,
+    "ink_role": "color.slate",
+    "italic": true,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 400,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "the units line under every exhibit heading is 7pt italic slate"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.footnote": {
+    "size_pt": 8,
+    "ink_role": "color.slate",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 400,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "notes directly under tables are 7pt regular slate"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.h1": {
+    "size_pt": 9,
+    "ink_role": "color.ink_muted",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 700,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "exhibit headings ('Exit scenarios', 'Listed flow-control peers') are 9pt bold navy"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.h2": {
+    "size_pt": 8,
+    "ink_role": "color.ink",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 700,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "text panel heads ('Exit view', 'Returns') are 8pt bold near-black above 8pt bullets"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.section_label": {
+    "size_pt": 7,
+    "ink_role": "color.ink_muted",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "upper",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 700,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "the section line above every title, 7pt bold navy capitals with bars between parts"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.source_line": {
+    "size_pt": 8,
+    "ink_role": "color.slate",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 400,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "'Source: ...' line above the bottom rule on every page, 7pt slate"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.table_header": {
+    "size_pt": 7,
+    "ink_role": "color.ink",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "right",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 700,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "column headers are 7pt bold near-black, right-aligned over numbers, no fill"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "type.title": {
+    "size_pt": 15,
+    "ink_role": "color.ink",
+    "italic": false,
+    "space_after_pt": null,
+    "alignment": "left",
+    "case": "as_typed",
+    "line_spacing": null,
+    "space_before_pt": null,
+    "tracking_pt": null,
+    "weight": 700,
+    "family": "Calibri",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "the page title under the section kicker line, 15pt bold near-black on every page"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   }
+  },
+  "scale_ratio": null,
+  "bullets": {
+   "0": {
+    "glyph": "\u2022",
+    "font": "Calibri",
+    "runs": 83,
+    "ink_hex": null,
+    "ink_role": null,
+    "mar_l_emu": 91440,
+    "hanging_emu": 91440,
+    "indent_role": "space.sm",
+    "hanging_indent_role": "space.sm"
+   }
+  }
+ },
+ "color": {
+  "theme": {
+   "colors": {
+    "dk1": "000000",
+    "lt1": "FFFFFF",
+    "dk2": "1F497D",
+    "lt2": "EEECE1",
+    "accent1": "4F81BD",
+    "accent2": "C0504D",
+    "accent3": "9BBB59",
+    "accent4": "8064A2",
+    "accent5": "4BACC6",
+    "accent6": "F79646",
+    "hlink": "0000FF",
+    "folHlink": "800080"
+   },
+   "major_font": "Calibri",
+   "minor_font": "Calibri",
+   "part": "ppt/theme/theme1.xml"
+  },
+  "roles": {
+   "color.surface": {
+    "hex": "FFFFFF",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide1.xml#bg",
+      "ppt/slides/slide2.xml#bg",
+      "ppt/slides/slide3.xml#bg",
+      "ppt/slides/slide4.xml#bg",
+      "ppt/slides/slide5.xml#bg",
+      "ppt/slides/slide6.xml#bg"
+     ],
+     "frequency": 6,
+     "master_membership": true,
+     "confidence": 1.0
+    }
+   },
+   "color.ink": {
+    "hex": "1B1F24",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=72]/p[0]/r[1]",
+      "ppt/slides/slide1.xml#sp[id=3]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=5]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=8]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=11]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=14]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=17]/p[0]/r[0]"
+     ],
+     "frequency": 1682,
+     "master_membership": false,
+     "confidence": 0.7787
+    }
+   },
+   "color.ink_muted": {
+    "hex": "1F3D63",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=2]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=4]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=7]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=10]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=13]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=16]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=19]/p[0]/r[0]",
+      "ppt/slides/slide1.xml#sp[id=22]/p[0]/r[0]"
+     ],
+     "frequency": 302,
+     "master_membership": false,
+     "confidence": 0.1398
+    }
+   },
+   "color.rule": {
+    "hex": "1B1F24",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/row_interior",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/row_interior",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/table_bottom",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]/table_bottom",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]/row_interior",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]/row_interior",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]/row_interior",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]/row_interior"
+     ],
+     "frequency": 439,
+     "master_membership": false,
+     "confidence": 0.2068
+    }
+   },
+   "color.accent1": {
+    "hex": "A9B1BB",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide2.xml#graphicFrame[id=13]/ser2",
+      "ppt/slides/slide6.xml#graphicFrame[id=17]/ser0"
+     ],
+     "frequency": 2,
+     "master_membership": false,
+     "confidence": 0.1818
+    }
+   },
+   "color.accent2": {
+    "hex": "6F8DB3",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide2.xml#graphicFrame[id=13]/ser1"
+     ],
+     "frequency": 1,
+     "master_membership": false,
+     "confidence": 0.0909
+    }
+   },
+   "color.accent3": {
+    "hex": "B0241B",
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "assigned",
+     "evidence": [
+      "ppt/slides/slide5.xml#graphicFrame[id=6]/ser1"
+     ],
+     "frequency": 1,
+     "master_membership": false,
+     "confidence": 0.0909
+    }
+   },
+   "color.negative": {
+    "hex": "B0241B",
+    "provenance": {
+     "value_provenance": "deterministic_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "hue 4 sat 0.73"
+     ],
+     "frequency": 85,
+     "master_membership": false,
+     "confidence": 0.0295
+    }
+   },
+   "color.emphasis": {
+    "hex": "B85400",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "the burnt orange of the 'Hurdle 2.5x' dashed line on sheet 6 and the springing covenant line on sheet 5: the colour the reference uses to mark a threshold to look at"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   },
+   "color.surface_alt": {
+    "hex": "E9EDF2",
+    "provenance": {
+     "value_provenance": "model_inference",
+     "role_provenance": "inferred",
+     "evidence": [
+      "pale blue-grey fill of section bands, shaded focus rows and the base-case column"
+     ],
+     "frequency": 0,
+     "master_membership": false,
+     "confidence": 0.5
+    }
+   }
+  },
+  "usage": {
+   "surface_area_fraction": {
+    "FFFFFF": 1.0
+   },
+   "ink_runs": {
+    "1B1F24": 1682,
+    "1F3D63": 302,
+    "56606C": 90,
+    "B0241B": 85,
+    "B85400": 1
+   },
+   "accent_votes": {
+    "1F3D63": 6,
+    "A9B1BB": 2,
+    "6F8DB3": 1,
+    "B0241B": 1,
+    "B85400": 1
+   },
+   "rule_votes": {
+    "C3CAD3": 1682,
+    "1B1F24": 439,
+    "1F3D63": 1,
+    "56606C": 1
+   },
+   "series_order": [
+    "1F3D63",
+    "1F3D63",
+    "A9B1BB"
+   ]
+  }
+ },
+ "spacing": {
+  "steps": {
+   "space.xs": {
+    "emu": 18288,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=2]",
+      "ppt/slides/slide1.xml#sp[id=7]",
+      "ppt/slides/slide1.xml#sp[id=8]",
+      "ppt/slides/slide1.xml#sp[id=45]",
+      "ppt/slides/slide1.xml#sp[id=35]",
+      "ppt/slides/slide1.xml#sp[id=47]",
+      "ppt/slides/slide1.xml#sp[id=48]",
+      "ppt/slides/slide1.xml#sp[id=37]"
+     ],
+     "frequency": 8555,
+     "master_membership": false,
+     "confidence": 1.0
+    }
+   },
+   "space.sm": {
+    "emu": 91440,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=9]",
+      "ppt/slides/slide2.xml#graphicFrame[id=19]",
+      "ppt/slides/slide2.xml#sp[id=30]",
+      "ppt/slides/slide3.xml#graphicFrame[id=19]",
+      "ppt/slides/slide3.xml#sp[id=7]",
+      "ppt/slides/slide4.xml#graphicFrame[id=22]",
+      "ppt/slides/slide4.xml#sp[id=16]",
+      "ppt/slides/slide4.xml#sp[id=34]"
+     ],
+     "frequency": 16,
+     "master_membership": false,
+     "confidence": 1.0
+    }
+   },
+   "space.md": {
+    "emu": 137160,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#sp[id=3]",
+      "ppt/slides/slide2.xml#sp[id=3]",
+      "ppt/slides/slide3.xml#sp[id=3]",
+      "ppt/slides/slide4.xml#sp[id=3]",
+      "ppt/slides/slide5.xml#sp[id=3]",
+      "ppt/slides/slide6.xml#sp[id=3]",
+      "ppt/slides/slide1.xml#graphicFrame[id=27]",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]"
+     ],
+     "frequency": 110,
+     "master_membership": false,
+     "confidence": 0.9273
+    }
+   },
+   "space.lg": {
+    "emu": 274320,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide4.xml#sp[id=49]",
+      "ppt/slides/slide2.xml#sp[id=41]",
+      "ppt/slides/slide6.xml#sp[id=7]",
+      "ppt/slides/slide1.xml#sp[id=65]",
+      "ppt/slides/slide1.xml#sp[id=67]",
+      "ppt/slides/slide4.xml#sp[id=44]",
+      "ppt/slides/slide4.xml#sp[id=46]"
+     ],
+     "frequency": 7,
+     "master_membership": false,
+     "confidence": 0.2857
+    }
+   },
+   "space.xl": {
+    "emu": 914400,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide6.xml#sp[id=34]",
+      "ppt/slides/slide1.xml#sp[id=71]",
+      "ppt/slides/slide2.xml#sp[id=45]",
+      "ppt/slides/slide3.xml#sp[id=27]",
+      "ppt/slides/slide4.xml#sp[id=53]",
+      "ppt/slides/slide5.xml#sp[id=34]",
+      "ppt/slides/slide6.xml#sp[id=37]"
+     ],
+     "frequency": 7,
+     "master_membership": false,
+     "confidence": 0.8571
+    }
+   },
+   "space.gutter": {
+    "emu": 137160,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "ppt/slides/slide1.xml#graphicFrame[id=27]",
+      "ppt/slides/slide1.xml#graphicFrame[id=33]",
+      "ppt/slides/slide1.xml#sp[id=25]",
+      "ppt/slides/slide1.xml#sp[id=26]",
+      "ppt/slides/slide1.xml#sp[id=28]",
+      "ppt/slides/slide1.xml#sp[id=29]",
+      "ppt/slides/slide1.xml#sp[id=31]",
+      "ppt/slides/slide1.xml#sp[id=32]"
+     ],
+     "frequency": 102,
+     "master_membership": false,
+     "confidence": 1.0
+    }
+   },
+   "space.margin": {
+    "emu": 365760,
+    "provenance": {
+     "value_provenance": "observed",
+     "role_provenance": "inferred",
+     "evidence": [
+      "per-slide content extent"
+     ],
+     "frequency": 6,
+     "master_membership": false,
+     "confidence": 1.0
+    }
+   }
+  },
+  "margins": {
+   "left": {
+    "emu": 365760,
+    "slides": 6,
+    "min_emu": 365760,
+    "median_emu": 365760
+   },
+   "right": {
+    "emu": 365760,
+    "slides": 6,
+    "min_emu": 365760,
+    "median_emu": 365760
+   },
+   "top": {
+    "emu": 274320,
+    "slides": 6,
+    "min_emu": 274320,
+    "median_emu": 274320
+   },
+   "bottom": {
+    "emu": 167640,
+    "slides": 6,
+    "min_emu": 167640,
+    "median_emu": 167640
+   }
+  },
+  "baseline_emu": null,
+  "gap_levels": [
+   {
+    "emu": 13716,
+    "votes": 2
+   },
+   {
+    "emu": 18288,
+    "votes": 8555
+   },
+   {
+    "emu": 45720,
+    "votes": 4
+   },
+   {
+    "emu": 64008,
+    "votes": 6
+   },
+   {
+    "emu": 91440,
+    "votes": 16
+   },
+   {
+    "emu": 137160,
+    "votes": 110
+   },
+   {
+    "emu": 174244,
+    "votes": 5
+   },
+   {
+    "emu": 274320,
+    "votes": 7
+   },
+   {
+    "emu": 320505,
+    "votes": 3
+   },
+   {
+    "emu": 414241,
+    "votes": 2
+   },
+   {
+    "emu": 914400,
+    "votes": 7
+   }
+  ]
+ },
+ "composition": {
+  "archetypes": [
+   {
+    "archetype_id": "arch-1",
+    "slide_family": "family-1",
+    "signature": "sig-f646ee59a054",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     1
+    ],
+    "anchor_slide": 1,
+    "kinds": [
+     [
+      "text_shape",
+      58
+     ],
+     [
+      "table",
+      6
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "shape",
+      2
+     ],
+     [
+      "chart",
+      1
+     ]
+    ]
+   },
+   {
+    "archetype_id": "arch-2",
+    "slide_family": "family-2",
+    "signature": "sig-86a1315f4222",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     2
+    ],
+    "anchor_slide": 2,
+    "kinds": [
+     [
+      "text_shape",
+      31
+     ],
+     [
+      "table",
+      8
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "chart",
+      1
+     ]
+    ]
+   },
+   {
+    "archetype_id": "arch-3",
+    "slide_family": "family-3",
+    "signature": "sig-891bf331987c",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     3
+    ],
+    "anchor_slide": 3,
+    "kinds": [
+     [
+      "text_shape",
+      17
+     ],
+     [
+      "table",
+      5
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "chart",
+      1
+     ]
+    ]
+   },
+   {
+    "archetype_id": "arch-4",
+    "slide_family": "family-4",
+    "signature": "sig-3760022cbdbb",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     4
+    ],
+    "anchor_slide": 4,
+    "kinds": [
+     [
+      "text_shape",
+      40
+     ],
+     [
+      "table",
+      8
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "chart",
+      1
+     ]
+    ]
+   },
+   {
+    "archetype_id": "arch-5",
+    "slide_family": "family-5",
+    "signature": "sig-de72653468fb",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     5
+    ],
+    "anchor_slide": 5,
+    "kinds": [
+     [
+      "text_shape",
+      23
+     ],
+     [
+      "table",
+      5
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "chart",
+      1
+     ],
+     [
+      "shape",
+      1
+     ]
+    ]
+   },
+   {
+    "archetype_id": "arch-6",
+    "slide_family": "family-6",
+    "signature": "sig-cfe623e1adcf",
+    "occurrence_count": 1,
+    "consecutive_max": 1,
+    "slides": [
+     6
+    ],
+    "anchor_slide": 6,
+    "kinds": [
+     [
+      "text_shape",
+      26
+     ],
+     [
+      "table",
+      3
+     ],
+     [
+      "text_box",
+      2
+     ],
+     [
+      "chart",
+      2
+     ]
+    ]
+   }
+  ],
+  "bands": [
+   {
+    "band_id": "band-3-1",
+    "role": "band_1",
+    "height_fraction": 0.0114,
+    "top_fraction": 0.0353,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-2",
+    "role": "band_2",
+    "height_fraction": 0.0245,
+    "top_fraction": 0.0491,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-3",
+    "role": "band_3",
+    "height_fraction": 0.0147,
+    "top_fraction": 0.0888,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-4",
+    "role": "band_4",
+    "height_fraction": 0.0114,
+    "top_fraction": 0.1059,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-5",
+    "role": "band_5",
+    "height_fraction": 0.6763,
+    "top_fraction": 0.1197,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-6",
+    "role": "band_6",
+    "height_fraction": 0.1305,
+    "top_fraction": 0.7969,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-7",
+    "role": "band_7",
+    "height_fraction": 0.0114,
+    "top_fraction": 0.9392,
+    "slide_family": "family-3"
+   },
+   {
+    "band_id": "band-3-8",
+    "role": "band_8",
+    "height_fraction": 0.0196,
+    "top_fraction": 0.9588,
+    "slide_family": "family-3"
+   }
+  ],
+  "column_grids": [
+   {
+    "grid_id": "grid-1",
+    "columns": 8,
+    "left_edges_emu": [
+     365760,
+     1717766,
+     3037637,
+     4421778,
+     5773784,
+     7125790,
+     7399325,
+     8477795
+    ],
+    "slide_family": "family-1"
+   },
+   {
+    "grid_id": "grid-2",
+    "columns": 6,
+    "left_edges_emu": [
+     365760,
+     2893108,
+     4480560,
+     5420456,
+     6468177,
+     7360920
+    ],
+    "slide_family": "family-2"
+   },
+   {
+    "grid_id": "grid-3",
+    "columns": 3,
+    "left_edges_emu": [
+     365760,
+     4008120,
+     6949440
+    ],
+    "slide_family": "family-3"
+   },
+   {
+    "grid_id": "grid-4",
+    "columns": 4,
+    "left_edges_emu": [
+     365760,
+     2652903,
+     5097780,
+     7090029
+    ],
+    "slide_family": "family-4"
+   },
+   {
+    "grid_id": "grid-5",
+    "columns": 4,
+    "left_edges_emu": [
+     365760,
+     1581496,
+     4680065,
+     7525789
+    ],
+    "slide_family": "family-5"
+   },
+   {
+    "grid_id": "grid-6",
+    "columns": 4,
+    "left_edges_emu": [
+     365760,
+     4669971,
+     6158132,
+     7106194
+    ],
+    "slide_family": "family-6"
+   }
+  ],
+  "alignment_edges": [
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 9692640,
+    "member_count": 118
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 365760,
+    "member_count": 91
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 7399325,
+    "member_count": 25
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 8545982,
+    "member_count": 25
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 5029200,
+    "member_count": 24
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 690372,
+    "member_count": 21
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 911860,
+    "member_count": 20
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 930148,
+    "member_count": 20
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 7090029,
+    "member_count": 20
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 7262165,
+    "member_count": 17
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 8391334,
+    "member_count": 17
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 1011428,
+    "member_count": 15
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 2454332,
+    "member_count": 15
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 4542905,
+    "member_count": 15
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 4680065,
+    "member_count": 15
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 804672,
+    "member_count": 14
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 822960,
+    "member_count": 14
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 1100328,
+    "member_count": 14
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 3037637,
+    "member_count": 14
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 1633118,
+    "member_count": 13
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 2900477,
+    "member_count": 12
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 7452360,
+    "member_count": 12
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 7604760,
+    "member_count": 12
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 5149901,
+    "member_count": 11
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 6952869,
+    "member_count": 11
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 2663190,
+    "member_count": 10
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 4023360,
+    "member_count": 10
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 6949440,
+    "member_count": 10
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 8321040,
+    "member_count": 10
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 1440751,
+    "member_count": 9
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 2515743,
+    "member_count": 9
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 4960620,
+    "member_count": 9
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 6223508,
+    "member_count": 9
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 9144000,
+    "member_count": 9
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 993140,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 5097780,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 6158132,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 6468177,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 7186352,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 7395210,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 7925386,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 8080408,
+    "member_count": 8
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 4284618,
+    "member_count": 7
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 6241796,
+    "member_count": 7
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 6812280,
+    "member_count": 7
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 7208012,
+    "member_count": 7
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 274320,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 363220,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 381508,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 572008,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 2325189,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 4421778,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 5819502,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 6002020,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 6134608,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 6301232,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "center",
+    "position_emu": 6352629,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 7299452,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 7388352,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "trailing",
+    "position_emu": 7680960,
+    "member_count": 6
+   },
+   {
+    "axis": "x",
+    "edge_kind": "leading",
+    "position_emu": 8595360,
+    "member_count": 6
+   },
+   {
+    "axis": "y",
+    "edge_kind": "trailing",
+    "position_emu": 2962148,
+    "member_count": 5
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 2980436,
+    "member_count": 5
+   },
+   {
+    "axis": "y",
+    "edge_kind": "leading",
+    "position_emu": 3582416,
+    "member_count": 5
+   }
+  ]
+ },
+ "variety": {
+  "pages": [
+   {
+    "slide": 1,
+    "composition": "arch-1",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar bar clustered x1",
+      "table"
+     ],
+     "panels": 7,
+     "structure": "chart bar bar clustered x1; table (3+ panels)",
+     "kinds": "chart bar bar clustered; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 1,
+      "shape": 2,
+      "table": 6,
+      "text_box": 2,
+      "text_shape": 58
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=30]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "bar",
+         "grouping": "clustered",
+         "series": 1
+        }
+       ]
+      }
+     ],
+     "marks": [
+      {
+       "ref": "sp[id=65]",
+       "geometry": "bracket",
+       "prst": "rightBracket",
+       "over": [
+        "chart"
+       ],
+       "carries_text": false,
+       "on_drawn_structure": false
+      },
+      {
+       "ref": "sp[id=67]",
+       "geometry": "bracket",
+       "prst": "rightBracket",
+       "over": [
+        "chart"
+       ],
+       "carries_text": false,
+       "on_drawn_structure": false
+      }
+     ]
+    }
+   },
+   {
+    "slide": 2,
+    "composition": "arch-2",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar col stacked x3",
+      "table"
+     ],
+     "panels": 9,
+     "structure": "chart bar col stacked x3; table (3+ panels)",
+     "kinds": "chart bar col stacked; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 1,
+      "table": 8,
+      "text_box": 2,
+      "text_shape": 31
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=13]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "col",
+         "grouping": "stacked",
+         "series": 3
+        }
+       ]
+      }
+     ],
+     "marks": []
+    }
+   },
+   {
+    "slide": 3,
+    "composition": "arch-3",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar col clustered x1",
+      "table"
+     ],
+     "panels": 6,
+     "structure": "chart bar col clustered x1; table (3+ panels)",
+     "kinds": "chart bar col clustered; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 1,
+      "table": 5,
+      "text_box": 2,
+      "text_shape": 17
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=19]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "col",
+         "grouping": "clustered",
+         "series": 1
+        }
+       ]
+      }
+     ],
+     "marks": []
+    }
+   },
+   {
+    "slide": 4,
+    "composition": "arch-4",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar col stacked x2",
+      "table"
+     ],
+     "panels": 9,
+     "structure": "chart bar col stacked x2; table (3+ panels)",
+     "kinds": "chart bar col stacked; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 1,
+      "table": 8,
+      "text_box": 2,
+      "text_shape": 40
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=15]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "col",
+         "grouping": "stacked",
+         "series": 2
+        }
+       ]
+      }
+     ],
+     "marks": []
+    }
+   },
+   {
+    "slide": 5,
+    "composition": "arch-5",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar col clustered x2 + line standard x1",
+      "table"
+     ],
+     "panels": 6,
+     "structure": "chart bar col clustered x2 + line standard x1; table (3+ panels)",
+     "kinds": "chart bar col clustered + line standard; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 1,
+      "shape": 1,
+      "table": 5,
+      "text_box": 2,
+      "text_shape": 23
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=6]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "col",
+         "grouping": "clustered",
+         "series": 2
+        },
+        {
+         "type": "line",
+         "dir": null,
+         "grouping": "standard",
+         "series": 1
+        }
+       ]
+      }
+     ],
+     "marks": [
+      {
+       "ref": "sp[id=30]",
+       "geometry": "bracket",
+       "prst": "rightBracket",
+       "over": [
+        "chart"
+       ],
+       "carries_text": false,
+       "on_drawn_structure": false
+      }
+     ]
+    }
+   },
+   {
+    "slide": 6,
+    "composition": "arch-6",
+    "triage": "generated",
+    "why": "carries the pptx-skill origin tag",
+    "exhibit_facts": {
+     "reader": "exhibit_facts 4: kinds read each chart's form; three or more charts of one form and one size are one small multiple",
+     "signature": [
+      "chart bar bar clustered x1",
+      "table"
+     ],
+     "panels": 5,
+     "structure": "chart bar bar clustered x1; table (3+ panels)",
+     "kinds": "chart bar bar clustered; table",
+     "drawn": {
+      "count": 0,
+      "read_as": "none"
+     },
+     "elements": {
+      "chart": 2,
+      "table": 3,
+      "text_box": 2,
+      "text_shape": 26
+     },
+     "charts": [
+      {
+       "ref": "graphicFrame[id=10]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "bar",
+         "grouping": "clustered",
+         "series": 1
+        }
+       ]
+      },
+      {
+       "ref": "graphicFrame[id=17]",
+       "plots": [
+        {
+         "type": "bar",
+         "dir": "bar",
+         "grouping": "clustered",
+         "series": 1
+        }
+       ]
+      }
+     ],
+     "marks": []
+    }
+   }
+  ],
+  "content_pages": {
+   "pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "basis": "model reading; differs from the triage proposal on [1, 2, 3, 4, 5, 6]",
+   "provenance": {
+    "value_provenance": "model_inference",
+    "role_provenance": "inferred",
+    "evidence": [
+     "content pages read off the renders"
+    ],
+    "frequency": 0,
+    "master_membership": false,
+    "confidence": 0.5
+   }
+  },
+  "method": "Composition per page is the extractor's archetype (composition.archetypes): the page's content boxes (layout and master chrome and recurring furniture left out, the title kept) leader-clustered by slide_similarity, the Hungarian assignment of box IoU over the larger set, at 0.5. Exhibit structure per page is read from the file (ooxml.exhibit_facts): native charts by their plot types and series counts, tables, pictures, drawn shapes, panels; nobody names it. Content pages are library.py's triage proposal (cover, divider, disclaimer, hidden and generated pages are not content) until /variety/content_pages answers it.",
+  "weaknesses": [
+   "Boxes only: a full-width table and a full-width bullet block of the same extent are one archetype; what the boxes hold is not compared.",
+   "Arrangement, not kind: a table beside a chart, mirrored or re-weighted, is a different arrangement to box IoU (such pairs score 0.30 to 0.40), so the realised composition cannot see that kind of sameness; the exhibit structure read from the file, and the plan's named compositions, are where it shows.",
+   "Leader clustering is order-dependent and not transitive: a page joins the first archetype whose anchor it matches, so two pages that match each other but not an earlier anchor can land in different archetypes.",
+   "The title is content to the extractor, so pages that differ only below the title look more alike than the build's frame-free measure sees them: the reference is held to the more lenient count.",
+   "On a PDF the reader's text blocks stand in for shapes, and a page set as many small blocks rarely matches another at 0.5, so a PDF reference can read every page as its own archetype.",
+   "V counts adjacent pairs only: an arrangement used on every other page (A B A C A) reads 1.0; distinct compositions per page is the figure that shows it.",
+   "A picture carries no structure: a reference that pastes its charts and tables as pictures reads every such page as 'picture', so its structure V is low and the build is held to a lenient line; what the picture shows is the digest's reading, never measured.",
+   "A PDF states rectangles, paths and text, never a chart or a table, so a PDF reference's structure reads only pictures, drawn shapes and text, coarser than a native build's: the two are held to each other as change rates, each over its own pages.",
+   "Structure is kind and count, not form: two column charts of three series are one structure whatever they compare, and a waterfall drawn as stacked columns is a stacked column chart."
+  ],
+  "measure": {
+   "deck": "our-template.pptx",
+   "content_pages": 6,
+   "segments": [
+    [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ]
+   ],
+   "pairs": 5,
+   "status": "measured",
+   "composition": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5
+   },
+   "structures": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5,
+    "pages_unread": []
+   },
+   "kinds": {
+    "V": 1.0,
+    "changed": 5,
+    "pairs": 5,
+    "pages_unread": []
+   },
+   "distinct": {
+    "compositions": 6,
+    "pages": 6,
+    "per_page": 1.0
+   },
+   "longest_run": 1,
+   "runs": [],
+   "sequences": [
+    [
+     "arch-1",
+     "arch-2",
+     "arch-3",
+     "arch-4",
+     "arch-5",
+     "arch-6"
+    ]
+   ]
+  }
+ },
+ "register_stats": {
+  "text_container": "text_shape",
+  "text_container_counts": {
+   "text_box": 12,
+   "text_shape": 195
+  },
+  "kind_counts": {
+   "text": {
+    "metric": "kind_count",
+    "low": 22.0,
+    "high": 51.0,
+    "median": 30.5,
+    "n": 6
+   },
+   "image": {
+    "metric": "kind_count",
+    "low": 0.0,
+    "high": 0.0,
+    "median": 0.0,
+    "n": 6
+   },
+   "shape": {
+    "metric": "kind_count",
+    "low": 0.0,
+    "high": 1.5,
+    "median": 0.0,
+    "n": 6
+   },
+   "table": {
+    "metric": "kind_count",
+    "low": 4.0,
+    "high": 8.0,
+    "median": 5.5,
+    "n": 6
+   },
+   "chart": {
+    "metric": "kind_count",
+    "low": 1.0,
+    "high": 1.5,
+    "median": 1.0,
+    "n": 6
+   },
+   "line": {
+    "metric": "kind_count",
+    "low": 0.0,
+    "high": 0.0,
+    "median": 0.0,
+    "n": 6
+   }
+  },
+  "kind_cooccurrence": [
+   {
+    "kinds": [
+     "chart",
+     "table",
+     "text"
+    ],
+    "slides": 4
+   },
+   {
+    "kinds": [
+     "chart",
+     "shape",
+     "table",
+     "text"
+    ],
+    "slides": 2
+   }
+  ],
+  "decoration_counts": {
+   "metric": "decoration_count",
+   "low": 0.0,
+   "high": 1.5,
+   "median": 0.0,
+   "n": 6
+  },
+  "container_ratio": {
+   "metric": "container_ratio",
+   "low": 0.0,
+   "high": 0.0,
+   "median": 0.0,
+   "n": 6
+  },
+  "element_area_uniformity": {
+   "metric": "element_area_uniformity",
+   "low": 0.0,
+   "high": 0.0,
+   "median": 0.0,
+   "n": 6
+  },
+  "low_confidence": true,
+  "definitions": {
+   "decoration_count": "filled shapes and lines without text per slide, chrome excluded",
+   "container_ratio": "text-bearing shapes with a fill or outline over all text-bearing shapes",
+   "element_area_uniformity": "1 minus the coefficient of variation of element areas (1 = equal tiles)"
+  }
+ },
+ "density_bands": {
+  "elements_per_slide": {
+   "metric": "elements_per_slide",
+   "low": 28.5,
+   "high": 60.0,
+   "median": 37.5,
+   "n": 6
+  },
+  "content_area_fraction": {
+   "metric": "content_area_fraction",
+   "low": 0.7224,
+   "high": 0.7654,
+   "median": 0.7465,
+   "n": 6
+  },
+  "words_per_slide": {
+   "metric": "words_per_slide",
+   "low": 730.5,
+   "high": 882.0,
+   "median": 800.0,
+   "n": 6
+  },
+  "table_rows_per_inch": {
+   "metric": "table_rows_per_inch",
+   "low": 5.4305,
+   "high": 6.383,
+   "median": 6.383,
+   "n": 35
+  }
+ },
+ "extra_roles": {
+  "color.extra_1": {
+   "hex": "C3CAD3",
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "inferred",
+    "evidence": [],
+    "frequency": 0,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "color.extra_2": {
+   "hex": "56606C",
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "inferred",
+    "evidence": [],
+    "frequency": 0,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "color.slate": {
+   "hex": "56606C",
+   "provenance": {
+    "value_provenance": "model_inference",
+    "role_provenance": "inferred",
+    "evidence": [
+     "grey-slate ink of every italic subtitle, note line, source line and footer on all six pages"
+    ],
+    "frequency": 0,
+    "master_membership": false,
+    "confidence": 0.5
+   }
+  }
+ },
+ "chrome": [
+  {
+   "chrome_id": "chrome-1",
+   "kind": "rule",
+   "source_layer": "slide",
+   "shape_kind": "line",
+   "box_in": [
+    0.4,
+    0.66,
+    10.2,
+    0.0
+   ],
+   "anchor": "slide_top",
+   "span": "full",
+   "fill_role": null,
+   "fill_hex": null,
+   "line_role": "color.ink_muted",
+   "line_hex": "1F3D63",
+   "line_width_pt": 1.0,
+   "text": null,
+   "layers": [
+    "slide"
+   ],
+   "slides_present": 6,
+   "of_slides": 6,
+   "exclusion_zone_in": [
+    0.4,
+    0.66,
+    10.2,
+    0.0
+   ],
+   "carries_content_on": 0,
+   "sample_page": 1,
+   "paint_order": 3
+  },
+  {
+   "chrome_id": "chrome-2",
+   "kind": "date",
+   "source_layer": "layout",
+   "shape_kind": "text_shape",
+   "box_in": [
+    0.5,
+    6.951,
+    2.333,
+    0.399
+   ],
+   "anchor": "slide_left",
+   "span": "partial",
+   "fill_role": null,
+   "fill_hex": null,
+   "line_role": null,
+   "line_hex": null,
+   "line_width_pt": null,
+   "text": "1/27/13",
+   "layers": [
+    "layout",
+    "master"
+   ],
+   "slides_present": 6,
+   "of_slides": 6,
+   "exclusion_zone_in": [
+    0.5,
+    6.951,
+    2.333,
+    0.399
+   ],
+   "carries_content_on": 0,
+   "text_style": {
+    "family": "Calibri",
+    "size_pt": 12.0,
+    "ink_hex": "404040",
+    "bold": false
+   },
+   "paint_order": 0
+  },
+  {
+   "chrome_id": "chrome-3",
+   "kind": "footer",
+   "source_layer": "layout",
+   "shape_kind": "shape",
+   "box_in": [
+    3.417,
+    6.951,
+    3.167,
+    0.399
+   ],
+   "anchor": "slide_bottom",
+   "span": "partial",
+   "fill_role": null,
+   "fill_hex": null,
+   "line_role": null,
+   "line_hex": null,
+   "line_width_pt": null,
+   "text": null,
+   "layers": [
+    "layout",
+    "master"
+   ],
+   "slides_present": 6,
+   "of_slides": 6,
+   "exclusion_zone_in": [
+    3.417,
+    6.951,
+    3.167,
+    0.399
+   ],
+   "carries_content_on": 0,
+   "paint_order": 1
+  },
+  {
+   "chrome_id": "chrome-4",
+   "kind": "page_number",
+   "source_layer": "layout",
+   "shape_kind": "text_shape",
+   "box_in": [
+    7.167,
+    6.951,
+    2.333,
+    0.399
+   ],
+   "anchor": "slide_bottom",
+   "span": "partial",
+   "fill_role": null,
+   "fill_hex": null,
+   "line_role": null,
+   "line_hex": null,
+   "line_width_pt": null,
+   "text": "\u2039#\u203a 1/27/13",
+   "layers": [
+    "layout",
+    "master"
+   ],
+   "slides_present": 6,
+   "of_slides": 6,
+   "exclusion_zone_in": [
+    7.167,
+    6.951,
+    2.333,
+    0.399
+   ],
+   "carries_content_on": 0,
+   "text_style": {
+    "family": "Calibri",
+    "size_pt": 12.0,
+    "ink_hex": "404040",
+    "bold": false
+   },
+   "paint_order": 2
+  },
+  {
+   "chrome_id": "chrome-5",
+   "kind": "rule",
+   "source_layer": "slide",
+   "shape_kind": "line",
+   "box_in": [
+    0.4,
+    8.105,
+    10.2,
+    0.0
+   ],
+   "anchor": "slide_bottom",
+   "span": "full",
+   "fill_role": null,
+   "fill_hex": null,
+   "line_role": "color.extra_1",
+   "line_hex": "C3CAD3",
+   "line_width_pt": 0.5,
+   "text": null,
+   "layers": [
+    "slide"
+   ],
+   "slides_present": 6,
+   "of_slides": 6,
+   "exclusion_zone_in": [
+    0.4,
+    8.105,
+    10.2,
+    0.0
+   ],
+   "carries_content_on": 0,
+   "sample_page": 1,
+   "paint_order": 4
+  }
+ ],
+ "motifs": [
+  {
+   "motif_id": "motif-1",
+   "name": "Full-width rule at top, on 6 of 6 slides",
+   "geometry_preset": "line",
+   "line_role": "color.ink_muted",
+   "fill_role": null,
+   "line_width_pt": 1.0,
+   "anchor": "slide_top",
+   "span": "full",
+   "box_in": [
+    0.4,
+    0.66,
+    10.2,
+    0.0
+   ],
+   "effect": "none",
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "inferred",
+    "evidence": [
+     "chrome-1"
+    ],
+    "frequency": 6,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  {
+   "motif_id": "motif-2",
+   "name": "Full-width rule at bottom, on 6 of 6 slides",
+   "geometry_preset": "line",
+   "line_role": "color.extra_1",
+   "fill_role": null,
+   "line_width_pt": 0.5,
+   "anchor": "slide_bottom",
+   "span": "full",
+   "box_in": [
+    0.4,
+    8.105,
+    10.2,
+    0.0
+   ],
+   "effect": "none",
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "inferred",
+    "evidence": [
+     "chrome-5"
+    ],
+    "frequency": 6,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  }
+ ],
+ "titles": {
+  "records": [],
+  "distribution": {
+   "chars": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null
+   },
+   "words": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null
+   },
+   "lines": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null,
+    "unmeasured": 0
+   }
+  },
+  "positions": {
+   "pages_with_title": 0,
+   "above": 0,
+   "below": 0,
+   "gap_rule": "a text block within 1 title line pitch (1.2 x the title size) of the title's top or bottom edge, overlapping it across the page"
+  },
+  "register": null,
+  "provenance": {
+   "value_provenance": "observed",
+   "role_provenance": "assigned",
+   "evidence": [],
+   "frequency": 0,
+   "master_membership": false,
+   "confidence": 1.0
+  }
+ },
+ "tables": {
+  "count": 35,
+  "header_fill_role": null,
+  "header_fill_hex": null,
+  "header_ink_role": null,
+  "header_bold": null,
+  "banding_role": null,
+  "banding_hex": null,
+  "data_fill_hex": "E9EDF2",
+  "edge_rules": {
+   "table_top": {
+    "width_emu": 0,
+    "none": true
+   },
+   "row_interior": {
+    "width_emu": 6350,
+    "width_pt": 0.5,
+    "color_role": "color.extra_1",
+    "color_hex": "C3CAD3"
+   },
+   "table_bottom": {
+    "width_emu": 12700,
+    "width_pt": 1.0,
+    "color_role": "color.ink",
+    "color_hex": "1B1F24"
+   },
+   "table_left": {
+    "width_emu": 0,
+    "none": true
+   },
+   "column_interior": {
+    "width_emu": 0,
+    "none": true
+   },
+   "table_right": {
+    "width_emu": 0,
+    "none": true
+   }
+  },
+  "cell_padding_emu": 18288,
+  "cell_padding_role": "space.xs",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "header_size_pt": null,
+  "cell_size_pt": 7.0,
+  "rows_cols": [
+   [
+    11,
+    2
+   ],
+   [
+    5,
+    6
+   ],
+   [
+    6,
+    7
+   ],
+   [
+    19,
+    8
+   ],
+   [
+    7,
+    7
+   ],
+   [
+    7,
+    3
+   ],
+   [
+    7,
+    4
+   ],
+   [
+    7,
+    4
+   ],
+   [
+    7,
+    3
+   ],
+   [
+    12,
+    11
+   ]
+  ],
+  "provenance": {
+   "value_provenance": "observed",
+   "role_provenance": "assigned",
+   "evidence": [
+    "graphicFrame[id=27]",
+    "graphicFrame[id=33]",
+    "graphicFrame[id=36]",
+    "graphicFrame[id=39]",
+    "graphicFrame[id=43]",
+    "graphicFrame[id=63]",
+    "graphicFrame[id=6]",
+    "graphicFrame[id=9]"
+   ],
+   "frequency": 35,
+   "master_membership": false,
+   "confidence": 1.0
+  }
+ },
+ "charts": {
+  "count": 7,
+  "per_kind": {
+   "bar": {
+    "count": 7,
+    "gridlines_major": 0.0,
+    "gridline_color_hex": null,
+    "gridline_width_pt": 0.0,
+    "data_labels": 0.8571428571428571,
+    "legend_position": "none",
+    "title_present": 0.0,
+    "text_size_pt": 7.0,
+    "text_color_hex": "1B1F24",
+    "axis_line_hex": "C3CAD3"
+   },
+   "line": {
+    "count": 1,
+    "gridlines_major": 0.0,
+    "gridline_color_hex": null,
+    "gridline_width_pt": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "t",
+    "title_present": 0.0,
+    "text_size_pt": 7.0,
+    "text_color_hex": "1F3D63",
+    "axis_line_hex": "C3CAD3"
+   }
+  },
+  "series_color_order": [
+   "color.ink_muted",
+   "color.accent2",
+   "color.accent1"
+  ],
+  "series_color_hex": [
+   "1F3D63",
+   "6F8DB3",
+   "A9B1BB"
+  ],
+  "provenance": {
+   "value_provenance": "observed",
+   "role_provenance": "assigned",
+   "evidence": [
+    "graphicFrame[id=30]",
+    "graphicFrame[id=13]",
+    "graphicFrame[id=19]",
+    "graphicFrame[id=15]",
+    "graphicFrame[id=6]",
+    "graphicFrame[id=10]",
+    "graphicFrame[id=17]"
+   ],
+   "frequency": 7,
+   "master_membership": false,
+   "confidence": 1.0
+  }
+ },
+ "shape_language": {
+  "preset_geometries": [
+   [
+    "rect",
+    207
+   ],
+   [
+    "rightBracket",
+    3
+   ]
+  ],
+  "line_widths_pt": [
+   [
+    0.75,
+    3
+   ]
+  ],
+  "dash_styles": [
+   [
+    "solid",
+    3
+   ]
+  ],
+  "effects": "none_flat",
+  "rounded_corners": 0,
+  "icon_style": "none",
+  "corner_radii": {
+   "modal_radius_emu": null,
+   "modal_radius_pt": null,
+   "rounded_share": 0.0,
+   "rounded_shapes": 0,
+   "preset_shapes": 225,
+   "unreadable_adj": 0,
+   "radii_emu": [],
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [],
+    "frequency": 225,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  }
+ },
+ "imagery": {
+  "pictures": 0,
+  "per_slide": 0.0,
+  "crop_convention": null,
+  "classes": {},
+  "framed": 0,
+  "register_kind": "none"
+ },
+ "floors": {
+  "body": {
+   "roles": [
+    "type.body",
+    "type.emphasis",
+    "type.h1",
+    "type.h2",
+    "type.bullet",
+    "type.section_label"
+   ],
+   "floor_pt": 7.0,
+   "trimmed_outlier_count": 0,
+   "sample_size": 123,
+   "absolute_floor_pt": 7.0,
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [],
+    "frequency": 123,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "annotation": {
+   "roles": [
+    "type.kicker",
+    "type.caption",
+    "type.footnote",
+    "type.source_line"
+   ],
+   "floor_pt": 8.0,
+   "trimmed_outlier_count": 0,
+   "sample_size": 155,
+   "absolute_floor_pt": 7.0,
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [],
+    "frequency": 155,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "display": {
+   "roles": [
+    "type.title"
+   ],
+   "floor_pt": 15.0,
+   "absolute_floor_pt": 7.0,
+   "sample_size": 0
+  },
+  "chart": {
+   "roles": [
+    "type.axis_label",
+    "type.data_label"
+   ],
+   "floor_pt": 7.0,
+   "trimmed_outlier_count": 0,
+   "sample_size": 7,
+   "absolute_floor_pt": 7.0,
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [],
+    "frequency": 7,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  },
+  "table": {
+   "roles": [
+    "type.table_header",
+    "type.table_cell"
+   ],
+   "floor_pt": 7.0,
+   "trimmed_outlier_count": 0,
+   "sample_size": 1882,
+   "absolute_floor_pt": 7.0,
+   "provenance": {
+    "value_provenance": "observed",
+    "role_provenance": "assigned",
+    "evidence": [],
+    "frequency": 1882,
+    "master_membership": false,
+    "confidence": 1.0
+   }
+  }
+ },
+ "floors_note": "absolute_floor_pt: product safety floor (7.0pt, measured on two screen media); never generate below max(floor_pt, absolute_floor_pt). floor_pt is the smallest size the reference sets that is inside the Tukey lower fence or recurs on 2 or more pages; 0 runs in turned text (rotated shapes or blocks) are not samples",
+ "unresolved": [],
+ "notes": [
+  "6 generated slides (pptx-skill origin tag) counted as evidence by --include-generated: [1, 2, 3, 4, 5, 6]",
+  "no page title found by position (no title placeholder, no recurring title slot): /titles has no evidence and register cannot be read",
+  "gallery crops and exemplars live in the gallery manifest (gallery.py --out), not in this guide"
+ ],
+ "absent_roles": {
+  "color.positive": {
+   "address": "/color/roles/color.positive",
+   "why": "answered null: the reference shows no such colour",
+   "provenance": {
+    "value_provenance": "model_inference",
+    "role_provenance": "inferred",
+    "evidence": [
+     "answered null: the reference shows no such colour"
+    ],
+    "frequency": 0,
+    "master_membership": false,
+    "confidence": 0.5
+   }
+  }
+ },
+ "continuation": "none seen",
+ "derivation_rules": [
+  "A new series colour comes after navy, mid blue 6F8DB3 and grey A9B1BB in that order.",
+  "A threshold or reference line is drawn in emphasis orange or navy with its own text label.",
+  "Any new text role sits on the 7/8/9/15pt ladder; nothing below 7pt."
+ ],
+ "description": {
+  "summary": "A dense investment-committee book: 11 x 8.5in pages packed with native tables and one or two small charts, claims stated in short bullet panels beside the exhibits.",
+  "typography": "Calibri throughout; 15pt bold title, 7pt bold navy caps section kicker above it, 9pt bold navy exhibit headings with a 7pt italic slate units line, 7pt table text, 8pt bullets.",
+  "color": "White ground, near-black ink, navy 1F3D63 as the one structural colour, mid blue and grey for secondary series, red for bad values, burnt orange for thresholds, pale blue-grey shading for focus rows.",
+  "layout": "0.4in side margins, a navy rule under the title, a grey rule over the footer; two to four columns of exhibits; source line above the footer; footer with project name left and sheet number right.",
+  "tables": "Unfilled headers, hairline grey row rules, 1pt dark rule under header and at bottom, statistics block in italics with bold median, focus row shaded with navy bold text.",
+  "imagery": "none",
+  "motifs": "Top navy rule, bottom grey rule, reference lines in charts carry their own text label.",
+  "not_seen": {
+   "pages_read": 6,
+   "items": [
+    {
+     "what": "no photographs or icons",
+     "seen_on": 0,
+     "of_pages": 6
+    },
+    {
+     "what": "no filled table headers",
+     "seen_on": 0,
+     "of_pages": 6
+    },
+    {
+     "what": "no gridlines on charts",
+     "seen_on": 0,
+     "of_pages": 6
+    },
+    {
+     "what": "no legends except where two series share a chart",
+     "seen_on": 0,
+     "of_pages": 6
+    },
+    {
+     "what": "no claim titles: titles name the topic",
+     "seen_on": 0,
+     "of_pages": 6
+    }
+   ],
+   "reading": "the model's reading of the reference's pages: what it did not see the reference do. A starting tendency to weigh, never a prohibition: a page that does one says why in the report"
+  },
+  "tone": "Sober, analytical, number-led."
+ },
+ "exhibit_habits": {
+  "source_lines": {
+   "data_pages": 6,
+   "with_source_line": 6,
+   "pages_with": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "pages_without": [],
+   "share": 1.0,
+   "definition": "pages holding a chart or a table, native or pictured (chart_or_table), and how many of them carry a source or note line"
+  },
+  "sample": {
+   "pages_read": 6,
+   "pages_with_exhibits": 6,
+   "pages_without": [],
+   "exhibits": 42,
+   "policy": "every evidence page"
+  },
+  "records": [
+   {
+    "slide": 1,
+    "candidate": "p001-c3",
+    "what": "two-column fact table: item label in bold, description",
+    "message": "what the business is at a glance",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; labels bold in column one",
+    "marks": "nothing marked; reference table",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c4",
+    "what": "horizontal bar chart of revenue share by end market, seven bars",
+    "message": "44% of revenue is defensive",
+    "how_drawn": "bars sorted within group, navy for defensive and grey for cyclical, value labels at bar ends, no axis, category labels left",
+    "marks": "two right brackets group the bars, each labelled with the group name and its share; colour also carries the grouping and the subtitle explains it",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c5",
+    "what": "small region table with totals",
+    "message": "North America is the bulk; Asia Pacific grows fastest",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "fastest CAGR set in blue",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c6",
+    "what": "segment summary table with total row",
+    "message": "aftermarket is the high-margin growth segment",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "best and worst values in blue and red text; subtitle does not explain colours, note below does",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c7",
+    "what": "multi-year historical financial table with banded section headers",
+    "message": "steady growth and margin expansion",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; italics for ratio rows, bold totals",
+    "marks": "budget year in blue, a fall in red, explained in the note line under the table",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c8",
+    "what": "operating KPI table",
+    "message": "delivery and pricing are stable",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "one value under threshold in red, explained in subtitle",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 1,
+    "candidate": "p001-c9",
+    "what": "bulleted text panels plus a top-customers table",
+    "message": "strengths, risks and diligence findings",
+    "how_drawn": "bold 8pt panel heads, 8pt bullets; table in the same style",
+    "marks": "claims stated in bullets with figures; no marks",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c3",
+    "what": "stacked column showing the capital stack, one column",
+    "message": "equity is the largest layer",
+    "how_drawn": "three stacked segments, navy, mid blue, grey, labels inside segments with $ and x EBITDA; arrow callout for the thin layer",
+    "marks": "an arrow callout labels the thin notes segment; no other mark",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c4",
+    "what": "sources of funds table",
+    "message": "sponsor equity and TLB fund the deal",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "key tranche amounts in blue",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c5",
+    "what": "uses of funds table",
+    "message": "purchase of equity dominates uses",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c6",
+    "what": "fees and costs table",
+    "message": "fees are 3.5% of EV",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c7",
+    "what": "pro forma capitalisation table, full width",
+    "message": "total leverage 5.75x",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; shaded total row",
+    "marks": "total capitalisation row shaded; leverage figure in blue",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c8",
+    "what": "key terms text table",
+    "message": "term loan is covenant-lite",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c9",
+    "what": "purchase price analysis table, implied multiples against peers",
+    "message": "entry multiple under peer medians",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "focus row shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c10",
+    "what": "cash interest table",
+    "message": "first-year cash interest by tranche",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 2,
+    "candidate": "p002-c11",
+    "what": "ownership table",
+    "message": "sponsor owns most",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c3",
+    "what": "large operating model table with banded sections",
+    "message": "revenue and EBITDA grow each forecast year",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; forecast columns in blue",
+    "marks": "forecast values in blue, explained in subtitle",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c4",
+    "what": "base vs management plan table",
+    "message": "sponsor case under management",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c5",
+    "what": "reinvestment table",
+    "message": "capex is modest",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "nothing marked",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c6",
+    "what": "key assumptions table",
+    "message": "margin assumption rises every year",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "margin row shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c7",
+    "what": "column chart of EBITDA by year, eleven bars",
+    "message": "EBITDA grows throughout",
+    "how_drawn": "history grey, forecast navy, value labels above bars, category labels below, no gridlines, no axis line values",
+    "marks": "colour splits history from forecast, explained in subtitle",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 3,
+    "candidate": "p003-c8",
+    "what": "cases compared table, shaded base column",
+    "message": "downside returns fall below hurdle",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base column shaded; downside returns in red",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c3",
+    "what": "sponsor returns build-up table",
+    "message": "2.56x and 20.7%",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "result rows shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c4",
+    "what": "waterfall bridge of equity value, stacked columns",
+    "message": "EBITDA growth creates most of the value",
+    "how_drawn": "grey start, navy increases, red decreases, values printed above each step, no axis",
+    "marks": "colours explain direction in subtitle; no other mark",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c5",
+    "what": "IRR by exit year table",
+    "message": "returns by hold period",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "under-hurdle values in red, base cell shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c6",
+    "what": "proceeds by holder table",
+    "message": "sponsor takes most exit proceeds",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "total bold",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c7",
+    "what": "break-even inputs table",
+    "message": "margin is the most sensitive input",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "cushion column bold",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c8",
+    "what": "sensitivity grid",
+    "message": "returns by entry debt and exit multiple",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base cell shaded, under-hurdle values red, explained under the grid",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c9",
+    "what": "sensitivity grid of IRR by growth and margin",
+    "message": "margin matters more than growth",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c10",
+    "what": "sensitivity grid of IRR by entry and exit multiple",
+    "message": "paying more needs multiple expansion",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 4,
+    "candidate": "p004-c11",
+    "what": "sensitivity grid of MOIC by entry and exit multiple",
+    "message": "high entry multiples miss the hurdle",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base cell shaded and under-hurdle values red, explained in a note under the grid",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c3",
+    "what": "clustered column chart, base vs downside leverage by year, with a covenant line",
+    "message": "headroom stays above 26%",
+    "how_drawn": "navy base, red downside, value labels above bars, legend on top, orange covenant line",
+    "marks": "orange covenant line in legend; a bracket with a label '26.6% headroom' marks the tightest gap",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c4",
+    "what": "credit statistics table, base and downside",
+    "message": "leverage falls in both cases",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "covenant rows in red for downside",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c5",
+    "what": "precedent LBO financings table with statistics block and focus row",
+    "message": "proposed terms sit at the median",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; mean/high/low italic, median bold, focus row shaded with blue text",
+    "marks": "focus row shaded and blue",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c6",
+    "what": "debt capacity table",
+    "message": "proposed debt passes most tests",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "proposed row shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c7",
+    "what": "downside definition table",
+    "message": "a sharp one-year volume shock",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "shocks in red",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 5,
+    "candidate": "p005-c8",
+    "what": "rate sensitivity table",
+    "message": "returns barely move with rates",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "current column shaded",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 6,
+    "candidate": "p006-c2",
+    "what": "horizontal bar chart, four exit routes, MOIC and IRR inside bars",
+    "message": "two routes clear the hurdle",
+    "how_drawn": "navy bars above the hurdle, red below, labels inside bars, dashed orange vertical hurdle line labelled 'Hurdle 2.5x'",
+    "marks": "orange dashed line with a text label marks the hurdle; colour shows pass and fail, explained in subtitle",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 6,
+    "candidate": "p006-c3",
+    "what": "horizontal bar chart of reference multiples, seven bars sorted",
+    "message": "most references sit above the base exit",
+    "how_drawn": "grey bars with values inside at the left, category labels left, navy vertical reference line labelled 'Base exit 10.0x'",
+    "marks": "navy line with label marks the base multiple",
+    "chart_or_table": true,
+    "axis_labels": true,
+    "value_labels": true
+   },
+   {
+    "slide": 6,
+    "candidate": "p006-c5",
+    "what": "exit scenario table with shaded base column",
+    "message": "sponsor exit route is the base",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "base column shaded; returns under hurdle in red",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 6,
+    "candidate": "p006-c6",
+    "what": "listed peers trading multiples table with statistics block and focus row",
+    "message": "entry multiple vs peer median",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses; mean/high/low italic, median bold, target row shaded with navy bold text",
+    "marks": "target row shaded; note explains the peer subset",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   },
+   {
+    "slide": 6,
+    "candidate": "p006-c7",
+    "what": "precedent transactions table with medians by buyer type",
+    "message": "strategic buyers pay more",
+    "how_drawn": "7pt Calibri, no fills except light grey-blue E9EDF2 section bands and a shaded focus row or column, hairline grey row rules, 1pt dark rule under the header and the table bottom, numbers right-aligned, negatives in parentheses",
+    "marks": "median strategic bold; others italic",
+    "chart_or_table": true,
+    "axis_labels": false,
+    "value_labels": true
+   }
+  ],
+  "provenance": {
+   "value_provenance": "model_inference",
+   "role_provenance": "inferred",
+   "evidence": [
+    "exhibit digest of 6 pages, 42 exhibits"
+   ],
+   "frequency": 0,
+   "master_membership": false,
+   "confidence": 0.5
+  }
+ },
+ "completion": {
+  "applied": [
+   "/color/roles/color.emphasis",
+   "/color/roles/color.positive",
+   "/color/roles/color.surface_alt",
+   "/extra_roles/color.slate",
+   "/continuation",
+   "/derivation_rules",
+   "/description",
+   "/exhibit_habits",
+   "/floors/display/floor_pt",
+   "/imagery/register_kind",
+   "/shape_language/icon_style",
+   "/spacing/baseline_emu",
+   "/typography/roles/type.axis_label/line_spacing",
+   "/typography/roles/type.bullet",
+   "/typography/roles/type.caption",
+   "/typography/roles/type.data_label/line_spacing",
+   "/typography/roles/type.footnote",
+   "/typography/roles/type.h1",
+   "/typography/roles/type.h2",
+   "/typography/roles/type.section_label",
+   "/typography/roles/type.source_line",
+   "/typography/roles/type.table_cell/line_spacing",
+   "/typography/roles/type.table_header",
+   "/typography/roles/type.title",
+   "/typography/scale_ratio",
+   "/variety/content_pages"
+  ],
+  "defaults_taken": [
+   "/typography/roles/type.bullet: floor_family body (left out: an added role clears the body floor)",
+   "/typography/roles/type.section_label: floor_family body (left out: an added role clears the body floor)"
+  ],
+  "bulk": [
+   "/typography/roles/*/line_spacing answered 3 open line_spacing address(es)"
+  ]
+ }
+}

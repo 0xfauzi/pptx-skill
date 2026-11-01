@@ -1,0 +1,222 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": "a16d68f1183129ed4361c4e98e8b6d245666c8a9ddf800a4af8cbc6bd2685252",
+ "pages": [
+  {
+   "id": "p1-comps",
+   "intent": "listed peer multiples the valuation is read from, and whether Falcon's profile lets the median apply",
+   "message": "Peers trade in a tight EBITDA multiple band; Falcon's margin and growth sit at the peer median; revenue multiples are margin in disguise",
+   "composition": "new:wide-table-over-three-panels",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "every peer's multiples, size and profile with the median and Falcon's growth and margin underneath",
+     "comparison": "each peer against the set's statistics, and Falcon's operating profile against the peers",
+     "data": "eight peers by eleven columns of market data, multiples and operating ratios, plus four statistic rows and the Falcon row",
+     "forms_considered": [
+      {
+       "form": "full comps table with statistics block",
+       "reason": "chosen: the client checks every figure and the house style is the ruled comps table"
+      },
+      {
+       "form": "ranked bar chart of EV / EBITDA",
+       "reason": "the eight multiples sit within 0.9x, bars would look equal and hide the other columns"
+      }
+     ],
+     "chosen_form": "full comps table with statistics block",
+     "why": "a lookup exhibit: values are checked row by row, and the statistics block is what the valuation applies",
+     "marks": "median row bold, mean high low italic, Falcon row shaded with navy bold text as on sheet 6 of the template",
+     "in_reference_look": "the template's listed peers table: unfilled header, hairline rules, shaded subject row"
+    },
+    {
+     "reader_must_see": "that EV / revenue rises in a straight line with EBITDA margin and where Falcon's margin falls on that line",
+     "comparison": "each peer's revenue multiple against its margin, and Falcon's margin against the fitted line",
+     "data": "eight pairs of margin and revenue multiple, correlation 0.99, plus one Falcon margin",
+     "forms_considered": [
+      {
+       "form": "scatter with fitted line and Falcon margin line",
+       "reason": "chosen: the relationship and Falcon's position read at once"
+      },
+      {
+       "form": "two ranked bar charts, margin and revenue multiple",
+       "reason": "the reader would have to match names across charts to see the link"
+      }
+     ],
+     "chosen_form": "scatter with fitted line and Falcon margin line",
+     "why": "the point is a relationship between two measures, which a scatter shows directly",
+     "marks": "a dashed orange vertical line at Falcon's 18.9% labelled with the multiple it implies on the fit",
+     "in_reference_look": "navy markers, grey dashed fit, orange threshold line with its own label as on the template's hurdle line"
+    },
+    {
+     "reader_must_see": "Falcon's margin, growth and size against the peer quartiles with its rank",
+     "comparison": "Falcon against the peer 25th percentile, median and 75th percentile on four measures",
+     "data": "four measures, each with Falcon value, three peer statistics and a rank",
+     "forms_considered": [
+      {
+       "form": "small table with Falcon column shaded",
+       "reason": "chosen: four measures in different units read best as figures"
+      },
+      {
+       "form": "dot plots per measure",
+       "reason": "four separate scales take more room than the panel has for little gain"
+      }
+     ],
+     "chosen_form": "small table with Falcon column shaded",
+     "why": "mixed units and only four rows; the figures are the point",
+     "marks": "Falcon column shaded with navy bold text; rank column states the position in words"
+    },
+    {
+     "reader_must_see": "that all eight peers trade at nearly the same EBITDA multiple",
+     "comparison": "each peer's EV / NTM EBITDA against the others and the median, on an axis from zero",
+     "data": "eight multiples between 11.1x and 12.0x and their median 11.4x",
+     "forms_considered": [
+      {
+       "form": "ranked horizontal bars from zero with a median line",
+       "reason": "chosen: equal-looking bars are the honest picture of a tight band"
+      },
+      {
+       "form": "dot plot on a truncated axis",
+       "reason": "a truncated axis would make a 0.9x spread look wide"
+      }
+     ],
+     "chosen_form": "ranked horizontal bars from zero with a median line",
+     "why": "the claim is that the spread is small; bars from zero show it without exaggeration",
+     "marks": "a navy median line labelled with its value; values inside each bar",
+     "in_reference_look": "grey bars with values at the base and a labelled navy line, as the template's reference multiples chart"
+    }
+   ]
+  },
+  {
+   "id": "p2-precedents",
+   "intent": "announced deals in the sector and what buyers paid",
+   "message": "Sponsors paid 12.9x against 11.1x for strategics; the precedent median of 11.9x is below where peers trade today and no deal is Falcon's size",
+   "composition": "new:table-beside-chart-over-text",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each deal's date, parties, size and multiples with the medians by buyer type",
+     "comparison": "each deal against the set's statistics and sponsor buyers against strategic buyers",
+     "data": "eight deals by nine columns including derived target EBITDA and margin, plus six statistic rows",
+     "forms_considered": [
+      {
+       "form": "precedents table with statistics and buyer-type medians",
+       "reason": "chosen: lookup of each deal, as in the template's precedent table"
+      },
+      {
+       "form": "timeline of deals",
+       "reason": "there is no time trend to show and it hides the multiples"
+      }
+     ],
+     "chosen_form": "precedents table with statistics and buyer-type medians",
+     "why": "readers look up and check individual deals; the medians by buyer type carry the claim",
+     "marks": "median bold, mean high low italic, the two buyer-type medians shaded",
+     "in_reference_look": "the template's precedent table with medians by buyer type"
+    },
+    {
+     "reader_must_see": "that sponsor deals cluster at the top of the multiple ranking and that most deals sit below today's trading multiple",
+     "comparison": "each deal's EV / LTM EBITDA against the others and against listed peers' current LTM median",
+     "data": "eight multiples from 9.8x to 13.8x, three sponsor and five strategic, plus one reference value 12.4x",
+     "forms_considered": [
+      {
+       "form": "ranked horizontal bars coloured by buyer type with a reference line",
+       "reason": "chosen: rank, buyer type and the trading reference read together"
+      },
+      {
+       "form": "columns in date order",
+       "reason": "date order shows no pattern and scatters the buyer split"
+      }
+     ],
+     "chosen_form": "ranked horizontal bars coloured by buyer type with a reference line",
+     "why": "the claim is about rank by buyer type and the gap to trading levels",
+     "marks": "sponsor bars navy and strategic grey, an orange dashed line at the listed peers' 12.4x labelled",
+     "in_reference_look": "the template's reference multiples bars with labels inside and a labelled vertical line"
+    },
+    {
+     "reader_must_see": "that bigger deals tended to price higher and Falcon sits beyond the largest deal",
+     "comparison": "each deal's EV against its EBITDA multiple, by buyer type, against Falcon's implied EV",
+     "data": "eight pairs of deal EV and multiple, correlation 0.57, plus one Falcon EV of $3,284m",
+     "forms_considered": [
+      {
+       "form": "scatter of deal EV against multiple with a Falcon EV line",
+       "reason": "chosen: shows the size pattern and Falcon's position outside the set"
+      },
+      {
+       "form": "two medians above and below $2,000m in a table",
+       "reason": "hides the scatter and how weak an eight-point pattern is"
+      }
+     ],
+     "chosen_form": "scatter of deal EV against multiple with a Falcon EV line",
+     "why": "a relationship between two measures reads directly on a scatter, and the reader can judge its strength",
+     "marks": "orange dashed line at Falcon's EV labelled with the figure; sponsor deals navy, strategic grey with a legend"
+    }
+   ]
+  },
+  {
+   "id": "p3-football",
+   "intent": "every method's implied EV range on one scale, with the arithmetic behind it",
+   "message": "EBITDA methods give $3,002m to $3,530m and overlap at $3,396m to $3,457m; revenue methods are wider and secondary; equity value awaits net debt",
+   "composition": "new:chart-beside-text-over-wide-table",
+   "title_register": "topic",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "where each method's implied EV range sits on one scale and where the EBITDA methods agree",
+     "comparison": "six methods' interquartile EV ranges and medians against each other",
+     "data": "six low, median and high EV triples between $2,779m and $3,639m",
+     "forms_considered": [
+      {
+       "form": "football field of floating bars with median breaks",
+       "reason": "chosen: the standard banker's view of ranges on one axis"
+      },
+      {
+       "form": "dot and whisker plot",
+       "reason": "reads the same but departs from what a client expects on a valuation page"
+      }
+     ],
+     "chosen_form": "football field of floating bars with median breaks",
+     "why": "ranges on one scale are the comparison; floating bars show overlap directly",
+     "marks": "EBITDA methods navy, revenue grey; a pale band over the overlap of the EBITDA ranges with a callout naming it; range figures beside each bar",
+     "in_reference_look": "navy and grey bars as in the template's charts, values beside the bars, no gridlines"
+    },
+    {
+     "reader_must_see": "the metric, multiples and implied EV behind each bar, and that equity value is open",
+     "comparison": "each method's multiples and implied EV at three points",
+     "data": "six methods by Falcon metric, three multiples, three EVs and a cross-check multiple, plus net debt and equity rows left open",
+     "forms_considered": [
+      {
+       "form": "implied value table with median column shaded",
+       "reason": "chosen: the arithmetic must be checkable"
+      },
+      {
+       "form": "notes under the chart",
+       "reason": "prose hides the figures a reviewer recomputes"
+      }
+     ],
+     "chosen_form": "implied value table with median column shaded",
+     "why": "the client will recompute the bars; a table shows every input",
+     "marks": "median EV column shaded and bold; placeholder rows italic"
+    },
+    {
+     "reader_must_see": "what the overlap of the EBITDA ranges means as multiples of each Falcon metric",
+     "comparison": "the two ends of the overlap restated on four Falcon metrics",
+     "data": "two EVs divided by four Falcon metrics",
+     "forms_considered": [
+      {
+       "form": "small two-column table",
+       "reason": "chosen: eight figures the client will quote"
+      },
+      {
+       "form": "sentence in the commentary",
+       "reason": "eight figures in prose are hard to find again"
+      }
+     ],
+     "chosen_form": "small two-column table",
+     "why": "lookup figures in mixed metrics belong in a table",
+     "marks": "none: a reference table of eight figures with its heading saying what it restates"
+    }
+   ]
+  }
+ ]
+}
