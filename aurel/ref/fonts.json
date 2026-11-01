@@ -1,0 +1,38 @@
+{
+ "reference": null,
+ "guide": "/home/user/pptx-skill/aurel/ref/guide.json",
+ "fonts_folder": "/home/user/pptx-skill/aurel/fonts",
+ "ruler": "pillow_x128",
+ "faces": [
+  {
+   "face": "S\u00f6hne",
+   "used_for": "text",
+   "styles": [
+    "regular",
+    "bold"
+   ],
+   "status": "stand_in_approved",
+   "source": "named",
+   "width_difference": {
+    "measurable": false,
+    "why": "no reference: there is no reference text to measure against"
+   },
+   "stand_in": {
+    "face": "Inter",
+    "metric_compatible": false,
+    "rule": "fc-match's answer, the face the renderer draws: the build measures text in it only when it is named under typography.families.substitutes, and refuses the page until then",
+    "named_in_guide": "Inter",
+    "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
+   },
+   "user_can_supply": "licensed .ttf, .otf or .ttc files of S\u00f6hne (regular, bold), put in /home/user/pptx-skill/aurel/fonts; then run this report again",
+   "in_guide": true
+  }
+ ],
+ "needs_the_user": [],
+ "recipient": [
+  "S\u00f6hne: the deck names it and embeds no font, so a recipient's PowerPoint draws it only if their machine has S\u00f6hne (this machine has it only as a stand-in: tell the user)"
+ ],
+ "embedding": "not written: LibreOffice 24.2, the one renderer here, drew none of three test decks with an embedded font (sfnt bytes, EOT, EOT with XOR) in that font, so a written font could not be checked; PowerPoint was not measured",
+ "fonts_folder_files_not_used": [],
+ "never_downloaded": "the skill never downloads or installs a font; missing faces come from the user, as files they license"
+}

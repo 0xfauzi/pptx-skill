@@ -1,0 +1,224 @@
+{
+ "status": "pass",
+ "refusals": [],
+ "warnings": [],
+ "plan": {
+  "deck": "plan",
+  "content_pages": 12,
+  "segments": [
+   [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  ],
+  "pairs": 11,
+  "status": "measured",
+  "composition": {
+   "V": 0.909,
+   "changed": 10,
+   "pairs": 11
+  },
+  "structures": {
+   "status": "no evidence",
+   "why": "structure not read on 12 of 12 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
+  },
+  "kinds": {
+   "status": "no evidence",
+   "why": "kinds not read on 12 of 12 content pages (a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes)"
+  },
+  "distinct": {
+   "compositions": 11,
+   "pages": 12,
+   "per_page": 0.917
+  },
+  "longest_run": 2,
+  "runs": [
+   {
+    "composition": "new:statement-over-wave",
+    "pages": [
+     2,
+     3
+    ]
+   }
+  ],
+  "sequences": [
+   [
+    "new:name-low-left",
+    "new:statement-over-wave",
+    "new:statement-over-wave",
+    "new:name-on-gold-line",
+    "new:figure-beside-pair",
+    "new:shape-left-words-right",
+    "new:figure-right",
+    "new:two-figures-divided",
+    "new:three-panels",
+    "new:swatch-row",
+    "new:figure-centre-left",
+    "new:name-over-wave"
+   ]
+  ]
+ },
+ "reference": {
+  "deck": null,
+  "content_pages": 0,
+  "pairs": 0,
+  "status": "no reference",
+  "why": "the guide was made with no reference deck: no variety to hold a plan or a build to"
+ },
+ "comparison": {
+  "composition_V": {
+   "value": 0.909,
+   "verdict": "no reference"
+  },
+  "structures_V": {
+   "value": null,
+   "verdict": "a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
+   "reference": "no reference"
+  },
+  "kinds_V": {
+   "value": null,
+   "verdict": "a plan describes its exhibits in briefs and declares no structure: the build reads the structure from the file it writes",
+   "reference": "no reference"
+  },
+  "distinct_per_page": {
+   "value": 0.917,
+   "verdict": "no reference",
+   "reference": "no reference"
+  },
+  "longest_run": {
+   "plan": 2,
+   "reference": "no reference"
+  }
+ },
+ "repeats": [
+  {
+   "pages": [
+    "s02-loud",
+    "s03-quiet"
+   ],
+   "composition": "new:statement-over-wave",
+   "run_length": 2,
+   "deliberate_parallel": "the same frame and the same bars as the page before, so the room sees the noise fall to a gold line rather than a new picture",
+   "reference_longest_run": "no reference",
+   "verdict": "declared"
+  }
+ ],
+ "exhibit_briefs": {
+  "s01-cover": 0,
+  "s02-loud": 1,
+  "s03-quiet": 1,
+  "s04-reveal": 0,
+  "s05-silence": 1,
+  "s06-sound": 1,
+  "s07-light": 1,
+  "s08-battery": 1,
+  "s09-features": 1,
+  "s10-finishes": 1,
+  "s11-price": 0,
+  "s12-close": 1
+ },
+ "compositions": {
+  "reference_archetypes_used": [],
+  "new": [
+   "new:figure-beside-pair",
+   "new:figure-centre-left",
+   "new:figure-right",
+   "new:name-low-left",
+   "new:name-on-gold-line",
+   "new:name-over-wave",
+   "new:shape-left-words-right",
+   "new:statement-over-wave",
+   "new:swatch-row",
+   "new:three-panels",
+   "new:two-figures-divided"
+  ]
+ },
+ "title_registers": {
+  "reference": "no reference",
+  "plan": {
+   "topic": 0,
+   "claim": 6,
+   "question": 0,
+   "in_words": {
+    "s01-cover": "other: the product name as the page's only statement",
+    "s04-reveal": "other: the product name revealed",
+    "s05-silence": "other: one headline figure with its label",
+    "s07-light": "other: one headline figure with its label",
+    "s11-price": "other: the price as the page's statement",
+    "s12-close": "other: the product name as the closing statement"
+   }
+  },
+  "pages": {
+   "s01-cover": {
+    "stated": "other: the product name as the page's only statement",
+    "term": null,
+    "verdict": "no reference"
+   },
+   "s02-loud": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s03-quiet": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s04-reveal": {
+    "stated": "other: the product name revealed",
+    "term": null,
+    "verdict": "no reference"
+   },
+   "s05-silence": {
+    "stated": "other: one headline figure with its label",
+    "term": null,
+    "verdict": "no reference"
+   },
+   "s06-sound": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s07-light": {
+    "stated": "other: one headline figure with its label",
+    "term": null,
+    "verdict": "no reference"
+   },
+   "s08-battery": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s09-features": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s10-finishes": {
+    "stated": "claim",
+    "term": "claim",
+    "verdict": "no reference"
+   },
+   "s11-price": {
+    "stated": "other: the price as the page's statement",
+    "term": null,
+    "verdict": "no reference"
+   },
+   "s12-close": {
+    "stated": "other: the product name as the closing statement",
+    "term": null,
+    "verdict": "no reference"
+   }
+  }
+ }
+}

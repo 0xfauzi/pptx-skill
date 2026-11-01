@@ -1,0 +1,305 @@
+{
+ "schema": "pptx-skill section plan v2",
+ "reference_sha256": null,
+ "pages": [
+  {
+   "id": "s01-cover",
+   "title_register": "other: the company name as the page's only statement",
+   "intent": "open the keynote on the company, keeping the product name for the reveal",
+   "message": "Aurel",
+   "composition": "new:name-low-left",
+   "deliberate_parallel": null,
+   "exhibits": []
+  },
+  {
+   "id": "s02-loud",
+   "title_register": "claim",
+   "intent": "name the problem the product solves",
+   "message": "The world is loud",
+   "composition": "new:statement-over-wave",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "noise as a dense, uneven wall that fills the page",
+     "comparison": "nothing yet: it sets up the next page, where the same bars fall silent",
+     "data": "no data: an illustrative waveform of seventy two uneven bars",
+     "forms_considered": [
+      {
+       "form": "full width waveform bars",
+       "reason": "chosen: reads as sound at a glance and can be reused to show it stopping"
+      },
+      {
+       "form": "a photograph of a crowded street",
+       "reason": "none supplied, and the user asked for type and shapes"
+      },
+      {
+       "form": "the statement alone on a black page",
+       "reason": "the room hears the claim but sees nothing to set up the silence that follows"
+      }
+     ],
+     "chosen_form": "full width waveform bars",
+     "why": "the waveform is the subject's own material and carries over to the next two pages",
+     "marks": "no marks: grey bars only, so the gold on the next page is the first colour the room sees"
+    }
+   ]
+  },
+  {
+   "id": "s03-quiet",
+   "title_register": "claim",
+   "intent": "turn from problem to promise",
+   "message": "Aurel One turns the noise down",
+   "composition": "new:statement-over-wave",
+   "deliberate_parallel": "the same frame and the same bars as the page before, so the room sees the noise fall to a gold line rather than a new picture",
+   "exhibits": [
+    {
+     "reader_must_see": "the same noise falling away to a single flat gold line",
+     "comparison": "this page's waveform against the one on the page before",
+     "data": "no data: the previous page's bars, decaying over the right half to a flat line",
+     "forms_considered": [
+      {
+       "form": "decaying waveform ending in a gold line",
+       "reason": "chosen: the change from noise to silence is drawn in one picture"
+      },
+      {
+       "form": "two waveforms side by side, before and after",
+       "reason": "halves each wave and makes the room compare instead of watch it stop"
+      }
+     ],
+     "chosen_form": "decaying waveform ending in a gold line",
+     "why": "it repeats page two's bars exactly, so the only change is the silence",
+     "marks": "the flat line in gold, the first use of the product's colour"
+    }
+   ]
+  },
+  {
+   "id": "s04-reveal",
+   "title_register": "other: the product name revealed",
+   "intent": "reveal the product",
+   "message": "Introducing Aurel One, noise-cancelling headphones",
+   "composition": "new:name-on-gold-line",
+   "deliberate_parallel": null,
+   "exhibits": []
+  },
+  {
+   "id": "s05-silence",
+   "title_register": "other: one headline figure with its label",
+   "intent": "state the headline noise-cancelling figure",
+   "message": "Aurel One removes [XX] dB of noise (placeholder)",
+   "composition": "new:figure-beside-pair",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the noise-reduction figure first, then what it means: the same noise without and with the headphones",
+     "comparison": "the waveform without the headphones against the waveform with them",
+     "data": "one figure in decibels, not yet supplied, and two illustrative waveforms",
+     "forms_considered": [
+      {
+       "form": "big figure beside a stacked before and after pair",
+       "reason": "chosen: the figure is the claim, the pair says what it feels like"
+      },
+      {
+       "form": "bar chart of decibel reduction against competitors",
+       "reason": "no competitor figures exist, and a chart of placeholders would mean nothing"
+      },
+      {
+       "form": "big figure alone",
+       "reason": "a decibel figure means little to a launch audience without a picture of it"
+      }
+     ],
+     "chosen_form": "big figure beside a stacked before and after pair",
+     "why": "the room reads the figure in gold, then sees it as noise gone",
+     "marks": "the figure in gold; the pair labelled Without and With Aurel One; the footnote says the waves are illustrations"
+    }
+   ]
+  },
+  {
+   "id": "s06-sound",
+   "title_register": "claim",
+   "intent": "turn from silence to sound quality",
+   "message": "With the noise gone, the music is what is left",
+   "composition": "new:shape-left-words-right",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "a driver: the source of the sound, with a gold centre",
+     "comparison": "none: a single object that stands for the sound system",
+     "data": "no data: driver size not yet supplied",
+     "forms_considered": [
+      {
+       "form": "concentric driver rings with a gold core",
+       "reason": "chosen: a driver's own shape, drawn plainly"
+      },
+      {
+       "form": "a frequency response curve",
+       "reason": "no measurement supplied, and a curve asks the room to read axes"
+      },
+      {
+       "form": "an exploded drawing of the earcup",
+       "reason": "no engineering drawings supplied; inventing one would misdescribe the product"
+      }
+     ],
+     "chosen_form": "concentric driver rings with a gold core",
+     "why": "it carries the gold of the product to the sound, with no figure needed",
+     "marks": "the core ring and dot in gold; the outer rings in the rule colour"
+    }
+   ]
+  },
+  {
+   "id": "s07-light",
+   "title_register": "other: one headline figure with its label",
+   "intent": "comfort, in one figure",
+   "message": "Aurel One weighs [XXX] g (placeholder)",
+   "composition": "new:figure-right",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the weight in grams, large, with nothing competing",
+     "comparison": "none on the page; the presenter supplies any comparison aloud",
+     "data": "one figure in grams, not yet supplied",
+     "forms_considered": [
+      {
+       "form": "big figure set to the right of an empty field",
+       "reason": "chosen: the empty field reads as lightness and varies the page from the figure page before"
+      },
+      {
+       "form": "figure beside a balance-scale icon",
+       "reason": "a clip-art scale adds a mark with no job beyond the figure"
+      }
+     ],
+     "chosen_form": "big figure set to the right of an empty field",
+     "why": "one number and space around it is the plainest way to say light",
+     "marks": "no gold here: the gold is kept for noise cancelling and the product name; a grey rule under the figure"
+    }
+   ]
+  },
+  {
+   "id": "s08-battery",
+   "title_register": "claim",
+   "intent": "battery life and fast charge",
+   "message": "[XX] hours on a charge, [X] hours from [X] minutes (placeholders)",
+   "composition": "new:two-figures-divided",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "two figures side by side: how long a charge lasts and how fast it comes back",
+     "comparison": "the full battery life beside the quick-charge figure, as two separate facts",
+     "data": "two figures, hours and minutes, neither yet supplied",
+     "forms_considered": [
+      {
+       "form": "two big figures split by a thin rule",
+       "reason": "chosen: two co-equal facts, each read in one look"
+      },
+      {
+       "form": "a battery gauge filling up",
+       "reason": "a gauge implies a proportion, and no figures exist to draw it from"
+      },
+      {
+       "form": "one figure with the second in the line under it",
+       "reason": "fast charging is a selling point on its own and would be lost in a sentence"
+      }
+     ],
+     "chosen_form": "two big figures split by a thin rule",
+     "why": "the two figures are co-equal, so they get one size and one baseline",
+     "marks": "no colour: both figures in off-white, the rule in the rule colour"
+    }
+   ]
+  },
+  {
+   "id": "s09-features",
+   "title_register": "claim",
+   "intent": "the three features worth naming on stage",
+   "message": "Three features, to be named by Aurel",
+   "composition": "new:three-panels",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "three separate features, numbered, each with one line",
+     "comparison": "three co-equal features, not ranked",
+     "data": "three feature names and lines, none yet supplied",
+     "forms_considered": [
+      {
+       "form": "three numbered panels in a row",
+       "reason": "chosen: co-equal items read left to right at one size"
+      },
+      {
+       "form": "a bulleted list",
+       "reason": "a list reads as small print from the back of a hall"
+      },
+      {
+       "form": "one page per feature",
+       "reason": "the deck is capped at about twelve pages, and the figure pages need the room"
+      }
+     ],
+     "chosen_form": "three numbered panels in a row",
+     "why": "three equal panels say the features are equal and keep each to one line",
+     "marks": "numbers in gold as the only colour"
+    }
+   ]
+  },
+  {
+   "id": "s10-finishes",
+   "title_register": "claim",
+   "intent": "the colourways",
+   "message": "Aurel One comes in [N] finishes (placeholder)",
+   "composition": "new:swatch-row",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "each finish as a large swatch with its name",
+     "comparison": "the finishes against each other",
+     "data": "finish names and colours, none yet supplied; three shown",
+     "forms_considered": [
+      {
+       "form": "a row of large round swatches with names",
+       "reason": "chosen: colour is the content, so the swatch is the exhibit"
+      },
+      {
+       "form": "product photographs in each finish",
+       "reason": "Aurel has supplied no photography, and the user chose type and shapes"
+      }
+     ],
+     "chosen_form": "a row of large round swatches with names",
+     "why": "round swatches echo the driver rings and each holds one colour",
+     "marks": "none until colours are supplied: neutral fills with a rule outline, named placeholders under each"
+    }
+   ]
+  },
+  {
+   "id": "s11-price",
+   "title_register": "other: the price as the page's statement",
+   "intent": "price and availability",
+   "message": "Aurel One costs [Price] and ships [date] (placeholders)",
+   "composition": "new:figure-centre-left",
+   "deliberate_parallel": null,
+   "exhibits": []
+  },
+  {
+   "id": "s12-close",
+   "title_register": "other: the product name as the closing statement",
+   "intent": "close on the name and the silence",
+   "message": "Aurel One",
+   "composition": "new:name-over-wave",
+   "deliberate_parallel": null,
+   "exhibits": [
+    {
+     "reader_must_see": "the product name over the noise falling to the gold line, as the keynote opened",
+     "comparison": "the close against the opening pages, noise against silence",
+     "data": "no data: the illustrative waveform of pages two and three",
+     "forms_considered": [
+      {
+       "form": "name over the decaying waveform",
+       "reason": "chosen: closes the loop the opening started"
+      },
+      {
+       "form": "the name alone, centred",
+       "reason": "repeats the cover without the story told since"
+      }
+     ],
+     "chosen_form": "name over the decaying waveform",
+     "why": "the last picture the room sees is the product's promise",
+     "marks": "the flat line in gold"
+    }
+   ]
+  }
+ ]
+}

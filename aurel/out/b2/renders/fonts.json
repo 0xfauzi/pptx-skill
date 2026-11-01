@@ -1,0 +1,29 @@
+{
+ "Arial": {
+  "rendered_with": "Liberation Sans",
+  "file": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+  "fidelity": "metric_alias",
+  "codepoints_checked": 0,
+  "uncovered_count": 0,
+  "uncovered_sample": [],
+  "bullets_only": false
+ },
+ "Calibri": {
+  "rendered_with": "Carlito",
+  "file": "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf",
+  "fidelity": "metric_alias",
+  "codepoints_checked": 8,
+  "uncovered_count": 0,
+  "uncovered_sample": [],
+  "bullets_only": false
+ },
+ "S\u00f6hne": {
+  "rendered_with": "Inter",
+  "file": "/usr/share/fonts/opentype/inter/Inter-Regular.otf",
+  "fidelity": "substituted",
+  "codepoints_checked": 55,
+  "uncovered_count": 0,
+  "uncovered_sample": [],
+  "bullets_only": false
+ }
+}

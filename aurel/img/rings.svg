@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <circle cx="300" cy="300" r="290" fill="none" stroke="color.rule" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="300" cy="300" r="240" fill="none" stroke="color.rule" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="300" cy="300" r="190" fill="none" stroke="color.rule" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="300" cy="300" r="140" fill="none" stroke="color.rule" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="300" cy="300" r="90" fill="none" stroke="color.accent1" stroke-width="6" stroke-linecap="butt" stroke-linejoin="miter"/>
+  <circle cx="300" cy="300" r="34" fill="color.accent1" stroke="none"/>
+</svg>

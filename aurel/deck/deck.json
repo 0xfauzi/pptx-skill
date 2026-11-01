@@ -1,0 +1,1344 @@
+{
+ "slides": [
+  {
+   "id": "s01-cover",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "top",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "event",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "[Event name]  ·  [Date]"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "name",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.display",
+         "text": "Aurel"
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "bottom",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 0.35
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: the company name as the page's only statement",
+    "element": "name"
+   },
+   "notes": "Hold on this page while the room settles."
+  },
+  {
+   "id": "s02-loud",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "The world is loud."
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "noise",
+       "kind": "image",
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim"
+   },
+   "images": {
+    "noise": {
+     "svg": "/home/user/pptx-skill/aurel/img/noise.svg",
+     "align": "center",
+     "valign": "middle"
+    }
+   },
+   "notes": "Draft copy. Speak to the commute, the open office, the flight."
+  },
+  {
+   "id": "s03-quiet",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Now, turn it down."
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "quiet",
+       "kind": "image",
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim"
+   },
+   "images": {
+    "quiet": {
+     "svg": "/home/user/pptx-skill/aurel/img/quiet.svg",
+     "align": "center",
+     "valign": "middle"
+    }
+   }
+  },
+  {
+   "id": "s04-reveal",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "above",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "intro",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Introducing"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "name",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.display",
+         "text": "Aurel One"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "line",
+       "kind": "rule",
+       "size": {
+        "width_emu": null,
+        "height_emu": 38100
+       },
+       "line_role": "color.accent1",
+       "line_width_emu": 25400
+      },
+      {
+       "type": "element",
+       "id": "line1",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "Noise-cancelling headphones from Aurel."
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "below",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 0.6
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: the product name revealed",
+    "element": "name"
+   }
+  },
+  {
+   "id": "s05-silence",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "figure",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "k",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Active noise cancelling"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "fig",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.figure",
+             "text": "[XX] dB",
+             "ink_role": "color.accent1"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "line",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "less of the world around you."
+            }
+           ]
+          }
+         ],
+         "weight": 1.1
+        },
+        {
+         "type": "region",
+         "id": "compare",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "without",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "Without"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "noise",
+           "kind": "image",
+           "weight": 1.0
+          },
+          {
+           "type": "element",
+           "id": "with",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "With Aurel One"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "quiet",
+           "kind": "image",
+           "weight": 1.0
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "note",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.footnote",
+         "text": "[XX] dB: noise reduction and test conditions to be supplied by Aurel engineering. Waveforms are illustrations, not measurements."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: one headline figure with its label",
+    "element": "fig"
+   },
+   "images": {
+    "noise": {
+     "svg": "/home/user/pptx-skill/aurel/img/noise.svg",
+     "align": "center",
+     "valign": "middle"
+    },
+    "quiet": {
+     "svg": "/home/user/pptx-skill/aurel/img/quiet.svg",
+     "align": "center",
+     "valign": "middle"
+    }
+   }
+  },
+  {
+   "id": "s06-sound",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "rings",
+         "kind": "image",
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "words",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "k",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Sound"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "title",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.title",
+             "text": "Hear only what you choose to."
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "line",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "[XX] mm drivers, tuned by [team or partner]."
+            }
+           ]
+          }
+         ],
+         "weight": 1.2
+        }
+       ],
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim"
+   },
+   "images": {
+    "rings": {
+     "svg": "/home/user/pptx-skill/aurel/img/rings.svg",
+     "align": "center",
+     "valign": "middle"
+    }
+   }
+  },
+  {
+   "id": "s07-light",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "gap",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.xs",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "figure",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "center"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "k",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "Comfort"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "fig",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.display",
+             "text": "[XXX] g"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "line",
+           "kind": "rule",
+           "size": {
+            "width_emu": null,
+            "height_emu": 38100
+           },
+           "line_role": "color.rule",
+           "line_width_emu": 25400
+          },
+          {
+           "type": "element",
+           "id": "line1",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "Light enough to forget you are wearing them."
+            }
+           ]
+          }
+         ],
+         "weight": 1.4
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "note",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.footnote",
+         "text": "[XXX] g: weight to be supplied by Aurel."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: one headline figure with its label",
+    "element": "fig"
+   }
+  },
+  {
+   "id": "s08-battery",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "head",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "element",
+         "id": "k",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.kicker",
+           "text": "Battery"
+          }
+         ]
+        },
+        {
+         "type": "element",
+         "id": "title",
+         "kind": "text",
+         "paragraphs": [
+          {
+           "role": "type.title",
+           "text": "Power for the whole trip."
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.gutter",
+        "pad_role": null,
+        "align": "center",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "play",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "play-fig",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.figure",
+             "text": "[XX] h"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "play-line",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "on one charge, noise cancelling on."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "element",
+         "id": "divider",
+         "kind": "rule",
+         "size": {
+          "width_emu": 12700,
+          "height_emu": null
+         },
+         "line_role": "color.rule",
+         "line_width_emu": 12700
+        },
+        {
+         "type": "region",
+         "id": "charge",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "charge-fig",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.figure",
+             "text": "[X] min"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "charge-line",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "of charging gives [X] hours more."
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "note",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.footnote",
+         "text": "Battery and charging figures and their test conditions to be supplied by Aurel."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim",
+    "element": "title"
+   }
+  },
+  {
+   "id": "s09-features",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Designed around the way you listen."
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "f1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": "space.md",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "f1-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "01"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f1-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "[Feature 1]"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f1-b",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "[One line on what it does for the listener.]"
+            }
+           ]
+          }
+         ],
+         "fill_role": "color.surface_alt",
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "f2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": "space.md",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "f2-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "02"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f2-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "[Feature 2]"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f2-b",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "[One line on what it does for the listener.]"
+            }
+           ]
+          }
+         ],
+         "fill_role": "color.surface_alt",
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "f3",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": "space.md",
+          "align": "stretch",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "f3-n",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.kicker",
+             "text": "03"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f3-h",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.h1",
+             "text": "[Feature 3]"
+            }
+           ]
+          },
+          {
+           "type": "element",
+           "id": "f3-b",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.body",
+             "text": "[One line on what it does for the listener.]"
+            }
+           ]
+          }
+         ],
+         "fill_role": "color.surface_alt",
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim"
+   }
+  },
+  {
+   "id": "s10-finishes",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.lg",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "title",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.title",
+         "text": "Choose your finish."
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "body",
+       "layout": {
+        "kind": "flex",
+        "direction": "row",
+        "gap_role": "space.md",
+        "pad_role": null,
+        "align": "center",
+        "justify": "start"
+       },
+       "children": [
+        {
+         "type": "region",
+         "id": "c1",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "center",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "c1-disc",
+           "kind": "rect",
+           "size": {
+            "width_emu": 1828800,
+            "height_emu": 1828800
+           },
+           "fill_role": "color.surface_alt",
+           "line_role": "color.rule",
+           "line_width_emu": 19050,
+           "prst": "ellipse"
+          },
+          {
+           "type": "element",
+           "id": "c1-name",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "[Finish 1]",
+             "align": "center"
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "c2",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "center",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "c2-disc",
+           "kind": "rect",
+           "size": {
+            "width_emu": 1828800,
+            "height_emu": 1828800
+           },
+           "fill_role": "color.surface_alt",
+           "line_role": "color.rule",
+           "line_width_emu": 19050,
+           "prst": "ellipse"
+          },
+          {
+           "type": "element",
+           "id": "c2-name",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "[Finish 2]",
+             "align": "center"
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        },
+        {
+         "type": "region",
+         "id": "c3",
+         "layout": {
+          "kind": "flex",
+          "direction": "column",
+          "gap_role": "space.sm",
+          "pad_role": null,
+          "align": "center",
+          "justify": "start"
+         },
+         "children": [
+          {
+           "type": "element",
+           "id": "c3-disc",
+           "kind": "rect",
+           "size": {
+            "width_emu": 1828800,
+            "height_emu": 1828800
+           },
+           "fill_role": "color.surface_alt",
+           "line_role": "color.rule",
+           "line_width_emu": 19050,
+           "prst": "ellipse"
+          },
+          {
+           "type": "element",
+           "id": "c3-name",
+           "kind": "text",
+           "paragraphs": [
+            {
+             "role": "type.caption",
+             "text": "[Finish 3]",
+             "align": "center"
+            }
+           ]
+          }
+         ],
+         "weight": 1.0
+        }
+       ],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "note",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.footnote",
+         "text": "Swatches are neutral placeholders: finish names, colours and count to be supplied by Aurel."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "claim"
+   }
+  },
+  {
+   "id": "s11-price",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.sm",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "region",
+       "id": "above",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      },
+      {
+       "type": "element",
+       "id": "k",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.kicker",
+         "text": "Availability"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "fig",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.display",
+         "text": "[Price]",
+         "ink_role": "color.accent1"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "line",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "Pre-order [date] at [where]. In stores [date]."
+        }
+       ]
+      },
+      {
+       "type": "region",
+       "id": "below",
+       "layout": {
+        "kind": "flex",
+        "direction": "column",
+        "gap_role": "space.xs",
+        "pad_role": null,
+        "align": "stretch",
+        "justify": "start"
+       },
+       "children": [],
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: the price as the page's statement",
+    "element": "fig"
+   }
+  },
+  {
+   "id": "s12-close",
+   "layout": "Blank",
+   "spec": {
+    "root": {
+     "type": "region",
+     "id": "root",
+     "layout": {
+      "kind": "flex",
+      "direction": "column",
+      "gap_role": "space.md",
+      "pad_role": "space.margin",
+      "align": "stretch",
+      "justify": "start"
+     },
+     "children": [
+      {
+       "type": "element",
+       "id": "name",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.display",
+         "text": "Aurel One"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "url",
+       "kind": "text",
+       "paragraphs": [
+        {
+         "role": "type.body",
+         "text": "[aurel web address]"
+        }
+       ]
+      },
+      {
+       "type": "element",
+       "id": "quiet",
+       "kind": "image",
+       "weight": 1.0
+      }
+     ]
+    }
+   },
+   "title": {
+    "register": "other: the product name as the closing statement",
+    "element": "name"
+   },
+   "images": {
+    "quiet": {
+     "svg": "/home/user/pptx-skill/aurel/img/quiet.svg",
+     "align": "center",
+     "valign": "middle"
+    }
+   }
+  }
+ ]
+}

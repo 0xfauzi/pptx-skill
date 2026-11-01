@@ -1,0 +1,299 @@
+{
+ "/look_brief": {
+  "audience": "press, retail partners and early customers in a launch audience, plus the livestream; none of them has seen the product before",
+  "occasion": "a projected launch keynote on a large stage screen, each page up for a few seconds to a minute while a presenter speaks; the speaker carries the detail and the page carries one idea",
+  "subject_world": "headphones live between noise and silence: the waveform, the concentric rings of a driver, the quiet of an empty room. The deck borrows the waveform (tall uneven bars for noise, a flat line for silence) and the driver's rings, each with a job; it leaves out product renders it does not have, gradients, glows and audio clip-art as costume",
+  "data_character": "almost none yet: a handful of headline specs (noise reduction, battery, weight, driver size, price, date) that the user has not supplied, each shown as one big figure on its own page and written as a named placeholder until supplied; no charts, no tables",
+  "density": {
+   "target": "one idea per page: a statement of at most eight words, or one big figure with a line under it; at most three blocks on the busiest page",
+   "why": "a room reads a projected page in seconds from up to thirty metres; the presenter speaks the detail, so the page only has to hold the one thing the room should remember"
+  },
+  "look": "near-black stage pages, warm off-white Söhne set very large, one warm gold that marks the single thing to look at; shapes drawn as thin rings and bars, never as illustrations",
+  "colour_meanings": {
+   "color.accent1": "the product and its one headline figure on the page: the look-here colour, never decoration",
+   "color.emphasis": "the same gold, for any mark that points at the claim",
+   "color.ink_muted": "noise, context and the line under a statement: everything that should recede",
+   "color.rule": "thin structural rings and rules that hold a shape together without asking to be read"
+  },
+  "type_ladder": "there is no dense page: the busiest is the three-feature row, whose 20pt body still reads projected; captions sit at 14pt, placeholder notes at 12pt, well above the 7pt floor. Up from body: 28pt feature names, 40pt statements in bold, 96pt for a figure that shares the page, and 120pt for a figure or the product name that has the page to itself",
+  "rejected": [
+   {
+    "what": "a white page with dark type",
+    "why": "on a dark stage a white screen glares and hides the presenter; a dark page lets the type and the gold carry"
+   },
+   {
+    "what": "drawn headphone illustrations or fake product renders",
+    "why": "the deck has no product photography yet, and a drawing would stand in for the real product the audience is there to see"
+   },
+   {
+    "what": "charts of the specs against competitors",
+    "why": "no figures exist yet; a chart of placeholders would show shapes that mean nothing"
+   },
+   {
+    "what": "page numbers and a footer",
+    "why": "a keynote is watched, not referred back to; furniture would only add marks on every page"
+   }
+  ]
+ },
+ "/reference/page": {
+  "width_emu": 12192000,
+  "height_emu": 6858000,
+  "why": "16:9 at 13.333 x 7.5 in, the shape of stage screens and livestreams"
+ },
+ "/typography/families": {
+  "major": "Söhne",
+  "minor": "Söhne"
+ },
+ "/typography/families/substitutes": {
+  "Söhne": "Inter"
+ },
+ "/typography/roles/type.title": {
+  "size_pt": 40,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 1.05,
+  "space_before_pt": 0,
+  "space_after_pt": 0,
+  "why": "the page statement, large enough for the back of a hall, bold so it is read first"
+ },
+ "/typography/roles/type.kicker": {
+  "size_pt": 14,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "upper",
+  "ink_role": "color.accent1",
+  "tracking_pt": 1.5,
+  "why": "a short gold label over a statement or figure that names the topic"
+ },
+ "/typography/roles/type.h1": {
+  "size_pt": 28,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 1.1,
+  "why": "a feature name in the three-up row, one step under the statement"
+ },
+ "/typography/roles/type.h2": {
+  "size_pt": 20,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "a run-in heading at body size"
+ },
+ "/typography/roles/type.body": {
+  "size_pt": 20,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "line_spacing": 1.25,
+  "space_before_pt": 0,
+  "space_after_pt": 6,
+  "why": "one supporting line under a statement or figure, muted so the statement leads"
+ },
+ "/typography/roles/type.emphasis": {
+  "size_pt": 20,
+  "weight": 700,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "why": "a bold run inside a body line"
+ },
+ "/typography/roles/type.caption": {
+  "size_pt": 14,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "labels under a shape, such as a colourway name"
+ },
+ "/typography/roles/type.footnote": {
+  "size_pt": 12,
+  "weight": 400,
+  "italic": false,
+  "family": "minor",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink_muted",
+  "why": "the qualifier under a spec figure (test conditions), read by the press in the deck afterwards"
+ },
+ "/typography/roles/type.source_line": null,
+ "/typography/roles/type.table_header": null,
+ "/typography/roles/type.table_cell": null,
+ "/typography/roles/type.axis_label": null,
+ "/typography/roles/type.data_label": null,
+ "/typography/roles/type.display": {
+  "size_pt": 120,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 0.95,
+  "floor_family": "display",
+  "why": "the one big figure or the product name, the largest thing on the page"
+ },
+ "/typography/bullets": {},
+ "/color/roles/color.surface": {
+  "hex": "0B0B0C",
+  "why": "a near-black stage page that does not glare on a projector"
+ },
+ "/color/roles/color.surface_alt": {
+  "hex": "17171A",
+  "why": "a barely lifted panel for the three-up row and colour swatches"
+ },
+ "/color/roles/color.ink": {
+  "hex": "F2EFEA",
+  "why": "a warm off-white, softer than pure white on a dark stage"
+ },
+ "/color/roles/color.ink_muted": {
+  "hex": "8E8B86",
+  "why": "a warm grey for supporting lines and noise, about 5.8:1 on the page"
+ },
+ "/color/roles/color.accent1": {
+  "hex": "C9A66B",
+  "why": "a warm gold for the product and its headline figure, the brand's one colour on stage"
+ },
+ "/color/roles/color.accent2": null,
+ "/color/roles/color.accent3": null,
+ "/color/roles/color.rule": {
+  "hex": "3A3936",
+  "why": "thin rings and rules that hold a shape without being read"
+ },
+ "/color/roles/color.positive": null,
+ "/color/roles/color.negative": null,
+ "/color/roles/color.emphasis": {
+  "hex": "C9A66B",
+  "why": "the look-here mark is the same gold as the product's figure"
+ },
+ "/spacing/steps": {
+  "space.xs": 76200,
+  "space.sm": 152400,
+  "space.md": 304800,
+  "space.lg": 609600,
+  "space.xl": 1219200,
+  "space.margin": 762000,
+  "space.gutter": 457200
+ },
+ "/spacing/margins": {
+  "left": {
+   "emu": 762000
+  },
+  "right": {
+   "emu": 762000
+  },
+  "top": {
+   "emu": 685800
+  },
+  "bottom": {
+   "emu": 685800
+  }
+ },
+ "/chrome": [],
+ "/tables": {
+  "header_fill_role": null,
+  "header_ink_role": "color.ink",
+  "banding_role": null,
+  "header_bold": true,
+  "edge_rules": {
+   "table_top": {
+    "none": true
+   },
+   "header_bottom": {
+    "width_pt": 0.75,
+    "color_role": "color.rule"
+   },
+   "row_interior": {
+    "width_pt": 0.5,
+    "color_role": "color.rule"
+   },
+   "table_bottom": {
+    "none": true
+   },
+   "table_left": {
+    "none": true
+   },
+   "table_right": {
+    "none": true
+   },
+   "column_interior": {
+    "none": true
+   }
+  },
+  "cell_padding_role": "space.xs",
+  "alignment_by_column_type": {
+   "numeric": "right",
+   "text": "left"
+  },
+  "totals_rule": false,
+  "totals_bold": false,
+  "banding_phase": 0,
+  "merged_cell_convention": "none",
+  "why": "no table is planned; if a spec sheet is added it is drawn with hairline rows on the dark page and no fills"
+ },
+ "/charts": {
+  "series_color_roles": [
+   "color.accent1",
+   "color.ink_muted"
+  ],
+  "per_kind": {
+   "column": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "none"
+   },
+   "bar": {
+    "gridlines_major": 0.0,
+    "data_labels": 1.0,
+    "legend_position": "none"
+   }
+  },
+  "why": "no chart is planned; if one is added it shows Aurel One in gold against grey, labelled on the marks"
+ },
+ "/description": {
+  "summary": "A dark stage keynote: near-black pages, warm off-white Söhne set very large, one gold for the product, thin rings and waveform bars as the only shapes.",
+  "typography": "Söhne throughout (measured in Inter here) on a 120, 96, 40, 28, 20, 14, 12pt ladder; bold for statements and figures.",
+  "color": "Off-white leads, warm grey recedes, gold marks the product and the one figure on a page.",
+  "layout": "0.83 in margins; one statement or one figure per page, often left-aligned beside a large shape.",
+  "tables": "none",
+  "imagery": "no photography: waveform bars, concentric rings and colour discs drawn as shapes",
+  "motifs": "the waveform that flattens from noise to silence; concentric rings",
+  "not_seen": [],
+  "tone": "quiet, confident, sparse"
+ },
+ "/continuation": {
+  "contd_mark": null,
+  "why": "a keynote page never continues; content that does not fit is split into two ideas"
+ },
+ "/typography/roles/type.figure": {
+  "size_pt": 96,
+  "weight": 700,
+  "italic": false,
+  "family": "major",
+  "alignment": "left",
+  "case": "as_typed",
+  "ink_role": "color.ink",
+  "line_spacing": 0.95,
+  "floor_family": "display",
+  "why": "a big figure that shares the page with a second block (a picture or another figure), one step under the display size so a figure and its unit hold one line in half the page"
+ }
+}
